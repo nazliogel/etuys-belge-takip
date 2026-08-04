@@ -776,14 +776,6 @@ export type EnumImportBatchStatusFieldUpdateOperationsInput = {
   set?: $Enums.ImportBatchStatus
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ImportBatchCreateNestedOneWithoutRowsInput = {
   create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutRowsInput, Prisma.ImportBatchUncheckedCreateWithoutRowsInput>
   connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutRowsInput
