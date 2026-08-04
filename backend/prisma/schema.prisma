@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  COMPANY
+}
+
+enum ImportBatchStatus {
+  UPLOADED
+  PROCESSING
+  WAITING_APPROVAL
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ImportRowStatus {
+  NEW
+  CHANGED
+  UNCHANGED
+  INVALID
+  CONFLICT
+}
+
+enum ImportChangeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ChangeType {
+  CREATED
+  UPDATED
+  DEACTIVATED
+  REACTIVATED
+}
+
+enum EntityType {
+  COMPANY
+  COMPANY_AUTHORIZATION
+  INCENTIVE_DOCUMENT
+}
+
+enum ChangeSource {
+  EXCEL_IMPORT
+  MANUAL_UPDATE
+  SYSTEM
+}
+
+enum NotificationType {
+  AUTHORIZATION_EXPIRING
+  AUTHORIZATION_EXPIRED
+  DOCUMENT_EXPIRING
+  DOCUMENT_EXPIRED
+  EXTENSION_EXPIRING
+  IMPORT_WAITING_APPROVAL
+  IMPORT_COMPLETED
+  SYSTEM
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  isActive     Boolean  @default(true)
+
+  uploadedImports ImportBatch[]   @relation("ImportUploadedBy")
+  reviewedImports ImportBatch[]   @relation("ImportReviewedBy")
+  reviewedChanges ImportChange[]  @relation("ChangeReviewedBy")
+  changeHistory   ChangeHistory[]
+  notifications   Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Company {
+  id                Int     @id @default(autoincrement())
+  externalCompanyId Int     @unique
+  name              String
+  taxNumber         String
+  processStatus     String?
+  isActive          Boolean @default(true)
+
+  authorization CompanyAuthorization?
+  documents     IncentiveDocument[]
+  importRows    ImportRow[]
+  importChanges ImportChange[]
+  changeHistory ChangeHistory[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taxNumber])
+  @@index([name])
+}
+
+model CompanyAuthorization {
+  id                   Int       @id @default(autoincrement())
+  companyId            Int       @unique
+  authorizationEndDate DateTime? @db.Date
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IncentiveDocument {
+  id                 Int       @id @default(autoincrement())
+  companyId          Int
+  externalDocumentId Int       @unique
+  documentNumber     String?
+  documentStartDate  DateTime? @db.Date
+  documentEndDate    DateTime? @db.Date
+  extensionDate      DateTime? @db.Date
+  supportClass       String?
+  isActive           Boolean   @default(true)
+
+  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  importRows    ImportRow[]
+  importChanges ImportChange[]
+  changeHistory ChangeHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([documentNumber])
+}
+
+model ImportBatch {
+  id                Int               @id @default(autoincrement())
+  fileName          String
+  storedFileName    String?
+  status            ImportBatchStatus @default(UPLOADED)
+  isFullSnapshot    Boolean           @default(true)
+  totalRowCount     Int               @default(0)
+  validRowCount     Int               @default(0)
+  invalidRowCount   Int               @default(0)
+  newRowCount       Int               @default(0)
+  changedRowCount   Int               @default(0)
+  unchangedRowCount Int               @default(0)
+  uploadedById      Int
+  reviewedById      Int?
+
+  uploadedBy    User            @relation("ImportUploadedBy", fields: [uploadedById], references: [id])
+  reviewedBy    User?           @relation("ImportReviewedBy", fields: [reviewedById], references: [id])
+  rows          ImportRow[]
+  changes       ImportChange[]
+  changeHistory ChangeHistory[]
+  notifications Notification[]
+
+  uploadedAt  DateTime  @default(now())
+  reviewedAt  DateTime?
+  completedAt DateTime?
+
+  @@index([status])
+  @@index([uploadedById])
+}
+
+model ImportRow {
+  id                   Int             @id @default(autoincrement())
+  importBatchId        Int
+  rowNumber            Int
+  status               ImportRowStatus
+  externalCompanyId    Int?
+  companyName          String?
+  taxNumber            String?
+  authorizationEndDate DateTime?       @db.Date
+  externalDocumentId   Int?
+  documentNumber       String?
+  documentStartDate    DateTime?       @db.Date
+  documentEndDate      DateTime?       @db.Date
+  extensionDate        DateTime?       @db.Date
+  supportClass         String?
+  processStatus        String?
+  companyId            Int?
+  documentId           Int?
+  rawData              Json?
+  errorMessage         String?
+
+  importBatch ImportBatch        @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  company     Company?           @relation(fields: [companyId], references: [id])
+  document    IncentiveDocument? @relation(fields: [documentId], references: [id])
+  changes     ImportChange[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([importBatchId, rowNumber])
+  @@index([importBatchId, status])
+  @@index([externalCompanyId])
+  @@index([externalDocumentId])
+}
+
+model ImportChange {
+  id             Int                @id @default(autoincrement())
+  importBatchId  Int
+  importRowId    Int
+  companyId      Int?
+  documentId     Int?
+  entityType     EntityType
+  changeType     ChangeType
+  fieldName      String
+  oldValue       String?
+  newValue       String?
+  status         ImportChangeStatus @default(PENDING)
+  reviewedById   Int?
+  reviewedAt     DateTime?
+  rejectedReason String?
+
+  importBatch ImportBatch        @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  importRow   ImportRow          @relation(fields: [importRowId], references: [id], onDelete: Cascade)
+  company     Company?           @relation(fields: [companyId], references: [id])
+  document    IncentiveDocument? @relation(fields: [documentId], references: [id])
+  reviewedBy  User?              @relation("ChangeReviewedBy", fields: [reviewedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([importBatchId, status])
+  @@index([companyId])
+  @@index([documentId])
+}
+
+model ChangeHistory {
+  id            Int          @id @default(autoincrement())
+  entityType    EntityType
+  entityId      Int
+  fieldName     String
+  oldValue      String?
+  newValue      String?
+  source        ChangeSource
+  companyId     Int?
+  documentId    Int?
+  importBatchId Int?
+  changedById   Int?
+
+  company     Company?           @relation(fields: [companyId], references: [id])
+  document    IncentiveDocument? @relation(fields: [documentId], references: [id])
+  importBatch ImportBatch?       @relation(fields: [importBatchId], references: [id])
+  changedBy   User?              @relation(fields: [changedById], references: [id])
+
+  changedAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([companyId])
+  @@index([documentId])
+  @@index([importBatchId])
+}
+
+model Notification {
+  id          Int              @id @default(autoincrement())
+  title       String
+  description String
+  type        NotificationType
+  isRead      Boolean          @default(false)
+
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
+
+  companyId Int?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  importBatchId Int?
+  importBatch   ImportBatch? @relation(fields: [importBatchId], references: [id])
+
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, isRead])
+  @@index([companyId])
+  @@index([importBatchId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id          Int     @id @default(autoincrement())
+  key         String  @unique
+  value       Json
+  description String?
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
