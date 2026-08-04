@@ -13,20 +13,16 @@ export const companyRouter = Router();
 
 companyRouter.use(authenticate);
 
-companyRouter.get(
-  "/",
-  validate(companyListSchema),
-  companyController.getCompanies,
-);
+companyRouter.get("/", validate(companyListSchema), companyController.list);
 
 companyRouter.get(
   "/:id",
   validate(companyIdParamSchema),
-  companyController.getCompanyById,
+  companyController.getById,
 );
 
 companyRouter.patch(
   "/:id",
   validate(updateCompanySchema),
-  companyController.updateCompany,
+  companyController.update,
 );

@@ -93,7 +93,47 @@ export class CompanyService {
     };
   }
 
-  async updateCompany(id: number, payload: UpdateCompanyInput) {
-    return this.companyRepository.update(id, payload);
+  async updateCompany(
+    id: number,
+    payload: UpdateCompanyInput,
+  ): Promise<CompanyDetail> {
+    const existingCompany = await this.companyRepository.findById(id);
+
+    if (!existingCompany) {
+      throw new AppError("Company not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "COMPANY_NOT_FOUND",
+      });
+    }
+
+    const company = await this.companyRepository.update(id, payload);
+
+    return {
+      id: company.id,
+      externalCompanyId: company.externalCompanyId,
+      name: company.name,
+      taxNumber: company.taxNumber,
+      processStatus: company.processStatus,
+      isActive: company.isActive,
+
+      authorizationEndDate:
+        company.authorization?.authorizationEndDate?.toISOString() ?? null,
+
+      documentCount: company.documents.length,
+
+      createdAt: company.createdAt.toISOString(),
+      updatedAt: company.updatedAt.toISOString(),
+
+      documents: company.documents.map((document) => ({
+        id: document.id,
+        externalDocumentId: document.externalDocumentId,
+        documentNumber: document.documentNumber,
+        documentStartDate: document.documentStartDate?.toISOString() ?? null,
+        documentEndDate: document.documentEndDate?.toISOString() ?? null,
+        extensionDate: document.extensionDate?.toISOString() ?? null,
+        supportClass: document.supportClass,
+        isActive: document.isActive,
+      })),
+    };
   }
 }

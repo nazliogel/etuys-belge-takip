@@ -1,61 +1,79 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 
 import type { CompanyService } from "../services/company.service.js";
-import type { CompanyListQuery, UpdateCompanyInput } from "../types/company.js";
+import type {
+  CompanyDetail,
+  CompanyListResponse,
+  UpdateCompanyInput,
+} from "../types/company.js";
+import type { ApiResponse } from "../types/api-response.js";
+import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
+  constructor(private readonly service: CompanyService) {}
 
-  getCompanies = async (
-    req: Request<
-      Record<string, never>,
-      unknown,
-      Record<string, never>,
-      CompanyListQuery
-    >,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const result = await this.companyService.getCompanies(req.query);
+  list = async (
+    req: Request,
+    res: Response<ApiResponse<CompanyListResponse>>,
+  ) => {
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 20);
 
-      res.status(HTTP_STATUS.OK).json(result);
-    } catch (error) {
-      next(error);
-    }
+    const search =
+      typeof req.query.search === "string" ? req.query.search : undefined;
+
+    const isActive =
+      req.query.isActive === "true"
+        ? true
+        : req.query.isActive === "false"
+          ? false
+          : undefined;
+
+    const data = await this.service.getCompanies({
+      page,
+      limit,
+      search,
+      isActive,
+    });
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Companies fetched successfully.",
+      data,
+    });
   };
 
-  getCompanyById = async (
+  getById = async (
     req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const result = await this.companyService.getCompanyById(
-        Number(req.params.id),
-      );
+    res: Response<ApiResponse<CompanyDetail>>,
+  ) => {
+    const data = await this.service.getCompanyById(Number(req.params.id));
 
-      res.status(HTTP_STATUS.OK).json(result);
-    } catch (error) {
-      next(error);
-    }
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Company fetched successfully.",
+      data,
+    });
   };
 
-  updateCompany = async (
-    req: Request<{ id: string }, unknown, UpdateCompanyInput>,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const result = await this.companyService.updateCompany(
-        Number(req.params.id),
-        req.body,
-      );
+  update = async (
+    req: Request<
+      { id: string },
+      ApiResponse<CompanyDetail>,
+      UpdateCompanyInput
+    >,
+    res: Response<ApiResponse<CompanyDetail>>,
+  ) => {
+    const data = await this.service.updateCompany(
+      Number(req.params.id),
+      req.body,
+    );
 
-      res.status(HTTP_STATUS.OK).json(result);
-    } catch (error) {
-      next(error);
-    }
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Company updated successfully.",
+      data,
+    });
   };
 }
