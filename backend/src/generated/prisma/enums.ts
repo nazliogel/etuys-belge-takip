@@ -30,6 +30,7 @@ export type ImportBatchStatus = (typeof ImportBatchStatus)[keyof typeof ImportBa
 
 
 export const ImportRowStatus = {
+  PENDING: 'PENDING',
   NEW: 'NEW',
   CHANGED: 'CHANGED',
   UNCHANGED: 'UNCHANGED',
