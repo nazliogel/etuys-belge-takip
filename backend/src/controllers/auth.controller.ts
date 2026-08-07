@@ -41,7 +41,7 @@ export class AuthController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const userId = req.auth?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         throw new Error("Authenticated user information is missing.");

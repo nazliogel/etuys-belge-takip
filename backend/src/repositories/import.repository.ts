@@ -117,6 +117,26 @@ export class ImportRepository {
     });
   }
 
+  async updateComparisonStatistics(
+    id: number,
+    data: {
+      newRowCount: number;
+      changedRowCount: number;
+      unchangedRowCount: number;
+    },
+  ) {
+    return prisma.importBatch.update({
+      where: {
+        id,
+      },
+      data: {
+        newRowCount: data.newRowCount,
+        changedRowCount: data.changedRowCount,
+        unchangedRowCount: data.unchangedRowCount,
+      },
+    });
+  }
+
   async updateStatus(id: number, status: ImportBatchStatus) {
     return prisma.importBatch.update({
       where: {

@@ -4,6 +4,8 @@ import { importUpload } from "../config/upload.js";
 import { authenticate } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
 import {
+  approvalController,
+  compareController,
   importController,
   importProcessController,
 } from "../modules/import/import.module.js";
@@ -30,6 +32,18 @@ importRouter.post(
   "/:id/process",
   validate(importBatchIdSchema),
   importProcessController.process,
+);
+
+importRouter.post(
+  "/:id/compare",
+  validate(importBatchIdSchema),
+  compareController.compare,
+);
+
+importRouter.post(
+  "/:id/approve",
+  validate(importBatchIdSchema),
+  approvalController.approve,
 );
 
 importRouter.get(

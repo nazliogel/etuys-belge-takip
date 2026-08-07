@@ -7,15 +7,50 @@ import type {
   CompanyListResponse,
   UpdateCompanyInput,
 } from "../types/company.js";
+import type { UserRole } from "../generated/prisma/client.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
 export class CompanyService {
   constructor(private readonly companyRepository: CompanyRepository) {}
 
-  async getCompanies(query: CompanyListQuery): Promise<CompanyListResponse> {
+  async getCompanies(
+    query: CompanyListQuery,
+    userId: number,
+    role: UserRole,
+  ): Promise<CompanyListResponse> {
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      return {
+        items: [
+          {
+            id: company.id,
+            externalCompanyId: company.externalCompanyId,
+            name: company.name,
+            taxNumber: company.taxNumber,
+            processStatus: company.processStatus,
+            isActive: company.isActive,
+            authorizationEndDate:
+              company.authorization?.authorizationEndDate?.toISOString() ??
+              null,
+            documentCount: company._count.documents,
+            createdAt: company.createdAt.toISOString(),
+            updatedAt: company.updatedAt.toISOString(),
+          },
+        ],
+        totalCount: 1,
+      };
+    }
+
     const page = query.page;
     const limit = query.limit;
-
     const skip = (page - 1) * limit;
 
     const [companies, totalCount] = await Promise.all([
@@ -40,12 +75,9 @@ export class CompanyService {
           taxNumber: company.taxNumber,
           processStatus: company.processStatus,
           isActive: company.isActive,
-
           authorizationEndDate:
             company.authorization?.authorizationEndDate?.toISOString() ?? null,
-
           documentCount: company._count.documents,
-
           createdAt: company.createdAt.toISOString(),
           updatedAt: company.updatedAt.toISOString(),
         }),
@@ -54,7 +86,11 @@ export class CompanyService {
     };
   }
 
-  async getCompanyById(id: number): Promise<CompanyDetail> {
+  async getCompanyById(
+    id: number,
+    userId: number,
+    role: UserRole,
+  ): Promise<CompanyDetail> {
     const company = await this.companyRepository.findById(id);
 
     if (!company) {
@@ -62,6 +98,20 @@ export class CompanyService {
         statusCode: HTTP_STATUS.NOT_FOUND,
         code: "COMPANY_NOT_FOUND",
       });
+    }
+
+    if (role === "COMPANY") {
+      const ownCompany = await this.companyRepository.findByUserId(userId);
+
+      if (!ownCompany || ownCompany.id !== id) {
+        throw new AppError(
+          "You do not have permission to access this company.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
     }
 
     return {
@@ -96,7 +146,15 @@ export class CompanyService {
   async updateCompany(
     id: number,
     payload: UpdateCompanyInput,
+    role: UserRole,
   ): Promise<CompanyDetail> {
+    if (role !== "ADMIN") {
+      throw new AppError("You do not have permission to update companies.", {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        code: "FORBIDDEN",
+      });
+    }
+
     const existingCompany = await this.companyRepository.findById(id);
 
     if (!existingCompany) {

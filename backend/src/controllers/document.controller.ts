@@ -1,14 +1,13 @@
 import type { Request, Response } from "express";
 
 import { AppError } from "../errors/app-error.js";
-import type { CompanyService } from "../services/company.service.js";
-import type { UpdateCompanyInput } from "../types/company.js";
+import type { DocumentService } from "../services/document.service.js";
 import type { ApiResponse } from "../types/api-response.js";
 import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
-export class CompanyController {
-  constructor(private readonly service: CompanyService) {}
+export class DocumentController {
+  constructor(private readonly service: DocumentService) {}
 
   list = async (req: Request, res: Response<ApiResponse<unknown>>) => {
     if (!req.user) {
@@ -31,7 +30,7 @@ export class CompanyController {
           ? false
           : undefined;
 
-    const data = await this.service.getCompanies(
+    const data = await this.service.getDocuments(
       {
         page,
         limit,
@@ -44,7 +43,7 @@ export class CompanyController {
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
-      message: "Companies fetched successfully.",
+      message: "Documents fetched successfully.",
       data,
     });
   };
@@ -60,7 +59,7 @@ export class CompanyController {
       });
     }
 
-    const data = await this.service.getCompanyById(
+    const data = await this.service.getDocumentById(
       Number(req.params.id),
       req.user.id,
       req.user.role,
@@ -68,31 +67,7 @@ export class CompanyController {
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
-      message: "Company fetched successfully.",
-      data,
-    });
-  };
-
-  update = async (
-    req: Request<{ id: string }, ApiResponse<unknown>, UpdateCompanyInput>,
-    res: Response<ApiResponse<unknown>>,
-  ) => {
-    if (!req.user) {
-      throw new AppError("Authentication required.", {
-        statusCode: HTTP_STATUS.UNAUTHORIZED,
-        code: "AUTH_REQUIRED",
-      });
-    }
-
-    const data = await this.service.updateCompany(
-      Number(req.params.id),
-      req.body,
-      req.user.role,
-    );
-
-    return sendSuccessResponse(res, {
-      statusCode: HTTP_STATUS.OK,
-      message: "Company updated successfully.",
+      message: "Document fetched successfully.",
       data,
     });
   };

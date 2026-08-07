@@ -112,6 +112,31 @@ export class CompanyRepository {
     });
   }
 
+  async findByUserId(userId: number) {
+    return prisma.company.findFirst({
+      where: {
+        users: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+      include: {
+        authorization: true,
+        documents: {
+          orderBy: {
+            documentNumber: "asc",
+          },
+        },
+        _count: {
+          select: {
+            documents: true,
+          },
+        },
+      },
+    });
+  }
+
   async update(id: number, data: Prisma.CompanyUpdateInput) {
     return prisma.company.update({
       where: {

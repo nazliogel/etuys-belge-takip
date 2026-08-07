@@ -52,4 +52,34 @@ export class ImportRowRepository {
       },
     });
   }
+
+  async updateComparisonResults(
+    rows: Array<{
+      id: number;
+      status: "NEW" | "CHANGED" | "UNCHANGED" | "CONFLICT";
+      companyId?: number | null;
+      documentId?: number | null;
+      errorMessage?: string | null;
+    }>,
+  ) {
+    if (rows.length === 0) {
+      return [];
+    }
+
+    return prisma.$transaction(
+      rows.map((row) =>
+        prisma.importRow.update({
+          where: {
+            id: row.id,
+          },
+          data: {
+            status: row.status,
+            companyId: row.companyId,
+            documentId: row.documentId,
+            errorMessage: row.errorMessage,
+          },
+        }),
+      ),
+    );
+  }
 }

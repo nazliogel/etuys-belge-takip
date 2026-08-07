@@ -30,8 +30,8 @@ export const authenticate = (
 
     const payload = verifyAccessToken(token);
 
-    req.auth = {
-      userId: payload.sub,
+    req.user = {
+      id: payload.sub,
       role: payload.role,
     };
 
