@@ -1,354 +1,347 @@
+"use client";
+
+import { useRouter } from "next/navigation"; // <-- Router eklendi
+import { getSessionUser } from "@/lib/mock-auth";
 import {
-  AlertTriangle,
+  Bell,
   Building2,
-  CalendarDays,
-  CheckCircle2,
-  FileText,
-  ShieldCheck,
+  CalendarClock,
+  Clock3,
+  FileCheck2,
+  History,
+  Pencil,
+  Upload,
+  AlertTriangle,
+  ArrowUpRight,
 } from "lucide-react";
 
-const summaryCards = [
+const summaryItems = [
   {
     title: "Toplam Firma",
-    value: "1.296",
-    description: "Tüm zamanlar",
+    value: "128",
+    description: "Sistemde kayıtlı firma",
     icon: Building2,
-    iconClass: "bg-blue-100 text-blue-600",
-    cardClass: "from-blue-50 to-white",
+    href: "/companies",
   },
   {
-    title: "Aktif Belgeler",
-    value: "1.187",
-    description: "%91,6",
-    icon: CheckCircle2,
-    iconClass: "bg-emerald-100 text-emerald-600",
-    cardClass: "from-emerald-50 to-white",
+    title: "Aktif Belge",
+    value: "214",
+    description: "Aktif durumda bulunan belge",
+    icon: FileCheck2,
+    href: "/documents?status=ACTIVE",
   },
   {
-    title: "Süresi Dolan Belgeler",
+    title: "Süresi Yaklaşan",
     value: "18",
-    description: "%1,4",
-    icon: FileText,
-    iconClass: "bg-red-100 text-red-500",
-    cardClass: "from-red-50 to-white",
+    description: "Yakında sona erecek kayıt",
+    icon: CalendarClock,
+    href: "/documents?status=EXPIRING",
   },
   {
-    title: "30 Gün İçinde Bitecek",
-    value: "42",
-    description: "%3,2",
-    icon: CalendarDays,
-    iconClass: "bg-orange-100 text-orange-500",
-    cardClass: "from-orange-50 to-white",
-  },
-  {
-    title: "90 Gün İçinde Yetki Bitecek",
-    value: "71",
-    description: "%5,5",
-    icon: ShieldCheck,
-    iconClass: "bg-violet-100 text-violet-600",
-    cardClass: "from-violet-50 to-white",
+    title: "Yeni Bildirim",
+    value: "7",
+    description: "Okunmamış bildirim",
+    icon: Bell,
+    href: "/notifications",
   },
 ];
 
-const expiringDocuments = [
+const documentHistoryItems = [
   {
-    company: "ABC Makina Sanayi A.Ş.",
-    documentNo: "55128",
-    supportClass: "Bölgesel",
-    expiryDate: "15.06.2024",
-    remaining: "15 gün",
+    id: 1,
+    documentNumber: "521456",
+    companyName: "1453 İstanbul Otomat",
+    action: "Belge bilgisi güncellendi",
+    description: "Belge bitiş tarihi ve işlem durumu güncellendi.",
+    date: "Bugün, 10:25",
+    type: "UPDATED",
   },
   {
-    company: "XYZ Elektronik Ltd. Şti.",
-    documentNo: "22118",
-    supportClass: "Genel",
-    expiryDate: "20.06.2024",
-    remaining: "20 gün",
+    id: 2,
+    documentNumber: "487215",
+    companyName: "Örnek Sanayi Limited Şirketi",
+    action: "Yeni belge oluşturuldu",
+    description: "Firmaya ait yeni teşvik belgesi sisteme eklendi.",
+    date: "Dün, 15:40",
+    type: "CREATED",
   },
   {
-    company: "DEF Otomotiv A.Ş.",
-    documentNo: "66100",
-    supportClass: "Büyük Ölçekli",
-    expiryDate: "28.06.2024",
-    remaining: "28 gün",
+    id: 3,
+    documentNumber: "635921",
+    companyName: "Akkaş Teknoloji Sanayi ve Ticaret A.Ş.",
+    action: "Excel üzerinden aktarıldı",
+    description: "Belge bilgileri Excel içe aktarma işlemiyle güncellendi.",
+    date: "4 Ağustos 2026, 14:30",
+    type: "IMPORTED",
   },
-  {
-    company: "GHI Tekstil San. Ltd. Şti.",
-    documentNo: "33122",
-    supportClass: "Genel",
-    expiryDate: "05.07.2024",
-    remaining: "35 gün",
-  },
-];
+] as const;
 
-const recentOperations = [
-  {
-    text: "Yeni Excel dosyası içe aktarıldı",
-    date: "24.05.2024 10:45",
-    icon: CheckCircle2,
-    className: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    text: "ABC Makina belgesi güncellendi",
-    date: "24.05.2024 09:32",
-    icon: FileText,
-    className: "bg-blue-100 text-blue-600",
-  },
-  {
-    text: "Yeni kullanıcı eklendi",
-    date: "24.05.2024 09:15",
-    icon: Building2,
-    className: "bg-violet-100 text-violet-600",
-  },
-  {
-    text: "Yetki tarihi güncellendi",
-    date: "24.05.2024 08:50",
-    icon: CalendarDays,
-    className: "bg-orange-100 text-orange-600",
-  },
-];
+function getHistoryIcon(type: (typeof documentHistoryItems)[number]["type"]) {
+  if (type === "CREATED") {
+    return FileCheck2;
+  }
+
+  if (type === "UPDATED") {
+    return Pencil;
+  }
+
+  return Upload;
+}
 
 export function DashboardScreen() {
-  return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Firma, belge ve süre durumlarının genel özeti
-        </p>
-      </div>
+  const router = useRouter(); // <-- Yönlendirme için eklendi
+  const user = getSessionUser();
+  const isCompany = user?.role === "COMPANY";
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {summaryCards.map((item) => {
+  return (
+    <div className="space-y-8 pb-8">
+      {/* BAŞLIK ALANI */}
+      <section className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+            Genel Bakış
+          </h1>
+          <p className="text-sm font-normal text-slate-500">
+            Firma, belge ve yetki süreçlerinizin güncel durum özeti.
+          </p>
+        </div>
+      </section>
+
+      {/* İSTATİSTİK KARTLARI */}
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {summaryItems.map((item) => {
           const Icon = item.icon;
 
           return (
-            <div
+            <article
               key={item.title}
-              className={`rounded-xl border border-slate-200 bg-gradient-to-br ${item.cardClass} p-4 shadow-sm`}
+              onClick={() => router.push(item.href)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  router.push(item.href);
+                }
+              }}
+              role="link"
+              tabIndex={0}
+              className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500/40"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold text-slate-600">
-                    {item.title}
-                  </p>
-
-                  <p className="mt-4 text-2xl font-bold text-slate-900">
-                    {item.value}
-                  </p>
-
-                  <p className="mt-1 text-xs font-medium text-slate-500">
-                    {item.description}
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 transition group-hover:bg-red-600 group-hover:text-white">
+                  <Icon size={22} />
                 </div>
-
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.iconClass}`}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[1fr_1.1fr_0.8fr]">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900">
-            Belgelerin Durumu
-          </h2>
-
-          <div className="mt-6 flex items-center justify-center gap-8">
-            <div className="relative flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(#22c55e_0deg_330deg,#f59e0b_330deg_350deg,#ef4444_350deg_360deg)]">
-              <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-white">
-                <span className="text-2xl font-bold text-slate-900">1.296</span>
-                <span className="text-xs text-slate-500">Toplam</span>
-              </div>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                <span className="text-slate-500">Aktif</span>
-                <strong className="ml-auto text-slate-800">1.187</strong>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                <span className="text-slate-500">Süresi yaklaşan</span>
-                <strong className="ml-auto text-slate-800">91</strong>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                <span className="text-slate-500">Süresi dolmuş</span>
-                <strong className="ml-auto text-slate-800">18</strong>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900">
-            Destekleme Sınıfı Dağılımı
-          </h2>
-
-          <div className="mt-7 space-y-5">
-            {[
-              ["Genel Destekleme", "48,1%", "w-[78%]", "bg-blue-500"],
-              ["Bölgesel Destekleme", "39,5%", "w-[65%]", "bg-emerald-500"],
-              ["Büyük Ölçekli", "7,6%", "w-[32%]", "bg-orange-500"],
-              ["Stratejik", "4,8%", "w-[20%]", "bg-violet-500"],
-            ].map(([label, percentage, width, color]) => (
-              <div key={label}>
-                <div className="mb-2 flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-600">{label}</span>
-                  <span className="font-semibold text-slate-800">
-                    {percentage}
-                  </span>
-                </div>
-
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div className={`h-full rounded-full ${width} ${color}`} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900">
-            Yaklaşan Süreler
-          </h2>
-
-          <div className="mt-5 space-y-3">
-            {[
-              [
-                "30 gün içinde belge bitecek",
-                "42",
-                "bg-orange-50 text-orange-600",
-              ],
-              [
-                "90 gün içinde belge bitecek",
-                "91",
-                "bg-yellow-50 text-yellow-600",
-              ],
-              ["30 gün içinde yetki bitecek", "28", "bg-red-50 text-red-600"],
-              [
-                "90 gün içinde yetki bitecek",
-                "71",
-                "bg-violet-50 text-violet-600",
-              ],
-            ].map(([label, value, color]) => (
-              <div
-                key={label}
-                className="flex items-center justify-between rounded-lg border border-slate-100 p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                  <span className="text-xs font-medium text-slate-600">
-                    {label}
-                  </span>
-                </div>
-
-                <span
-                  className={`rounded-md px-2 py-1 text-xs font-bold ${color}`}
-                >
-                  {value}
+                <span className="text-xs font-semibold text-slate-400 group-hover:text-red-600 flex items-center gap-0.5 transition">
+                  <ArrowUpRight size={14} />
                 </span>
               </div>
-            ))}
-          </div>
-        </section>
-      </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.5fr_0.8fr]">
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-5 py-4">
-            <h2 className="text-base font-bold text-slate-900">
-              Yaklaşan Belge Bitişleri
-            </h2>
-          </div>
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  {item.title}
+                </p>
+                <p className="mt-1 text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {item.value}
+                </p>
+                <p className="mt-1.5 text-xs text-slate-500 font-medium">
+                  {item.description}
+                </p>
+              </div>
+            </article>
+          );
+        })}
+      </section>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  <th className="px-5 py-3 font-semibold">Firma Adı</th>
-                  <th className="px-5 py-3 font-semibold">Belge No</th>
-                  <th className="px-5 py-3 font-semibold">Destekleme Sınıfı</th>
-                  <th className="px-5 py-3 font-semibold">Bitiş Tarihi</th>
-                  <th className="px-5 py-3 font-semibold">Kalan Gün</th>
-                  <th className="px-5 py-3 font-semibold">Durum</th>
-                </tr>
-              </thead>
+      {/* YAKLAŞAN SÜRELER & SON İŞLEMLER GRID */}
+      <section
+        className={`grid gap-6 ${isCompany ? "grid-cols-1" : "xl:grid-cols-2"}`}
+      >
+        {/* YAKLAŞAN SÜRELER */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <CalendarClock size={19} className="text-red-600" />
+                Yaklaşan Süreler
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Yakında süresi dolacak belge ve yetkiler.
+              </p>
+            </div>
 
-              <tbody>
-                {expiringDocuments.map((item) => (
-                  <tr
-                    key={item.documentNo}
-                    className="border-t border-slate-100 text-slate-600"
-                  >
-                    <td className="px-5 py-3 font-medium text-slate-800">
-                      {item.company}
-                    </td>
-                    <td className="px-5 py-3">{item.documentNo}</td>
-                    <td className="px-5 py-3 text-emerald-600">
-                      {item.supportClass}
-                    </td>
-                    <td className="px-5 py-3">{item.expiryDate}</td>
-                    <td className="px-5 py-3">{item.remaining}</td>
-                    <td className="px-5 py-3">
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 font-semibold text-orange-600">
-                        Süresi yaklaşıyor
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              2 Kayıt
+            </span>
           </div>
 
-          <button
-            type="button"
-            className="w-full border-t border-slate-100 py-3 text-xs font-semibold text-blue-600 hover:bg-blue-50"
-          >
-            Tümünü Görüntüle →
-          </button>
-        </section>
-
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900">Son İşlemler</h2>
-
-          <div className="mt-5 space-y-4">
-            {recentOperations.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div key={item.text} className="flex items-start gap-3">
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${item.className}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-medium text-slate-700">
-                      {item.text}
-                    </p>
-                    <p className="mt-1 text-[11px] text-slate-400">
-                      {item.date}
-                    </p>
-                  </div>
+          <div className="mt-4 divide-y divide-slate-100">
+            {/* Kart 1 */}
+            <div className="flex items-start justify-between gap-4 py-3.5 first:pt-1">
+              <div className="flex min-w-0 items-start gap-3">
+                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                <div>
+                  <p className="font-semibold text-sm text-slate-900">
+                    1453 İstanbul Otomat
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Yetki süresinin dolmasına{" "}
+                    <strong className="text-amber-600">154 gün</strong> kaldı.
+                  </p>
                 </div>
-              );
-            })}
+              </div>
+
+              <span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200/60 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                Yaklaşıyor
+              </span>
+            </div>
+
+            {/* Kart 2 */}
+            <div className="flex items-start justify-between gap-4 py-3.5 last:pb-1">
+              <div className="flex min-w-0 items-start gap-3">
+                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-600" />
+                <div>
+                  <p className="font-semibold text-sm text-slate-900">
+                    Örnek Sanayi Limited Şirketi
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Belge süresi dolmuş durumda.
+                  </p>
+                </div>
+              </div>
+
+              <span className="shrink-0 rounded-lg bg-red-50 border border-red-200/60 px-2.5 py-1 text-[11px] font-semibold text-red-700 flex items-center gap-1">
+                <AlertTriangle size={12} />
+                Süresi Doldu
+              </span>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+
+        {/* SON İŞLEMLER */}
+        {!isCompany && (
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Clock3 size={19} className="text-red-600" />
+                  Son İşlemler
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Sistem üzerinde gerçekleştirilen son hareketler.
+                </p>
+              </div>
+
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                Güncel
+              </span>
+            </div>
+
+            <div className="mt-4 divide-y divide-slate-100">
+              <div className="flex items-start gap-3.5 py-3.5 first:pt-1">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                  <Building2 size={17} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm text-slate-900">
+                    Yeni firma kaydı oluşturuldu
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    1453 İstanbul Otomat sisteme eklendi.
+                  </p>
+                </div>
+                <span className="text-[11px] font-medium text-slate-400">
+                  Bugün, 09:42
+                </span>
+              </div>
+
+              <div className="flex items-start gap-3.5 py-3.5 last:pb-1">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                  <FileCheck2 size={17} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm text-slate-900">
+                    Belge bilgisi güncellendi
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    521456 numaralı belgenin durumu güncellendi.
+                  </p>
+                </div>
+                <span className="text-[11px] font-medium text-slate-400">
+                  Dün, 16:18
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* BELGE İŞLEM GEÇMİŞİ */}
+        {!isCompany && (
+          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm xl:col-span-2">
+            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-6 sm:flex-row sm:items-center">
+              <div>
+                <div className="flex items-center gap-2">
+                  <History size={19} className="text-red-600" />
+                  <h2 className="text-base font-bold text-slate-900">
+                    Belge İşlem Geçmişi
+                  </h2>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Belgeler üzerinde gerçekleştirilen detaylı işlem dökümü.
+                </p>
+              </div>
+
+              <span className="self-start rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 sm:self-auto">
+                Son {documentHistoryItems.length} İşlem
+              </span>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {documentHistoryItems.map((item) => {
+                const HistoryIcon = getHistoryIcon(item.type);
+
+                return (
+                  <article
+                    key={item.id}
+                    className="flex flex-col gap-4 p-5 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center justify-between"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100">
+                        <HistoryIcon size={18} />
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-semibold text-sm text-slate-900">
+                            {item.action}
+                          </h3>
+
+                          <span className="rounded-md bg-slate-100 border border-slate-200/60 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                            Belge No: {item.documentNumber}
+                          </span>
+                        </div>
+
+                        <p className="mt-1 text-xs font-semibold text-slate-800">
+                          {item.companyName}
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-400 self-end sm:self-center">
+                      <Clock3 size={13} />
+                      {item.date}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </section>
     </div>
   );
 }

@@ -45,6 +45,38 @@ export const companyMockData = {
         },
       ],
     },
+    {
+      id: 1666408,
+      number: 661456,
+
+      startDate: "17.08.2021",
+      endDate: "12.03.2024",
+      extensionDate: "12.09.2025",
+
+      supportClass: "GENEL",
+      status: "EXPIRED",
+
+      transactions: [
+        {
+          id: 1,
+          title: "Belge Kapatma Başvurusu",
+          date: "05.07.2026",
+          status: "Sonuçlandı",
+        },
+        {
+          id: 2,
+          title: "Revize Başvurusu",
+          date: "08.06.2024",
+          status: "Sonuçlandı",
+        },
+        {
+          id: 3,
+          title: "Yeni Belge Başvurusu",
+          date: "17.03.2021",
+          status: "Sonuçlandı",
+        },
+      ],
+    },
   ],
 
   urgencies: [

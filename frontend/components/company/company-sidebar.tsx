@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logoutMockUser } from "@/lib/mock-auth";
+import Image from "next/image";
 
 const menuItems = [
   { label: "Genel Bakış", href: "/company/dashboard", icon: LayoutDashboard },
@@ -32,22 +33,20 @@ export default function CompanySidebar() {
   }
 
   return (
-    <aside className="flex min-h-screen w-64 flex-col border-r border-slate-200 bg-white">
-      {/* Logo — Proteşvik */}
-      <div className="border-b border-slate-200 px-6 py-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-md shadow-blue-600/30">
-            <ShieldCheck size={22} className="text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-base font-bold tracking-tight text-slate-900">
-              Proteşvik
-            </h1>
-            <p className="text-xs text-slate-500">Firma Portalı</p>
-          </div>
-        </div>
-      </div>
+    <aside className="sticky top-0 flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
+      {/* E-TUYS Logo */}
+      <div className="border-b border-slate-200 px-6 py-5">
+        <Image
+          src="/logos/etuys-logo.png"
+          alt="E-TUYS Logo"
+          width={180}
+          height={60}
+          priority
+          className="h-auto w-full max-w-[180px] object-contain"
+        />
 
+        <p className="mt-2 text-xs font-medium text-slate-500">Firma Portalı</p>
+      </div>
       {/* Menü */}
       <nav className="flex-1 space-y-1 p-3">
         {menuItems.map((item) => {
