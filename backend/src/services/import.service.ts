@@ -65,4 +65,33 @@ export class ImportService {
 
     return importBatch;
   }
+
+  async getImportChanges(importBatchId: number) {
+    const importBatch = await this.repository.findById(importBatchId);
+
+    if (!importBatch) {
+      throw new AppError("Import batch not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "IMPORT_BATCH_NOT_FOUND",
+      });
+    }
+
+    const [changes, fieldSummary] = await Promise.all([
+      this.repository.findChangesByBatchId(importBatchId),
+      this.repository.getChangeSummary(importBatchId),
+    ]);
+
+    return {
+      totalChangeCount: changes.length,
+
+      fieldSummary: fieldSummary
+        .map((item) => ({
+          fieldName: item.fieldName,
+          count: item._count._all,
+        }))
+        .sort((a, b) => b.count - a.count),
+
+      changes,
+    };
+  }
 }

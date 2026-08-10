@@ -147,4 +147,39 @@ export class ImportRepository {
       },
     });
   }
+
+  async findChangesByBatchId(importBatchId: number) {
+    return prisma.importChange.findMany({
+      where: {
+        importBatchId,
+      },
+      orderBy: {
+        id: "asc",
+      },
+      select: {
+        id: true,
+        importRowId: true,
+        entityType: true,
+        changeType: true,
+        fieldName: true,
+        oldValue: true,
+        newValue: true,
+        status: true,
+        companyId: true,
+        documentId: true,
+      },
+    });
+  }
+
+  async getChangeSummary(importBatchId: number) {
+    return prisma.importChange.groupBy({
+      by: ["fieldName"],
+      where: {
+        importBatchId,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+  }
 }

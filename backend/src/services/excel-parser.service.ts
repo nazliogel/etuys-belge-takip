@@ -27,17 +27,17 @@ export interface ParseExcelResult {
 }
 
 const EXPECTED_HEADERS = {
-  externalCompanyId: "Firma ID",
-  companyName: "Firma Adı",
-  taxNumber: "VKN",
-  authorizationEndDate: "Yetki Bitiş",
-  externalDocumentId: "Belge ID",
-  documentNumber: "Belge No",
-  documentStartDate: "Belge Başlangıç",
-  documentEndDate: "Belge Bitiş",
-  extensionDate: "Süre Uzatım",
-  supportClass: "Destekleme Sınıfı",
-  processStatus: "İşlem Durumu",
+  externalCompanyId: ["Firma ID"],
+  companyName: ["Firma Adı"],
+  taxNumber: ["VKN"],
+  authorizationEndDate: ["Yetki Bitiş"],
+  externalDocumentId: ["Belge ID"],
+  documentNumber: ["Belge No"],
+  documentStartDate: ["Belge Başlangıç"],
+  documentEndDate: ["Belge Bitiş"],
+  extensionDate: ["Süre Uzatım", "Süre Uzatım Tarihi"],
+  supportClass: ["Destekleme Sınıfı"],
+  processStatus: ["İşlem Durumu"],
 } as const;
 
 type HeaderKey = keyof typeof EXPECTED_HEADERS;
@@ -103,13 +103,14 @@ export class ExcelParserService {
     const headerMap: Partial<Record<HeaderKey, number>> = {};
 
     row.eachCell((cell, columnNumber) => {
-      const cellValue = this.getStringValue(cell.value);
+      const cellValue = this.normalizeHeader(this.getStringValue(cell.value));
 
-      for (const [key, expectedHeader] of Object.entries(EXPECTED_HEADERS)) {
-        if (
-          this.normalizeHeader(cellValue) ===
-          this.normalizeHeader(expectedHeader)
-        ) {
+      for (const [key, expectedHeaders] of Object.entries(EXPECTED_HEADERS)) {
+        const isMatch = expectedHeaders.some(
+          (header) => this.normalizeHeader(header) === cellValue,
+        );
+
+        if (isMatch) {
           headerMap[key as HeaderKey] = columnNumber;
         }
       }
@@ -121,7 +122,7 @@ export class ExcelParserService {
   private validateHeaders(headerMap: Partial<Record<HeaderKey, number>>): void {
     const missingHeaders = Object.entries(EXPECTED_HEADERS)
       .filter(([key]) => !headerMap[key as HeaderKey])
-      .map(([, header]) => header);
+      .map(([, headers]) => headers[0]);
 
     if (missingHeaders.length > 0) {
       throw new Error(
@@ -215,8 +216,10 @@ export class ExcelParserService {
   ): Record<string, unknown> {
     const rawData: Record<string, unknown> = {};
 
-    for (const [key, header] of Object.entries(EXPECTED_HEADERS)) {
+    for (const [key, headers] of Object.entries(EXPECTED_HEADERS)) {
       const columnNumber = headerMap[key as HeaderKey];
+
+      const header = headers[0];
 
       rawData[header] = columnNumber
         ? this.serializeCellValue(row.getCell(columnNumber).value)

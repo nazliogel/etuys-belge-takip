@@ -89,4 +89,19 @@ export class ImportController {
       data,
     });
   };
+
+  getChanges = async (
+    req: Request<{ id: string }>,
+    res: Response<ApiResponse<unknown>>,
+  ) => {
+    const importBatchId = Number(req.params.id);
+
+    const data = await this.service.getImportChanges(importBatchId);
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Import changes fetched successfully.",
+      data,
+    });
+  };
 }

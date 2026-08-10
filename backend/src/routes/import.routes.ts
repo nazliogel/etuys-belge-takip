@@ -47,6 +47,12 @@ importRouter.post(
 );
 
 importRouter.get(
+  "/:id/changes",
+  validate(importBatchIdSchema),
+  importController.getChanges,
+);
+
+importRouter.get(
   "/:id",
   validate(importBatchIdSchema),
   importController.getById,
