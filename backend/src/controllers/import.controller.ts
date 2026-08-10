@@ -104,4 +104,31 @@ export class ImportController {
       data,
     });
   };
+
+  getRows = async (
+    req: Request<{ id: string }>,
+    res: Response<ApiResponse<unknown>>,
+  ) => {
+    const importBatchId = Number(req.params.id);
+
+    const status =
+      typeof req.query.status === "string" ? req.query.status : undefined;
+
+    const data = await this.service.getImportRows(
+      importBatchId,
+      status as
+        | "NEW"
+        | "CHANGED"
+        | "UNCHANGED"
+        | "INVALID"
+        | "PENDING"
+        | undefined,
+    );
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Import rows fetched successfully.",
+      data,
+    });
+  };
 }

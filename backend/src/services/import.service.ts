@@ -94,4 +94,20 @@ export class ImportService {
       changes,
     };
   }
+
+  async getImportRows(
+    importBatchId: number,
+    status?: "NEW" | "CHANGED" | "UNCHANGED" | "INVALID" | "PENDING",
+  ) {
+    const importBatch = await this.repository.findById(importBatchId);
+
+    if (!importBatch) {
+      throw new AppError("Import batch not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "IMPORT_BATCH_NOT_FOUND",
+      });
+    }
+
+    return this.repository.findRowsByBatchId(importBatchId, status);
+  }
 }

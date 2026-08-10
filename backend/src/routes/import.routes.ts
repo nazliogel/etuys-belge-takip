@@ -53,6 +53,12 @@ importRouter.get(
 );
 
 importRouter.get(
+  "/:id/rows",
+  validate(importBatchIdSchema),
+  importController.getRows,
+);
+
+importRouter.get(
   "/:id",
   validate(importBatchIdSchema),
   importController.getById,

@@ -182,4 +182,35 @@ export class ImportRepository {
       },
     });
   }
+
+  async findRowsByBatchId(
+    importBatchId: number,
+    status?: "NEW" | "CHANGED" | "UNCHANGED" | "INVALID" | "PENDING",
+  ) {
+    return prisma.importRow.findMany({
+      where: {
+        importBatchId,
+        ...(status ? { status } : {}),
+      },
+      orderBy: {
+        rowNumber: "asc",
+      },
+      select: {
+        id: true,
+        rowNumber: true,
+        status: true,
+        externalCompanyId: true,
+        companyName: true,
+        taxNumber: true,
+        authorizationEndDate: true,
+        externalDocumentId: true,
+        documentNumber: true,
+        documentStartDate: true,
+        documentEndDate: true,
+        extensionDate: true,
+        supportClass: true,
+        processStatus: true,
+      },
+    });
+  }
 }
