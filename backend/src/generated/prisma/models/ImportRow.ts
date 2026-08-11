@@ -735,9 +735,9 @@ export type ImportRowSumOrderByAggregateInput = {
   documentId?: Prisma.SortOrder
 }
 
-export type ImportRowScalarRelationFilter = {
-  is?: Prisma.ImportRowWhereInput
-  isNot?: Prisma.ImportRowWhereInput
+export type ImportRowNullableScalarRelationFilter = {
+  is?: Prisma.ImportRowWhereInput | null
+  isNot?: Prisma.ImportRowWhereInput | null
 }
 
 export type ImportRowCreateNestedManyWithoutCompanyInput = {
@@ -876,10 +876,12 @@ export type ImportRowCreateNestedOneWithoutChangesInput = {
   connect?: Prisma.ImportRowWhereUniqueInput
 }
 
-export type ImportRowUpdateOneRequiredWithoutChangesNestedInput = {
+export type ImportRowUpdateOneWithoutChangesNestedInput = {
   create?: Prisma.XOR<Prisma.ImportRowCreateWithoutChangesInput, Prisma.ImportRowUncheckedCreateWithoutChangesInput>
   connectOrCreate?: Prisma.ImportRowCreateOrConnectWithoutChangesInput
   upsert?: Prisma.ImportRowUpsertWithoutChangesInput
+  disconnect?: Prisma.ImportRowWhereInput | boolean
+  delete?: Prisma.ImportRowWhereInput | boolean
   connect?: Prisma.ImportRowWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ImportRowUpdateToOneWithWhereWithoutChangesInput, Prisma.ImportRowUpdateWithoutChangesInput>, Prisma.ImportRowUncheckedUpdateWithoutChangesInput>
 }

@@ -213,7 +213,7 @@ model ImportRow {
 model ImportChange {
   id             Int                @id @default(autoincrement())
   importBatchId  Int
-  importRowId    Int
+  importRowId    Int?
   companyId      Int?
   documentId     Int?
   entityType     EntityType
@@ -227,7 +227,7 @@ model ImportChange {
   rejectedReason String?
 
   importBatch ImportBatch        @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
-  importRow   ImportRow          @relation(fields: [importRowId], references: [id], onDelete: Cascade)
+  importRow   ImportRow?         @relation(fields: [importRowId], references: [id], onDelete: SetNull)
   company     Company?           @relation(fields: [companyId], references: [id])
   document    IncentiveDocument? @relation(fields: [documentId], references: [id])
   reviewedBy  User?              @relation("ChangeReviewedBy", fields: [reviewedById], references: [id])

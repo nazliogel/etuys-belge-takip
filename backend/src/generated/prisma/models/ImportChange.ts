@@ -262,7 +262,7 @@ export type ImportChangeGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 export type ImportChangeGroupByOutputType = {
   id: number
   importBatchId: number
-  importRowId: number
+  importRowId: number | null
   companyId: number | null
   documentId: number | null
   entityType: $Enums.EntityType
@@ -303,7 +303,7 @@ export type ImportChangeWhereInput = {
   NOT?: Prisma.ImportChangeWhereInput | Prisma.ImportChangeWhereInput[]
   id?: Prisma.IntFilter<"ImportChange"> | number
   importBatchId?: Prisma.IntFilter<"ImportChange"> | number
-  importRowId?: Prisma.IntFilter<"ImportChange"> | number
+  importRowId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   companyId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   documentId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   entityType?: Prisma.EnumEntityTypeFilter<"ImportChange"> | $Enums.EntityType
@@ -317,7 +317,7 @@ export type ImportChangeWhereInput = {
   rejectedReason?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ImportChange"> | Date | string
   importBatch?: Prisma.XOR<Prisma.ImportBatchScalarRelationFilter, Prisma.ImportBatchWhereInput>
-  importRow?: Prisma.XOR<Prisma.ImportRowScalarRelationFilter, Prisma.ImportRowWhereInput>
+  importRow?: Prisma.XOR<Prisma.ImportRowNullableScalarRelationFilter, Prisma.ImportRowWhereInput> | null
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
   document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
   reviewedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -326,7 +326,7 @@ export type ImportChangeWhereInput = {
 export type ImportChangeOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
-  importRowId?: Prisma.SortOrder
+  importRowId?: Prisma.SortOrderInput | Prisma.SortOrder
   companyId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentId?: Prisma.SortOrderInput | Prisma.SortOrder
   entityType?: Prisma.SortOrder
@@ -352,7 +352,7 @@ export type ImportChangeWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ImportChangeWhereInput[]
   NOT?: Prisma.ImportChangeWhereInput | Prisma.ImportChangeWhereInput[]
   importBatchId?: Prisma.IntFilter<"ImportChange"> | number
-  importRowId?: Prisma.IntFilter<"ImportChange"> | number
+  importRowId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   companyId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   documentId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   entityType?: Prisma.EnumEntityTypeFilter<"ImportChange"> | $Enums.EntityType
@@ -366,7 +366,7 @@ export type ImportChangeWhereUniqueInput = Prisma.AtLeast<{
   rejectedReason?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ImportChange"> | Date | string
   importBatch?: Prisma.XOR<Prisma.ImportBatchScalarRelationFilter, Prisma.ImportBatchWhereInput>
-  importRow?: Prisma.XOR<Prisma.ImportRowScalarRelationFilter, Prisma.ImportRowWhereInput>
+  importRow?: Prisma.XOR<Prisma.ImportRowNullableScalarRelationFilter, Prisma.ImportRowWhereInput> | null
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
   document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
   reviewedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -375,7 +375,7 @@ export type ImportChangeWhereUniqueInput = Prisma.AtLeast<{
 export type ImportChangeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
-  importRowId?: Prisma.SortOrder
+  importRowId?: Prisma.SortOrderInput | Prisma.SortOrder
   companyId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentId?: Prisma.SortOrderInput | Prisma.SortOrder
   entityType?: Prisma.SortOrder
@@ -401,7 +401,7 @@ export type ImportChangeScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ImportChangeScalarWhereWithAggregatesInput | Prisma.ImportChangeScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"ImportChange"> | number
   importBatchId?: Prisma.IntWithAggregatesFilter<"ImportChange"> | number
-  importRowId?: Prisma.IntWithAggregatesFilter<"ImportChange"> | number
+  importRowId?: Prisma.IntNullableWithAggregatesFilter<"ImportChange"> | number | null
   companyId?: Prisma.IntNullableWithAggregatesFilter<"ImportChange"> | number | null
   documentId?: Prisma.IntNullableWithAggregatesFilter<"ImportChange"> | number | null
   entityType?: Prisma.EnumEntityTypeWithAggregatesFilter<"ImportChange"> | $Enums.EntityType
@@ -427,7 +427,7 @@ export type ImportChangeCreateInput = {
   rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
-  importRow: Prisma.ImportRowCreateNestedOneWithoutChangesInput
+  importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
   reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
@@ -436,7 +436,7 @@ export type ImportChangeCreateInput = {
 export type ImportChangeUncheckedCreateInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
@@ -462,7 +462,7 @@ export type ImportChangeUpdateInput = {
   rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
-  importRow?: Prisma.ImportRowUpdateOneRequiredWithoutChangesNestedInput
+  importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
   reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
@@ -471,7 +471,7 @@ export type ImportChangeUpdateInput = {
 export type ImportChangeUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
@@ -489,7 +489,7 @@ export type ImportChangeUncheckedUpdateInput = {
 export type ImportChangeCreateManyInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
@@ -519,7 +519,7 @@ export type ImportChangeUpdateManyMutationInput = {
 export type ImportChangeUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
@@ -849,7 +849,7 @@ export type ImportChangeCreateWithoutReviewedByInput = {
   rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
-  importRow: Prisma.ImportRowCreateNestedOneWithoutChangesInput
+  importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
 }
@@ -857,7 +857,7 @@ export type ImportChangeCreateWithoutReviewedByInput = {
 export type ImportChangeUncheckedCreateWithoutReviewedByInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
@@ -903,7 +903,7 @@ export type ImportChangeScalarWhereInput = {
   NOT?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
   id?: Prisma.IntFilter<"ImportChange"> | number
   importBatchId?: Prisma.IntFilter<"ImportChange"> | number
-  importRowId?: Prisma.IntFilter<"ImportChange"> | number
+  importRowId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   companyId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   documentId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
   entityType?: Prisma.EnumEntityTypeFilter<"ImportChange"> | $Enums.EntityType
@@ -929,7 +929,7 @@ export type ImportChangeCreateWithoutCompanyInput = {
   rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
-  importRow: Prisma.ImportRowCreateNestedOneWithoutChangesInput
+  importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
   reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
@@ -937,7 +937,7 @@ export type ImportChangeCreateWithoutCompanyInput = {
 export type ImportChangeUncheckedCreateWithoutCompanyInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
   changeType: $Enums.ChangeType
@@ -988,7 +988,7 @@ export type ImportChangeCreateWithoutDocumentInput = {
   rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
-  importRow: Prisma.ImportRowCreateNestedOneWithoutChangesInput
+  importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
@@ -996,7 +996,7 @@ export type ImportChangeCreateWithoutDocumentInput = {
 export type ImportChangeUncheckedCreateWithoutDocumentInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   entityType: $Enums.EntityType
   changeType: $Enums.ChangeType
@@ -1046,7 +1046,7 @@ export type ImportChangeCreateWithoutImportBatchInput = {
   reviewedAt?: Date | string | null
   rejectedReason?: string | null
   createdAt?: Date | string
-  importRow: Prisma.ImportRowCreateNestedOneWithoutChangesInput
+  importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
   reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
@@ -1054,7 +1054,7 @@ export type ImportChangeCreateWithoutImportBatchInput = {
 
 export type ImportChangeUncheckedCreateWithoutImportBatchInput = {
   id?: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
@@ -1157,7 +1157,7 @@ export type ImportChangeUpdateManyWithWhereWithoutImportRowInput = {
 export type ImportChangeCreateManyReviewedByInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
@@ -1182,7 +1182,7 @@ export type ImportChangeUpdateWithoutReviewedByInput = {
   rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
-  importRow?: Prisma.ImportRowUpdateOneRequiredWithoutChangesNestedInput
+  importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
 }
@@ -1190,7 +1190,7 @@ export type ImportChangeUpdateWithoutReviewedByInput = {
 export type ImportChangeUncheckedUpdateWithoutReviewedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
@@ -1207,7 +1207,7 @@ export type ImportChangeUncheckedUpdateWithoutReviewedByInput = {
 export type ImportChangeUncheckedUpdateManyWithoutReviewedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
@@ -1224,7 +1224,7 @@ export type ImportChangeUncheckedUpdateManyWithoutReviewedByInput = {
 export type ImportChangeCreateManyCompanyInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
   changeType: $Enums.ChangeType
@@ -1249,7 +1249,7 @@ export type ImportChangeUpdateWithoutCompanyInput = {
   rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
-  importRow?: Prisma.ImportRowUpdateOneRequiredWithoutChangesNestedInput
+  importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
   reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
@@ -1257,7 +1257,7 @@ export type ImportChangeUpdateWithoutCompanyInput = {
 export type ImportChangeUncheckedUpdateWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
@@ -1274,7 +1274,7 @@ export type ImportChangeUncheckedUpdateWithoutCompanyInput = {
 export type ImportChangeUncheckedUpdateManyWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
@@ -1291,7 +1291,7 @@ export type ImportChangeUncheckedUpdateManyWithoutCompanyInput = {
 export type ImportChangeCreateManyDocumentInput = {
   id?: number
   importBatchId: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   entityType: $Enums.EntityType
   changeType: $Enums.ChangeType
@@ -1316,7 +1316,7 @@ export type ImportChangeUpdateWithoutDocumentInput = {
   rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
-  importRow?: Prisma.ImportRowUpdateOneRequiredWithoutChangesNestedInput
+  importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
@@ -1324,7 +1324,7 @@ export type ImportChangeUpdateWithoutDocumentInput = {
 export type ImportChangeUncheckedUpdateWithoutDocumentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
@@ -1341,7 +1341,7 @@ export type ImportChangeUncheckedUpdateWithoutDocumentInput = {
 export type ImportChangeUncheckedUpdateManyWithoutDocumentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
@@ -1357,7 +1357,7 @@ export type ImportChangeUncheckedUpdateManyWithoutDocumentInput = {
 
 export type ImportChangeCreateManyImportBatchInput = {
   id?: number
-  importRowId: number
+  importRowId?: number | null
   companyId?: number | null
   documentId?: number | null
   entityType: $Enums.EntityType
@@ -1382,7 +1382,7 @@ export type ImportChangeUpdateWithoutImportBatchInput = {
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  importRow?: Prisma.ImportRowUpdateOneRequiredWithoutChangesNestedInput
+  importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
   reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
@@ -1390,7 +1390,7 @@ export type ImportChangeUpdateWithoutImportBatchInput = {
 
 export type ImportChangeUncheckedUpdateWithoutImportBatchInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
@@ -1407,7 +1407,7 @@ export type ImportChangeUncheckedUpdateWithoutImportBatchInput = {
 
 export type ImportChangeUncheckedUpdateManyWithoutImportBatchInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.IntFieldUpdateOperationsInput | number
+  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
@@ -1508,7 +1508,7 @@ export type ImportChangeSelect<ExtArgs extends runtime.Types.Extensions.Internal
   rejectedReason?: boolean
   createdAt?: boolean
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
-  importRow?: boolean | Prisma.ImportRowDefaultArgs<ExtArgs>
+  importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
@@ -1531,7 +1531,7 @@ export type ImportChangeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   rejectedReason?: boolean
   createdAt?: boolean
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
-  importRow?: boolean | Prisma.ImportRowDefaultArgs<ExtArgs>
+  importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
@@ -1554,7 +1554,7 @@ export type ImportChangeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   rejectedReason?: boolean
   createdAt?: boolean
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
-  importRow?: boolean | Prisma.ImportRowDefaultArgs<ExtArgs>
+  importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
@@ -1581,21 +1581,21 @@ export type ImportChangeSelectScalar = {
 export type ImportChangeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "importRowId" | "companyId" | "documentId" | "entityType" | "changeType" | "fieldName" | "oldValue" | "newValue" | "status" | "reviewedById" | "reviewedAt" | "rejectedReason" | "createdAt", ExtArgs["result"]["importChange"]>
 export type ImportChangeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
-  importRow?: boolean | Prisma.ImportRowDefaultArgs<ExtArgs>
+  importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }
 export type ImportChangeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
-  importRow?: boolean | Prisma.ImportRowDefaultArgs<ExtArgs>
+  importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }
 export type ImportChangeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
-  importRow?: boolean | Prisma.ImportRowDefaultArgs<ExtArgs>
+  importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
@@ -1605,7 +1605,7 @@ export type $ImportChangePayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "ImportChange"
   objects: {
     importBatch: Prisma.$ImportBatchPayload<ExtArgs>
-    importRow: Prisma.$ImportRowPayload<ExtArgs>
+    importRow: Prisma.$ImportRowPayload<ExtArgs> | null
     company: Prisma.$CompanyPayload<ExtArgs> | null
     document: Prisma.$IncentiveDocumentPayload<ExtArgs> | null
     reviewedBy: Prisma.$UserPayload<ExtArgs> | null
@@ -1613,7 +1613,7 @@ export type $ImportChangePayload<ExtArgs extends runtime.Types.Extensions.Intern
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     importBatchId: number
-    importRowId: number
+    importRowId: number | null
     companyId: number | null
     documentId: number | null
     entityType: $Enums.EntityType
@@ -2021,7 +2021,7 @@ readonly fields: ImportChangeFieldRefs;
 export interface Prisma__ImportChangeClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   importBatch<T extends Prisma.ImportBatchDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportBatchDefaultArgs<ExtArgs>>): Prisma.Prisma__ImportBatchClient<runtime.Types.Result.GetResult<Prisma.$ImportBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  importRow<T extends Prisma.ImportRowDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportRowDefaultArgs<ExtArgs>>): Prisma.Prisma__ImportRowClient<runtime.Types.Result.GetResult<Prisma.$ImportRowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  importRow<T extends Prisma.ImportChange$importRowArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$importRowArgs<ExtArgs>>): Prisma.Prisma__ImportRowClient<runtime.Types.Result.GetResult<Prisma.$ImportRowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   company<T extends Prisma.ImportChange$companyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$companyArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   document<T extends Prisma.ImportChange$documentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$documentArgs<ExtArgs>>): Prisma.Prisma__IncentiveDocumentClient<runtime.Types.Result.GetResult<Prisma.$IncentiveDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reviewedBy<T extends Prisma.ImportChange$reviewedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$reviewedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2467,6 +2467,25 @@ export type ImportChangeDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many ImportChanges to delete.
    */
   limit?: number
+}
+
+/**
+ * ImportChange.importRow
+ */
+export type ImportChange$importRowArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ImportRow
+   */
+  select?: Prisma.ImportRowSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ImportRow
+   */
+  omit?: Prisma.ImportRowOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ImportRowInclude<ExtArgs> | null
+  where?: Prisma.ImportRowWhereInput
 }
 
 /**
