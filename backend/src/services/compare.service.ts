@@ -111,6 +111,14 @@ export class CompareService {
             ),
           ];
 
+          const externalDocumentIds = [
+            ...new Set(
+              comparableRows
+                .map((row) => row.externalDocumentId)
+                .filter((id): id is number => id !== null),
+            ),
+          ];
+
           const companies = await transaction.company.findMany({
             where: {
               externalCompanyId: {
@@ -132,6 +140,10 @@ export class CompareService {
           let newRowCount = 0;
           let changedRowCount = 0;
           let unchangedRowCount = 0;
+
+          let missingCompanyCount = 0;
+          let missingDocumentCount = 0;
+
           let invalidRowCount = batch.rows.filter(
             (row) => row.status === "INVALID",
           ).length;
@@ -196,6 +208,77 @@ export class CompareService {
             }
           }
 
+          if (batch.isFullSnapshot && externalCompanyIds.length > 0) {
+            const missingCompanies = await transaction.company.findMany({
+              where: {
+                externalCompanyId: {
+                  notIn: externalCompanyIds,
+                },
+              },
+              select: {
+                id: true,
+                externalCompanyId: true,
+              },
+            });
+
+            missingCompanyCount = missingCompanies.length;
+
+            for (const company of missingCompanies) {
+              changeRecords.push({
+                importBatchId,
+                importRowId: null,
+                companyId: company.id,
+                documentId: null,
+                entityType: "COMPANY",
+                changeType: "UPDATED",
+                fieldName: "__missing_in_snapshot__",
+                oldValue: "false",
+                newValue: "true",
+                status: "PENDING",
+              });
+            }
+
+            const missingDocuments =
+              await transaction.incentiveDocument.findMany({
+                where: {
+                  company: {
+                    externalCompanyId: {
+                      in: externalCompanyIds,
+                    },
+                  },
+                  ...(externalDocumentIds.length > 0
+                    ? {
+                        externalDocumentId: {
+                          notIn: externalDocumentIds,
+                        },
+                      }
+                    : {}),
+                },
+                select: {
+                  id: true,
+                  companyId: true,
+                  externalDocumentId: true,
+                },
+              });
+
+            missingDocumentCount = missingDocuments.length;
+
+            for (const document of missingDocuments) {
+              changeRecords.push({
+                importBatchId,
+                importRowId: null,
+                companyId: document.companyId,
+                documentId: document.id,
+                entityType: "INCENTIVE_DOCUMENT",
+                changeType: "UPDATED",
+                fieldName: "__missing_in_snapshot__",
+                oldValue: "false",
+                newValue: "true",
+                status: "PENDING",
+              });
+            }
+          }
+
           if (changeRecords.length > 0) {
             await transaction.importChange.createMany({
               data: changeRecords,
@@ -235,6 +318,8 @@ export class CompareService {
               newRowCount,
               changedRowCount,
               unchangedRowCount,
+              missingCompanyCount,
+              missingDocumentCount,
               changeCount: changeRecords.length,
             },
           };

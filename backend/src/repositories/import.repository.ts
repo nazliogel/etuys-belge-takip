@@ -167,6 +167,23 @@ export class ImportRepository {
         status: true,
         companyId: true,
         documentId: true,
+
+        company: {
+          select: {
+            id: true,
+            externalCompanyId: true,
+            name: true,
+            taxNumber: true,
+          },
+        },
+
+        document: {
+          select: {
+            id: true,
+            externalDocumentId: true,
+            documentNumber: true,
+          },
+        },
       },
     });
   }
