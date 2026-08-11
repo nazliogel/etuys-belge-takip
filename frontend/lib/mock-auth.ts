@@ -1,80 +1,66 @@
 export type UserRole = "ADMIN" | "COMPANY";
 
-export interface MockUser {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  companyName?: string;
-  // Bu kullanıcının erişebileceği firma id'leri (companies-screen.tsx'teki
-  // `firmalar` dizisindeki `id` alanıyla eşleşir). ADMIN için gerekmez,
-  // çünkü admin zaten tüm firmaları görür. COMPANY rolündeki kullanıcı
-  // sadece burada listelenen firmaları görebilir.
-  companyIds?: string[];
-}
-
 export interface SessionUser {
   id: number;
   name: string;
   email: string;
   role: UserRole;
-  companyName?: string;
-  companyIds?: string[];
+  companyId?: number | null;
+}
+
+interface BackendUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
+  companyId?: number | null;
+}
+
+interface LoginResponse {
+  user: BackendUser;
+  accessToken: string;
 }
 
 const SESSION_KEY = "etuys-session";
+const ACCESS_TOKEN_KEY = "etuys-access-token";
 
-export const mockUsers: MockUser[] = [
-  {
-    id: 1,
-    name: "Erkan Akkaş",
-    email: "admin@akkas.com",
-    password: "123456",
-    role: "ADMIN",
-  },
-  {
-    id: 2,
-    name: "1453 İstanbul Otomat",
-    email: "firma@ornek.com",
-    password: "123456",
-    role: "COMPANY",
-    companyName:
-      "1453 İstanbul Otomat İnşaat Otomotiv Sanayi ve Ticaret Limited Şirketi",
-    companyIds: ["1"],
-  },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export function loginWithMockData(
+export async function login(
   email: string,
   password: string,
-): SessionUser | null {
-  if (typeof window === "undefined") {
-    return null;
+): Promise<SessionUser> {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.message ?? "E-posta adresi veya şifre hatalı.");
   }
 
-  const normalizedEmail = email.trim().toLowerCase();
-
-  const user = mockUsers.find(
-    (item) =>
-      item.email.toLowerCase() === normalizedEmail &&
-      item.password === password,
-  );
-
-  if (!user) {
-    return null;
-  }
+  const result = data as LoginResponse;
 
   const sessionUser: SessionUser = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    companyName: user.companyName,
-    companyIds: user.companyIds,
+    id: result.user.id,
+    name: `${result.user.firstName} ${result.user.lastName}`.trim(),
+    email: result.user.email,
+    role: result.user.role,
+    companyId: result.user.companyId,
   };
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
+
+  localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken);
 
   return sessionUser;
 }
@@ -94,8 +80,17 @@ export function getSessionUser(): SessionUser | null {
     return JSON.parse(session) as SessionUser;
   } catch {
     localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
     return null;
   }
+}
+
+export function getAccessToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
 export function logoutMockUser(): void {
@@ -104,4 +99,5 @@ export function logoutMockUser(): void {
   }
 
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
 }

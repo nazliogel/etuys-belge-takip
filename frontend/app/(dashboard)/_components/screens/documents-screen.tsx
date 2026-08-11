@@ -9,7 +9,31 @@ import {
   Check,
   CalendarDays, // 1. EKSİK İKON EKLENDİ
 } from "lucide-react";
-import { companyMockData } from "@/lib/company-mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api";
+
+type ApiDocument = {
+  id: number;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  documentStartDate: string | null;
+  documentEndDate: string | null;
+  extensionDate: string | null;
+  supportClass: string | null;
+  isActive: boolean;
+};
+
+type CompanyDetailResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    name: string;
+    taxNumber: string;
+    authorizationEndDate: string | null;
+    documents: ApiDocument[];
+  };
+};
 
 interface DocumentsScreenProps {
   companyId?: string;
@@ -17,24 +41,100 @@ interface DocumentsScreenProps {
   onSelectDocument?: (documentId: string) => void;
 }
 
+function formatDate(date: string | null): string {
+  if (!date) return "-";
+
+  return new Intl.DateTimeFormat("tr-TR").format(new Date(date));
+}
+
+function getDocumentStatus(document: ApiDocument) {
+  if (!document.isActive) {
+    return "INACTIVE";
+  }
+
+  const endDate = document.extensionDate ?? document.documentEndDate;
+
+  if (!endDate) {
+    return "ACTIVE";
+  }
+
+  const end = new Date(endDate);
+  const today = new Date();
+
+  end.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return end < today ? "EXPIRED" : "ACTIVE";
+}
+
 export function DocumentsScreen({
+  companyId,
   selectedDocumentId,
   onSelectDocument,
 }: DocumentsScreenProps) {
-  // 2. UNUSED 'company' DEĞİŞKENİ TEMİZLENDİ
-  const { documents } = companyMockData;
+  const [documents, setDocuments] = useState<ApiDocument[]>([]);
+  const [authorizationEndDate, setAuthorizationEndDate] = useState<
+    string | null
+  >(null);
 
-  // Type-safe erişim için fallback veya tipinize uygun alan adı (endDate / expiryDate)
-  const firstDoc = documents[0] as
-    | ((typeof documents)[0] & { endDate?: string; expiryDate?: string })
-    | undefined;
-  const bitisTarihi = firstDoc?.endDate ?? firstDoc?.expiryDate ?? "-";
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    async function loadDocuments() {
+      if (!companyId) {
+        setDocuments([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setLoadError("");
+
+      try {
+        const response = await apiFetch<CompanyDetailResponse>(
+          `/companies/${companyId}`,
+        );
+
+        setDocuments(response.data.documents);
+        setAuthorizationEndDate(response.data.authorizationEndDate);
+      } catch (error) {
+        setLoadError(
+          error instanceof Error ? error.message : "Belgeler yüklenemedi.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDocuments();
+  }, [companyId]);
+
+  const filteredDocuments = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase("tr-TR");
+
+    if (!query) {
+      return documents;
+    }
+
+    return documents.filter((document) =>
+      document.documentNumber?.toLocaleLowerCase("tr-TR").includes(query),
+    );
+  }, [documents, searchQuery]);
 
   const stats = {
     toplam: documents.length,
-    aktif: documents.filter((d) => d.status === "ACTIVE").length,
-    suresiDolmus: documents.filter((d) => d.status === "EXPIRED").length,
-    bitisTarihi,
+
+    aktif: documents.filter(
+      (document) => getDocumentStatus(document) === "ACTIVE",
+    ).length,
+
+    suresiDolmus: documents.filter(
+      (document) => getDocumentStatus(document) === "EXPIRED",
+    ).length,
+
+    bitisTarihi: formatDate(authorizationEndDate),
   };
 
   return (
@@ -110,7 +210,9 @@ export function DocumentsScreen({
             />
             <input
               type="text"
-              placeholder="Belge ara..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Belge numarası ile ara..."
               className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
             />
           </div>
@@ -130,99 +232,118 @@ export function DocumentsScreen({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {documents.map((doc) => {
-                const isSelected = selectedDocumentId === String(doc.id);
-                // Tip esnekliği için güvenli erişim
-                const docEndDate =
-                  (
-                    doc as typeof doc & {
-                      endDate?: string;
-                      expiryDate?: string;
-                    }
-                  ).endDate ??
-                  (
-                    doc as typeof doc & {
-                      endDate?: string;
-                      expiryDate?: string;
-                    }
-                  ).expiryDate ??
-                  "-";
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <p className="text-sm font-medium text-slate-500">
+                      Belgeler yükleniyor...
+                    </p>
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <p className="text-sm font-semibold text-red-700">
+                      Belgeler yüklenemedi
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                  </td>
+                </tr>
+              ) : filteredDocuments.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <p className="text-sm font-medium text-slate-500">
+                      Bu firmaya ait belge bulunamadı.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredDocuments.map((doc) => {
+                  const isSelected = selectedDocumentId === String(doc.id);
 
-                return (
-                  <tr
-                    key={doc.id}
-                    className={`transition-colors ${
-                      isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
-                    }`}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-                            isSelected
-                              ? "bg-red-600 text-white border-red-600"
-                              : "bg-slate-50 border-slate-200 text-slate-600"
-                          }`}
-                        >
-                          <FileText size={16} />
+                  return (
+                    <tr
+                      key={doc.id}
+                      className={`transition-colors ${
+                        isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                              isSelected
+                                ? "bg-red-600 text-white border-red-600"
+                                : "bg-slate-50 border-slate-200 text-slate-600"
+                            }`}
+                          >
+                            <FileText size={16} />
+                          </div>
+
+                          <div>
+                            <p className="font-semibold text-slate-900 text-sm">
+                              {doc.documentNumber ?? "-"}
+                            </p>
+                            <p className="text-[11px] font-mono text-slate-400">
+                              ID: #{doc.id}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-slate-900 text-sm">
-                            {doc.number}
-                          </p>
-                          <p className="text-[11px] font-mono text-slate-400">
-                            ID: #{doc.id}
-                          </p>
+                      </td>
+
+                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                        {formatDate(doc.documentStartDate)}
+                      </td>
+
+                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                        {formatDate(doc.documentEndDate)}
+                      </td>
+
+                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                        {formatDate(doc.extensionDate)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center rounded-md bg-slate-100 border border-slate-200/60 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                          {doc.supportClass ?? "-"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <StatusBadge status={getDocumentStatus(doc)} />
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onSelectDocument?.(String(doc.id));
+                            }}
+                            className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                              isSelected
+                                ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
+                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            }`}
+                          >
+                            {isSelected ? (
+                              <>
+                                <Check size={14} />
+                                Görüntüleniyor
+                              </>
+                            ) : (
+                              <>
+                                Görüntüle
+                                <ChevronRight size={14} />
+                              </>
+                            )}
+                          </button>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                      {doc.startDate}
-                    </td>
-                    <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                      {docEndDate}
-                    </td>
-                    <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                      {doc.extensionDate}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center rounded-md bg-slate-100 border border-slate-200/60 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                        {doc.supportClass}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <StatusBadge status={doc.status} />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSelectDocument?.(String(doc.id));
-                          }}
-                          className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                            isSelected
-                              ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                          }`}
-                        >
-                          {isSelected ? (
-                            <>
-                              <Check size={14} />
-                              Detayı Kapat
-                            </>
-                          ) : (
-                            <>
-                              Görüntüle
-                              <ChevronRight size={14} />
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -295,6 +416,13 @@ function StatusBadge({ status }: { status: string }) {
     },
     CANCELLED: {
       label: "İptal",
+      dot: "bg-slate-400",
+      text: "text-slate-600",
+      bg: "bg-slate-100",
+      border: "border-slate-200",
+    },
+    INACTIVE: {
+      label: "Pasif",
       dot: "bg-slate-400",
       text: "text-slate-600",
       bg: "bg-slate-100",

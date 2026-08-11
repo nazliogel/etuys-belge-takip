@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Building2,
-  FileText,
   Filter,
   Search,
   X,
@@ -14,40 +13,40 @@ import {
 import { DocumentsScreen } from "@/app/(dashboard)/_components/screens/documents-screen";
 import { DocumentDetailScreen } from "@/app/(dashboard)/_components/screens/document-detail-screen";
 import { companyMockData } from "@/lib/company-mock-data";
+import { apiFetch } from "@/lib/api";
 
 type Firma = {
   id: string;
   firmaAdi: string;
   vergiNo: string;
-  yetkiBitisTarihi: string;
+  yetkiBitisTarihi: string | null;
+  isActive: boolean;
+  documentCount: number;
 };
 
-const firmalar: Firma[] = [
-  {
-    id: "1",
-    firmaAdi: "1453 İstanbul Otomat",
-    vergiNo: "1234567890",
-    yetkiBitisTarihi: "31.12.2026",
-  },
-  {
-    id: "2",
-    firmaAdi: "Örnek Sanayi Limited Şirketi",
-    vergiNo: "2345678901",
-    yetkiBitisTarihi: "15.08.2027",
-  },
-  {
-    id: "3",
-    firmaAdi: "Yıldız Makine A.Ş.",
-    vergiNo: "3456789012",
-    yetkiBitisTarihi: "20.09.2026",
-  },
-  {
-    id: "4",
-    firmaAdi: "Anadolu Tekstil Ltd. Şti.",
-    vergiNo: "4567890123",
-    yetkiBitisTarihi: "10.03.2028",
-  },
-];
+type CompanyApiItem = {
+  id: number;
+  externalCompanyId: number;
+  name: string;
+  taxNumber: string;
+  processStatus: string | null;
+  isActive: boolean;
+  authorizationEndDate: string | null;
+  documentCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type CompanyListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: CompanyApiItem[];
+    totalCount: number;
+  };
+};
+
+const PAGE_SIZE = 20;
 
 type StatusFilter = "all" | "active" | "expiring" | "expired";
 
@@ -58,9 +57,12 @@ const statusOptions: { key: StatusFilter; label: string }[] = [
   { key: "expired", label: "Süresi Dolmuş" },
 ];
 
-function getFirmaStatus(dateStr: string): Exclude<StatusFilter, "all"> {
-  const [day, month, year] = dateStr.split(".").map(Number);
-  const end = new Date(year, month - 1, day);
+function getFirmaStatus(
+  dateStr: string | null,
+): Exclude<StatusFilter, "all"> | null {
+  if (!dateStr) return null;
+
+  const end = new Date(dateStr);
   const today = new Date();
 
   today.setHours(0, 0, 0, 0);
@@ -72,10 +74,22 @@ function getFirmaStatus(dateStr: string): Exclude<StatusFilter, "all"> {
 
   if (remainingDays < 0) return "expired";
   if (remainingDays <= 180) return "expiring";
+
   return "active";
 }
 
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "-";
+
+  return new Intl.DateTimeFormat("tr-TR").format(new Date(dateStr));
+}
+
 export function CompaniesScreen() {
+  const [firmalar, setFirmalar] = useState<Firma[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [openFirmalar, setOpenFirmalar] = useState<Firma[]>([]);
   const [activeFirmaId, setActiveFirmaId] = useState<string | null>(null);
 
@@ -85,9 +99,7 @@ export function CompaniesScreen() {
   // Belge sekmeleri: firma sekmeleriyle aynı desen — birden fazla belge
   // aynı anda açık kalabilir, aralarında geçiş yapılabilir, tek tek kapatılabilir.
   const [openDocumentIds, setOpenDocumentIds] = useState<string[]>([]);
-  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(
-    null,
-  );
+  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
 
   // Arama + filtre
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,6 +109,50 @@ export function CompaniesScreen() {
 
   const detailRef = useRef<HTMLDivElement>(null);
   const documentDetailRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function loadCompanies() {
+      setIsLoading(true);
+      setLoadError("");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+
+        if (searchQuery.trim()) {
+          params.set("search", searchQuery.trim());
+        }
+
+        const response = await apiFetch<CompanyListResponse>(
+          `/companies?${params.toString()}`,
+        );
+
+        const mappedFirmalar: Firma[] = response.data.items.map((company) => ({
+          id: String(company.id),
+          firmaAdi: company.name,
+          vergiNo: company.taxNumber,
+          yetkiBitisTarihi: company.authorizationEndDate,
+          isActive: company.isActive,
+          documentCount: company.documentCount,
+        }));
+
+        setFirmalar(mappedFirmalar);
+        setTotalCount(response.data.totalCount);
+      } catch (error) {
+        setLoadError(
+          error instanceof Error ? error.message : "Firmalar yüklenemedi.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    const timer = window.setTimeout(loadCompanies, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [page, searchQuery]);
 
   useEffect(() => {
     if (activeFirma) {
@@ -139,21 +195,13 @@ export function CompaniesScreen() {
   }, [isFilterOpen]);
 
   const filteredFirmalar = useMemo(() => {
-    const query = searchQuery.trim().toLocaleLowerCase("tr-TR");
-
     return firmalar.filter((firma) => {
-      const matchesQuery =
-        query === "" ||
-        firma.firmaAdi.toLocaleLowerCase("tr-TR").includes(query) ||
-        firma.vergiNo.includes(query);
-
-      const matchesStatus =
+      return (
         statusFilter === "all" ||
-        getFirmaStatus(firma.yetkiBitisTarihi) === statusFilter;
-
-      return matchesQuery && matchesStatus;
+        getFirmaStatus(firma.yetkiBitisTarihi) === statusFilter
+      );
     });
-  }, [searchQuery, statusFilter]);
+  }, [firmalar, statusFilter]);
 
   function resetDocumentTabs() {
     setOpenDocumentIds([]);
@@ -206,6 +254,12 @@ export function CompaniesScreen() {
     }
   }
 
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const firstRecord = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+
+  const lastRecord = Math.min(page * PAGE_SIZE, totalCount);
+
   return (
     <div className="space-y-8 pb-8">
       {/* BAŞLIK */}
@@ -237,14 +291,20 @@ export function CompaniesScreen() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setPage(1);
+              }}
               placeholder="Firma adı, TC veya vergi no ile ara..."
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
             />
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  setPage(1);
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
                 aria-label="Aramayı temizle"
               >
@@ -312,13 +372,34 @@ export function CompaniesScreen() {
               <tr>
                 <th className="px-6 py-3.5">Firma Adı</th>
                 <th className="px-6 py-3.5">Vergi No</th>
+                <th className="px-6 py-3.5">Yetki Bitiş</th>
                 <th className="px-6 py-3.5 text-right">İşlemler</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredFirmalar.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-10 text-center">
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-red-600" />
+                      <p className="text-sm font-medium text-slate-500">
+                        Firmalar yükleniyor...
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <p className="text-sm font-semibold text-red-700">
+                      Firmalar yüklenemedi
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                  </td>
+                </tr>
+              ) : filteredFirmalar.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-10 text-center">
                     <p className="text-sm font-semibold text-slate-700">
                       Sonuç bulunamadı
                     </p>
@@ -330,6 +411,7 @@ export function CompaniesScreen() {
               ) : (
                 filteredFirmalar.map((firma) => {
                   const isSelected = activeFirma?.id === firma.id;
+
                   return (
                     <tr
                       key={firma.id}
@@ -345,6 +427,10 @@ export function CompaniesScreen() {
 
                       <td className="px-6 py-4 font-mono text-xs font-medium text-slate-600">
                         {firma.vergiNo}
+                      </td>
+
+                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                        {formatDate(firma.yetkiBitisTarihi)}
                       </td>
 
                       <td className="px-6 py-4">
@@ -381,34 +467,38 @@ export function CompaniesScreen() {
         </div>
 
         {/* SAYFALAMA */}
+        {/* SAYFALAMA */}
         <div className="flex flex-col gap-3 border-t border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between bg-slate-50/30">
           <p className="text-xs text-slate-500 font-medium">
             <span className="font-bold text-slate-700">
-              1-{filteredFirmalar.length}
+              {firstRecord}-{lastRecord}
             </span>{" "}
             arası, toplam{" "}
-            <span className="font-bold text-slate-700">
-              {filteredFirmalar.length}
-            </span>{" "}
-            kayıt
+            <span className="font-bold text-slate-700">{totalCount}</span> kayıt
           </p>
+
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              disabled
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 disabled:opacity-50"
+              disabled={page <= 1 || isLoading}
+              onClick={() => setPage((current) => current - 1)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Önceki
             </button>
+
             <button
               type="button"
               className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-red-600/20"
             >
-              1
+              {page} / {totalPages}
             </button>
+
             <button
               type="button"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              disabled={page >= totalPages || isLoading}
+              onClick={() => setPage((current) => current + 1)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Sonraki
             </button>

@@ -5,7 +5,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { loginWithMockData } from "@/lib/mock-auth";
+import { login } from "@/lib/mock-auth";
 import { roleToRoutePrefix } from "@/lib/role-route";
 
 export default function LoginPage() {
@@ -17,20 +17,35 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+
     setError("");
     setIsLoading(true);
 
-    const user = loginWithMockData(email, password);
+    try {
+      const user = await login(email, password);
 
-    if (!user) {
-      setError("E-posta adresi veya şifre hatalı.");
+      if (user.role === "ADMIN") {
+        router.push("/dashboard");
+        return;
+      }
+
+      if (user.role === "COMPANY") {
+        router.push("/documents");
+        return;
+      }
+
+      setError("Kullanıcı rolü tanımlı değil.");
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Giriş sırasında bir hata oluştu.",
+      );
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    router.push(user.role === "COMPANY" ? "/documents" : "/dashboard");
   }
   return (
     <main className="flex min-h-screen bg-[#F1F5F9]">
@@ -188,32 +203,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-          {/* Demo bilgi kutusu */}
-          <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Demo Hesaplar
-            </p>
-            <div className="mt-3 space-y-2 text-xs text-slate-600">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-700">Yönetici</span>
-                <code className="rounded bg-white px-2 py-0.5 text-slate-800 border border-slate-200">
-                  admin@akkas.com
-                </code>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-700">Firma</span>
-                <code className="rounded bg-white px-2 py-0.5 text-slate-800 border border-slate-200">
-                  firma@ornek.com
-                </code>
-              </div>
-              <div className="flex items-center justify-between border-t border-slate-200 pt-2">
-                <span className="font-medium text-slate-700">Şifre</span>
-                <code className="rounded bg-white px-2 py-0.5 text-slate-800 border border-slate-200">
-                  123456
-                </code>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
     </main>
