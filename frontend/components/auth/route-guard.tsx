@@ -4,10 +4,12 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionUser, type UserRole } from "@/lib/mock-auth";
+import { roleToRoutePrefix } from "@/lib/role-route";
 
 interface RouteGuardProps {
   children: ReactNode;
-  allowedRole: UserRole;
+  // Tek bir rol ya da rol dizisi kabul eder. Belirtilmezse herkes girebilir.
+  allowedRole?: UserRole | UserRole[];
 }
 
 export default function RouteGuard({ children, allowedRole }: RouteGuardProps) {
@@ -22,11 +24,16 @@ export default function RouteGuard({ children, allowedRole }: RouteGuardProps) {
       return;
     }
 
-    if (user.role !== allowedRole) {
-      router.replace(`/${user.role}/dashboard`);
-      return;
+    if (allowedRole) {
+      const allowedRoles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
+
+      if (!allowedRoles.includes(user.role)) {
+        router.replace(`/${roleToRoutePrefix(user.role)}/dashboard`);
+        return;
+      }
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsChecking(false);
   }, [allowedRole, router]);
 

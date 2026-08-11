@@ -174,61 +174,6 @@ export default function CompanyDashboardPage() {
           </div>
         </div>
       </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Belgeyle İlgili Son İşlemler
-            </h2>
-            <p className="text-sm text-slate-500">
-              {document.number} numaralı belge
-            </p>
-          </div>
-
-          <Link
-            href={`/company/documents/${document.id}`}
-            className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-          >
-            Belgeyi Görüntüle
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-left">
-            <thead>
-              <tr className="border-b border-slate-200 text-sm text-slate-500">
-                <th className="px-4 py-3 font-medium">Yapılan İşlem</th>
-                <th className="px-4 py-3 font-medium">İşlem Tarihi</th>
-                <th className="px-4 py-3 font-medium">Durum</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {document.transactions.map((transaction) => (
-                <tr
-                  key={transaction.id}
-                  className="border-b border-slate-100 last:border-0"
-                >
-                  <td className="px-4 py-4 font-medium text-slate-900">
-                    {transaction.title}
-                  </td>
-
-                  <td className="px-4 py-4 text-sm text-slate-600">
-                    {transaction.date}
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      {transaction.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   );
 }

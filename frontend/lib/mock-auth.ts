@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "company";
+export type UserRole = "ADMIN" | "COMPANY";
 
 export interface MockUser {
   id: number;
@@ -7,6 +7,11 @@ export interface MockUser {
   password: string;
   role: UserRole;
   companyName?: string;
+  // Bu kullanıcının erişebileceği firma id'leri (companies-screen.tsx'teki
+  // `firmalar` dizisindeki `id` alanıyla eşleşir). ADMIN için gerekmez,
+  // çünkü admin zaten tüm firmaları görür. COMPANY rolündeki kullanıcı
+  // sadece burada listelenen firmaları görebilir.
+  companyIds?: string[];
 }
 
 export interface SessionUser {
@@ -15,6 +20,7 @@ export interface SessionUser {
   email: string;
   role: UserRole;
   companyName?: string;
+  companyIds?: string[];
 }
 
 const SESSION_KEY = "etuys-session";
@@ -25,16 +31,17 @@ export const mockUsers: MockUser[] = [
     name: "Erkan Akkaş",
     email: "admin@akkas.com",
     password: "123456",
-    role: "admin",
+    role: "ADMIN",
   },
   {
     id: 2,
     name: "1453 İstanbul Otomat",
     email: "firma@ornek.com",
     password: "123456",
-    role: "company",
+    role: "COMPANY",
     companyName:
       "1453 İstanbul Otomat İnşaat Otomotiv Sanayi ve Ticaret Limited Şirketi",
+    companyIds: ["1"],
   },
 ];
 
@@ -64,6 +71,7 @@ export function loginWithMockData(
     email: user.email,
     role: user.role,
     companyName: user.companyName,
+    companyIds: user.companyIds,
   };
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));

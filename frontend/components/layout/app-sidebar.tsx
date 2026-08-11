@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   Bell,
   Building2,
@@ -67,20 +68,14 @@ export function AppSidebar() {
   return (
     <aside className="hidden min-h-screen w-[230px] shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
       <div className="flex h-[76px] items-center border-b border-slate-100 px-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
-            <FileText className="h-5 w-5" />
-          </div>
-
-          <div>
-            <p className="text-base font-bold tracking-tight text-slate-900">
-              e-TUYS
-            </p>
-            <p className="text-[11px] font-medium text-blue-600">
-              Belge Takip Sistemi
-            </p>
-          </div>
-        </div>
+        <Image
+          src="/logos/etuys-logo.png"
+          alt="E-TUYS Logo"
+          width={190}
+          height={60}
+          priority
+          className="h-[55px] w-[190px] object-contain object-left"
+        />
       </div>
 
       <nav className="flex-1 space-y-1.5 px-3 py-5">
