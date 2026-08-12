@@ -33,7 +33,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
      <div className="flex flex-col items-center gap-3 px-5 py-6">
         <div className="relative h-36 w-52 shrink-0 overflow-hidden">
           <Image
-            src="/logos/etuys--logo.png"
+            src="/logos/protuys-logo.png"
             alt="E-TUYS logo"
             fill
             sizes="208px"

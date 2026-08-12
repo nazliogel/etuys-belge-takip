@@ -68,7 +68,7 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col items-center max-w-md text-center">
           <div className="relative rounded-[2.5rem] bg-white/10 p-10 backdrop-blur-xl border border-white/10 shadow-[0_8px_40px_0_rgba(0,0,0,0.3)] transition hover:bg-white/[0.12]">
             <Image
-              src="/logos/etuys--logo.png"
+              src="/logos/protuys-logo.png"
               alt="E-TUYS Belge Takip"
               width={300}
               height={85}
@@ -96,7 +96,7 @@ export default function LoginPage() {
           <div className="mb-8 lg:hidden flex justify-center">
             <div className="rounded-xl bg-slate-900 p-4 shadow-md">
               <Image
-                src="/logos/etuys--logo.png"
+                src="/logos/protuys-logo.png"
                 alt="E-TUYS Belge Takip"
                 width={180}
                 height={50}
