@@ -17,7 +17,9 @@ import {
   BarChart3,
   CheckCircle,
 } from "lucide-react";
-import { ChangeEvent, DragEvent, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILE_SIZE_LABEL = `${MAX_FILE_SIZE / (1024 * 1024)} MB`;
@@ -36,7 +38,13 @@ const EXPECTED_COLUMNS = [
   "İşlem Durumu",
 ];
 
-type ImportStatus = "WAITING_APPROVAL" | "COMPLETED";
+type ImportStatus =
+  | "UPLOADED"
+  | "PROCESSING"
+  | "WAITING_APPROVAL"
+  | "COMPLETED"
+  | "FAILED"
+  | "CANCELLED";
 
 type ImportRecord = {
   id: number;
@@ -50,31 +58,35 @@ type ImportRecord = {
   unchangedRows: number;
 };
 
-const recentImports: ImportRecord[] = [
-  {
-    id: 1,
-    fileName: "etuys_firma_belge_05_08_2026.xlsx",
-    date: "5 Ağustos 2026, 15:42",
-    totalRows: 1210,
-    newRows: 24,
-    changedRows: 18,
-    invalidRows: 3,
-    status: "WAITING_APPROVAL",
-    unchangedRows: 1165,
-  },
-  {
-    id: 2,
-    fileName: "etuys_firma_belge_29_07_2026.xlsx",
-    date: "29 Temmuz 2026, 10:18",
-    totalRows: 1186,
-    newRows: 31,
-    changedRows: 12,
-    invalidRows: 0,
-    status: "COMPLETED",
-    unchangedRows: 1165,
-  },
-];
+type ImportBatchApi = {
+  id: number;
+  fileName: string;
+  status: ImportStatus;
+  totalRowCount: number;
+  invalidRowCount: number;
+  newRowCount: number;
+  changedRowCount: number;
+  unchangedRowCount: number;
+  uploadedAt: string;
+};
 
+type ImportListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ImportBatchApi[];
+    totalCount: number;
+  };
+};
+
+type ImportActionResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    status?: ImportStatus;
+  };
+};
 function formatFileSize(size: number) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
@@ -83,24 +95,56 @@ function formatFileSize(size: number) {
 
 function getStatusBadge(status: ImportStatus) {
   switch (status) {
+    case "UPLOADED":
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
+          Yüklendi
+        </span>
+      );
+
+    case "PROCESSING":
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+          <RefreshCw size={12} className="animate-spin" />
+          İşleniyor
+        </span>
+      );
+
     case "WAITING_APPROVAL":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/20">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
           Onay bekliyor
         </span>
       );
+
     case "COMPLETED":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Tamamlandı
+        </span>
+      );
+
+    case "FAILED":
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+          <AlertCircle size={12} />
+          Hatalı
+        </span>
+      );
+
+    case "CANCELLED":
+      return (
+        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+          İptal edildi
         </span>
       );
   }
 }
 
 export function ExcelImportScreen() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
@@ -109,9 +153,51 @@ export function ExcelImportScreen() {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [recentImports, setRecentImports] = useState<ImportRecord[]>([]);
+  const [isLoadingImports, setIsLoadingImports] = useState(true);
+  async function loadImports() {
+    try {
+      setIsLoadingImports(true);
+
+      const response = await apiFetch<ImportListResponse>(
+        "/imports?page=1&limit=50",
+      );
+
+      const mappedImports: ImportRecord[] = response.data.items.map((item) => ({
+        id: item.id,
+        fileName: item.fileName,
+        date: new Date(item.uploadedAt).toLocaleString("tr-TR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        totalRows: item.totalRowCount,
+        newRows: item.newRowCount,
+        changedRows: item.changedRowCount,
+        invalidRows: item.invalidRowCount,
+        unchangedRows: item.unchangedRowCount,
+        status: item.status,
+      }));
+
+      setRecentImports(mappedImports);
+    } catch (error) {
+      setFileError(
+        error instanceof Error
+          ? error.message
+          : "Karşılaştırma geçmişi alınamadı.",
+      );
+    } finally {
+      setIsLoadingImports(false);
+    }
+  }
+  useEffect(() => {
+    void loadImports();
+  }, []);
 
   const waitingApprovalCount = recentImports.filter(
-    (i) => i.status === "WAITING_APPROVAL"
+    (i) => i.status === "WAITING_APPROVAL",
   ).length;
 
   function validateAndSelectFile(file?: File) {
@@ -182,31 +268,62 @@ export function ExcelImportScreen() {
   }
 
   function handleViewReport(importId: number) {
-    console.info("Karşılaştırma raporu tetiklendi.", importId);
-  }
+  router.push(`/excel-import/${importId}`);
+}
 
   async function handleUpload() {
     if (!selectedFile || isUploading) return;
 
     setIsUploading(true);
-    setUploadProgress(15);
+    setUploadProgress(10);
     setFileError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setUploadProgress(45);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setUploadProgress(75);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const formData = new FormData();
+
+      formData.append("file", selectedFile);
+      formData.append("uploadedById", "1");
+      formData.append("isFullSnapshot", "true");
+
+      // 1 - Dosyayı yükle
+      const uploadResponse = await apiFetch<ImportActionResponse>(
+        "/imports/upload",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const importId = uploadResponse.data.id;
+
+      setUploadProgress(35);
+
+      // 2 - Excel satırlarını işle
+      await apiFetch(`/imports/${importId}/process`, {
+        method: "POST",
+      });
+
+      setUploadProgress(65);
+
+      // 3 - Veritabanıyla karşılaştır
+      await apiFetch(`/imports/${importId}/compare`, {
+        method: "POST",
+      });
+
+      setUploadProgress(90);
+
+      // 4 - Listeyi tekrar getir
+      await loadImports();
+
       setUploadProgress(100);
-      await new Promise((resolve) => setTimeout(resolve, 300));
+
       setSelectedFile(null);
       setUploadProgress(0);
     } catch (error) {
       setFileError(
         error instanceof Error
           ? error.message
-          : "Dosya yüklenirken beklenmeyen bir hata oluştu."
+          : "Excel dosyası işlenirken beklenmeyen bir hata oluştu.",
       );
     } finally {
       setIsUploading(false);
@@ -223,22 +340,22 @@ export function ExcelImportScreen() {
               Excel Karşılaştırma
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Güncel Excel verilerinizi veritabanı kayıtları ile anlık olarak karşılaştırın.
+              Güncel Excel verilerinizi veritabanı kayıtları ile anlık olarak
+              karşılaştırın.
             </p>
           </div>
-
         </div>
-
-       
       </div>
-
 
       {/* DOSYA YÜKLEME ALANI */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
         <div className="mb-4">
-          <h2 className="text-base font-bold text-slate-900">Yeni Dosya Yükle</h2>
+          <h2 className="text-base font-bold text-slate-900">
+            Yeni Dosya Yükle
+          </h2>
           <p className="text-xs text-slate-500">
-            Yüklemek istediğiniz Excel dosyasını seçin veya ilgili alana sürükleyin.
+            Yüklemek istediğiniz Excel dosyasını seçin veya ilgili alana
+            sürükleyin.
           </p>
         </div>
 
@@ -253,10 +370,10 @@ export function ExcelImportScreen() {
             isDragging
               ? "border-red-500 bg-red-50/50 scale-[1.005]"
               : fileError
-              ? "border-rose-300 bg-rose-50/30 hover:bg-rose-50/50"
-              : selectedFile
-              ? "border-red-200 bg-slate-50/30 cursor-default"
-              : "border-slate-200 bg-slate-50/50 hover:border-red-300 hover:bg-red-50/10"
+                ? "border-rose-300 bg-rose-50/30 hover:bg-rose-50/50"
+                : selectedFile
+                  ? "border-red-200 bg-slate-50/30 cursor-default"
+                  : "border-slate-200 bg-slate-50/50 hover:border-red-300 hover:bg-red-50/10"
           }`}
         >
           <input
@@ -284,7 +401,10 @@ export function ExcelImportScreen() {
               </h3>
 
               <p className="mt-1 text-xs text-slate-500">
-                veya bilgisayarınızdan göz atmak için <span className="font-semibold text-red-600 underline">tıklayın</span>
+                veya bilgisayarınızdan göz atmak için{" "}
+                <span className="font-semibold text-red-600 underline">
+                  tıklayın
+                </span>
               </p>
 
               <span className="mt-4 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-500">
@@ -293,7 +413,10 @@ export function ExcelImportScreen() {
             </div>
           ) : (
             /* SEÇİLEN DOSYA KARTI */
-            <div className="w-full max-w-lg rounded-xl border border-red-100 bg-white p-4 shadow-xs" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="w-full max-w-lg rounded-xl border border-red-100 bg-white p-4 shadow-xs"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex items-center gap-3.5">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
                   <FileSpreadsheet size={24} />
@@ -327,7 +450,9 @@ export function ExcelImportScreen() {
                       <RefreshCw size={12} className="animate-spin" />
                       Satırlar Analiz Ediliyor...
                     </span>
-                    <span className="font-bold text-slate-700">{uploadProgress}%</span>
+                    <span className="font-bold text-slate-700">
+                      {uploadProgress}%
+                    </span>
                   </div>
 
                   <div
@@ -535,7 +660,9 @@ export function ExcelImportScreen() {
                         <p className="truncate text-xs font-bold text-slate-800">
                           {item.fileName}
                         </p>
-                        <p className="text-[11px] text-slate-400">{item.date}</p>
+                        <p className="text-[11px] text-slate-400">
+                          {item.date}
+                        </p>
                       </div>
                     </div>
                     {getStatusBadge(item.status)}
@@ -544,19 +671,27 @@ export function ExcelImportScreen() {
                   <div className="grid grid-cols-4 gap-2 text-center text-xs">
                     <div className="rounded-xl bg-slate-50 p-2">
                       <p className="text-[10px] text-slate-400">Toplam</p>
-                      <p className="font-bold text-slate-700">{item.totalRows}</p>
+                      <p className="font-bold text-slate-700">
+                        {item.totalRows}
+                      </p>
                     </div>
                     <div className="rounded-xl bg-emerald-50/60 p-2">
                       <p className="text-[10px] text-emerald-600">Yeni</p>
-                      <p className="font-bold text-emerald-700">+{item.newRows}</p>
+                      <p className="font-bold text-emerald-700">
+                        +{item.newRows}
+                      </p>
                     </div>
                     <div className="rounded-xl bg-amber-50/60 p-2">
                       <p className="text-[10px] text-amber-600">Değişen</p>
-                      <p className="font-bold text-amber-700">{item.changedRows}</p>
+                      <p className="font-bold text-amber-700">
+                        {item.changedRows}
+                      </p>
                     </div>
                     <div className="rounded-xl bg-rose-50/60 p-2">
                       <p className="text-[10px] text-rose-600">Hatalı</p>
-                      <p className="font-bold text-rose-700">{item.invalidRows}</p>
+                      <p className="font-bold text-rose-700">
+                        {item.invalidRows}
+                      </p>
                     </div>
                   </div>
 
@@ -587,7 +722,9 @@ export function ExcelImportScreen() {
       <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
         <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-sky-600" />
         <p className="text-xs leading-5 text-sky-900 font-medium">
-          <strong>Güvenli Aktarım Protokolü:</strong> Excel yükleme işlemi veritabanını doğrudan güncellemez. Tüm veriler öncelikle izole bir alanda analiz edilir ve onayınızın ardından veritabanına aktarılır.
+          <strong>Güvenli Aktarım Protokolü:</strong> Excel yükleme işlemi
+          veritabanını doğrudan güncellemez. Tüm veriler öncelikle izole bir
+          alanda analiz edilir ve onayınızın ardından veritabanına aktarılır.
         </p>
       </div>
     </div>

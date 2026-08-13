@@ -19,6 +19,7 @@ export type AuthUser = {
   lastName: string;
   email: string;
   role: UserRoleValue;
+  companyId: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

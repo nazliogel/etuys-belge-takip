@@ -73,9 +73,15 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     };
   }
 
-  const effectiveEndDate = document.extensionDate ?? document.documentEndDate;
+  /*
+   * Kalan gün hesabı yalnızca Belge Bitiş Tarihi
+   * üzerinden yapılır.
+   *
+   * Süre Uzatım Tarihi bu hesaplamada kullanılmaz.
+   */
+  const documentEndDate = document.documentEndDate;
 
-  if (!effectiveEndDate) {
+  if (!documentEndDate) {
     return {
       label: "Aktif",
       description: "Belge aktif durumda.",
@@ -84,7 +90,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     };
   }
 
-  const end = new Date(effectiveEndDate);
+  const end = new Date(documentEndDate);
   const today = new Date();
 
   today.setHours(0, 0, 0, 0);
@@ -97,7 +103,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
   if (remainingDays < 0) {
     return {
       label: "Süresi Dolmuş",
-      description: "Belgenin geçerli bitiş tarihi geçmiştir.",
+      description: "Belge bitiş tarihi geçmiştir.",
       dot: "bg-red-500",
       className: "bg-red-50 text-red-700",
     };

@@ -13,6 +13,7 @@ import {
   importBatchIdSchema,
   importBatchListSchema,
   importBatchUploadSchema,
+  importChangeDecisionSchema,
 } from "../schemas/import.schema.js";
 
 export const importRouter = Router();
@@ -40,10 +41,13 @@ importRouter.post(
   compareController.compare,
 );
 
-importRouter.post(
-  "/:id/approve",
-  validate(importBatchIdSchema),
-  approvalController.approve,
+/*
+ * Tek değişikliği onayla / reddet
+ */
+importRouter.patch(
+  "/:id/changes/:changeId",
+  validate(importChangeDecisionSchema),
+  approvalController.reviewChange,
 );
 
 importRouter.get(

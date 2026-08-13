@@ -10,6 +10,7 @@ export const serializeAuthUser = (user: User): AuthUser => {
     lastName: user.lastName,
     email: user.email,
     role: fromPrismaUserRole(user.role),
+    companyId: user.companyId,
     isActive: user.isActive,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),

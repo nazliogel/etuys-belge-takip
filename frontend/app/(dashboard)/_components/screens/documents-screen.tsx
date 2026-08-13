@@ -1,15 +1,16 @@
 "use client";
 
 import {
+  CalendarDays,
+  Check,
   ChevronRight,
   FileCheck2,
   FileText,
   Search,
   ShieldCheck,
-  Check,
-  CalendarDays, // 1. EKSİK İKON EKLENDİ
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+
 import { apiFetch } from "@/lib/api";
 
 type ApiDocument = {
@@ -35,6 +36,15 @@ type CompanyDetailResponse = {
   };
 };
 
+type DocumentListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiDocument[];
+    totalCount: number;
+  };
+};
+
 interface DocumentsScreenProps {
   companyId?: string;
   selectedDocumentId?: string | null;
@@ -44,7 +54,13 @@ interface DocumentsScreenProps {
 function formatDate(date: string | null): string {
   if (!date) return "-";
 
-  return new Intl.DateTimeFormat("tr-TR").format(new Date(date));
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("tr-TR").format(parsedDate);
 }
 
 function getDocumentStatus(document: ApiDocument) {
@@ -52,7 +68,11 @@ function getDocumentStatus(document: ApiDocument) {
     return "INACTIVE";
   }
 
-  const endDate = document.extensionDate ?? document.documentEndDate;
+  /*
+   * Belge durumu yalnızca Belge Bitiş Tarihine göre hesaplanır.
+   * Süre Uzatım Tarihi hesaba dahil edilmez.
+   */
+  const endDate = document.documentEndDate;
 
   if (!endDate) {
     return "ACTIVE";
@@ -73,6 +93,7 @@ export function DocumentsScreen({
   onSelectDocument,
 }: DocumentsScreenProps) {
   const [documents, setDocuments] = useState<ApiDocument[]>([]);
+
   const [authorizationEndDate, setAuthorizationEndDate] = useState<
     string | null
   >(null);
@@ -83,23 +104,32 @@ export function DocumentsScreen({
 
   useEffect(() => {
     async function loadDocuments() {
-      if (!companyId) {
-        setDocuments([]);
-        setIsLoading(false);
-        return;
-      }
-
       setIsLoading(true);
       setLoadError("");
 
       try {
-        const response = await apiFetch<CompanyDetailResponse>(
-          `/companies/${companyId}`,
-        );
+        // ADMIN tarafından firma seçilmişse
+        if (companyId) {
+          const response = await apiFetch<CompanyDetailResponse>(
+            `/companies/${companyId}`,
+          );
 
-        setDocuments(response.data.documents);
-        setAuthorizationEndDate(response.data.authorizationEndDate);
+          setDocuments(response.data.documents);
+          setAuthorizationEndDate(response.data.authorizationEndDate);
+
+          return;
+        }
+
+        // COMPANY kullanıcısıysa backend token üzerinden
+        // kullanıcının firmasını kendisi bulur.
+        const response = await apiFetch<DocumentListResponse>("/documents");
+
+        setDocuments(response.data.items);
+        setAuthorizationEndDate(null);
       } catch (error) {
+        setDocuments([]);
+        setAuthorizationEndDate(null);
+
         setLoadError(
           error instanceof Error ? error.message : "Belgeler yüklenemedi.",
         );
@@ -108,7 +138,7 @@ export function DocumentsScreen({
       }
     }
 
-    loadDocuments();
+    void loadDocuments();
   }, [companyId]);
 
   const filteredDocuments = useMemo(() => {
@@ -142,14 +172,16 @@ export function DocumentsScreen({
       {/* BAŞLIK */}
       <section className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <FileText size={20} />
           </div>
+
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
               Belgelerim
             </h1>
-            <p className="mt-0.5 text-xs text-slate-500 font-medium">
+
+            <p className="mt-0.5 text-xs font-medium text-slate-500">
               Firmanıza ait tüm teşvik belgelerini ve güncel durumlarını
               görüntüleyin.
             </p>
@@ -167,6 +199,7 @@ export function DocumentsScreen({
           accentColor="border-l-slate-400"
           iconBg="bg-slate-100 text-slate-700 border border-slate-200/60"
         />
+
         <StatCard
           title="Aktif Belge"
           value={String(stats.aktif)}
@@ -175,6 +208,7 @@ export function DocumentsScreen({
           accentColor="border-l-emerald-500"
           iconBg="bg-emerald-50 text-emerald-600 border border-emerald-100"
         />
+
         <StatCard
           title="Süresi Dolmuş"
           value={String(stats.suresiDolmus)}
@@ -183,6 +217,7 @@ export function DocumentsScreen({
           accentColor="border-l-red-500"
           iconBg="bg-red-50 text-red-600 border border-red-100"
         />
+
         <StatCard
           title="Yetki Bitiş Tarihi"
           value={stats.bitisTarihi}
@@ -194,11 +229,12 @@ export function DocumentsScreen({
       </section>
 
       {/* BELGE LİSTESİ */}
-      <section className="rounded-2xl bg-white shadow-sm border border-slate-200/80 overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center lg:justify-between bg-slate-50/40">
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/40 p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-sm font-bold text-slate-900">Belge Listesi</h2>
-            <p className="text-xs text-slate-500 font-medium">
+
+            <p className="text-xs font-medium text-slate-500">
               Belge numarası, tarih ve durum bilgileri
             </p>
           </div>
@@ -208,19 +244,20 @@ export function DocumentsScreen({
               size={17}
               className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
+
             <input
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Belge numarası ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/60">
+            <thead className="border-b border-slate-200/60 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-3.5">Belge No</th>
                 <th className="px-6 py-3.5">Belge Başlangıç</th>
@@ -231,6 +268,7 @@ export function DocumentsScreen({
                 <th className="px-6 py-3.5 text-right">Detay</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
@@ -246,6 +284,7 @@ export function DocumentsScreen({
                     <p className="text-sm font-semibold text-red-700">
                       Belgeler yüklenemedi
                     </p>
+
                     <p className="mt-1 text-xs text-slate-500">{loadError}</p>
                   </td>
                 </tr>
@@ -273,18 +312,19 @@ export function DocumentsScreen({
                           <div
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
-                                ? "bg-red-600 text-white border-red-600"
-                                : "bg-slate-50 border-slate-200 text-slate-600"
+                                ? "border-red-600 bg-red-600 text-white"
+                                : "border-slate-200 bg-slate-50 text-slate-600"
                             }`}
                           >
                             <FileText size={16} />
                           </div>
 
                           <div>
-                            <p className="font-semibold text-slate-900 text-sm">
+                            <p className="text-sm font-semibold text-slate-900">
                               {doc.documentNumber ?? "-"}
                             </p>
-                            <p className="text-[11px] font-mono text-slate-400">
+
+                            <p className="font-mono text-[11px] text-slate-400">
                               ID: #{doc.id}
                             </p>
                           </div>
@@ -304,7 +344,7 @@ export function DocumentsScreen({
                       </td>
 
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-md bg-slate-100 border border-slate-200/60 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                           {doc.supportClass ?? "-"}
                         </span>
                       </td>
@@ -352,7 +392,9 @@ export function DocumentsScreen({
   );
 }
 
-// --- Alt bileşenler ---
+/* =====================================================
+   ALT BİLEŞENLER
+===================================================== */
 
 interface StatCardProps {
   title: string;
@@ -373,18 +415,21 @@ function StatCard({
 }: StatCardProps) {
   return (
     <article
-      className={`rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 border-l-4 ${accentColor}`}
+      className={`rounded-2xl border border-l-4 border-slate-200/80 bg-white p-5 shadow-sm ${accentColor}`}
     >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold text-slate-500">{title}</p>
+
           <p className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900">
             {value}
           </p>
+
           <p className="mt-1 text-[11px] font-medium text-slate-400">
             {description}
           </p>
         </div>
+
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}
         >
@@ -398,7 +443,13 @@ function StatCard({
 function StatusBadge({ status }: { status: string }) {
   const config: Record<
     string,
-    { label: string; dot: string; text: string; bg: string; border: string }
+    {
+      label: string;
+      dot: string;
+      text: string;
+      bg: string;
+      border: string;
+    }
   > = {
     ACTIVE: {
       label: "Aktif",
@@ -407,6 +458,7 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-emerald-50",
       border: "border-emerald-200/60",
     },
+
     EXPIRED: {
       label: "Süresi Dolmuş",
       dot: "bg-red-500",
@@ -414,6 +466,7 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-red-50",
       border: "border-red-200/60",
     },
+
     CANCELLED: {
       label: "İptal",
       dot: "bg-slate-400",
@@ -421,6 +474,7 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-slate-100",
       border: "border-slate-200",
     },
+
     INACTIVE: {
       label: "Pasif",
       dot: "bg-slate-400",

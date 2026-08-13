@@ -6,11 +6,21 @@ import type { ApiResponse } from "../types/api-response.js";
 import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
+type ReviewChangeParams = {
+  id: string;
+  changeId: string;
+};
+
+type ReviewChangeBody = {
+  status: "APPROVED" | "REJECTED";
+  rejectedReason?: string | null;
+};
+
 export class ApprovalController {
   constructor(private readonly approvalService: ApprovalService) {}
 
-  approve = async (
-    req: Request<{ id: string }>,
+  reviewChange = async (
+    req: Request<ReviewChangeParams, unknown, ReviewChangeBody>,
     res: Response<ApiResponse<unknown>>,
   ) => {
     if (!req.user) {
@@ -20,14 +30,20 @@ export class ApprovalController {
       });
     }
 
-    const result = await this.approvalService.approve(
-      Number(req.params.id),
-      req.user.id,
-    );
+    const result = await this.approvalService.reviewChange({
+      importBatchId: Number(req.params.id),
+      changeId: Number(req.params.changeId),
+      reviewedById: req.user.id,
+      status: req.body.status,
+      rejectedReason: req.body.rejectedReason ?? null,
+    });
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
-      message: "Import approved successfully.",
+      message:
+        req.body.status === "APPROVED"
+          ? "Change approved successfully."
+          : "Change rejected successfully.",
       data: result,
     });
   };

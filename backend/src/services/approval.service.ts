@@ -2,8 +2,23 @@ import { prisma } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
+type ReviewChangeInput = {
+  importBatchId: number;
+  changeId: number;
+  reviewedById: number;
+  status: "APPROVED" | "REJECTED";
+  rejectedReason?: string | null;
+};
+
 export class ApprovalService {
-  async approve(importBatchId: number, reviewedById: number) {
+  async reviewChange(input: ReviewChangeInput) {
+    const { importBatchId, changeId, reviewedById, status, rejectedReason } =
+      input;
+
+    /* =====================================================
+       1. BATCH KONTROLÜ
+    ===================================================== */
+
     const batch = await prisma.importBatch.findUnique({
       where: {
         id: importBatchId,
@@ -18,180 +33,736 @@ export class ApprovalService {
     }
 
     if (batch.status !== "WAITING_APPROVAL") {
-      throw new AppError("Only imports waiting for approval can be approved.", {
+      throw new AppError("Only imports waiting for approval can be reviewed.", {
         statusCode: HTTP_STATUS.BAD_REQUEST,
         code: "IMPORT_NOT_WAITING_APPROVAL",
       });
     }
 
+    /* =====================================================
+       2. TRANSACTION
+    ===================================================== */
+
     return prisma.$transaction(
       async (tx) => {
-        const rows = await tx.importRow.findMany({
+        const change = await tx.importChange.findFirst({
           where: {
+            id: changeId,
             importBatchId,
-            status: {
-              in: ["NEW", "CHANGED", "UNCHANGED"],
-            },
           },
-          orderBy: {
-            rowNumber: "asc",
+          include: {
+            importRow: true,
           },
         });
 
-        const companyMap = new Map<number, number>();
-        const documentMap = new Map<number, number>();
+        if (!change) {
+          throw new AppError("Import change not found.", {
+            statusCode: HTTP_STATUS.NOT_FOUND,
+            code: "IMPORT_CHANGE_NOT_FOUND",
+          });
+        }
 
-        let processedRowCount = 0;
+        /* =================================================
+           3. DAHA ÖNCE KARAR VERİLMİŞ Mİ?
+        ================================================= */
 
-        for (const row of rows) {
-          if (row.externalCompanyId === null) {
-            continue;
+        if (change.status !== "PENDING") {
+          throw new AppError("This change has already been reviewed.", {
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            code: "IMPORT_CHANGE_ALREADY_REVIEWED",
+          });
+        }
+
+        const row = change.importRow;
+
+        /* =================================================
+           HELPER: DATE
+        ================================================= */
+
+        const parseDate = (value: string | null): Date | null => {
+          if (!value) {
+            return null;
           }
 
-          /*
-           * 1. COMPANY
-           *
-           * Aynı firma Excel'de birden fazla satırda bulunabilir.
-           * Önce map'e bakıyoruz.
-           */
-          let companyId = companyMap.get(row.externalCompanyId);
+          const date = new Date(value);
 
-          if (!companyId) {
-            const company = await tx.company.upsert({
+          if (Number.isNaN(date.getTime())) {
+            throw new AppError(`Invalid date value: ${value}`, {
+              statusCode: HTTP_STATUS.BAD_REQUEST,
+              code: "INVALID_DATE_VALUE",
+            });
+          }
+
+          return date;
+        };
+
+        /* =================================================
+           HELPER: BOOLEAN
+        ================================================= */
+
+        const parseBoolean = (value: string | null): boolean => {
+          if (!value) {
+            return false;
+          }
+
+          return value.toLowerCase() === "true" || value === "1";
+        };
+
+        /* =================================================
+           BAĞLANTI ID'LERİ
+        ================================================= */
+
+        let companyId = change.companyId ?? row?.companyId ?? null;
+
+        let documentId = change.documentId ?? row?.documentId ?? null;
+
+        let entityId: number | null = null;
+
+        /* =================================================
+           HELPER: COMPANY BUL
+        ================================================= */
+
+        const findCompany = async () => {
+          if (companyId) {
+            const company = await tx.company.findUnique({
               where: {
-                externalCompanyId: row.externalCompanyId,
-              },
-              create: {
-                externalCompanyId: row.externalCompanyId,
-                name: row.companyName ?? "",
-                taxNumber: row.taxNumber ?? "",
-                processStatus: row.processStatus,
-                isActive: true,
-              },
-              update: {
-                name: row.companyName ?? "",
-                taxNumber: row.taxNumber ?? "",
-                processStatus: row.processStatus,
-                isActive: true,
+                id: companyId,
               },
             });
 
-            companyId = company.id;
-
-            companyMap.set(row.externalCompanyId, company.id);
-          }
-
-          /*
-           * 2. COMPANY AUTHORIZATION
-           *
-           * Firma başına yalnızca bir authorization kaydı var.
-           */
-          await tx.companyAuthorization.upsert({
-            where: {
-              companyId,
-            },
-            create: {
-              companyId,
-              authorizationEndDate: row.authorizationEndDate,
-            },
-            update: {
-              authorizationEndDate: row.authorizationEndDate,
-            },
-          });
-
-          /*
-           * 3. INCENTIVE DOCUMENT
-           *
-           * Bir firmanın birden fazla belgesi olabilir.
-           */
-          let documentId: number | null = null;
-
-          if (row.externalDocumentId !== null) {
-            documentId = documentMap.get(row.externalDocumentId) ?? null;
-
-            if (!documentId) {
-              const document = await tx.incentiveDocument.upsert({
-                where: {
-                  externalDocumentId: row.externalDocumentId,
-                },
-                create: {
-                  companyId,
-                  externalDocumentId: row.externalDocumentId,
-                  documentNumber: row.documentNumber,
-                  documentStartDate: row.documentStartDate,
-                  documentEndDate: row.documentEndDate,
-                  extensionDate: row.extensionDate,
-                  supportClass: row.supportClass,
-                  isActive: true,
-                },
-                update: {
-                  companyId,
-                  documentNumber: row.documentNumber,
-                  documentStartDate: row.documentStartDate,
-                  documentEndDate: row.documentEndDate,
-                  extensionDate: row.extensionDate,
-                  supportClass: row.supportClass,
-                  isActive: true,
-                },
-              });
-
-              documentId = document.id;
-
-              documentMap.set(row.externalDocumentId, document.id);
+            if (company) {
+              return company;
             }
           }
 
-          /*
-           * 4. IMPORT ROW'U GERÇEK KAYITLARA BAĞLA
-           */
-          await tx.importRow.update({
+          if (!row?.externalCompanyId) {
+            throw new AppError("Company information could not be found.", {
+              statusCode: HTTP_STATUS.BAD_REQUEST,
+              code: "COMPANY_INFORMATION_MISSING",
+            });
+          }
+
+          const company = await tx.company.findUnique({
             where: {
-              id: row.id,
-            },
-            data: {
-              companyId,
-              documentId,
+              externalCompanyId: row.externalCompanyId,
             },
           });
 
-          processedRowCount += 1;
+          if (!company) {
+            throw new AppError(
+              "Company could not be found. Approve the new company record first.",
+              {
+                statusCode: HTTP_STATUS.BAD_REQUEST,
+                code: "COMPANY_NOT_FOUND",
+              },
+            );
+          }
+
+          companyId = company.id;
+
+          return company;
+        };
+
+        /* =================================================
+           HELPER: DOCUMENT BUL
+        ================================================= */
+
+        const findDocument = async () => {
+          if (documentId) {
+            const document = await tx.incentiveDocument.findUnique({
+              where: {
+                id: documentId,
+              },
+            });
+
+            if (document) {
+              return document;
+            }
+          }
+
+          if (!row?.externalDocumentId) {
+            throw new AppError("Document information could not be found.", {
+              statusCode: HTTP_STATUS.BAD_REQUEST,
+              code: "DOCUMENT_INFORMATION_MISSING",
+            });
+          }
+
+          const document = await tx.incentiveDocument.findUnique({
+            where: {
+              externalDocumentId: row.externalDocumentId,
+            },
+          });
+
+          if (!document) {
+            throw new AppError(
+              "Document could not be found. Approve the new document record first.",
+              {
+                statusCode: HTTP_STATUS.BAD_REQUEST,
+                code: "DOCUMENT_NOT_FOUND",
+              },
+            );
+          }
+
+          documentId = document.id;
+          companyId = document.companyId;
+
+          return document;
+        };
+
+        /* =================================================
+           4. REDDEDİLDİYSE CANLI DB'YE DOKUNMA
+        ================================================= */
+
+        if (status === "REJECTED") {
+          const reviewedChange = await tx.importChange.update({
+            where: {
+              id: change.id,
+            },
+            data: {
+              status: "REJECTED",
+              reviewedById,
+              reviewedAt: new Date(),
+              rejectedReason: rejectedReason ?? null,
+            },
+          });
+
+          const pendingCount = await tx.importChange.count({
+            where: {
+              importBatchId,
+              status: "PENDING",
+            },
+          });
+
+          const approvedCount = await tx.importChange.count({
+            where: {
+              importBatchId,
+              status: "APPROVED",
+            },
+          });
+
+          const rejectedCount = await tx.importChange.count({
+            where: {
+              importBatchId,
+              status: "REJECTED",
+            },
+          });
+
+          let batchStatus = batch.status;
+
+          /*
+           * Artık hiç PENDING değişiklik kalmadıysa
+           * batch tamamlanır.
+           */
+          if (pendingCount === 0) {
+            const now = new Date();
+
+            const completedBatch = await tx.importBatch.update({
+              where: {
+                id: importBatchId,
+              },
+              data: {
+                status: "COMPLETED",
+                reviewedById,
+                reviewedAt: now,
+                completedAt: now,
+              },
+            });
+
+            batchStatus = completedBatch.status;
+          }
+
+          return {
+            change: reviewedChange,
+            summary: {
+              pendingCount,
+              approvedCount,
+              rejectedCount,
+            },
+            batchStatus,
+          };
         }
 
-        /*
-         * 5. IMPORT CHANGE KAYITLARINI ONAYLA
-         */
-        await tx.importChange.updateMany({
+        /* =================================================
+           5. ONAYLANDI
+           
+           BURADAN İTİBAREN CANLI DB DEĞİŞİR.
+        ================================================= */
+
+        if (!row) {
+          /*
+           * "Yeni listede yok" gibi row'a bağlı olmayan
+           * özel değişiklikleri aşağıda ayrıca ele alıyoruz.
+           */
+          const isMissingSnapshot =
+            change.fieldName === "__missing_in_snapshot__" ||
+            change.fieldName === "__presence__";
+
+          if (!isMissingSnapshot) {
+            throw new AppError(
+              "Import row could not be found for this change.",
+              {
+                statusCode: HTTP_STATUS.BAD_REQUEST,
+                code: "IMPORT_ROW_NOT_FOUND",
+              },
+            );
+          }
+        }
+
+        /* =================================================
+           6. YENİ LİSTEDE YOK
+           
+           Proje kuralı:
+           kayıt silinmez,
+           pasife alınmaz,
+           canlı DB değiştirilmez.
+        ================================================= */
+
+        const isMissingSnapshot =
+          change.fieldName === "__missing_in_snapshot__" ||
+          change.fieldName === "__presence__";
+
+        if (!isMissingSnapshot) {
+          /* ===============================================
+             COMPANY
+          =============================================== */
+
+          if (change.entityType === "COMPANY") {
+            /*
+             * Yeni firma oluşturma.
+             */
+            if (
+              change.changeType === "CREATED" ||
+              change.fieldName === "__entity__"
+            ) {
+              if (!row?.externalCompanyId) {
+                throw new AppError("External company id is required.", {
+                  statusCode: HTTP_STATUS.BAD_REQUEST,
+                  code: "EXTERNAL_COMPANY_ID_REQUIRED",
+                });
+              }
+
+              let company = await tx.company.findUnique({
+                where: {
+                  externalCompanyId: row.externalCompanyId,
+                },
+              });
+
+              if (!company) {
+                company = await tx.company.create({
+                  data: {
+                    externalCompanyId: row.externalCompanyId,
+
+                    name: row.companyName ?? "",
+
+                    taxNumber: row.taxNumber ?? "",
+
+                    processStatus: row.processStatus,
+
+                    isActive: true,
+                  },
+                });
+              }
+
+              companyId = company.id;
+              entityId = company.id;
+
+              await tx.importRow.update({
+                where: {
+                  id: row.id,
+                },
+                data: {
+                  companyId: company.id,
+                },
+              });
+            } else {
+              /*
+               * Mevcut firmada tek alan değişikliği.
+               */
+              const company = await findCompany();
+
+              entityId = company.id;
+
+              if (change.fieldName === "name") {
+                await tx.company.update({
+                  where: {
+                    id: company.id,
+                  },
+                  data: {
+                    name: change.newValue ?? "",
+                  },
+                });
+              } else if (change.fieldName === "taxNumber") {
+                await tx.company.update({
+                  where: {
+                    id: company.id,
+                  },
+                  data: {
+                    taxNumber: change.newValue ?? "",
+                  },
+                });
+              } else if (change.fieldName === "processStatus") {
+                await tx.company.update({
+                  where: {
+                    id: company.id,
+                  },
+                  data: {
+                    processStatus: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "isActive") {
+                await tx.company.update({
+                  where: {
+                    id: company.id,
+                  },
+                  data: {
+                    isActive: parseBoolean(change.newValue),
+                  },
+                });
+              } else {
+                throw new AppError(
+                  `Unsupported company field: ${change.fieldName}`,
+                  {
+                    statusCode: HTTP_STATUS.BAD_REQUEST,
+                    code: "UNSUPPORTED_COMPANY_FIELD",
+                  },
+                );
+              }
+            }
+          } else if (change.entityType === "COMPANY_AUTHORIZATION") {
+
+          /* ===============================================
+             COMPANY AUTHORIZATION
+          =============================================== */
+            const company = await findCompany();
+
+            companyId = company.id;
+
+            /*
+             * Yeni authorization kaydı.
+             */
+            if (
+              change.changeType === "CREATED" ||
+              change.fieldName === "__entity__"
+            ) {
+              const authorization = await tx.companyAuthorization.upsert({
+                where: {
+                  companyId: company.id,
+                },
+                create: {
+                  companyId: company.id,
+                  authorizationEndDate: row?.authorizationEndDate ?? null,
+                },
+                update: {
+                  authorizationEndDate: row?.authorizationEndDate ?? null,
+                },
+              });
+
+              entityId = authorization.id;
+
+              if (row) {
+                await tx.importRow.update({
+                  where: {
+                    id: row.id,
+                  },
+                  data: {
+                    companyId: company.id,
+                  },
+                });
+              }
+            } else if (change.fieldName === "authorizationEndDate") {
+
+            /*
+             * Mevcut authorization'da
+             * tek alan değişikliği.
+             */
+              const authorization = await tx.companyAuthorization.upsert({
+                where: {
+                  companyId: company.id,
+                },
+                create: {
+                  companyId: company.id,
+                  authorizationEndDate: parseDate(change.newValue),
+                },
+                update: {
+                  authorizationEndDate: parseDate(change.newValue),
+                },
+              });
+
+              entityId = authorization.id;
+            } else {
+              throw new AppError(
+                `Unsupported company authorization field: ${change.fieldName}`,
+                {
+                  statusCode: HTTP_STATUS.BAD_REQUEST,
+                  code: "UNSUPPORTED_AUTHORIZATION_FIELD",
+                },
+              );
+            }
+          } else if (change.entityType === "INCENTIVE_DOCUMENT") {
+
+          /* ===============================================
+             INCENTIVE DOCUMENT
+          =============================================== */
+            /*
+             * Yeni belge.
+             */
+            if (
+              change.changeType === "CREATED" ||
+              change.fieldName === "__entity__"
+            ) {
+              if (!row?.externalDocumentId) {
+                throw new AppError("External document id is required.", {
+                  statusCode: HTTP_STATUS.BAD_REQUEST,
+                  code: "EXTERNAL_DOCUMENT_ID_REQUIRED",
+                });
+              }
+
+              const company = await findCompany();
+
+              companyId = company.id;
+
+              let document = await tx.incentiveDocument.findUnique({
+                where: {
+                  externalDocumentId: row.externalDocumentId,
+                },
+              });
+
+              if (!document) {
+                document = await tx.incentiveDocument.create({
+                  data: {
+                    companyId: company.id,
+
+                    externalDocumentId: row.externalDocumentId,
+
+                    documentNumber: row.documentNumber,
+
+                    documentStartDate: row.documentStartDate,
+
+                    documentEndDate: row.documentEndDate,
+
+                    extensionDate: row.extensionDate,
+
+                    supportClass: row.supportClass,
+
+                    isActive: true,
+                  },
+                });
+              }
+
+              documentId = document.id;
+              entityId = document.id;
+
+              await tx.importRow.update({
+                where: {
+                  id: row.id,
+                },
+                data: {
+                  companyId: company.id,
+                  documentId: document.id,
+                },
+              });
+            } else {
+
+            /*
+             * Mevcut belgede tek alan değişikliği.
+             */
+              const document = await findDocument();
+
+              documentId = document.id;
+              companyId = document.companyId;
+              entityId = document.id;
+
+              if (change.fieldName === "documentNumber") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentNumber: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "documentStartDate") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentStartDate: parseDate(change.newValue),
+                  },
+                });
+              } else if (change.fieldName === "documentEndDate") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentEndDate: parseDate(change.newValue),
+                  },
+                });
+              } else if (change.fieldName === "extensionDate") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    extensionDate: parseDate(change.newValue),
+                  },
+                });
+              } else if (change.fieldName === "supportClass") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    supportClass: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "isActive") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    isActive: parseBoolean(change.newValue),
+                  },
+                });
+              } else {
+                throw new AppError(
+                  `Unsupported incentive document field: ${change.fieldName}`,
+                  {
+                    statusCode: HTTP_STATUS.BAD_REQUEST,
+                    code: "UNSUPPORTED_DOCUMENT_FIELD",
+                  },
+                );
+              }
+            }
+          } else {
+
+          /* ===============================================
+             TANIMSIZ ENTITY
+          =============================================== */
+            throw new AppError(
+              `Unsupported entity type: ${change.entityType}`,
+              {
+                statusCode: HTTP_STATUS.BAD_REQUEST,
+                code: "UNSUPPORTED_ENTITY_TYPE",
+              },
+            );
+          }
+
+          /* ===============================================
+             7. CHANGE HISTORY
+             
+             Canlı veri değiştiyse geçmişe yaz.
+          =============================================== */
+
+          if (entityId !== null) {
+            await tx.changeHistory.create({
+              data: {
+                entityType: change.entityType,
+                entityId,
+
+                fieldName: change.fieldName,
+
+                oldValue: change.oldValue,
+                newValue: change.newValue,
+
+                source: "EXCEL_IMPORT",
+
+                companyId,
+                documentId,
+
+                importBatchId,
+                changedById: reviewedById,
+              },
+            });
+          }
+        }
+
+        /* =================================================
+           8. IMPORT CHANGE = APPROVED
+        ================================================= */
+
+        const reviewedChange = await tx.importChange.update({
+          where: {
+            id: change.id,
+          },
+          data: {
+            status: "APPROVED",
+
+            reviewedById,
+
+            reviewedAt: new Date(),
+
+            rejectedReason: null,
+
+            companyId,
+            documentId,
+          },
+        });
+
+        /* =================================================
+           9. SAYILARI HESAPLA
+        ================================================= */
+
+        const pendingCount = await tx.importChange.count({
           where: {
             importBatchId,
             status: "PENDING",
           },
-          data: {
+        });
+
+        const approvedCount = await tx.importChange.count({
+          where: {
+            importBatchId,
             status: "APPROVED",
-            reviewedById,
-            reviewedAt: new Date(),
           },
         });
 
-        /*
-         * 6. BATCH TAMAMLANDI
-         */
-        const completedBatch = await tx.importBatch.update({
+        const rejectedCount = await tx.importChange.count({
           where: {
-            id: importBatchId,
-          },
-          data: {
-            status: "COMPLETED",
-            reviewedById,
-            reviewedAt: new Date(),
-            completedAt: new Date(),
+            importBatchId,
+            status: "REJECTED",
           },
         });
+
+        /* =================================================
+           10. TÜM KARARLAR VERİLDİYSE BATCH TAMAMLA
+        ================================================= */
+
+        let batchStatus = batch.status;
+
+        if (pendingCount === 0) {
+          const now = new Date();
+
+          const completedBatch = await tx.importBatch.update({
+            where: {
+              id: importBatchId,
+            },
+            data: {
+              status: "COMPLETED",
+
+              reviewedById,
+
+              reviewedAt: now,
+
+              completedAt: now,
+            },
+          });
+
+          batchStatus = completedBatch.status;
+        }
 
         return {
-          batch: completedBatch,
-          processedRowCount,
-          companyCount: companyMap.size,
-          documentCount: documentMap.size,
+          change: reviewedChange,
+
+          summary: {
+            pendingCount,
+            approvedCount,
+            rejectedCount,
+          },
+
+          batchStatus,
         };
       },
       {
