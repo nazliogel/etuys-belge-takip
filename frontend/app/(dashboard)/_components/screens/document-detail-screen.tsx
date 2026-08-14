@@ -18,6 +18,7 @@ import { apiFetch } from "@/lib/api";
 interface DocumentDetailScreenProps {
   documentId: string;
   inline?: boolean;
+  variant?: "admin" | "company";
 }
 
 type ApiDocumentDetail = {
@@ -73,12 +74,6 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     };
   }
 
-  /*
-   * Kalan gün hesabı yalnızca Belge Bitiş Tarihi
-   * üzerinden yapılır.
-   *
-   * Süre Uzatım Tarihi bu hesaplamada kullanılmaz.
-   */
   const documentEndDate = document.documentEndDate;
 
   if (!documentEndDate) {
@@ -129,6 +124,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
 export function DocumentDetailScreen({
   documentId,
   inline = false,
+  variant = "company",
 }: DocumentDetailScreenProps) {
   const [document, setDocument] = useState<ApiDocumentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,7 +161,6 @@ export function DocumentDetailScreen({
       <div className="flex min-h-[300px] items-center justify-center">
         <div className="text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-700" />
-
           <p className="mt-4 text-sm font-medium text-slate-600">
             Belge bilgileri yükleniyor...
           </p>
@@ -180,13 +175,10 @@ export function DocumentDetailScreen({
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
           <FileText size={24} />
         </div>
-
         <h3 className="mt-4 text-base font-semibold text-slate-900">
           Belge yüklenemedi
         </h3>
-
         <p className="mt-2 max-w-md text-sm text-slate-500">{loadError}</p>
-
         {!inline && (
           <Link
             href="/documents"
@@ -206,11 +198,9 @@ export function DocumentDetailScreen({
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
           <FileText size={24} />
         </div>
-
         <h3 className="mt-4 text-base font-semibold text-slate-900">
           Belge bulunamadı
         </h3>
-
         <p className="mt-2 text-sm text-slate-500">
           Aradığınız belge sistemde kayıtlı değil.
         </p>
@@ -219,6 +209,101 @@ export function DocumentDetailScreen({
   }
 
   const status = getDocumentStatus(document);
+
+  // ============================================
+  // ADMIN VARIANT
+  // ============================================
+  if (variant === "admin") {
+    return (
+      <div className="space-y-5">
+        {/* ÜST ŞERİT */}
+        <section className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600">
+              <FileText size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Belge Detayı
+              </p>
+              <h2 className="text-lg font-extrabold tracking-tight text-slate-900">
+                {document.documentNumber ?? "-"}
+                <span className="ml-2 text-xs font-medium text-slate-400">
+                  Numaralı Belge
+                </span>
+              </h2>
+            </div>
+          </div>
+
+          <div
+            className={`inline-flex items-center gap-2 self-start rounded-full px-3 py-1.5 ${status.className}`}
+          >
+            <span
+              className={`h-1.5 w-1.5 shrink-0 rounded-full ${status.dot}`}
+            />
+            <span className="text-[11px] font-bold uppercase tracking-wider">
+              {status.label}
+            </span>
+          </div>
+        </section>
+
+        {/* KPI ŞERİDİ */}
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                Belge Operasyon Bilgileri
+              </h3>
+            </div>
+
+            <span className="text-[10px] text-slate-400">
+              Resmi kayıtlardan alınmıştır
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <tbody className="divide-y divide-slate-100">
+                <OperationRow
+                  label1="Belge ID"
+                  value1={String(document.externalDocumentId)}
+                  label2="Belge No"
+                  value2={document.documentNumber ?? "-"}
+                />
+
+                <OperationRow
+                  label1="Başlangıç Tarihi"
+                  value1={formatDate(document.documentStartDate)}
+                  label2="Bitiş Tarihi"
+                  value2={formatDate(document.documentEndDate)}
+                />
+
+                <OperationRow
+                  label1="Süre Uzatım Tarihi"
+                  value1={formatDate(document.extensionDate)}
+                  label2="Destekleme Sınıfı"
+                  value2={document.supportClass ?? "-"}
+                />
+
+                <OperationRow
+                  label1="Yetki Bitiş Tarihi"
+                  value1={formatDate(document.company.authorizationEndDate)}
+                  label2="Belge Durumu"
+                  value2={status.label}
+                />
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // ============================================
+  // COMPANY VARIANT (mevcut görünüm)
+  // ============================================
 
   const today = new Date().toLocaleDateString("tr-TR", {
     day: "2-digit",
@@ -231,10 +316,8 @@ export function DocumentDetailScreen({
       className={`flex items-center gap-2 rounded-xl px-4 py-3 ${status.className}`}
     >
       <span className={`h-2 w-2 shrink-0 rounded-full ${status.dot}`} />
-
       <div>
         <p className="text-sm font-semibold">{status.label}</p>
-
         <p className="mt-0.5 text-xs opacity-80">{status.description}</p>
       </div>
     </div>
@@ -242,7 +325,6 @@ export function DocumentDetailScreen({
 
   return (
     <div className="space-y-6">
-      {/* ÜST ŞERİT */}
       {!inline ? (
         <section>
           <Link
@@ -258,16 +340,13 @@ export function DocumentDetailScreen({
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Belge detayı
               </p>
-
               <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
                 {document.documentNumber ?? "-"} Numaralı Belge
               </h1>
-
               <p className="mt-2 text-sm text-slate-500">
                 Belgenizin tarih ve güncel durum bilgilerini görüntüleyin.
               </p>
             </div>
-
             {StatusChip}
           </div>
         </section>
@@ -277,36 +356,30 @@ export function DocumentDetailScreen({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Belge detayı
             </p>
-
             <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">
               {document.documentNumber ?? "-"} Numaralı Belge
             </h2>
           </div>
-
           {StatusChip}
         </section>
       )}
 
-      {/* ÖZET KARTLARI */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <InfoCard
           label="Belge Numarası"
           value={document.documentNumber ?? "-"}
           icon={<Hash size={19} />}
         />
-
         <InfoCard
           label="Belge Başlangıç"
           value={formatDate(document.documentStartDate)}
           icon={<CalendarDays size={19} />}
         />
-
         <InfoCard
           label="Belge Bitiş"
           value={formatDate(document.documentEndDate)}
           icon={<Clock3 size={19} />}
         />
-
         <InfoCard
           label="Destekleme Sınıfı"
           value={document.supportClass ?? "-"}
@@ -314,7 +387,6 @@ export function DocumentDetailScreen({
         />
       </section>
 
-      {/* ANTETLİ BELGE */}
       <section className="rounded-3xl bg-slate-50/70 p-3 sm:p-8">
         <div className="flex justify-center">
           <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -325,20 +397,18 @@ export function DocumentDetailScreen({
             />
 
             <div className="relative px-5 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
-              <header className="flex flex-col items-center text-center">
-                <Image
-                  src="/logos/sanayi-bakanligi.png"
-                  alt="T.C. Sanayi ve Teknoloji Bakanlığı"
-                  width={320}
-                  height={160}
-                  priority
-                  className="h-auto w-64 select-none object-contain sm:w-72"
-                />
+              {/* BELGE BAŞLIĞI */}
+              <header className="text-center">
+                <h1 className="text-xl font-extrabold uppercase tracking-[0.25em] text-slate-900 sm:text-2xl">
+                  Yatırım Teşvik Belgesi
+                </h1>
+                <div className="mx-auto mt-4 h-0.5 w-24 bg-slate-900" />
               </header>
 
               <div className="mt-8 border-t-2 border-slate-800" />
               <div className="mt-1 border-t border-slate-800" />
 
+              {/* SAYI / KONU / TARİH */}
               <div className="mt-8 flex flex-wrap items-start justify-between gap-4 text-sm text-slate-700">
                 <div>
                   <p className="font-medium">
@@ -359,11 +429,11 @@ export function DocumentDetailScreen({
                 <p className="font-medium text-slate-600">{today}</p>
               </div>
 
+              {/* BELGE BİLGİLERİ */}
               <div className="mt-10 text-center">
                 <h2 className="text-lg font-bold uppercase tracking-[0.2em] text-slate-900">
                   Belge Bilgileri
                 </h2>
-
                 <div className="mx-auto mt-2 h-px w-16 bg-slate-300" />
               </div>
 
@@ -414,11 +484,6 @@ export function DocumentDetailScreen({
                 <FormRow label="Firma Ünvanı" value={document.company.name} />
 
                 <FormRow
-                  label="Vergi Numarası"
-                  value={document.company.taxNumber}
-                />
-
-                <FormRow
                   label="İşlem Durumu"
                   value={document.company.processStatus ?? "-"}
                 />
@@ -437,18 +502,6 @@ export function DocumentDetailScreen({
               <p className="mt-8 text-sm leading-7 text-slate-700">
                 Bilgilerinize sunulur.
               </p>
-
-              <div className="mt-16" />
-
-              <div className="border-t border-slate-300 pt-4 text-center">
-                <p className="text-[11px] uppercase tracking-[0.15em] text-slate-500">
-                  T.C. Sanayi ve Teknoloji Bakanlığı
-                </p>
-
-                <p className="mt-1 text-[10px] text-slate-400">
-                  Teşvik Uygulama ve Yabancı Sermaye Genel Müdürlüğü
-                </p>
-              </div>
             </div>
           </div>
         </div>
@@ -457,7 +510,9 @@ export function DocumentDetailScreen({
   );
 }
 
-/* ALT BİLEŞENLER */
+/* ============================================
+   ALT BİLEŞENLER
+   ============================================ */
 
 interface InfoCardProps {
   label: string;
@@ -471,9 +526,7 @@ function InfoCard({ label, value, icon }: InfoCardProps) {
       <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
         {icon}
       </div>
-
       <p className="text-xs font-medium text-slate-500">{label}</p>
-
       <p className="mt-1.5 break-words text-lg font-semibold text-slate-900">
         {value}
       </p>
@@ -492,10 +545,112 @@ function FormRow({ label, value }: FormRowProps) {
       <dt className="w-full text-sm font-medium text-slate-600 sm:w-56 sm:shrink-0">
         {label}
       </dt>
-
       <dd className="flex-1 break-words text-sm font-semibold text-slate-900">
         : {value}
       </dd>
     </div>
+  );
+}
+
+/* ---- ADMIN VARIANT ALT BİLEŞENLERİ ---- */
+
+function KpiTile({
+  icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-sm ${
+        accent ? "border-red-100 bg-red-50/40" : "border-slate-200 bg-white"
+      }`}
+    >
+      <div
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+          accent ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600"
+        }`}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {label}
+        </p>
+        <p className="truncate text-sm font-bold text-slate-900">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function FieldGrid({
+  items,
+}: {
+  groupLabel?: string;
+  items: {
+    label: string;
+    value?: string | null;
+    mono?: boolean;
+  }[];
+}) {
+  return (
+    <div className="grid grid-cols-1 divide-y divide-slate-100 md:grid-cols-3 md:divide-x md:divide-y-0">
+      {items.map((item) => {
+        const displayValue = item.value?.toString().trim() || "-";
+        const isEmpty = displayValue === "-";
+
+        return (
+          <div key={item.label} className="flex flex-col gap-1 px-5 py-3.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              {item.label}
+            </span>
+
+            <span
+              className={`text-sm ${item.mono ? "font-mono" : ""} ${
+                isEmpty ? "text-slate-300" : "font-semibold text-slate-800"
+              }`}
+            >
+              {displayValue}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function OperationRow({
+  label1,
+  value1,
+  label2,
+  value2,
+}: {
+  label1: string;
+  value1: string;
+  label2: string;
+  value2: string;
+}) {
+  return (
+    <tr>
+      <th className="w-[16%] bg-slate-50/60 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        {label1}
+      </th>
+
+      <td className="w-[34%] px-4 py-3 text-sm font-semibold text-slate-900">
+        {value1}
+      </td>
+
+      <th className="w-[16%] border-l border-slate-100 bg-slate-50/60 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        {label2}
+      </th>
+
+      <td className="w-[34%] px-4 py-3 text-sm font-semibold text-slate-900">
+        {value2}
+      </td>
+    </tr>
   );
 }

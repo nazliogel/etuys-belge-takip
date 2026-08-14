@@ -12,6 +12,7 @@ import {
 
 import { DocumentsScreen } from "@/app/(dashboard)/_components/screens/documents-screen";
 import { DocumentDetailScreen } from "@/app/(dashboard)/_components/screens/document-detail-screen";
+import { CompanyIdentitySection } from "@/app/(dashboard)/_components/screens/company-identity-section";
 import { companyMockData } from "@/lib/company-mock-data";
 import { apiFetch } from "@/lib/api";
 
@@ -584,6 +585,12 @@ export function CompaniesScreen() {
             </button>
           </div>
 
+          {/* Firma Künye + İletişim Bilgileri */}
+          <CompanyIdentitySection companyId={activeFirma.id} />
+
+          {/* Belgeler */}
+          <div className="space-y-4"></div>
+
           {/* Belgeler */}
           <div className="space-y-4">
             <DocumentsScreen
@@ -658,7 +665,7 @@ export function CompaniesScreen() {
                   </button>
                 </div>
 
-                <DocumentDetailScreen documentId={activeDocumentId} inline />
+                <DocumentDetailScreen documentId={activeDocumentId} inline variant="admin" />
               </section>
             )}
           </div>

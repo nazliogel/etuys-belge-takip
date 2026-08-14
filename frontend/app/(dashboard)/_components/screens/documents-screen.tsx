@@ -45,6 +45,17 @@ type DocumentListResponse = {
   };
 };
 
+type DocumentDetailResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    company: {
+      authorizationEndDate: string | null;
+    };
+  };
+};
+
 interface DocumentsScreenProps {
   companyId?: string;
   selectedDocumentId?: string | null;
@@ -125,7 +136,20 @@ export function DocumentsScreen({
         const response = await apiFetch<DocumentListResponse>("/documents");
 
         setDocuments(response.data.items);
-        setAuthorizationEndDate(null);
+
+        if (response.data.items.length > 0) {
+          const firstDocumentId = response.data.items[0].id;
+
+          const detailResponse = await apiFetch<DocumentDetailResponse>(
+            `/documents/${firstDocumentId}`,
+          );
+
+          setAuthorizationEndDate(
+            detailResponse.data.company.authorizationEndDate ?? null,
+          );
+        } else {
+          setAuthorizationEndDate(null);
+        }
       } catch (error) {
         setDocuments([]);
         setAuthorizationEndDate(null);
@@ -165,19 +189,22 @@ export function DocumentsScreen({
     ).length,
 
     bitisTarihi: formatDate(authorizationEndDate),
+
+    // Daha sonra backend verisine bağlanacak
+    kapaliIptal: 0,
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* BAŞLIK */}
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <section className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600 shadow-sm">
-            <FileText size={20} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
+            <FileText size={17} />
           </div>
 
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
               Belgelerim
             </h1>
 
@@ -189,43 +216,43 @@ export function DocumentsScreen({
         </div>
       </section>
 
-      {/* İSTATİSTİK KARTLARI */}
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Toplam Belge"
-          value={String(stats.toplam)}
-          description="Firmanıza kayıtlı belge"
-          icon={<FileText size={18} />}
-          accentColor="border-l-slate-400"
-          iconBg="bg-slate-100 text-slate-700 border border-slate-200/60"
-        />
+      {/* OPERASYON ÖZETİ */}
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-3 xl:grid-cols-5 xl:divide-y-0">
+          <OperationStat
+            label="Toplam Belge"
+            value={String(stats.toplam)}
+            icon={<FileText size={15} />}
+          />
 
-        <StatCard
-          title="Aktif Belge"
-          value={String(stats.aktif)}
-          description="Süresi devam eden belge"
-          icon={<FileCheck2 size={18} />}
-          accentColor="border-l-emerald-500"
-          iconBg="bg-emerald-50 text-emerald-600 border border-emerald-100"
-        />
+          <OperationStat
+            label="Aktif"
+            value={String(stats.aktif)}
+            icon={<FileCheck2 size={15} />}
+            valueClass="text-emerald-600"
+          />
 
-        <StatCard
-          title="Süresi Dolmuş"
-          value={String(stats.suresiDolmus)}
-          description="İşlem gerektiren belge"
-          icon={<ShieldCheck size={18} />}
-          accentColor="border-l-red-500"
-          iconBg="bg-red-50 text-red-600 border border-red-100"
-        />
+          <OperationStat
+            label="Süresi Dolmuş"
+            value={String(stats.suresiDolmus)}
+            icon={<ShieldCheck size={15} />}
+            valueClass="text-red-600"
+          />
 
-        <StatCard
-          title="Yetki Bitiş Tarihi"
-          value={stats.bitisTarihi}
-          description="Geçerlilik son günü"
-          icon={<CalendarDays size={18} />}
-          accentColor="border-l-amber-500"
-          iconBg="bg-amber-50 text-amber-600 border border-amber-100"
-        />
+          <OperationStat
+            label="Kapalı / İptal"
+            value={String(stats.kapaliIptal)}
+            icon={<ShieldCheck size={15} />}
+            valueClass="text-slate-600"
+          />
+
+          <OperationStat
+            label="Yetki Bitiş"
+            value={stats.bitisTarihi}
+            icon={<CalendarDays size={15} />}
+            valueClass="text-amber-600"
+          />
+        </div>
       </section>
 
       {/* BELGE LİSTESİ */}
@@ -396,47 +423,33 @@ export function DocumentsScreen({
    ALT BİLEŞENLER
 ===================================================== */
 
-interface StatCardProps {
-  title: string;
-  value: string;
-  description: string;
-  icon: React.ReactNode;
-  accentColor: string;
-  iconBg: string;
-}
-
-function StatCard({
-  title,
+function OperationStat({
+  label,
   value,
-  description,
   icon,
-  accentColor,
-  iconBg,
-}: StatCardProps) {
+  valueClass = "text-slate-900",
+}: {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  valueClass?: string;
+}) {
   return (
-    <article
-      className={`rounded-2xl border border-l-4 border-slate-200/80 bg-white p-5 shadow-sm ${accentColor}`}
-    >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-500">{title}</p>
-
-          <p className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900">
-            {value}
-          </p>
-
-          <p className="mt-1 text-[11px] font-medium text-slate-400">
-            {description}
-          </p>
-        </div>
-
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}
-        >
-          {icon}
-        </div>
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+        {icon}
       </div>
-    </article>
+
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {label}
+        </p>
+
+        <p className={`mt-0.5 truncate text-lg font-extrabold ${valueClass}`}>
+          {value}
+        </p>
+      </div>
+    </div>
   );
 }
 

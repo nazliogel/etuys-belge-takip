@@ -6,6 +6,7 @@ export interface SessionUser {
   email: string;
   role: UserRole;
   companyId?: number | null;
+  companyName?: string | null;
 }
 
 interface BackendUser {
@@ -15,6 +16,7 @@ interface BackendUser {
   email: string;
   role: UserRole;
   companyId?: number | null;
+  companyName?: string | null;
 }
 
 interface LoginResponse {
@@ -56,6 +58,7 @@ export async function login(
     email: result.user.email,
     role: result.user.role,
     companyId: result.user.companyId,
+    companyName: result.user.companyName,
   };
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
