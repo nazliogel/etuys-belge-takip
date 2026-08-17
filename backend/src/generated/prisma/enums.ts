@@ -78,6 +78,15 @@ export const ChangeSource = {
 export type ChangeSource = (typeof ChangeSource)[keyof typeof ChangeSource]
 
 
+export const DocumentStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus]
+
+
 export const NotificationType = {
   AUTHORIZATION_EXPIRING: 'AUTHORIZATION_EXPIRING',
   AUTHORIZATION_EXPIRED: 'AUTHORIZATION_EXPIRED',

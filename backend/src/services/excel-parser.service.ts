@@ -1,3 +1,4 @@
+import { DocumentStatus } from "../generated/prisma/client.js";
 import path from "node:path";
 
 import ExcelJS from "exceljs";
@@ -14,6 +15,7 @@ export interface ParsedImportRow {
   documentEndDate: Date | null;
   extensionDate: Date | null;
   supportClass: string | null;
+  documentStatus: DocumentStatus | null;
   processStatus: string | null;
   rawData: Record<string, unknown>;
   errorMessage: string | null;
@@ -181,6 +183,7 @@ export class ExcelParserService {
     const processStatus = this.getNullableStringValue(
       row.getCell(headerMap.processStatus!).value,
     );
+    const documentStatus = this.getDocumentStatus(processStatus);
 
     const errors: string[] = [];
 
@@ -204,6 +207,7 @@ export class ExcelParserService {
       documentEndDate,
       extensionDate,
       supportClass,
+      documentStatus,
       processStatus,
       rawData,
       errorMessage: errors.length > 0 ? errors.join(" ") : null,
@@ -321,6 +325,31 @@ export class ExcelParserService {
     const parsedDate = new Date(rawValue);
 
     return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+  }
+
+  /* BURAYA EKLE */
+  private getDocumentStatus(
+    processStatus: string | null,
+  ): DocumentStatus | null {
+    if (!processStatus) {
+      return null;
+    }
+
+    const normalized = processStatus.toLocaleLowerCase("tr-TR");
+
+    if (normalized.includes("iptal")) {
+      return DocumentStatus.CANCELLED;
+    }
+
+    if (normalized.includes("kapalı")) {
+      return DocumentStatus.CLOSED;
+    }
+
+    if (normalized.includes("açık")) {
+      return DocumentStatus.OPEN;
+    }
+
+    return null;
   }
 
   private serializeCellValue(value: ExcelJS.CellValue): unknown {

@@ -47,6 +47,7 @@ export type IncentiveDocumentMinAggregateOutputType = {
   documentEndDate: Date | null
   extensionDate: Date | null
   supportClass: string | null
+  status: $Enums.DocumentStatus | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +62,7 @@ export type IncentiveDocumentMaxAggregateOutputType = {
   documentEndDate: Date | null
   extensionDate: Date | null
   supportClass: string | null
+  status: $Enums.DocumentStatus | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -75,6 +77,7 @@ export type IncentiveDocumentCountAggregateOutputType = {
   documentEndDate: number
   extensionDate: number
   supportClass: number
+  status: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -103,6 +106,7 @@ export type IncentiveDocumentMinAggregateInputType = {
   documentEndDate?: true
   extensionDate?: true
   supportClass?: true
+  status?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -117,6 +121,7 @@ export type IncentiveDocumentMaxAggregateInputType = {
   documentEndDate?: true
   extensionDate?: true
   supportClass?: true
+  status?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -131,6 +136,7 @@ export type IncentiveDocumentCountAggregateInputType = {
   documentEndDate?: true
   extensionDate?: true
   supportClass?: true
+  status?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -232,6 +238,7 @@ export type IncentiveDocumentGroupByOutputType = {
   documentEndDate: Date | null
   extensionDate: Date | null
   supportClass: string | null
+  status: $Enums.DocumentStatus
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -269,6 +276,7 @@ export type IncentiveDocumentWhereInput = {
   documentEndDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableFilter<"IncentiveDocument"> | string | null
+  status?: Prisma.EnumDocumentStatusFilter<"IncentiveDocument"> | $Enums.DocumentStatus
   isActive?: Prisma.BoolFilter<"IncentiveDocument"> | boolean
   createdAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
@@ -287,6 +295,7 @@ export type IncentiveDocumentOrderByWithRelationInput = {
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
   supportClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -308,6 +317,7 @@ export type IncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
   documentEndDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableFilter<"IncentiveDocument"> | string | null
+  status?: Prisma.EnumDocumentStatusFilter<"IncentiveDocument"> | $Enums.DocumentStatus
   isActive?: Prisma.BoolFilter<"IncentiveDocument"> | boolean
   createdAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
@@ -326,6 +336,7 @@ export type IncentiveDocumentOrderByWithAggregationInput = {
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
   supportClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -348,6 +359,7 @@ export type IncentiveDocumentScalarWhereWithAggregatesInput = {
   documentEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableWithAggregatesFilter<"IncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableWithAggregatesFilter<"IncentiveDocument"> | string | null
+  status?: Prisma.EnumDocumentStatusWithAggregatesFilter<"IncentiveDocument"> | $Enums.DocumentStatus
   isActive?: Prisma.BoolWithAggregatesFilter<"IncentiveDocument"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"IncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"IncentiveDocument"> | Date | string
@@ -360,6 +372,7 @@ export type IncentiveDocumentCreateInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -378,6 +391,7 @@ export type IncentiveDocumentUncheckedCreateInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -393,6 +407,7 @@ export type IncentiveDocumentUpdateInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -411,6 +426,7 @@ export type IncentiveDocumentUncheckedUpdateInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -428,6 +444,7 @@ export type IncentiveDocumentCreateManyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -440,6 +457,7 @@ export type IncentiveDocumentUpdateManyMutationInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -454,6 +472,7 @@ export type IncentiveDocumentUncheckedUpdateManyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -478,6 +497,7 @@ export type IncentiveDocumentCountOrderByAggregateInput = {
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
   supportClass?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -498,6 +518,7 @@ export type IncentiveDocumentMaxOrderByAggregateInput = {
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
   supportClass?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -512,6 +533,7 @@ export type IncentiveDocumentMinOrderByAggregateInput = {
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
   supportClass?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -570,6 +592,10 @@ export type IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput = {
   deleteMany?: Prisma.IncentiveDocumentScalarWhereInput | Prisma.IncentiveDocumentScalarWhereInput[]
 }
 
+export type EnumDocumentStatusFieldUpdateOperationsInput = {
+  set?: $Enums.DocumentStatus
+}
+
 export type IncentiveDocumentCreateNestedOneWithoutImportRowsInput = {
   create?: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutImportRowsInput, Prisma.IncentiveDocumentUncheckedCreateWithoutImportRowsInput>
   connectOrCreate?: Prisma.IncentiveDocumentCreateOrConnectWithoutImportRowsInput
@@ -625,6 +651,7 @@ export type IncentiveDocumentCreateWithoutCompanyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -641,6 +668,7 @@ export type IncentiveDocumentUncheckedCreateWithoutCompanyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -687,6 +715,7 @@ export type IncentiveDocumentScalarWhereInput = {
   documentEndDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableFilter<"IncentiveDocument"> | string | null
+  status?: Prisma.EnumDocumentStatusFilter<"IncentiveDocument"> | $Enums.DocumentStatus
   isActive?: Prisma.BoolFilter<"IncentiveDocument"> | boolean
   createdAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
@@ -699,6 +728,7 @@ export type IncentiveDocumentCreateWithoutImportRowsInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -716,6 +746,7 @@ export type IncentiveDocumentUncheckedCreateWithoutImportRowsInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -746,6 +777,7 @@ export type IncentiveDocumentUpdateWithoutImportRowsInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -763,6 +795,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportRowsInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -777,6 +810,7 @@ export type IncentiveDocumentCreateWithoutImportChangesInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -794,6 +828,7 @@ export type IncentiveDocumentUncheckedCreateWithoutImportChangesInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -824,6 +859,7 @@ export type IncentiveDocumentUpdateWithoutImportChangesInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -841,6 +877,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportChangesInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -855,6 +892,7 @@ export type IncentiveDocumentCreateWithoutChangeHistoryInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -872,6 +910,7 @@ export type IncentiveDocumentUncheckedCreateWithoutChangeHistoryInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -902,6 +941,7 @@ export type IncentiveDocumentUpdateWithoutChangeHistoryInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -919,6 +959,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutChangeHistoryInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -934,6 +975,7 @@ export type IncentiveDocumentCreateManyCompanyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  status?: $Enums.DocumentStatus
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -946,6 +988,7 @@ export type IncentiveDocumentUpdateWithoutCompanyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -962,6 +1005,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -978,6 +1022,7 @@ export type IncentiveDocumentUncheckedUpdateManyWithoutCompanyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1041,6 +1086,7 @@ export type IncentiveDocumentSelect<ExtArgs extends runtime.Types.Extensions.Int
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  status?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1060,6 +1106,7 @@ export type IncentiveDocumentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  status?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1075,6 +1122,7 @@ export type IncentiveDocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  status?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1090,12 +1138,13 @@ export type IncentiveDocumentSelectScalar = {
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  status?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type IncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["incentiveDocument"]>
+export type IncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "status" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["incentiveDocument"]>
 export type IncentiveDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   importRows?: boolean | Prisma.IncentiveDocument$importRowsArgs<ExtArgs>
@@ -1127,6 +1176,7 @@ export type $IncentiveDocumentPayload<ExtArgs extends runtime.Types.Extensions.I
     documentEndDate: Date | null
     extensionDate: Date | null
     supportClass: string | null
+    status: $Enums.DocumentStatus
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1565,6 +1615,7 @@ export interface IncentiveDocumentFieldRefs {
   readonly documentEndDate: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>
   readonly extensionDate: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>
   readonly supportClass: Prisma.FieldRef<"IncentiveDocument", 'String'>
+  readonly status: Prisma.FieldRef<"IncentiveDocument", 'DocumentStatus'>
   readonly isActive: Prisma.FieldRef<"IncentiveDocument", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>

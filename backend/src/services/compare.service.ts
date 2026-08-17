@@ -550,6 +550,13 @@ export class CompareService {
       newValue: row.supportClass,
     });
 
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "status",
+      oldValue: document.status,
+      newValue: row.documentStatus,
+    });
+
     if (!document.isActive) {
       changes.push({
         ...baseData,

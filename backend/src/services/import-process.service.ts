@@ -66,6 +66,7 @@ export class ImportProcessService {
           documentEndDate: row.documentEndDate,
           extensionDate: row.extensionDate,
           supportClass: row.supportClass,
+          documentStatus: row.documentStatus,
           processStatus: row.processStatus,
           rawData: row.rawData as Prisma.InputJsonValue,
           errorMessage: row.errorMessage,

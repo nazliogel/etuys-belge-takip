@@ -55,6 +55,12 @@ enum ChangeSource {
   SYSTEM
 }
 
+enum DocumentStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
 enum NotificationType {
   AUTHORIZATION_EXPIRING
   AUTHORIZATION_EXPIRED
@@ -132,7 +138,8 @@ model IncentiveDocument {
   documentEndDate    DateTime? @db.Date
   extensionDate      DateTime? @db.Date
   supportClass       String?
-  isActive           Boolean   @default(true)
+status             DocumentStatus @default(OPEN)
+isActive           Boolean        @default(true)
 
   company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   importRows    ImportRow[]
@@ -191,7 +198,8 @@ model ImportRow {
   documentEndDate      DateTime?       @db.Date
   extensionDate        DateTime?       @db.Date
   supportClass         String?
-  processStatus        String?
+documentStatus       DocumentStatus?
+processStatus        String?
   companyId            Int?
   documentId           Int?
   rawData              Json?

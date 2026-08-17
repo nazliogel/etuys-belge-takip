@@ -129,6 +129,7 @@ export const IncentiveDocumentScalarFieldEnum = {
   documentEndDate: 'documentEndDate',
   extensionDate: 'extensionDate',
   supportClass: 'supportClass',
+  status: 'status',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -174,6 +175,7 @@ export const ImportRowScalarFieldEnum = {
   documentEndDate: 'documentEndDate',
   extensionDate: 'extensionDate',
   supportClass: 'supportClass',
+  documentStatus: 'documentStatus',
   processStatus: 'processStatus',
   companyId: 'companyId',
   documentId: 'documentId',

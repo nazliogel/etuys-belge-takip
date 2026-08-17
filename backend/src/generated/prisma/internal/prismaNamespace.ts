@@ -1255,6 +1255,7 @@ export const IncentiveDocumentScalarFieldEnum = {
   documentEndDate: 'documentEndDate',
   extensionDate: 'extensionDate',
   supportClass: 'supportClass',
+  status: 'status',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1300,6 +1301,7 @@ export const ImportRowScalarFieldEnum = {
   documentEndDate: 'documentEndDate',
   extensionDate: 'extensionDate',
   supportClass: 'supportClass',
+  documentStatus: 'documentStatus',
   processStatus: 'processStatus',
   companyId: 'companyId',
   documentId: 'documentId',
@@ -1493,6 +1495,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentStatus'
+ */
+export type EnumDocumentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentStatus[]'
+ */
+export type ListEnumDocumentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentStatus[]'>
     
 
 
