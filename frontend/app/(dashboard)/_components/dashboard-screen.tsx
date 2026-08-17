@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import {
   AlertTriangle,
   Building2,
@@ -7,48 +11,31 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const summaryCards = [
-  {
-    title: "Toplam Firma",
-    value: "1.296",
-    description: "Tüm zamanlar",
-    icon: Building2,
-    iconClass: "bg-blue-100 text-blue-600",
-    cardClass: "from-blue-50 to-white",
-  },
-  {
-    title: "Aktif Belgeler",
-    value: "1.187",
-    description: "%91,6",
-    icon: CheckCircle2,
-    iconClass: "bg-emerald-100 text-emerald-600",
-    cardClass: "from-emerald-50 to-white",
-  },
-  {
-    title: "Süresi Dolan Belgeler",
-    value: "18",
-    description: "%1,4",
-    icon: FileText,
-    iconClass: "bg-red-100 text-red-500",
-    cardClass: "from-red-50 to-white",
-  },
-  {
-    title: "30 Gün İçinde Bitecek",
-    value: "42",
-    description: "%3,2",
-    icon: CalendarDays,
-    iconClass: "bg-orange-100 text-orange-500",
-    cardClass: "from-orange-50 to-white",
-  },
-  {
-    title: "90 Gün İçinde Yetki Bitecek",
-    value: "71",
-    description: "%5,5",
-    icon: ShieldCheck,
-    iconClass: "bg-violet-100 text-violet-600",
-    cardClass: "from-violet-50 to-white",
-  },
-];
+import { apiFetch } from "@/lib/api";
+
+type CompanyListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: unknown[];
+    totalCount: number;
+  };
+};
+
+type ApiDocument = {
+  id: number;
+  documentEndDate: string | null;
+  isActive: boolean;
+};
+
+type DocumentListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiDocument[];
+    totalCount: number;
+  };
+};
 
 const expiringDocuments = [
   {
@@ -109,6 +96,87 @@ const recentOperations = [
 ];
 
 export function DashboardScreen() {
+  const [totalCompanies, setTotalCompanies] = useState<number | null>(null);
+  const [activeDocuments, setActiveDocuments] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadDashboardStats() {
+      try {
+        const [companyResponse, documentResponse] = await Promise.all([
+          apiFetch<CompanyListResponse>("/companies?page=1&limit=20"),
+          apiFetch<DocumentListResponse>("/documents"),
+        ]);
+
+        setTotalCompanies(companyResponse.data.totalCount);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const activeCount = documentResponse.data.items.filter((document) => {
+          if (!document.isActive) return false;
+
+          if (!document.documentEndDate) return true;
+
+          const endDate = new Date(document.documentEndDate);
+          endDate.setHours(0, 0, 0, 0);
+
+          return endDate >= today;
+        }).length;
+
+        setActiveDocuments(activeCount);
+      } catch (error) {
+        console.error("Dashboard istatistikleri alınamadı:", error);
+        setTotalCompanies(0);
+        setActiveDocuments(0);
+      }
+    }
+
+    loadDashboardStats();
+  }, []);
+
+  const summaryCards = [
+    {
+      title: "Toplam Firma",
+      value: totalCompanies === null ? "..." : String(totalCompanies),
+      description: "Tüm zamanlar",
+      icon: Building2,
+      iconClass: "bg-blue-100 text-blue-600",
+      cardClass: "from-blue-50 to-white",
+    },
+    {
+      title: "Aktif Belgeler",
+      value: activeDocuments === null ? "..." : String(activeDocuments),
+      description: "Aktif durumda bulunan belge",
+      icon: CheckCircle2,
+      iconClass: "bg-emerald-100 text-emerald-600",
+      cardClass: "from-emerald-50 to-white",
+    },
+    {
+      title: "Süresi Dolan Belgeler",
+      value: "18",
+      description: "%1,4",
+      icon: FileText,
+      iconClass: "bg-red-100 text-red-500",
+      cardClass: "from-red-50 to-white",
+    },
+    {
+      title: "30 Gün İçinde Bitecek",
+      value: "42",
+      description: "%3,2",
+      icon: CalendarDays,
+      iconClass: "bg-orange-100 text-orange-500",
+      cardClass: "from-orange-50 to-white",
+    },
+    {
+      title: "90 Gün İçinde Yetki Bitecek",
+      value: "71",
+      description: "%5,5",
+      icon: ShieldCheck,
+      iconClass: "bg-violet-100 text-violet-600",
+      cardClass: "from-violet-50 to-white",
+    },
+  ];
+
   return (
     <div className="space-y-5">
       <div>

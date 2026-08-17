@@ -4,6 +4,7 @@ import {
   FileSpreadsheet,
   FileText,
   LayoutDashboard,
+  Users,
 } from "lucide-react";
 
 import type { Permission } from "./permissions";
@@ -38,6 +39,12 @@ export const navigationItems = [
     href: "/notifications",
     icon: Bell,
     permission: "notifications:view",
+  },
+  {
+    label: "Kullanıcı Yönetimi",
+    href: "/users",
+    icon: Users,
+    permission: "companies:view",
   },
 ] satisfies Array<{
   label: string;

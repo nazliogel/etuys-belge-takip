@@ -1,6 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation"; // <-- Router eklendi
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { getSessionUser } from "@/lib/mock-auth";
 import {
   Bell,
@@ -15,36 +17,28 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-const summaryItems = [
-  {
-    title: "Toplam Firma",
-    value: "128",
-    description: "Sistemde kayıtlı firma",
-    icon: Building2,
-    href: "/companies",
-  },
-  {
-    title: "Aktif Belge",
-    value: "214",
-    description: "Aktif durumda bulunan belge",
-    icon: FileCheck2,
-    href: "/documents?status=ACTIVE",
-  },
-  {
-    title: "Süresi Yaklaşan",
-    value: "18",
-    description: "Yakında sona erecek kayıt",
-    icon: CalendarClock,
-    href: "/documents?status=EXPIRING",
-  },
-  {
-    title: "Yeni Bildirim",
-    value: "7",
-    description: "Okunmamış bildirim",
-    icon: Bell,
-    href: "/notifications",
-  },
-];
+type CompanyListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: unknown[];
+    totalCount: number;
+  };
+};
+type ApiDocument = {
+  id: number;
+  documentEndDate: string | null;
+  isActive: boolean;
+};
+
+type DocumentListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiDocument[];
+    totalCount: number;
+  };
+};
 
 const documentHistoryItems = [
   {
@@ -89,9 +83,77 @@ function getHistoryIcon(type: (typeof documentHistoryItems)[number]["type"]) {
 }
 
 export function DashboardScreen() {
-  const router = useRouter(); // <-- Yönlendirme için eklendi
+  const router = useRouter();
+  const [totalCompanies, setTotalCompanies] = useState<number | null>(null);
+  const [activeDocuments, setActiveDocuments] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadDashboardStats() {
+      try {
+        const [companyResponse, documentResponse] = await Promise.all([
+          apiFetch<CompanyListResponse>("/companies?page=1&limit=20"),
+          apiFetch<DocumentListResponse>("/documents"),
+        ]);
+
+        setTotalCompanies(companyResponse.data.totalCount);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const activeCount = documentResponse.data.items.filter((document) => {
+          if (!document.isActive) return false;
+
+          if (!document.documentEndDate) return true;
+
+          const endDate = new Date(document.documentEndDate);
+          endDate.setHours(0, 0, 0, 0);
+
+          return endDate >= today;
+        }).length;
+
+        setActiveDocuments(activeCount);
+      } catch (error) {
+        console.error("Dashboard istatistikleri alınamadı:", error);
+        setTotalCompanies(0);
+        setActiveDocuments(0);
+      }
+    }
+
+    loadDashboardStats();
+  }, []); // <-- Yönlendirme için eklendi
   const user = getSessionUser();
   const isCompany = user?.role === "COMPANY";
+
+  const summaryItems = [
+    {
+      title: "Toplam Firma",
+      value: totalCompanies === null ? "..." : String(totalCompanies),
+      description: "Sistemde kayıtlı firma",
+      icon: Building2,
+      href: "/companies",
+    },
+    {
+      title: "Aktif Belge",
+      value: activeDocuments === null ? "..." : String(activeDocuments),
+      description: "Aktif durumda bulunan belge",
+      icon: FileCheck2,
+      href: "/documents?status=ACTIVE",
+    },
+    {
+      title: "Süresi Yaklaşan",
+      value: "18",
+      description: "Yakında sona erecek kayıt",
+      icon: CalendarClock,
+      href: "/documents?status=EXPIRING",
+    },
+    {
+      title: "Yeni Bildirim",
+      value: "7",
+      description: "Okunmamış bildirim",
+      icon: Bell,
+      href: "/notifications",
+    },
+  ];
 
   return (
     <div className="space-y-8 pb-8">
