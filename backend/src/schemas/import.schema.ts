@@ -35,7 +35,6 @@ export const importBatchIdSchema = z.object({
 
 export const importBatchUploadSchema = z.object({
   body: z.object({
-    uploadedById: positiveIntegerSchema,
     isFullSnapshot: booleanFormDataSchema,
   }),
 });
