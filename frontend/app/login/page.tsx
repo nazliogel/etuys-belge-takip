@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { login } from "@/lib/mock-auth";
-import { roleToRoutePrefix } from "@/lib/role-route";
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,13 +50,8 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen bg-[#F1F5F9]">
       {/* SOL PANEL - Derin Lacivert / Cam Efektli Vurgulu Logo */}
-      <section className="relative hidden lg:flex lg:w-1/2 items-center justify-center overflow-hidden bg-slate-900 p-12 text-white">
+      <section className="relative hidden lg:flex lg:w-1/2 items-center justify-center overflow-hidden border-b border-blue-900 bg-blue-800 p-12 text-white">
         {/* Arka Plan Modern Degrade & Parıltılar */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black" />
-        <div className="absolute top-1/4 -left-20 h-80 w-80 rounded-full bg-red-600/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 -right-20 h-80 w-80 rounded-full bg-blue-600/15 blur-[100px] pointer-events-none" />
-
-        {/* Izgara Doku */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -68,7 +63,7 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col items-center max-w-md text-center">
           <div className="relative rounded-[2.5rem] bg-white/10 p-10 backdrop-blur-xl border border-white/10 shadow-[0_8px_40px_0_rgba(0,0,0,0.3)] transition hover:bg-white/[0.12]">
             <Image
-              src="/logos/protuys-logo.png"
+              src="/logos/360teşvikk.png"
               alt="E-TUYS Belge Takip"
               width={300}
               height={85}
@@ -96,7 +91,7 @@ export default function LoginPage() {
           <div className="mb-8 lg:hidden flex justify-center">
             <div className="rounded-xl bg-slate-900 p-4 shadow-md">
               <Image
-                src="/logos/protuys-logo.png"
+                src="/logos/360teşvikk.png"
                 alt="E-TUYS Belge Takip"
                 width={180}
                 height={50}
@@ -188,7 +183,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-900 text-sm font-semibold text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-950 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 mt-2"
+             className="group mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl border-b border-blue-900 bg-blue-800 text-sm font-semibold text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? (
                 "Giriş yapılıyor..."

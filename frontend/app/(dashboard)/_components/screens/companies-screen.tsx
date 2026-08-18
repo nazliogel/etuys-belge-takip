@@ -554,35 +554,38 @@ export function CompaniesScreen() {
       {activeFirma && (
         <section ref={detailRef} className="scroll-mt-6 space-y-6">
           {/* Detay Başlık Kartı */}
-          <div className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white shadow-md">
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm shadow-red-600/30">
-                <Building2 size={20} />
+          {/* Detay Başlık Kartı — scroll'da üstte kalır, hangi firmada olduğunuzu unutmazsınız */}
+          <div className="sticky top-20 z-30 -mx-1 bg-[#F1F5F9] px-1 pb-2 pt-1">
+            <div className="flex items-center justify-between gap-4 rounded-xl bg-blue-800 px-4 py-3 text-white shadow-md ring-1 ring-blue-900/20">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm shadow-red-600/30">
+                  <Building2 size={16} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-100">
+                    Seçili Firma
+                  </p>
+                  <h2 className="truncate text-sm font-bold tracking-tight text-white">
+                    {activeFirma.firmaAdi}
+                  </h2>
+                  <p className="text-[11px] font-medium text-white/60">
+                    Vergi No:{" "}
+                    <span className="font-semibold text-white/90">
+                      {activeFirma.vergiNo}
+                    </span>
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">
-                  Seçili Firma
-                </p>
-                <h2 className="text-lg font-bold tracking-tight text-white">
-                  {activeFirma.firmaAdi}
-                </h2>
-                <p className="mt-0.5 text-xs font-medium text-white/60">
-                  Vergi No:{" "}
-                  <span className="font-semibold text-white/90">
-                    {activeFirma.vergiNo}
-                  </span>
-                </p>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={handleClose}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition"
-            >
-              <X size={14} />
-              Kapat
-            </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+              >
+                <X size={14} />
+                Kapat
+              </button>
+            </div>
           </div>
 
           {/* Firma Künye + İletişim Bilgileri */}
@@ -665,7 +668,11 @@ export function CompaniesScreen() {
                   </button>
                 </div>
 
-                <DocumentDetailScreen documentId={activeDocumentId} inline variant="admin" />
+                <DocumentDetailScreen
+                  documentId={activeDocumentId}
+                  inline
+                  variant="admin"
+                />
               </section>
             )}
           </div>

@@ -120,7 +120,8 @@ export function DashboardScreen() {
     }
 
     loadDashboardStats();
-  }, []); // <-- Yönlendirme için eklendi
+  }, []);
+
   const user = getSessionUser();
   const isCompany = user?.role === "COMPANY";
 
@@ -131,6 +132,7 @@ export function DashboardScreen() {
       description: "Sistemde kayıtlı firma",
       icon: Building2,
       href: "/companies",
+      clickable: true,
     },
     {
       title: "Aktif Belge",
@@ -138,6 +140,7 @@ export function DashboardScreen() {
       description: "Aktif durumda bulunan belge",
       icon: FileCheck2,
       href: "/documents?status=ACTIVE",
+      clickable: false,
     },
     {
       title: "Süresi Yaklaşan",
@@ -145,6 +148,7 @@ export function DashboardScreen() {
       description: "Yakında sona erecek kayıt",
       icon: CalendarClock,
       href: "/documents?status=EXPIRING",
+      clickable: true,
     },
     {
       title: "Yeni Bildirim",
@@ -152,6 +156,7 @@ export function DashboardScreen() {
       description: "Okunmamış bildirim",
       icon: Bell,
       href: "/notifications",
+      clickable: true,
     },
   ];
 
@@ -177,24 +182,42 @@ export function DashboardScreen() {
           return (
             <article
               key={item.title}
-              onClick={() => router.push(item.href)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  router.push(item.href);
-                }
-              }}
-              role="link"
-              tabIndex={0}
-              className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500/40"
+              onClick={
+                item.clickable ? () => router.push(item.href) : undefined
+              }
+              onKeyDown={
+                item.clickable
+                  ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        router.push(item.href);
+                      }
+                    }
+                  : undefined
+              }
+              role={item.clickable ? "link" : undefined}
+              tabIndex={item.clickable ? 0 : undefined}
+              className={`group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 ${
+                item.clickable
+                  ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-800/40"
+                  : ""
+              }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 transition group-hover:bg-red-600 group-hover:text-white">
+                <div
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 transition ${
+                    item.clickable
+                      ? "group-hover:bg-red-600 group-hover:text-white"
+                      : ""
+                  }`}
+                >
                   <Icon size={22} />
                 </div>
-                <span className="text-xs font-semibold text-slate-400 group-hover:text-red-600 flex items-center gap-0.5 transition">
-                  <ArrowUpRight size={14} />
-                </span>
+                {item.clickable && (
+                  <span className="text-xs font-semibold text-slate-400 group-hover:text-red-600 flex items-center gap-0.5 transition">
+                    <ArrowUpRight size={14} />
+                  </span>
+                )}
               </div>
 
               <div className="mt-4">

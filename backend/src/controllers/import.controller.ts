@@ -8,7 +8,6 @@ import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
 interface UploadImportBody {
-  uploadedById: number | string;
   isFullSnapshot?: boolean | string;
 }
 
@@ -68,8 +67,14 @@ export class ImportController {
         code: "IMPORT_FILE_REQUIRED",
       });
     }
+    if (!req.user) {
+      throw new AppError("Authentication required.", {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        code: "AUTHENTICATION_REQUIRED",
+      });
+    }
 
-    const uploadedById = Number(req.body.uploadedById);
+    const uploadedById = req.user.id;
 
     const isFullSnapshot =
       req.body.isFullSnapshot === undefined

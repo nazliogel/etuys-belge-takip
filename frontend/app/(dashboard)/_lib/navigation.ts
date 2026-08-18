@@ -1,4 +1,5 @@
 import {
+  Archive,
   Bell,
   Building2,
   FileSpreadsheet,
@@ -28,6 +29,12 @@ export const navigationItems = [
     icon: FileText,
     permission: "documents:view",
   },
+   {
+  label: "Kapalı Durumdaki Belgeler",
+  href: "/documents/archive",
+  icon: Archive,          
+  permission: "documents:view",
+},
   {
     label: "Excel Yükleme",
     href: "/excel-import",
