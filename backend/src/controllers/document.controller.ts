@@ -30,12 +30,20 @@ export class DocumentController {
           ? false
           : undefined;
 
+    const status =
+      req.query.status === "OPEN" ||
+      req.query.status === "CLOSED" ||
+      req.query.status === "CANCELLED"
+        ? req.query.status
+        : undefined;
+
     const data = await this.service.getDocuments(
       {
         page,
         limit,
         search,
         isActive,
+        status,
       },
       req.user.id,
       req.user.role,

@@ -30,6 +30,7 @@ export interface IncentiveDocument {
   documentEndDate: string | null;
   extensionDate: string | null;
   supportClass: string | null;
+  status: "OPEN" | "CLOSED" | "CANCELLED";
   isActive: boolean;
 }
 

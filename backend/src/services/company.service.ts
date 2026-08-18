@@ -138,6 +138,7 @@ export class CompanyService {
         documentEndDate: document.documentEndDate?.toISOString() ?? null,
         extensionDate: document.extensionDate?.toISOString() ?? null,
         supportClass: document.supportClass,
+        status: document.status,
         isActive: document.isActive,
       })),
     };
