@@ -197,11 +197,14 @@ export function DashboardScreen() {
               }
               role={item.clickable ? "link" : undefined}
               tabIndex={item.clickable ? 0 : undefined}
-              className={`group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 ${
-                item.clickable
-                  ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-800 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-800/40"
-                  : ""
-              }`}
+              className={`group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200
+  before:absolute before:inset-y-0 before:left-0 before:w-[4px] before:bg-red-600
+  ${
+    item.clickable
+      ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-800 hover:shadow-md focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/40"
+      : ""
+  }
+`}
             >
               <div className="flex items-center justify-between">
                 <div
