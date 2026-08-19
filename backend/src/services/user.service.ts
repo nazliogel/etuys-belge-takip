@@ -29,13 +29,25 @@ export class UserService {
       });
     }
 
-    const existingUser = await this.userRepository.findByEmail(payload.email);
+    const normalizedEmail = payload.email.trim().toLowerCase();
+
+    const existingUser = await this.userRepository.findByEmail(normalizedEmail);
 
     if (existingUser) {
-      throw new AppError("This email address is already in use.", {
-        statusCode: HTTP_STATUS.CONFLICT,
-        code: "EMAIL_ALREADY_EXISTS",
-      });
+      throw new AppError(
+        "Bu e-posta adresi sistemde başka bir kullanıcı tarafından kullanılıyor.",
+        {
+          statusCode: HTTP_STATUS.CONFLICT,
+          code: "EMAIL_ALREADY_EXISTS",
+          errors: [
+            {
+              field: "email",
+              message:
+                "Bu e-posta adresi sistemde başka bir kullanıcı tarafından kullanılıyor. Lütfen farklı bir e-posta adresi girin.",
+            },
+          ],
+        },
+      );
     }
 
     if (payload.role === "COMPANY" && !payload.companyId) {
@@ -72,7 +84,7 @@ export class UserService {
     const user = await this.userRepository.create({
       firstName: payload.firstName,
       lastName: payload.lastName,
-      email: payload.email.trim().toLowerCase(),
+      email: normalizedEmail,
       passwordHash,
       role: payload.role,
       isActive: true,
