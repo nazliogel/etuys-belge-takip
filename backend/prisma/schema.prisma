@@ -47,6 +47,7 @@ enum EntityType {
   COMPANY
   COMPANY_AUTHORIZATION
   INCENTIVE_DOCUMENT
+  CLOSED_INCENTIVE_DOCUMENT
 }
 
 enum ChangeSource {
@@ -103,13 +104,14 @@ model Company {
   processStatus     String?
   isActive          Boolean @default(true)
 
-  users         User[]
-  authorization CompanyAuthorization?
-  documents     IncentiveDocument[]
-  importRows    ImportRow[]
-  importChanges ImportChange[]
-  changeHistory ChangeHistory[]
-  notifications Notification[]
+  users           User[]
+  authorization   CompanyAuthorization?
+  documents       IncentiveDocument[]
+  importRows      ImportRow[]
+  closedDocuments ClosedIncentiveDocument[]
+  importChanges   ImportChange[]
+  changeHistory   ChangeHistory[]
+  notifications   Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -130,21 +132,41 @@ model CompanyAuthorization {
 }
 
 model IncentiveDocument {
-  id                 Int       @id @default(autoincrement())
+  id                 Int            @id @default(autoincrement())
   companyId          Int
-  externalDocumentId Int       @unique
+  externalDocumentId Int            @unique
   documentNumber     String?
-  documentStartDate  DateTime? @db.Date
-  documentEndDate    DateTime? @db.Date
-  extensionDate      DateTime? @db.Date
+  documentStartDate  DateTime?      @db.Date
+  documentEndDate    DateTime?      @db.Date
+  extensionDate      DateTime?      @db.Date
   supportClass       String?
-status             DocumentStatus @default(OPEN)
-isActive           Boolean        @default(true)
+  status             DocumentStatus @default(OPEN)
+  isActive           Boolean        @default(true)
 
   company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   importRows    ImportRow[]
   importChanges ImportChange[]
   changeHistory ChangeHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([documentNumber])
+}
+
+model ClosedIncentiveDocument {
+  id                 Int            @id @default(autoincrement())
+  companyId          Int
+  externalDocumentId Int            @unique
+  documentNumber     String?
+  documentStartDate  DateTime?      @db.Date
+  documentEndDate    DateTime?      @db.Date
+  extensionDate      DateTime?      @db.Date
+  supportClass       String?
+  status             DocumentStatus
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -198,8 +220,8 @@ model ImportRow {
   documentEndDate      DateTime?       @db.Date
   extensionDate        DateTime?       @db.Date
   supportClass         String?
-documentStatus       DocumentStatus?
-processStatus        String?
+  documentStatus       DocumentStatus?
+  processStatus        String?
   companyId            Int?
   documentId           Int?
   rawData              Json?

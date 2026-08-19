@@ -63,7 +63,8 @@ export type ChangeType = (typeof ChangeType)[keyof typeof ChangeType]
 export const EntityType = {
   COMPANY: 'COMPANY',
   COMPANY_AUTHORIZATION: 'COMPANY_AUTHORIZATION',
-  INCENTIVE_DOCUMENT: 'INCENTIVE_DOCUMENT'
+  INCENTIVE_DOCUMENT: 'INCENTIVE_DOCUMENT',
+  CLOSED_INCENTIVE_DOCUMENT: 'CLOSED_INCENTIVE_DOCUMENT'
 } as const
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType]

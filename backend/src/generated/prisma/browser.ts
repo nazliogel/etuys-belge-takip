@@ -38,6 +38,11 @@ export type CompanyAuthorization = Prisma.CompanyAuthorizationModel
  */
 export type IncentiveDocument = Prisma.IncentiveDocumentModel
 /**
+ * Model ClosedIncentiveDocument
+ * 
+ */
+export type ClosedIncentiveDocument = Prisma.ClosedIncentiveDocumentModel
+/**
  * Model ImportBatch
  * 
  */

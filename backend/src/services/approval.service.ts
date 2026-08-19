@@ -541,8 +541,6 @@ export class ApprovalService {
 
                     supportClass: row.supportClass,
 
-                    status: row.documentStatus ?? "OPEN",
-
                     isActive: true,
                   },
                 });
@@ -613,29 +611,6 @@ export class ApprovalService {
                   },
                   data: {
                     supportClass: change.newValue,
-                  },
-                });
-              } else if (change.fieldName === "status") {
-                if (
-                  change.newValue !== "OPEN" &&
-                  change.newValue !== "CLOSED" &&
-                  change.newValue !== "CANCELLED"
-                ) {
-                  throw new AppError(
-                    `Invalid document status: ${change.newValue}`,
-                    {
-                      statusCode: HTTP_STATUS.BAD_REQUEST,
-                      code: "INVALID_DOCUMENT_STATUS",
-                    },
-                  );
-                }
-
-                await tx.incentiveDocument.update({
-                  where: {
-                    id: document.id,
-                  },
-                  data: {
-                    status: change.newValue,
                   },
                 });
               } else if (change.fieldName === "isActive") {
