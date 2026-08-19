@@ -55,6 +55,7 @@ export const ModelName = {
   Company: 'Company',
   CompanyAuthorization: 'CompanyAuthorization',
   IncentiveDocument: 'IncentiveDocument',
+  ClosedIncentiveDocument: 'ClosedIncentiveDocument',
   ImportBatch: 'ImportBatch',
   ImportRow: 'ImportRow',
   ImportChange: 'ImportChange',
@@ -136,6 +137,23 @@ export const IncentiveDocumentScalarFieldEnum = {
 } as const
 
 export type IncentiveDocumentScalarFieldEnum = (typeof IncentiveDocumentScalarFieldEnum)[keyof typeof IncentiveDocumentScalarFieldEnum]
+
+
+export const ClosedIncentiveDocumentScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  documentStartDate: 'documentStartDate',
+  documentEndDate: 'documentEndDate',
+  extensionDate: 'extensionDate',
+  supportClass: 'supportClass',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClosedIncentiveDocumentScalarFieldEnum = (typeof ClosedIncentiveDocumentScalarFieldEnum)[keyof typeof ClosedIncentiveDocumentScalarFieldEnum]
 
 
 export const ImportBatchScalarFieldEnum = {

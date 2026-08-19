@@ -9,7 +9,6 @@ type DocumentListQuery = {
   limit: number;
   search?: string;
   isActive?: boolean;
-  status?: "OPEN" | "CLOSED" | "CANCELLED";
 };
 
 export class DocumentService {
@@ -44,13 +43,11 @@ export class DocumentService {
         take: limit,
         search: query.search,
         isActive: query.isActive,
-        status: query.status,
         companyId,
       }),
       this.documentRepository.count({
         search: query.search,
         isActive: query.isActive,
-        status: query.status,
         companyId,
       }),
     ]);

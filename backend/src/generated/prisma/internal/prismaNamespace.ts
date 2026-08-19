@@ -401,6 +401,7 @@ export const ModelName = {
   Company: 'Company',
   CompanyAuthorization: 'CompanyAuthorization',
   IncentiveDocument: 'IncentiveDocument',
+  ClosedIncentiveDocument: 'ClosedIncentiveDocument',
   ImportBatch: 'ImportBatch',
   ImportRow: 'ImportRow',
   ImportChange: 'ImportChange',
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyAuthorization" | "incentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting"
+    modelProps: "user" | "company" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -719,6 +720,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.IncentiveDocumentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.IncentiveDocumentCountAggregateOutputType> | number
+        }
+      }
+    }
+    ClosedIncentiveDocument: {
+      payload: Prisma.$ClosedIncentiveDocumentPayload<ExtArgs>
+      fields: Prisma.ClosedIncentiveDocumentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClosedIncentiveDocumentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClosedIncentiveDocumentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>
+        }
+        findFirst: {
+          args: Prisma.ClosedIncentiveDocumentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClosedIncentiveDocumentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>
+        }
+        findMany: {
+          args: Prisma.ClosedIncentiveDocumentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>[]
+        }
+        create: {
+          args: Prisma.ClosedIncentiveDocumentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>
+        }
+        createMany: {
+          args: Prisma.ClosedIncentiveDocumentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClosedIncentiveDocumentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>[]
+        }
+        delete: {
+          args: Prisma.ClosedIncentiveDocumentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>
+        }
+        update: {
+          args: Prisma.ClosedIncentiveDocumentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClosedIncentiveDocumentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClosedIncentiveDocumentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClosedIncentiveDocumentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClosedIncentiveDocumentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosedIncentiveDocumentPayload>
+        }
+        aggregate: {
+          args: Prisma.ClosedIncentiveDocumentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClosedIncentiveDocument>
+        }
+        groupBy: {
+          args: Prisma.ClosedIncentiveDocumentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClosedIncentiveDocumentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClosedIncentiveDocumentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClosedIncentiveDocumentCountAggregateOutputType> | number
         }
       }
     }
@@ -1264,6 +1339,23 @@ export const IncentiveDocumentScalarFieldEnum = {
 export type IncentiveDocumentScalarFieldEnum = (typeof IncentiveDocumentScalarFieldEnum)[keyof typeof IncentiveDocumentScalarFieldEnum]
 
 
+export const ClosedIncentiveDocumentScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  documentStartDate: 'documentStartDate',
+  documentEndDate: 'documentEndDate',
+  extensionDate: 'extensionDate',
+  supportClass: 'supportClass',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClosedIncentiveDocumentScalarFieldEnum = (typeof ClosedIncentiveDocumentScalarFieldEnum)[keyof typeof ClosedIncentiveDocumentScalarFieldEnum]
+
+
 export const ImportBatchScalarFieldEnum = {
   id: 'id',
   fileName: 'fileName',
@@ -1792,6 +1884,7 @@ export type GlobalOmitConfig = {
   company?: Prisma.CompanyOmit
   companyAuthorization?: Prisma.CompanyAuthorizationOmit
   incentiveDocument?: Prisma.IncentiveDocumentOmit
+  closedIncentiveDocument?: Prisma.ClosedIncentiveDocumentOmit
   importBatch?: Prisma.ImportBatchOmit
   importRow?: Prisma.ImportRowOmit
   importChange?: Prisma.ImportChangeOmit
