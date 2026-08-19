@@ -136,7 +136,7 @@ export default function UsersPage() {
     return () => window.clearTimeout(timer);
   }, [companySearch, selectedCompany]);
   useEffect(() => {
-    if (status.type !== "success") return;
+    if (status.type !== "success" && status.type !== "error") return;
 
     window.requestAnimationFrame(() => {
       feedbackRef.current?.scrollIntoView({
@@ -145,11 +145,13 @@ export default function UsersPage() {
       });
     });
 
-    const timer = window.setTimeout(() => {
-      setStatus({ type: "idle" });
-    }, 4000);
+    if (status.type === "success") {
+      const timer = window.setTimeout(() => {
+        setStatus({ type: "idle" });
+      }, 4000);
 
-    return () => window.clearTimeout(timer);
+      return () => window.clearTimeout(timer);
+    }
   }, [status.type]);
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -426,6 +428,7 @@ export default function UsersPage() {
 
       {status.type === "error" && (
         <div
+          ref={feedbackRef}
           role="alert"
           className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
         >
