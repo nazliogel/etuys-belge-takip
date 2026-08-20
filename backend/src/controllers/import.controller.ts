@@ -9,6 +9,7 @@ import { HTTP_STATUS } from "../utils/http-status.js";
 
 interface UploadImportBody {
   isFullSnapshot?: boolean | string;
+  importType?: "OPEN" | "CLOSED";
 }
 
 export class ImportController {
@@ -82,10 +83,13 @@ export class ImportController {
         : req.body.isFullSnapshot === true ||
           req.body.isFullSnapshot === "true";
 
+    const importType = req.body.importType === "CLOSED" ? "CLOSED" : "OPEN";
+
     const data = await this.service.createImportBatch({
       file: req.file,
       uploadedById,
       isFullSnapshot,
+      importType,
     });
 
     return sendSuccessResponse(res, {

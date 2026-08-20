@@ -15,8 +15,14 @@ export class ImportService {
     file: Express.Multer.File;
     uploadedById: number;
     isFullSnapshot?: boolean;
+    importType?: "OPEN" | "CLOSED";
   }) {
-    const { file, uploadedById, isFullSnapshot = true } = input;
+    const {
+      file,
+      uploadedById,
+      isFullSnapshot = true,
+      importType = "OPEN",
+    } = input;
 
     try {
       return await this.repository.createBatch({
@@ -24,6 +30,7 @@ export class ImportService {
         storedFileName: file.filename,
         uploadedById,
         isFullSnapshot,
+        importType,
       });
     } catch (error) {
       await fs.unlink(file.path).catch(() => undefined);

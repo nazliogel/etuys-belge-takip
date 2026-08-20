@@ -4,29 +4,32 @@ import ExcelJS from "exceljs";
 
 import { DocumentStatus } from "../generated/prisma/client.js";
 
-export interface ParsedImportRow {
+export interface ParsedClosedImportRow {
   rowNumber: number;
   externalCompanyId: number | null;
   companyName: string | null;
   taxNumber: string | null;
   authorizationEndDate: Date | null;
+
   externalDocumentId: number | null;
   documentNumber: string | null;
   documentStartDate: Date | null;
   documentEndDate: Date | null;
   extensionDate: Date | null;
   supportClass: string | null;
+
   documentStatus: DocumentStatus | null;
   processStatus: string | null;
+
   rawData: Record<string, unknown>;
   errorMessage: string | null;
 }
 
-export interface ParseExcelResult {
+export interface ParseClosedExcelResult {
   totalRowCount: number;
   validRowCount: number;
   invalidRowCount: number;
-  rows: ParsedImportRow[];
+  rows: ParsedClosedImportRow[];
 }
 
 const EXPECTED_HEADERS = {
@@ -45,8 +48,8 @@ const EXPECTED_HEADERS = {
 
 type HeaderKey = keyof typeof EXPECTED_HEADERS;
 
-export class ExcelParserService {
-  async parse(storedFileName: string): Promise<ParseExcelResult> {
+export class ClosedExcelParserService {
+  async parse(storedFileName: string): Promise<ParseClosedExcelResult> {
     const filePath = path.resolve(
       process.cwd(),
       "uploads",
@@ -69,7 +72,7 @@ export class ExcelParserService {
 
     this.validateHeaders(headerMap);
 
-    const rows: ParsedImportRow[] = [];
+    const rows: ParsedClosedImportRow[] = [];
 
     let validRowCount = 0;
     let invalidRowCount = 0;
@@ -138,7 +141,7 @@ export class ExcelParserService {
     rowNumber: number,
     row: ExcelJS.Row,
     headerMap: Partial<Record<HeaderKey, number>>,
-  ): ParsedImportRow {
+  ): ParsedClosedImportRow {
     const rawData = this.buildRawData(row, headerMap);
 
     const externalCompanyId = this.getNumberValue(
@@ -185,6 +188,8 @@ export class ExcelParserService {
       row.getCell(headerMap.processStatus!).value,
     );
 
+    const documentStatus = this.getDocumentStatus(processStatus);
+
     const errors: string[] = [];
 
     if (!externalCompanyId) {
@@ -193,6 +198,14 @@ export class ExcelParserService {
 
     if (!companyName) {
       errors.push("Firma Adı zorunludur.");
+    }
+
+    if (!externalDocumentId) {
+      errors.push("Belge ID zorunludur.");
+    }
+
+    if (!documentStatus) {
+      errors.push("İşlem Durumu kapalı veya iptal olmalıdır.");
     }
 
     return {
@@ -207,11 +220,31 @@ export class ExcelParserService {
       documentEndDate,
       extensionDate,
       supportClass,
-      documentStatus: DocumentStatus.OPEN,
+      documentStatus,
       processStatus,
       rawData,
       errorMessage: errors.length > 0 ? errors.join(" ") : null,
     };
+  }
+
+  private getDocumentStatus(
+    processStatus: string | null,
+  ): DocumentStatus | null {
+    if (!processStatus) {
+      return null;
+    }
+
+    const normalized = processStatus.toLocaleLowerCase("tr-TR");
+
+    if (normalized.includes("iptal")) {
+      return DocumentStatus.CANCELLED;
+    }
+
+    if (normalized.includes("kapalı")) {
+      return DocumentStatus.CLOSED;
+    }
+
+    return null;
   }
 
   private buildRawData(

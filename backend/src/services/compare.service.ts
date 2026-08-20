@@ -30,6 +30,7 @@ type ExistingCompany = Prisma.CompanyGetPayload<{
   include: {
     authorization: true;
     documents: true;
+    closedDocuments: true;
   };
 }>;
 
@@ -128,6 +129,7 @@ export class CompareService {
             include: {
               authorization: true,
               documents: true,
+              closedDocuments: true,
             },
           });
 
@@ -170,7 +172,11 @@ export class CompareService {
 
             const existingCompany = companyMap.get(row.externalCompanyId);
 
-            const result = this.compareRow(row, existingCompany);
+            const result = this.compareRow(
+              row,
+              existingCompany,
+              batch.importType,
+            );
 
             if (result.status === "NEW") {
               newRowCount += 1;
@@ -239,27 +245,49 @@ export class CompareService {
             }
 
             const missingDocuments =
-              await transaction.incentiveDocument.findMany({
-                where: {
-                  company: {
-                    externalCompanyId: {
-                      in: externalCompanyIds,
-                    },
-                  },
-                  ...(externalDocumentIds.length > 0
-                    ? {
-                        externalDocumentId: {
-                          notIn: externalDocumentIds,
+              batch.importType === "CLOSED"
+                ? await transaction.closedIncentiveDocument.findMany({
+                    where: {
+                      company: {
+                        externalCompanyId: {
+                          in: externalCompanyIds,
                         },
-                      }
-                    : {}),
-                },
-                select: {
-                  id: true,
-                  companyId: true,
-                  externalDocumentId: true,
-                },
-              });
+                      },
+                      ...(externalDocumentIds.length > 0
+                        ? {
+                            externalDocumentId: {
+                              notIn: externalDocumentIds,
+                            },
+                          }
+                        : {}),
+                    },
+                    select: {
+                      id: true,
+                      companyId: true,
+                      externalDocumentId: true,
+                    },
+                  })
+                : await transaction.incentiveDocument.findMany({
+                    where: {
+                      company: {
+                        externalCompanyId: {
+                          in: externalCompanyIds,
+                        },
+                      },
+                      ...(externalDocumentIds.length > 0
+                        ? {
+                            externalDocumentId: {
+                              notIn: externalDocumentIds,
+                            },
+                          }
+                        : {}),
+                    },
+                    select: {
+                      id: true,
+                      companyId: true,
+                      externalDocumentId: true,
+                    },
+                  });
 
             missingDocumentCount = missingDocuments.length;
 
@@ -268,8 +296,11 @@ export class CompareService {
                 importBatchId,
                 importRowId: null,
                 companyId: document.companyId,
-                documentId: document.id,
-                entityType: "INCENTIVE_DOCUMENT",
+                documentId: batch.importType === "OPEN" ? document.id : null,
+                entityType:
+                  batch.importType === "CLOSED"
+                    ? "CLOSED_INCENTIVE_DOCUMENT"
+                    : "INCENTIVE_DOCUMENT",
                 changeType: "UPDATED",
                 fieldName: "__missing_in_snapshot__",
                 oldValue: "false",
@@ -348,10 +379,11 @@ export class CompareService {
 
   private compareRow(
     row: ImportRowData,
-    company?: ExistingCompany,
+    company: ExistingCompany | undefined,
+    importType: "OPEN" | "CLOSED",
   ): RowComparisonResult {
     if (!company) {
-      return this.createNewCompanyResult(row);
+      return this.createNewCompanyResult(row, importType);
     }
 
     const changes: ChangeInput[] = [];
@@ -359,38 +391,64 @@ export class CompareService {
     this.compareCompany(row, company, changes);
     this.compareAuthorization(row, company, changes);
 
-    const document =
-      row.externalDocumentId !== null
+    const openDocument =
+      importType === "OPEN" && row.externalDocumentId !== null
         ? company.documents.find(
             (item) => item.externalDocumentId === row.externalDocumentId,
           )
         : undefined;
 
+    const closedDocument =
+      importType === "CLOSED" && row.externalDocumentId !== null
+        ? company.closedDocuments.find(
+            (item) => item.externalDocumentId === row.externalDocumentId,
+          )
+        : undefined;
+
     if (row.externalDocumentId !== null) {
-      if (!document) {
-        changes.push({
-          entityType: "INCENTIVE_DOCUMENT",
-          changeType: "CREATED",
-          fieldName: "__entity__",
-          oldValue: null,
-          newValue: String(row.externalDocumentId),
-          companyId: company.id,
-          documentId: null,
-        });
+      if (importType === "OPEN") {
+        if (!openDocument) {
+          changes.push({
+            entityType: "INCENTIVE_DOCUMENT",
+            changeType: "CREATED",
+            fieldName: "__entity__",
+            oldValue: null,
+            newValue: String(row.externalDocumentId),
+            companyId: company.id,
+            documentId: null,
+          });
+        } else {
+          this.compareDocument(row, company.id, openDocument, changes);
+        }
       } else {
-        this.compareDocument(row, company.id, document, changes);
+        if (!closedDocument) {
+          changes.push({
+            entityType: "CLOSED_INCENTIVE_DOCUMENT",
+            changeType: "CREATED",
+            fieldName: "__entity__",
+            oldValue: null,
+            newValue: String(row.externalDocumentId),
+            companyId: company.id,
+            documentId: null,
+          });
+        } else {
+          this.compareClosedDocument(row, company.id, closedDocument, changes);
+        }
       }
     }
 
     return {
       status: changes.length > 0 ? "CHANGED" : "UNCHANGED",
       companyId: company.id,
-      documentId: document?.id ?? null,
+      documentId: importType === "OPEN" ? (openDocument?.id ?? null) : null,
       changes,
     };
   }
 
-  private createNewCompanyResult(row: ImportRowData): RowComparisonResult {
+  private createNewCompanyResult(
+    row: ImportRowData,
+    importType: "OPEN" | "CLOSED",
+  ): RowComparisonResult {
     const changes: ChangeInput[] = [
       {
         entityType: "COMPANY",
@@ -417,7 +475,10 @@ export class CompareService {
 
     if (row.externalDocumentId !== null) {
       changes.push({
-        entityType: "INCENTIVE_DOCUMENT",
+        entityType:
+          importType === "CLOSED"
+            ? "CLOSED_INCENTIVE_DOCUMENT"
+            : "INCENTIVE_DOCUMENT",
         changeType: "CREATED",
         fieldName: "__entity__",
         oldValue: null,
@@ -559,6 +620,61 @@ export class CompareService {
         newValue: "true",
       });
     }
+  }
+
+  private compareClosedDocument(
+    row: ImportRowData,
+    companyId: number,
+    document: ExistingCompany["closedDocuments"][number],
+    changes: ChangeInput[],
+  ) {
+    const baseData = {
+      entityType: "CLOSED_INCENTIVE_DOCUMENT" as const,
+      companyId,
+      documentId: null,
+    };
+
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "documentNumber",
+      oldValue: document.documentNumber,
+      newValue: row.documentNumber,
+    });
+
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "documentStartDate",
+      oldValue: document.documentStartDate,
+      newValue: row.documentStartDate,
+    });
+
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "documentEndDate",
+      oldValue: document.documentEndDate,
+      newValue: row.documentEndDate,
+    });
+
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "extensionDate",
+      oldValue: document.extensionDate,
+      newValue: row.extensionDate,
+    });
+
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "supportClass",
+      oldValue: document.supportClass,
+      newValue: row.supportClass,
+    });
+
+    this.addChangeIfDifferent(changes, {
+      ...baseData,
+      fieldName: "status",
+      oldValue: document.status,
+      newValue: row.documentStatus,
+    });
   }
 
   private addChangeIfDifferent(

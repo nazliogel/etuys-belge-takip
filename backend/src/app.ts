@@ -6,6 +6,7 @@ import { errorHandler } from "./middlewares/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { companyRouter } from "./routes/company.routes.js";
 import { documentRouter } from "./routes/document.routes.js";
+import { closedDocumentRouter } from "./routes/closed-document.routes.js";
 import { importRouter } from "./routes/import.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 
@@ -41,6 +42,7 @@ app.get("/health", async (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/companies", companyRouter);
 app.use("/api/documents", documentRouter);
+app.use("/api/closed-documents", closedDocumentRouter);
 app.use("/api/imports", importRouter);
 app.use("/api/users", userRouter);
 

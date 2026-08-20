@@ -4,6 +4,7 @@ import { AppError } from "../errors/app-error.js";
 import type { ImportRepository } from "../repositories/import.repository.js";
 import type { ImportRowRepository } from "../repositories/import-row.repository.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
+import type { ClosedExcelParserService } from "./closed-excel-parser.service.js";
 import type { ExcelParserService } from "./excel-parser.service.js";
 
 export class ImportProcessService {
@@ -11,6 +12,7 @@ export class ImportProcessService {
     private readonly importRepository: ImportRepository,
     private readonly importRowRepository: ImportRowRepository,
     private readonly excelParser: ExcelParserService,
+    private readonly closedExcelParser: ClosedExcelParserService,
   ) {}
 
   async process(importBatchId: number) {
@@ -47,7 +49,10 @@ export class ImportProcessService {
     await this.importRepository.updateStatus(importBatchId, "PROCESSING");
 
     try {
-      const parsedResult = await this.excelParser.parse(batch.storedFileName);
+      const parsedResult =
+        batch.importType === "CLOSED"
+          ? await this.closedExcelParser.parse(batch.storedFileName)
+          : await this.excelParser.parse(batch.storedFileName);
 
       await this.importRowRepository.deleteByImportBatchId(importBatchId);
 
@@ -66,6 +71,7 @@ export class ImportProcessService {
           documentEndDate: row.documentEndDate,
           extensionDate: row.extensionDate,
           supportClass: row.supportClass,
+          documentStatus: row.documentStatus,
           processStatus: row.processStatus,
           rawData: row.rawData as Prisma.InputJsonValue,
           errorMessage: row.errorMessage,

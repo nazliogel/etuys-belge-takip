@@ -8,6 +8,7 @@ export class ImportRepository {
     storedFileName: string;
     uploadedById: number;
     isFullSnapshot?: boolean;
+    importType?: "OPEN" | "CLOSED";
   }) {
     return prisma.importBatch.create({
       data: {
@@ -15,6 +16,7 @@ export class ImportRepository {
         storedFileName: data.storedFileName,
         uploadedById: data.uploadedById,
         isFullSnapshot: data.isFullSnapshot ?? true,
+        importType: data.importType ?? "OPEN",
         status: "UPLOADED",
       },
     });

@@ -21,6 +21,11 @@ enum ImportBatchStatus {
   CANCELLED
 }
 
+enum ImportType {
+  OPEN
+  CLOSED
+}
+
 enum ImportRowStatus {
   PENDING
   NEW
@@ -180,6 +185,7 @@ model ImportBatch {
   fileName          String
   storedFileName    String?
   status            ImportBatchStatus @default(UPLOADED)
+  importType        ImportType        @default(OPEN)
   isFullSnapshot    Boolean           @default(true)
   totalRowCount     Int               @default(0)
   validRowCount     Int               @default(0)

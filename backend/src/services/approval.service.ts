@@ -16,8 +16,8 @@ export class ApprovalService {
       input;
 
     /* =====================================================
-       1. BATCH KONTROLÜ
-    ===================================================== */
+        1. BATCH KONTROLÜ
+      ===================================================== */
 
     const batch = await prisma.importBatch.findUnique({
       where: {
@@ -40,8 +40,8 @@ export class ApprovalService {
     }
 
     /* =====================================================
-       2. TRANSACTION
-    ===================================================== */
+        2. TRANSACTION
+      ===================================================== */
 
     return prisma.$transaction(
       async (tx) => {
@@ -63,8 +63,8 @@ export class ApprovalService {
         }
 
         /* =================================================
-           3. DAHA ÖNCE KARAR VERİLMİŞ Mİ?
-        ================================================= */
+            3. DAHA ÖNCE KARAR VERİLMİŞ Mİ?
+          ================================================= */
 
         if (change.status !== "PENDING") {
           throw new AppError("This change has already been reviewed.", {
@@ -76,8 +76,8 @@ export class ApprovalService {
         const row = change.importRow;
 
         /* =================================================
-           HELPER: DATE
-        ================================================= */
+            HELPER: DATE
+          ================================================= */
 
         const parseDate = (value: string | null): Date | null => {
           if (!value) {
@@ -97,8 +97,8 @@ export class ApprovalService {
         };
 
         /* =================================================
-           HELPER: BOOLEAN
-        ================================================= */
+            HELPER: BOOLEAN
+          ================================================= */
 
         const parseBoolean = (value: string | null): boolean => {
           if (!value) {
@@ -109,8 +109,8 @@ export class ApprovalService {
         };
 
         /* =================================================
-           BAĞLANTI ID'LERİ
-        ================================================= */
+            BAĞLANTI ID'LERİ
+          ================================================= */
 
         let companyId = change.companyId ?? row?.companyId ?? null;
 
@@ -119,8 +119,8 @@ export class ApprovalService {
         let entityId: number | null = null;
 
         /* =================================================
-           HELPER: COMPANY BUL
-        ================================================= */
+            HELPER: COMPANY BUL
+          ================================================= */
 
         const findCompany = async () => {
           if (companyId) {
@@ -164,8 +164,8 @@ export class ApprovalService {
         };
 
         /* =================================================
-           HELPER: DOCUMENT BUL
-        ================================================= */
+            HELPER: DOCUMENT BUL
+          ================================================= */
 
         const findDocument = async () => {
           if (documentId) {
@@ -209,9 +209,41 @@ export class ApprovalService {
           return document;
         };
 
+        const findClosedDocument = async () => {
+          if (!row?.externalDocumentId) {
+            throw new AppError(
+              "Closed document information could not be found.",
+              {
+                statusCode: HTTP_STATUS.BAD_REQUEST,
+                code: "CLOSED_DOCUMENT_INFORMATION_MISSING",
+              },
+            );
+          }
+
+          const document = await tx.closedIncentiveDocument.findUnique({
+            where: {
+              externalDocumentId: row.externalDocumentId,
+            },
+          });
+
+          if (!document) {
+            throw new AppError(
+              "Closed document could not be found. Approve the new closed document record first.",
+              {
+                statusCode: HTTP_STATUS.BAD_REQUEST,
+                code: "CLOSED_DOCUMENT_NOT_FOUND",
+              },
+            );
+          }
+
+          companyId = document.companyId;
+
+          return document;
+        };
+
         /* =================================================
-           4. REDDEDİLDİYSE CANLI DB'YE DOKUNMA
-        ================================================= */
+            4. REDDEDİLDİYSE CANLI DB'YE DOKUNMA
+          ================================================= */
 
         if (status === "REJECTED") {
           const reviewedChange = await tx.importChange.update({
@@ -283,10 +315,10 @@ export class ApprovalService {
         }
 
         /* =================================================
-           5. ONAYLANDI
-           
-           BURADAN İTİBAREN CANLI DB DEĞİŞİR.
-        ================================================= */
+            5. ONAYLANDI
+            
+            BURADAN İTİBAREN CANLI DB DEĞİŞİR.
+          ================================================= */
 
         if (!row) {
           /*
@@ -309,13 +341,13 @@ export class ApprovalService {
         }
 
         /* =================================================
-           6. YENİ LİSTEDE YOK
-           
-           Proje kuralı:
-           kayıt silinmez,
-           pasife alınmaz,
-           canlı DB değiştirilmez.
-        ================================================= */
+            6. YENİ LİSTEDE YOK
+            
+            Proje kuralı:
+            kayıt silinmez,
+            pasife alınmaz,
+            canlı DB değiştirilmez.
+          ================================================= */
 
         const isMissingSnapshot =
           change.fieldName === "__missing_in_snapshot__" ||
@@ -323,8 +355,8 @@ export class ApprovalService {
 
         if (!isMissingSnapshot) {
           /* ===============================================
-             COMPANY
-          =============================================== */
+              COMPANY
+            =============================================== */
 
           if (change.entityType === "COMPANY") {
             /*
@@ -430,8 +462,8 @@ export class ApprovalService {
             }
           } else if (change.entityType === "COMPANY_AUTHORIZATION") {
             /* ===============================================
-             COMPANY AUTHORIZATION
-          =============================================== */
+              COMPANY AUTHORIZATION
+            =============================================== */
             const company = await findCompany();
 
             companyId = company.id;
@@ -498,8 +530,8 @@ export class ApprovalService {
             }
           } else if (change.entityType === "INCENTIVE_DOCUMENT") {
             /* ===============================================
-             INCENTIVE DOCUMENT
-          =============================================== */
+              INCENTIVE DOCUMENT
+            =============================================== */
             /*
              * Yeni belge.
              */
@@ -632,10 +664,154 @@ export class ApprovalService {
                 );
               }
             }
+          } else if (change.entityType === "CLOSED_INCENTIVE_DOCUMENT") {
+            /* ===============================================
+     CLOSED INCENTIVE DOCUMENT
+  =============================================== */
+
+            if (
+              change.changeType === "CREATED" ||
+              change.fieldName === "__entity__"
+            ) {
+              if (!row?.externalDocumentId) {
+                throw new AppError("External document id is required.", {
+                  statusCode: HTTP_STATUS.BAD_REQUEST,
+                  code: "EXTERNAL_DOCUMENT_ID_REQUIRED",
+                });
+              }
+
+              if (!row.documentStatus) {
+                throw new AppError("Closed document status is required.", {
+                  statusCode: HTTP_STATUS.BAD_REQUEST,
+                  code: "CLOSED_DOCUMENT_STATUS_REQUIRED",
+                });
+              }
+
+              const company = await findCompany();
+
+              companyId = company.id;
+
+              let document = await tx.closedIncentiveDocument.findUnique({
+                where: {
+                  externalDocumentId: row.externalDocumentId,
+                },
+              });
+
+              if (!document) {
+                document = await tx.closedIncentiveDocument.create({
+                  data: {
+                    companyId: company.id,
+                    externalDocumentId: row.externalDocumentId,
+                    documentNumber: row.documentNumber,
+                    documentStartDate: row.documentStartDate,
+                    documentEndDate: row.documentEndDate,
+                    extensionDate: row.extensionDate,
+                    supportClass: row.supportClass,
+                    status: row.documentStatus,
+                  },
+                });
+              }
+
+              entityId = document.id;
+
+              await tx.importRow.update({
+                where: {
+                  id: row.id,
+                },
+                data: {
+                  companyId: company.id,
+                  documentId: null,
+                },
+              });
+            } else {
+              const document = await findClosedDocument();
+
+              companyId = document.companyId;
+              entityId = document.id;
+              documentId = null;
+
+              if (change.fieldName === "documentNumber") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentNumber: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "documentStartDate") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentStartDate: parseDate(change.newValue),
+                  },
+                });
+              } else if (change.fieldName === "documentEndDate") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentEndDate: parseDate(change.newValue),
+                  },
+                });
+              } else if (change.fieldName === "extensionDate") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    extensionDate: parseDate(change.newValue),
+                  },
+                });
+              } else if (change.fieldName === "supportClass") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    supportClass: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "status") {
+                if (
+                  change.newValue !== "CLOSED" &&
+                  change.newValue !== "CANCELLED"
+                ) {
+                  throw new AppError(
+                    `Invalid closed document status: ${change.newValue}`,
+                    {
+                      statusCode: HTTP_STATUS.BAD_REQUEST,
+                      code: "INVALID_CLOSED_DOCUMENT_STATUS",
+                    },
+                  );
+                }
+
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    status: change.newValue,
+                  },
+                });
+              } else {
+                throw new AppError(
+                  `Unsupported closed incentive document field: ${change.fieldName}`,
+                  {
+                    statusCode: HTTP_STATUS.BAD_REQUEST,
+                    code: "UNSUPPORTED_CLOSED_DOCUMENT_FIELD",
+                  },
+                );
+              }
+            }
           } else {
             /* ===============================================
-             TANIMSIZ ENTITY
-          =============================================== */
+              TANIMSIZ ENTITY
+            =============================================== */
+
             throw new AppError(
               `Unsupported entity type: ${change.entityType}`,
               {
@@ -646,10 +822,10 @@ export class ApprovalService {
           }
 
           /* ===============================================
-             7. CHANGE HISTORY
-             
-             Canlı veri değiştiyse geçmişe yaz.
-          =============================================== */
+              7. CHANGE HISTORY
+              
+              Canlı veri değiştiyse geçmişe yaz.
+            =============================================== */
 
           if (entityId !== null) {
             await tx.changeHistory.create({
@@ -675,8 +851,8 @@ export class ApprovalService {
         }
 
         /* =================================================
-           8. IMPORT CHANGE = APPROVED
-        ================================================= */
+            8. IMPORT CHANGE = APPROVED
+          ================================================= */
 
         const reviewedChange = await tx.importChange.update({
           where: {
@@ -697,8 +873,8 @@ export class ApprovalService {
         });
 
         /* =================================================
-           9. SAYILARI HESAPLA
-        ================================================= */
+            9. SAYILARI HESAPLA
+          ================================================= */
 
         const pendingCount = await tx.importChange.count({
           where: {
@@ -722,8 +898,8 @@ export class ApprovalService {
         });
 
         /* =================================================
-           10. TÜM KARARLAR VERİLDİYSE BATCH TAMAMLA
-        ================================================= */
+            10. TÜM KARARLAR VERİLDİYSE BATCH TAMAMLA
+          ================================================= */
 
         let batchStatus = batch.status;
 
