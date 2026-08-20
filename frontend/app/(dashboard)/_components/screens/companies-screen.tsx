@@ -600,6 +600,7 @@ export function CompaniesScreen() {
               companyId={activeFirma.id}
               selectedDocumentId={activeDocumentId}
               onSelectDocument={handleOpenDocument}
+              variant="admin"
             />
 
             {/* AÇIK BELGE SEKMELERİ */}

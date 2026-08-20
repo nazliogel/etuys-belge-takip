@@ -23,10 +23,7 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     "settings:manage",
   ],
 
-  COMPANY: [
-    "documents:view",
-    "notifications:view",
-  ],
+  COMPANY: ["documents:view", "notifications:view"],
 };
 
 export function hasPermission(role: UserRole, permission: Permission): boolean {

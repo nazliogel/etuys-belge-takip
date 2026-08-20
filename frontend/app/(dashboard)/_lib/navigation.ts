@@ -24,17 +24,23 @@ export const navigationItems = [
     permission: "companies:view",
   },
   {
+    label: "Belgeler",
+    href: "/documents",
+    icon: FileText,
+    permission: "documents:view-all",
+  },
+  {
     label: "Açık Durumdaki Belgeler",
     href: "/documents",
     icon: FileText,
     permission: "documents:view",
   },
-   {
-  label: "Kapalı Durumdaki Belgeler",
-  href: "/documents/archive",
-  icon: Archive,          
-  permission: "documents:view",
-},
+  {
+    label: "Kapalı Durumdaki Belgeler",
+    href: "/documents/archive",
+    icon: Archive,
+    permission: "documents:view",
+  },
   {
     label: "Excel Yükleme",
     href: "/excel-import",
@@ -51,7 +57,7 @@ export const navigationItems = [
     label: "Kullanıcı Yönetimi",
     href: "/users",
     icon: Users,
-    permission: "companies:view",
+    permission: "users:manage",
   },
 ] satisfies Array<{
   label: string;

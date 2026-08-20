@@ -52,7 +52,9 @@ export default function CompanyDetailPage() {
         </div>
         <div>
           <p className="text-sm font-medium text-indigo-600">Firma detayı</p>
-          <h1 className="text-2xl font-bold text-slate-900">{firma.firmaAdi}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {firma.firmaAdi}
+          </h1>
         </div>
       </section>
 
@@ -97,7 +99,9 @@ export default function CompanyDetailPage() {
           </section>
         )}
 
-        {activeTab === "documents" && <DocumentsScreen companyId={id} />}
+        {activeTab === "documents" && (
+          <DocumentsScreen companyId={id} variant="admin" />
+        )}
       </div>
     </div>
   );

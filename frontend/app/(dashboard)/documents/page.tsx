@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 import RouteGuard from "@/components/auth/route-guard";
+import { getSessionUser } from "@/lib/mock-auth";
 import { DocumentsScreen } from "../_components/screens/documents-screen";
 import { DocumentDetailScreen } from "../_components/screens/document-detail-screen";
-
 export default function DocumentsPage() {
+  const user = getSessionUser();
+  const variant = user?.role === "ADMIN" ? "admin" : "company";
+
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
     null,
   );
@@ -49,6 +52,7 @@ export default function DocumentsPage() {
         <DocumentsScreen
           selectedDocumentId={selectedDocumentId}
           onSelectDocument={handleSelectDocument}
+          variant={variant}
         />
 
         {selectedDocumentId && (
@@ -56,9 +60,10 @@ export default function DocumentsPage() {
             ref={detailRef}
             className="scroll-mt-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
           >
-           
-
-            <DocumentDetailScreen documentId={selectedDocumentId} />
+            <DocumentDetailScreen
+              documentId={selectedDocumentId}
+              variant={variant}
+            />
           </div>
         )}
       </div>

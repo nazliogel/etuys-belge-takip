@@ -95,6 +95,7 @@ type DocumentDetailResponse = {
 interface DocumentsScreenProps {
   companyId?: string;
   selectedDocumentId?: string | null;
+  variant?: "admin" | "company";
   onSelectDocument?: (
     documentId: string,
     documentNumber: string | null,
@@ -148,7 +149,10 @@ function calculateDocumentStatus(document: {
 
   return "ACTIVE";
 }
-export function DocumentsScreen({ companyId }: DocumentsScreenProps) {
+export function DocumentsScreen({
+  companyId,
+  variant = "company",
+}: DocumentsScreenProps) {
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -196,14 +200,14 @@ export function DocumentsScreen({ companyId }: DocumentsScreenProps) {
             `/companies/${companyId}`,
           );
 
-          setDocuments(
-            response.data.documents.map((document) => ({
+          const mappedDocuments: ApiDocument[] = response.data.documents.map(
+            (document) => ({
               ...document,
 
-              // OPEN/CLOSED/CANCELLED değerini sakla
+              // Veritabanındaki OPEN/CLOSED/CANCELLED değerini sakla
               documentStatus: document.status,
 
-              // Ekranda gösterilecek güncel durumu hesapla
+              // Tarihe göre ekranda gösterilecek durumu hesapla
               status: calculateDocumentStatus(document),
 
               company: {
@@ -212,9 +216,28 @@ export function DocumentsScreen({ companyId }: DocumentsScreenProps) {
                 name: response.data.name,
                 taxNumber: response.data.taxNumber,
               },
-            })),
+            }),
           );
 
+          setDocuments(mappedDocuments);
+
+          setSummary({
+            total: mappedDocuments.length,
+            active: mappedDocuments.filter(
+              (document) => document.status === "ACTIVE",
+            ).length,
+            expiring: mappedDocuments.filter(
+              (document) => document.status === "EXPIRING",
+            ).length,
+            expired: mappedDocuments.filter(
+              (document) => document.status === "EXPIRED",
+            ).length,
+            inactive: mappedDocuments.filter(
+              (document) => document.status === "INACTIVE",
+            ).length,
+          });
+
+          setTotalPages(1);
           setAuthorizationEndDate(response.data.authorizationEndDate);
           return;
         }
@@ -644,7 +667,10 @@ export function DocumentsScreen({ companyId }: DocumentsScreenProps) {
                   document.id === activeDocumentId ? "block" : "hidden"
                 }
               >
-                <DocumentDetailScreen documentId={document.id} />
+                <DocumentDetailScreen
+                  documentId={document.id}
+                  variant={variant}
+                />
               </div>
             ))}
           </div>
