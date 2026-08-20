@@ -39,6 +39,12 @@ type ApiDocument = {
   supportClass: string | null;
   isActive: boolean;
   status: DocumentStatus;
+  company: {
+    id: number;
+    externalCompanyId: number;
+    name: string;
+    taxNumber: string;
+  };
 };
 
 type DocumentListResponse = {
@@ -59,6 +65,105 @@ type DocumentListResponse = {
     };
   };
 };
+type ImportBatchStatus =
+  | "UPLOADED"
+  | "PROCESSING"
+  | "WAITING_APPROVAL"
+  | "COMPLETED"
+  | "FAILED"
+  | "CANCELLED";
+
+type ApiImportBatch = {
+  id: number;
+  fileName: string;
+  status: ImportBatchStatus;
+  uploadedAt: string;
+  uploadedBy: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
+};
+
+type ImportBatchListApiResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiImportBatch[];
+    totalCount: number;
+  };
+};
+
+type ApiImportChange = {
+  id: number;
+  importRowId: number;
+  entityType: string;
+  changeType: string;
+  fieldName: string;
+  oldValue: string | null;
+  newValue: string | null;
+  status: string;
+  companyId: number | null;
+  documentId: number | null;
+  company: {
+    id: number;
+    externalCompanyId: number;
+    name: string;
+    taxNumber: string;
+  } | null;
+  document: {
+    id: number;
+    externalDocumentId: number;
+    documentNumber: string | null;
+  } | null;
+};
+
+type ImportChangesApiResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    totalChangeCount: number;
+    fieldSummary: { fieldName: string; count: number }[];
+    changes: ApiImportChange[];
+  };
+};
+
+const CHANGE_FIELD_LABELS: Record<string, string> = {
+  documentStartDate: "Belge Başlangıç Tarihi",
+  documentEndDate: "Belge Bitiş Tarihi",
+  extensionDate: "Uzatma Tarihi",
+  documentNumber: "Belge Numarası",
+  supportClass: "Destek Sınıfı",
+  isActive: "Aktiflik Durumu",
+  authorizationEndDate: "Yetki Bitiş Tarihi",
+  name: "Firma Adı",
+  taxNumber: "Vergi Kimlik No",
+  processStatus: "İşlem Durumu",
+};
+
+function getChangeFieldLabel(fieldName: string): string {
+  return CHANGE_FIELD_LABELS[fieldName] ?? fieldName;
+}
+
+function formatChangeValue(value: string | null): string {
+  if (!value) {
+    return "—";
+  }
+
+  const isoDatePattern = /^\d{4}-\d{2}-\d{2}/;
+
+  if (isoDatePattern.test(value)) {
+    const date = new Date(value);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleDateString("tr-TR");
+    }
+  }
+
+  return value;
+}
+
 const documentHistoryItems = [
   {
     id: 1,
@@ -101,6 +206,97 @@ function getHistoryIcon(type: (typeof documentHistoryItems)[number]["type"]) {
   return Upload;
 }
 
+function getDaysRemaining(endDate: string | null): number | null {
+  if (!endDate) {
+    return null;
+  }
+
+  const end = new Date(endDate);
+  const today = new Date();
+
+  end.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const diffMs = end.getTime() - today.getTime();
+
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
+function formatEventDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const time = date.toLocaleTimeString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  if (isSameDay(date, now)) {
+    return `Bugün, ${time}`;
+  }
+
+  if (isSameDay(date, yesterday)) {
+    return `Dün, ${time}`;
+  }
+
+  const dateLabel = date.toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  return `${dateLabel}, ${time}`;
+}
+
+function getBatchStatusBadge(status: ImportBatchStatus): {
+  label: string;
+  className: string;
+} {
+  switch (status) {
+    case "UPLOADED":
+      return {
+        label: "Yüklendi",
+        className: "bg-slate-100 text-slate-600",
+      };
+    case "PROCESSING":
+      return {
+        label: "İşleniyor",
+        className: "bg-blue-50 text-blue-700 border border-blue-200/60",
+      };
+    case "WAITING_APPROVAL":
+      return {
+        label: "Onay Bekliyor",
+        className: "bg-amber-50 text-amber-700 border border-amber-200/60",
+      };
+    case "COMPLETED":
+      return {
+        label: "Tamamlandı",
+        className:
+          "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
+      };
+    case "FAILED":
+      return {
+        label: "Başarısız",
+        className: "bg-red-50 text-red-700 border border-red-200/60",
+      };
+    case "CANCELLED":
+      return {
+        label: "İptal Edildi",
+        className: "bg-slate-100 text-slate-500",
+      };
+    default:
+      return { label: status, className: "bg-slate-100 text-slate-600" };
+  }
+}
+
 type SummaryItem = {
   title: string;
   value: string;
@@ -120,25 +316,81 @@ export function DashboardScreen() {
   const [closedCancelledDocuments, setClosedCancelledDocuments] = useState<
     number | null
   >(null);
+  const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
+    [],
+  );
+  const [recentImports, setRecentImports] = useState<ApiImportBatch[]>([]);
+  const [recentChanges, setRecentChanges] = useState<ApiImportChange[]>([]);
+  const [latestImportBatch, setLatestImportBatch] =
+    useState<ApiImportBatch | null>(null);
 
   useEffect(() => {
     async function loadDashboardStats() {
       try {
-        const [companyResponse, documentResponse] = await Promise.all([
-          apiFetch<CompanyListResponse>("/companies?page=1&limit=20"),
-          apiFetch<DocumentListResponse>("/documents"),
-        ]);
+        const [
+          companyResponse,
+          documentResponse,
+          expiringResponse,
+          importResponse,
+        ] = await Promise.all([
+            apiFetch<CompanyListResponse>("/companies?page=1&limit=20"),
+            apiFetch<DocumentListResponse>("/documents"),
+            apiFetch<DocumentListResponse>(
+              "/documents?status=EXPIRING&limit=20",
+            ),
+            apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=5"),
+          ]);
 
         setTotalCompanies(companyResponse.data.totalCount);
         setActiveDocuments(documentResponse.data.summary.active);
         setExpiringDocuments(documentResponse.data.summary.expiring);
         setClosedCancelledDocuments(documentResponse.data.summary.inactive);
+
+        const sortedExpiringItems = [...expiringResponse.data.items].sort(
+          (a, b) => {
+            if (!a.documentEndDate && !b.documentEndDate) {
+              return 0;
+            }
+            if (!a.documentEndDate) {
+              return 1;
+            }
+            if (!b.documentEndDate) {
+              return -1;
+            }
+
+            return (
+              new Date(a.documentEndDate).getTime() -
+              new Date(b.documentEndDate).getTime()
+            );
+          },
+        );
+
+        setUpcomingDeadlines(sortedExpiringItems);
+        setRecentImports(importResponse.data.items);
+
+        const latestBatch = importResponse.data.items[0] ?? null;
+
+        setLatestImportBatch(latestBatch);
+
+        if (latestBatch) {
+          const changesResponse = await apiFetch<ImportChangesApiResponse>(
+            `/imports/${latestBatch.id}/changes`,
+          );
+
+          setRecentChanges(changesResponse.data.changes);
+        } else {
+          setRecentChanges([]);
+        }
       } catch (error) {
         console.error("Dashboard istatistikleri alınamadı:", error);
         setTotalCompanies(0);
         setActiveDocuments(0);
         setExpiringDocuments(0);
         setClosedCancelledDocuments(0);
+        setUpcomingDeadlines([]);
+        setRecentImports([]);
+        setLatestImportBatch(null);
+        setRecentChanges([]);
       }
     }
 
@@ -163,7 +415,7 @@ export function DashboardScreen() {
       description: "Aktif durumda bulunan belge",
       icon: FileCheck2,
       href: "/documents?status=ACTIVE",
-      clickable: false,
+      clickable: true,
     },
     {
       title: "Süresi Yaklaşan",
@@ -312,50 +564,57 @@ export function DashboardScreen() {
             </div>
 
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              2 Kayıt
+              {upcomingDeadlines.length} Kayıt
             </span>
           </div>
 
-          <div className="divide-y divide-slate-100 px-5">
-            {/* Kart 1 */}
-            <div className="flex items-start justify-between gap-4 py-3 first:pt-3">
-              <div className="flex min-w-0 items-start gap-3">
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
-                <div>
-                  <p className="font-semibold text-sm text-slate-900">
-                    1453 İstanbul Otomat
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Yetki süresinin dolmasına{" "}
-                    <strong className="text-amber-600">154 gün</strong> kaldı.
-                  </p>
-                </div>
-              </div>
+          <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
+            {expiringDocuments === null ? (
+              <p className="py-6 text-center text-xs text-slate-400">
+                Yükleniyor...
+              </p>
+            ) : upcomingDeadlines.length === 0 ? (
+              <p className="py-6 text-center text-xs text-slate-400">
+                Süresi yaklaşan belge bulunmuyor.
+              </p>
+            ) : (
+              upcomingDeadlines.map((document) => {
+                const daysLeft = getDaysRemaining(document.documentEndDate);
 
-              <span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200/60 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-                Yaklaşıyor
-              </span>
-            </div>
+                return (
+                  <div
+                    key={document.id}
+                    className="flex items-start justify-between gap-4 py-3 first:pt-3 last:pb-3"
+                  >
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                      <div>
+                        <p className="font-semibold text-sm text-slate-900">
+                          {document.company.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {daysLeft !== null ? (
+                            <>
+                              Belge süresinin dolmasına{" "}
+                              <strong className="text-amber-600">
+                                {daysLeft} gün
+                              </strong>{" "}
+                              kaldı.
+                            </>
+                          ) : (
+                            "Belge bitiş tarihi bulunmuyor."
+                          )}
+                        </p>
+                      </div>
+                    </div>
 
-            {/* Kart 2 */}
-            <div className="flex items-start justify-between gap-4 py-3 last:pb-3">
-              <div className="flex min-w-0 items-start gap-3">
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-600" />
-                <div>
-                  <p className="font-semibold text-sm text-slate-900">
-                    Örnek Sanayi Limited Şirketi
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Belge süresi dolmuş durumda.
-                  </p>
-                </div>
-              </div>
-
-              <span className="shrink-0 rounded-lg bg-red-50 border border-red-200/60 px-2.5 py-1 text-[11px] font-semibold text-red-700 flex items-center gap-1">
-                <AlertTriangle size={12} />
-                Süresi Doldu
-              </span>
-            </div>
+                    <span className="shrink-0 rounded-lg bg-amber-50 border border-amber-200/60 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                      Yaklaşıyor
+                    </span>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -373,52 +632,69 @@ export function DashboardScreen() {
                     Son İşlemler
                   </h2>
                   <p className="mt-0.5 text-xs text-slate-500">
-                    Sistem üzerinde gerçekleştirilen son hareketler.
+                    {latestImportBatch
+                      ? `${latestImportBatch.fileName} • ${formatEventDate(latestImportBatch.uploadedAt)}`
+                      : "Sistem üzerinde gerçekleştirilen son hareketler."}
                   </p>
                 </div>
               </div>
 
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                Güncel
-              </span>
+              <div className="flex items-center gap-2">
+                {latestImportBatch && (
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      getBatchStatusBadge(latestImportBatch.status)
+                        .className
+                    }`}
+                  >
+                    {getBatchStatusBadge(latestImportBatch.status).label}
+                  </span>
+                )}
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  {recentChanges.length} Değişiklik
+                </span>
+              </div>
             </div>
 
-            <div className="divide-y divide-slate-100 px-5">
-              <div className="flex items-start gap-3.5 py-3 first:pt-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                  <Building2 size={17} />
-                </div>
+            <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
+              {expiringDocuments === null ? (
+                <p className="py-6 text-center text-xs text-slate-400">
+                  Yükleniyor...
+                </p>
+              ) : recentChanges.length === 0 ? (
+                <p className="py-6 text-center text-xs text-slate-400">
+                  Son Excel yüklemesinde değişiklik bulunmuyor.
+                </p>
+              ) : (
+                recentChanges.map((change) => (
+                  <div
+                    key={change.id}
+                    className="flex items-start gap-3.5 py-3 first:pt-3 last:pb-3"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                      <Pencil size={17} />
+                    </div>
 
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-sm text-slate-900">
-                    Yeni firma kaydı oluşturuldu
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    1453 İstanbul Otomat sisteme eklendi.
-                  </p>
-                </div>
-                <span className="text-[11px] font-medium text-slate-400">
-                  Bugün, 09:42
-                </span>
-              </div>
-
-              <div className="flex items-start gap-3.5 py-3 last:pb-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                  <FileCheck2 size={17} />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-sm text-slate-900">
-                    Belge bilgisi güncellendi
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    521456 numaralı belgenin durumu güncellendi.
-                  </p>
-                </div>
-                <span className="text-[11px] font-medium text-slate-400">
-                  Dün, 16:18
-                </span>
-              </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm text-slate-900">
+                        {change.company?.name ??
+                          change.document?.documentNumber ??
+                          "Kayıt"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {getChangeFieldLabel(change.fieldName)}:{" "}
+                        <span className="text-slate-400 line-through">
+                          {formatChangeValue(change.oldValue)}
+                        </span>{" "}
+                        →{" "}
+                        <span className="font-semibold text-emerald-600">
+                          {formatChangeValue(change.newValue)}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
