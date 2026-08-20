@@ -8,10 +8,14 @@ import {
   FileText,
   Search,
   ShieldCheck,
+  X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
+import { useRouter, useSearchParams } from "next/navigation";
+import { DocumentDetailScreen } from "./document-detail-screen";
+type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
 
 type ApiDocument = {
   id: number;
@@ -22,6 +26,19 @@ type ApiDocument = {
   extensionDate: string | null;
   supportClass: string | null;
   isActive: boolean;
+  status: DocumentStatus;
+
+  company?: {
+    id: number;
+    externalCompanyId: number;
+    name: string;
+    taxNumber: string;
+  };
+};
+
+type OpenDocumentTab = {
+  id: string;
+  documentNumber: string | null;
 };
 
 type CompanyDetailResponse = {
@@ -29,6 +46,7 @@ type CompanyDetailResponse = {
   message: string;
   data: {
     id: number;
+    externalCompanyId: number;
     name: string;
     taxNumber: string;
     authorizationEndDate: string | null;
@@ -42,6 +60,16 @@ type DocumentListResponse = {
   data: {
     items: ApiDocument[];
     totalCount: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    summary: {
+      total: number;
+      active: number;
+      expiring: number;
+      expired: number;
+      inactive: number;
+    };
   };
 };
 
@@ -59,7 +87,10 @@ type DocumentDetailResponse = {
 interface DocumentsScreenProps {
   companyId?: string;
   selectedDocumentId?: string | null;
-  onSelectDocument?: (documentId: string) => void;
+  onSelectDocument?: (
+    documentId: string,
+    documentNumber: string | null,
+  ) => void;
 }
 
 function formatDate(date: string | null): string {
@@ -74,45 +105,53 @@ function formatDate(date: string | null): string {
   return new Intl.DateTimeFormat("tr-TR").format(parsedDate);
 }
 
-function getDocumentStatus(document: ApiDocument) {
-  if (!document.isActive) {
-    return "INACTIVE";
-  }
-
-  /*
-   * Belge durumu yalnızca Belge Bitiş Tarihine göre hesaplanır.
-   * Süre Uzatım Tarihi hesaba dahil edilmez.
-   */
-  const endDate = document.documentEndDate;
-
-  if (!endDate) {
-    return "ACTIVE";
-  }
-
-  const end = new Date(endDate);
-  const today = new Date();
-
-  end.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  return end < today ? "EXPIRED" : "ACTIVE";
-}
-
 export function DocumentsScreen({
   companyId,
   selectedDocumentId,
   onSelectDocument,
 }: DocumentsScreenProps) {
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+  const requestedStatus = searchParams.get("status");
+
+  const status: DocumentStatus | undefined =
+    requestedStatus === "ACTIVE" ||
+    requestedStatus === "EXPIRING" ||
+    requestedStatus === "EXPIRED" ||
+    requestedStatus === "INACTIVE"
+      ? requestedStatus
+      : undefined;
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [openDocuments, setOpenDocuments] = useState<OpenDocumentTab[]>([]);
+  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [summary, setSummary] = useState({
+    total: 0,
+    active: 0,
+    expiring: 0,
+    expired: 0,
+    inactive: 0,
+  });
   const [documents, setDocuments] = useState<ApiDocument[]>([]);
 
-  const [authorizationEndDate, setAuthorizationEndDate] = useState<
-    string | null
-  >(null);
+  const [, setAuthorizationEndDate] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const documentTabsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!activeDocumentId) return;
 
+    documentTabsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [activeDocumentId]);
   useEffect(() => {
     async function loadDocuments() {
       setIsLoading(true);
@@ -125,15 +164,43 @@ export function DocumentsScreen({
             `/companies/${companyId}`,
           );
 
-          setDocuments(response.data.documents);
-          setAuthorizationEndDate(response.data.authorizationEndDate);
+          setDocuments(
+            response.data.documents.map((document) => ({
+              ...document,
+              company: {
+                id: response.data.id,
+                externalCompanyId: response.data.externalCompanyId,
+                name: response.data.name,
+                taxNumber: response.data.taxNumber,
+              },
+            })),
+          );
 
+          setAuthorizationEndDate(response.data.authorizationEndDate);
           return;
         }
 
         // COMPANY kullanıcısıysa backend token üzerinden
         // kullanıcının firmasını kendisi bulur.
-        const response = await apiFetch<DocumentListResponse>("/documents");
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          limit: "20",
+        });
+
+        if (status) {
+          params.set("status", status);
+        }
+
+        if (searchQuery.trim()) {
+          params.set("search", searchQuery.trim());
+        }
+
+        const response = await apiFetch<DocumentListResponse>(
+          `/documents?${params.toString()}`,
+        );
+
+        setSummary(response.data.summary);
+        setTotalPages(response.data.totalPages);
 
         setDocuments(response.data.items);
 
@@ -163,36 +230,47 @@ export function DocumentsScreen({
     }
 
     void loadDocuments();
-  }, [companyId]);
+  }, [companyId, currentPage, status, searchQuery]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentPage(1);
+  }, [status, searchQuery]);
+  function handleOpenDocument(
+    documentId: string,
+    documentNumber: string | null,
+  ) {
+    setOpenDocuments((current) => {
+      const alreadyOpen = current.some(
+        (document) => document.id === documentId,
+      );
 
-  const filteredDocuments = useMemo(() => {
-    const query = searchQuery.trim().toLocaleLowerCase("tr-TR");
+      if (alreadyOpen) return current;
 
-    if (!query) {
-      return documents;
-    }
+      return [
+        ...current,
+        {
+          id: documentId,
+          documentNumber,
+        },
+      ];
+    });
 
-    return documents.filter((document) =>
-      document.documentNumber?.toLocaleLowerCase("tr-TR").includes(query),
-    );
-  }, [documents, searchQuery]);
+    setActiveDocumentId(documentId);
+  }
 
-  const stats = {
-    toplam: documents.length,
+  function handleCloseDocument(documentId: string) {
+    setOpenDocuments((current) => {
+      const remaining = current.filter(
+        (document) => document.id !== documentId,
+      );
 
-    aktif: documents.filter(
-      (document) => getDocumentStatus(document) === "ACTIVE",
-    ).length,
+      if (activeDocumentId === documentId) {
+        setActiveDocumentId(remaining.at(-1)?.id ?? null);
+      }
 
-    suresiDolmus: documents.filter(
-      (document) => getDocumentStatus(document) === "EXPIRED",
-    ).length,
-
-    bitisTarihi: formatDate(authorizationEndDate),
-
-    // Daha sonra backend verisine bağlanacak
-    kapaliIptal: 0,
-  };
+      return remaining;
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -221,36 +299,40 @@ export function DocumentsScreen({
         <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-3 xl:grid-cols-5 xl:divide-y-0">
           <OperationStat
             label="Toplam Belge"
-            value={String(stats.toplam)}
+            value={String(summary.total)}
             icon={<FileText size={15} />}
+            onClick={() => router.push("/documents")}
           />
 
           <OperationStat
             label="Aktif"
-            value={String(stats.aktif)}
+            value={String(summary.active)}
             icon={<FileCheck2 size={15} />}
             valueClass="text-emerald-600"
+            onClick={() => router.push("/documents?status=ACTIVE")}
           />
 
           <OperationStat
             label="Süresi Dolmuş"
-            value={String(stats.suresiDolmus)}
+            value={String(summary.expired)}
             icon={<ShieldCheck size={15} />}
             valueClass="text-red-600"
+            onClick={() => router.push("/documents?status=EXPIRED")}
           />
 
           <OperationStat
             label="Kapalı / İptal"
-            value={String(stats.kapaliIptal)}
+            value={String(summary.inactive)}
             icon={<ShieldCheck size={15} />}
             valueClass="text-slate-600"
+            onClick={() => router.push("/documents?status=INACTIVE")}
           />
-
           <OperationStat
-            label="Yetki Bitiş"
-            value={stats.bitisTarihi}
+            label="Süresi Yaklaşan"
+            value={String(summary.expiring)}
             icon={<CalendarDays size={15} />}
             valueClass="text-amber-600"
+            onClick={() => router.push("/documents?status=EXPIRING")}
           />
         </div>
       </section>
@@ -287,6 +369,7 @@ export function DocumentsScreen({
             <thead className="border-b border-slate-200/60 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-3.5">Belge No</th>
+                <th className="px-6 py-3.5">Firma</th>
                 <th className="px-6 py-3.5">Belge Başlangıç</th>
                 <th className="px-6 py-3.5">Belge Bitiş</th>
                 <th className="px-6 py-3.5">Süre Uzatım</th>
@@ -299,7 +382,7 @@ export function DocumentsScreen({
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-medium text-slate-500">
                       Belgeler yükleniyor...
                     </p>
@@ -307,7 +390,7 @@ export function DocumentsScreen({
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-semibold text-red-700">
                       Belgeler yüklenemedi
                     </p>
@@ -315,17 +398,17 @@ export function DocumentsScreen({
                     <p className="mt-1 text-xs text-slate-500">{loadError}</p>
                   </td>
                 </tr>
-              ) : filteredDocuments.length === 0 ? (
+              ) : documents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-medium text-slate-500">
                       Bu firmaya ait belge bulunamadı.
                     </p>
                   </td>
                 </tr>
               ) : (
-                filteredDocuments.map((doc) => {
-                  const isSelected = selectedDocumentId === String(doc.id);
+                documents.map((doc) => {
+                  const isSelected = activeDocumentId === String(doc.id);
 
                   return (
                     <tr
@@ -357,7 +440,20 @@ export function DocumentsScreen({
                           </div>
                         </div>
                       </td>
+                      <td className="max-w-xs px-6 py-4">
+                        <p
+                          title={
+                            doc.company?.name ?? "Firma bilgisi bulunamadı"
+                          }
+                          className="truncate text-xs font-semibold text-slate-800"
+                        >
+                          {doc.company?.name ?? "Firma bilgisi bulunamadı"}
+                        </p>
 
+                        <p className="mt-1 text-[11px] text-slate-400">
+                          VKN: {doc.company?.taxNumber ?? "-"}
+                        </p>
+                      </td>
                       <td className="px-6 py-4 text-xs font-medium text-slate-600">
                         {formatDate(doc.documentStartDate)}
                       </td>
@@ -377,16 +473,19 @@ export function DocumentsScreen({
                       </td>
 
                       <td className="px-6 py-4">
-                        <StatusBadge status={getDocumentStatus(doc)} />
+                        <StatusBadge status={doc.status} />
                       </td>
 
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end">
                           <button
                             type="button"
-                            onClick={() => {
-                              onSelectDocument?.(String(doc.id));
-                            }}
+                            onClick={() =>
+                              handleOpenDocument(
+                                String(doc.id),
+                                doc.documentNumber,
+                              )
+                            }
                             className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                               isSelected
                                 ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
@@ -414,7 +513,86 @@ export function DocumentsScreen({
             </tbody>
           </table>
         </div>
+        <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
+          <p className="text-xs font-medium text-slate-500">
+            Sayfa {currentPage} / {totalPages}
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => page - 1)}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Önceki
+            </button>
+
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((page) => page + 1)}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Sonraki
+            </button>
+          </div>
+        </div>
       </section>
+      {openDocuments.length > 0 && (
+        <section
+          ref={documentTabsRef}
+          className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+        >
+          {/* BELGE TABLARI */}
+          <div className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-slate-50 px-5 pt-4">
+            {openDocuments.map((document) => {
+              const isActive = activeDocumentId === document.id;
+
+              const label = document.documentNumber
+                ? `${document.documentNumber} No'lu Belge`
+                : `Belge #${document.id}`;
+
+              return (
+                <div
+                  key={document.id}
+                  className={`flex shrink-0 items-center rounded-t-xl border border-b-0 ${
+                    isActive
+                      ? "border-slate-200 bg-white font-semibold text-red-600"
+                      : "border-transparent bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveDocumentId(document.id)}
+                    className="max-w-56 truncate px-4 py-3 text-xs"
+                  >
+                    {label}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCloseDocument(document.id)}
+                    className="mr-2 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* SADECE SEÇİLİ BELGENİN DETAYI */}
+          {activeDocumentId && (
+            <div className="p-6">
+              <DocumentDetailScreen
+                key={activeDocumentId}
+                documentId={activeDocumentId}
+              />
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
@@ -428,14 +606,20 @@ function OperationStat({
   value,
   icon,
   valueClass = "text-slate-900",
+  onClick,
 }: {
   label: string;
   value: string;
   icon: React.ReactNode;
   valueClass?: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500/30"
+    >
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
         {icon}
       </div>
@@ -449,7 +633,7 @@ function OperationStat({
           {value}
         </p>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -479,17 +663,15 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-red-50",
       border: "border-red-200/60",
     },
-
-    CANCELLED: {
-      label: "İptal",
-      dot: "bg-slate-400",
-      text: "text-slate-600",
-      bg: "bg-slate-100",
-      border: "border-slate-200",
+    EXPIRING: {
+      label: "Süresi Yaklaşan",
+      dot: "bg-amber-500",
+      text: "text-amber-700",
+      bg: "bg-amber-50",
+      border: "border-amber-200/60",
     },
-
     INACTIVE: {
-      label: "Pasif",
+      label: "Kapalı-İptal",
       dot: "bg-slate-400",
       text: "text-slate-600",
       bg: "bg-slate-100",

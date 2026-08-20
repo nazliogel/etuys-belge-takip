@@ -4,8 +4,6 @@ import { prisma } from "../config/env.js";
 
 export class DocumentRepository {
   async findMany(params: {
-    skip: number;
-    take: number;
     search?: string;
     isActive?: boolean;
     companyId?: number;
@@ -41,8 +39,6 @@ export class DocumentRepository {
 
     return prisma.incentiveDocument.findMany({
       where,
-      skip: params.skip,
-      take: params.take,
       orderBy: {
         createdAt: "desc",
       },

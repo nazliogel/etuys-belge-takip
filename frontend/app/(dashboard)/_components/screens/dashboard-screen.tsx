@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { getSessionUser } from "@/lib/mock-auth";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Bell,
   Building2,
@@ -15,6 +16,7 @@ import {
   Upload,
   AlertTriangle,
   ArrowUpRight,
+  Ban,
 } from "lucide-react";
 
 type CompanyListResponse = {
@@ -25,10 +27,18 @@ type CompanyListResponse = {
     totalCount: number;
   };
 };
+type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
+
 type ApiDocument = {
   id: number;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  documentStartDate: string | null;
   documentEndDate: string | null;
+  extensionDate: string | null;
+  supportClass: string | null;
   isActive: boolean;
+  status: DocumentStatus;
 };
 
 type DocumentListResponse = {
@@ -37,9 +47,18 @@ type DocumentListResponse = {
   data: {
     items: ApiDocument[];
     totalCount: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    summary: {
+      total: number;
+      active: number;
+      expiring: number;
+      expired: number;
+      inactive: number;
+    };
   };
 };
-
 const documentHistoryItems = [
   {
     id: 1,
@@ -82,10 +101,25 @@ function getHistoryIcon(type: (typeof documentHistoryItems)[number]["type"]) {
   return Upload;
 }
 
+type SummaryItem = {
+  title: string;
+  value: string;
+  description: string;
+  icon: typeof Building2;
+  href: string;
+  clickable: boolean;
+};
+
 export function DashboardScreen() {
   const router = useRouter();
   const [totalCompanies, setTotalCompanies] = useState<number | null>(null);
   const [activeDocuments, setActiveDocuments] = useState<number | null>(null);
+  const [expiringDocuments, setExpiringDocuments] = useState<number | null>(
+    null,
+  );
+  const [closedCancelledDocuments, setClosedCancelledDocuments] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     async function loadDashboardStats() {
@@ -96,26 +130,15 @@ export function DashboardScreen() {
         ]);
 
         setTotalCompanies(companyResponse.data.totalCount);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const activeCount = documentResponse.data.items.filter((document) => {
-          if (!document.isActive) return false;
-
-          if (!document.documentEndDate) return true;
-
-          const endDate = new Date(document.documentEndDate);
-          endDate.setHours(0, 0, 0, 0);
-
-          return endDate >= today;
-        }).length;
-
-        setActiveDocuments(activeCount);
+        setActiveDocuments(documentResponse.data.summary.active);
+        setExpiringDocuments(documentResponse.data.summary.expiring);
+        setClosedCancelledDocuments(documentResponse.data.summary.inactive);
       } catch (error) {
         console.error("Dashboard istatistikleri alınamadı:", error);
         setTotalCompanies(0);
         setActiveDocuments(0);
+        setExpiringDocuments(0);
+        setClosedCancelledDocuments(0);
       }
     }
 
@@ -125,7 +148,7 @@ export function DashboardScreen() {
   const user = getSessionUser();
   const isCompany = user?.role === "COMPANY";
 
-  const summaryItems = [
+  const summaryItems: SummaryItem[] = [
     {
       title: "Toplam Firma",
       value: totalCompanies === null ? "..." : String(totalCompanies),
@@ -144,10 +167,21 @@ export function DashboardScreen() {
     },
     {
       title: "Süresi Yaklaşan",
-      value: "18",
-      description: "Yakında sona erecek kayıt",
+      value: expiringDocuments === null ? "..." : String(expiringDocuments),
+      description: "6 ay içinde süresi dolacak belge",
       icon: CalendarClock,
       href: "/documents?status=EXPIRING",
+      clickable: true,
+    },
+    {
+      title: "Kapalı / İptal",
+      value:
+        closedCancelledDocuments === null
+          ? "..."
+          : String(closedCancelledDocuments),
+      description: "Kapatılmış veya iptal edilmiş belge",
+      icon: Ban,
+      href: "/documents?status=INACTIVE",
       clickable: true,
     },
     {
@@ -161,21 +195,37 @@ export function DashboardScreen() {
   ];
 
   return (
-    <div className="space-y-8 pb-8">
-      {/* BAŞLIK ALANI */}
-      <section className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-            Genel Bakış
-          </h1>
-          <p className="text-sm font-normal text-slate-500">
-            Firma, belge ve yetki süreçlerinizin güncel durum özeti.
-          </p>
+    <div className="space-y-6 pb-8">
+      {/* SAYFA BAŞLIĞI */}
+      <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <span className="absolute inset-y-0 left-0 w-1 bg-red-600" />
+        <div className="flex flex-col justify-between gap-3 pl-2 sm:flex-row sm:items-center">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">
+                Yönetim Paneli
+              </span>
+
+              <span className="h-1 w-1 rounded-full bg-slate-300" />
+
+              <span className="text-[11px] font-medium text-slate-500">
+                Genel Bakış
+              </span>
+            </div>
+
+            <h1 className="mt-1 text-xl font-extrabold tracking-tight text-slate-900">
+              Genel Bakış
+            </h1>
+
+            <p className="mt-0.5 text-xs text-slate-500">
+              Firma, belge ve yetki süreçlerinizin güncel durum özeti.
+            </p>
+          </div>
         </div>
-      </section>
+      </header>
 
       {/* İSTATİSTİK KARTLARI */}
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {summaryItems.map((item) => {
           const Icon = item.icon;
 
@@ -197,40 +247,40 @@ export function DashboardScreen() {
               }
               role={item.clickable ? "link" : undefined}
               tabIndex={item.clickable ? 0 : undefined}
-              className={`group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200
-  before:absolute before:inset-y-0 before:left-0 before:w-[4px] before:bg-red-600
+              className={`group relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-200
+  before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-red-600
   ${
     item.clickable
-      ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-800 hover:shadow-md focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/40"
+      ? "cursor-pointer hover:-translate-y-0.5 hover:border-red-600 hover:shadow-md focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/40"
       : ""
   }
 `}
             >
               <div className="flex items-center justify-between">
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 transition ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 transition ${
                     item.clickable
                       ? "group-hover:bg-red-600 group-hover:text-white"
                       : ""
                   }`}
                 >
-                  <Icon size={22} />
+                  <Icon size={18} />
                 </div>
                 {item.clickable && (
-                  <span className="text-xs font-semibold text-slate-400 group-hover:text-red-600 flex items-center gap-0.5 transition">
-                    <ArrowUpRight size={14} />
+                  <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-400 transition group-hover:text-red-600">
+                    <ArrowUpRight size={13} />
                   </span>
                 )}
               </div>
 
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <div className="mt-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {item.title}
                 </p>
-                <p className="mt-1 text-3xl font-extrabold text-slate-900 tracking-tight">
+                <p className="mt-0.5 text-2xl font-extrabold text-slate-900 tracking-tight">
                   {item.value}
                 </p>
-                <p className="mt-1.5 text-xs text-slate-500 font-medium">
+                <p className="mt-1 text-[11px] text-slate-500 font-medium">
                   {item.description}
                 </p>
               </div>
@@ -244,16 +294,21 @@ export function DashboardScreen() {
         className={`grid gap-6 ${isCompany ? "grid-cols-1" : "xl:grid-cols-2"}`}
       >
         {/* YAKLAŞAN SÜRELER */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <CalendarClock size={19} className="text-red-600" />
-                Yaklaşan Süreler
-              </h2>
-              <p className="mt-0.5 text-xs text-slate-500">
-                Yakında süresi dolacak belge ve yetkiler.
-              </p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                <CalendarClock size={16} />
+              </div>
+
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  Yaklaşan Süreler
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Yakında süresi dolacak belge ve yetkiler.
+                </p>
+              </div>
             </div>
 
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -261,9 +316,9 @@ export function DashboardScreen() {
             </span>
           </div>
 
-          <div className="mt-4 divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 px-5">
             {/* Kart 1 */}
-            <div className="flex items-start justify-between gap-4 py-3.5 first:pt-1">
+            <div className="flex items-start justify-between gap-4 py-3 first:pt-3">
               <div className="flex min-w-0 items-start gap-3">
                 <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
                 <div>
@@ -283,7 +338,7 @@ export function DashboardScreen() {
             </div>
 
             {/* Kart 2 */}
-            <div className="flex items-start justify-between gap-4 py-3.5 last:pb-1">
+            <div className="flex items-start justify-between gap-4 py-3 last:pb-3">
               <div className="flex min-w-0 items-start gap-3">
                 <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-600" />
                 <div>
@@ -306,16 +361,21 @@ export function DashboardScreen() {
 
         {/* SON İŞLEMLER */}
         {!isCompany && (
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div>
-                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Clock3 size={19} className="text-red-600" />
-                  Son İşlemler
-                </h2>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Sistem üzerinde gerçekleştirilen son hareketler.
-                </p>
+          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                  <Clock3 size={16} />
+                </div>
+
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    Son İşlemler
+                  </h2>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Sistem üzerinde gerçekleştirilen son hareketler.
+                  </p>
+                </div>
               </div>
 
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -323,8 +383,8 @@ export function DashboardScreen() {
               </span>
             </div>
 
-            <div className="mt-4 divide-y divide-slate-100">
-              <div className="flex items-start gap-3.5 py-3.5 first:pt-1">
+            <div className="divide-y divide-slate-100 px-5">
+              <div className="flex items-start gap-3.5 py-3 first:pt-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                   <Building2 size={17} />
                 </div>
@@ -342,7 +402,7 @@ export function DashboardScreen() {
                 </span>
               </div>
 
-              <div className="flex items-start gap-3.5 py-3.5 last:pb-1">
+              <div className="flex items-start gap-3.5 py-3 last:pb-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                   <FileCheck2 size={17} />
                 </div>
@@ -366,17 +426,20 @@ export function DashboardScreen() {
         {/* BELGE İŞLEM GEÇMİŞİ */}
         {!isCompany && (
           <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm xl:col-span-2">
-            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-6 sm:flex-row sm:items-center">
-              <div>
-                <div className="flex items-center gap-2">
-                  <History size={19} className="text-red-600" />
+            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-3 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                  <History size={16} />
+                </div>
+
+                <div>
                   <h2 className="text-base font-bold text-slate-900">
                     Belge İşlem Geçmişi
                   </h2>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Belgeler üzerinde gerçekleştirilen detaylı işlem dökümü.
+                  </p>
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Belgeler üzerinde gerçekleştirilen detaylı işlem dökümü.
-                </p>
               </div>
 
               <span className="self-start rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 sm:self-auto">
@@ -391,7 +454,7 @@ export function DashboardScreen() {
                 return (
                   <article
                     key={item.id}
-                    className="flex flex-col gap-4 p-5 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center justify-between"
+                    className="flex flex-col gap-3 p-4 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center justify-between"
                   >
                     <div className="flex items-start gap-3.5">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100">
