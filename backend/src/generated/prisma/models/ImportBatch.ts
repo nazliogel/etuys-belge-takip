@@ -55,6 +55,7 @@ export type ImportBatchMinAggregateOutputType = {
   fileName: string | null
   storedFileName: string | null
   status: $Enums.ImportBatchStatus | null
+  importType: $Enums.ImportType | null
   isFullSnapshot: boolean | null
   totalRowCount: number | null
   validRowCount: number | null
@@ -74,6 +75,7 @@ export type ImportBatchMaxAggregateOutputType = {
   fileName: string | null
   storedFileName: string | null
   status: $Enums.ImportBatchStatus | null
+  importType: $Enums.ImportType | null
   isFullSnapshot: boolean | null
   totalRowCount: number | null
   validRowCount: number | null
@@ -93,6 +95,7 @@ export type ImportBatchCountAggregateOutputType = {
   fileName: number
   storedFileName: number
   status: number
+  importType: number
   isFullSnapshot: number
   totalRowCount: number
   validRowCount: number
@@ -138,6 +141,7 @@ export type ImportBatchMinAggregateInputType = {
   fileName?: true
   storedFileName?: true
   status?: true
+  importType?: true
   isFullSnapshot?: true
   totalRowCount?: true
   validRowCount?: true
@@ -157,6 +161,7 @@ export type ImportBatchMaxAggregateInputType = {
   fileName?: true
   storedFileName?: true
   status?: true
+  importType?: true
   isFullSnapshot?: true
   totalRowCount?: true
   validRowCount?: true
@@ -176,6 +181,7 @@ export type ImportBatchCountAggregateInputType = {
   fileName?: true
   storedFileName?: true
   status?: true
+  importType?: true
   isFullSnapshot?: true
   totalRowCount?: true
   validRowCount?: true
@@ -282,6 +288,7 @@ export type ImportBatchGroupByOutputType = {
   fileName: string
   storedFileName: string | null
   status: $Enums.ImportBatchStatus
+  importType: $Enums.ImportType
   isFullSnapshot: boolean
   totalRowCount: number
   validRowCount: number
@@ -324,6 +331,7 @@ export type ImportBatchWhereInput = {
   fileName?: Prisma.StringFilter<"ImportBatch"> | string
   storedFileName?: Prisma.StringNullableFilter<"ImportBatch"> | string | null
   status?: Prisma.EnumImportBatchStatusFilter<"ImportBatch"> | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFilter<"ImportBatch"> | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFilter<"ImportBatch"> | boolean
   totalRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   validRowCount?: Prisma.IntFilter<"ImportBatch"> | number
@@ -349,6 +357,7 @@ export type ImportBatchOrderByWithRelationInput = {
   fileName?: Prisma.SortOrder
   storedFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  importType?: Prisma.SortOrder
   isFullSnapshot?: Prisma.SortOrder
   totalRowCount?: Prisma.SortOrder
   validRowCount?: Prisma.SortOrder
@@ -377,6 +386,7 @@ export type ImportBatchWhereUniqueInput = Prisma.AtLeast<{
   fileName?: Prisma.StringFilter<"ImportBatch"> | string
   storedFileName?: Prisma.StringNullableFilter<"ImportBatch"> | string | null
   status?: Prisma.EnumImportBatchStatusFilter<"ImportBatch"> | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFilter<"ImportBatch"> | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFilter<"ImportBatch"> | boolean
   totalRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   validRowCount?: Prisma.IntFilter<"ImportBatch"> | number
@@ -402,6 +412,7 @@ export type ImportBatchOrderByWithAggregationInput = {
   fileName?: Prisma.SortOrder
   storedFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  importType?: Prisma.SortOrder
   isFullSnapshot?: Prisma.SortOrder
   totalRowCount?: Prisma.SortOrder
   validRowCount?: Prisma.SortOrder
@@ -429,6 +440,7 @@ export type ImportBatchScalarWhereWithAggregatesInput = {
   fileName?: Prisma.StringWithAggregatesFilter<"ImportBatch"> | string
   storedFileName?: Prisma.StringNullableWithAggregatesFilter<"ImportBatch"> | string | null
   status?: Prisma.EnumImportBatchStatusWithAggregatesFilter<"ImportBatch"> | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeWithAggregatesFilter<"ImportBatch"> | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolWithAggregatesFilter<"ImportBatch"> | boolean
   totalRowCount?: Prisma.IntWithAggregatesFilter<"ImportBatch"> | number
   validRowCount?: Prisma.IntWithAggregatesFilter<"ImportBatch"> | number
@@ -447,6 +459,7 @@ export type ImportBatchCreateInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -470,6 +483,7 @@ export type ImportBatchUncheckedCreateInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -492,6 +506,7 @@ export type ImportBatchUpdateInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -515,6 +530,7 @@ export type ImportBatchUncheckedUpdateInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -538,6 +554,7 @@ export type ImportBatchCreateManyInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -556,6 +573,7 @@ export type ImportBatchUpdateManyMutationInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -573,6 +591,7 @@ export type ImportBatchUncheckedUpdateManyInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -602,6 +621,7 @@ export type ImportBatchCountOrderByAggregateInput = {
   fileName?: Prisma.SortOrder
   storedFileName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  importType?: Prisma.SortOrder
   isFullSnapshot?: Prisma.SortOrder
   totalRowCount?: Prisma.SortOrder
   validRowCount?: Prisma.SortOrder
@@ -633,6 +653,7 @@ export type ImportBatchMaxOrderByAggregateInput = {
   fileName?: Prisma.SortOrder
   storedFileName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  importType?: Prisma.SortOrder
   isFullSnapshot?: Prisma.SortOrder
   totalRowCount?: Prisma.SortOrder
   validRowCount?: Prisma.SortOrder
@@ -652,6 +673,7 @@ export type ImportBatchMinOrderByAggregateInput = {
   fileName?: Prisma.SortOrder
   storedFileName?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  importType?: Prisma.SortOrder
   isFullSnapshot?: Prisma.SortOrder
   totalRowCount?: Prisma.SortOrder
   validRowCount?: Prisma.SortOrder
@@ -776,6 +798,10 @@ export type EnumImportBatchStatusFieldUpdateOperationsInput = {
   set?: $Enums.ImportBatchStatus
 }
 
+export type EnumImportTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ImportType
+}
+
 export type ImportBatchCreateNestedOneWithoutRowsInput = {
   create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutRowsInput, Prisma.ImportBatchUncheckedCreateWithoutRowsInput>
   connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutRowsInput
@@ -840,6 +866,7 @@ export type ImportBatchCreateWithoutUploadedByInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -862,6 +889,7 @@ export type ImportBatchUncheckedCreateWithoutUploadedByInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -893,6 +921,7 @@ export type ImportBatchCreateWithoutReviewedByInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -915,6 +944,7 @@ export type ImportBatchUncheckedCreateWithoutReviewedByInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -966,6 +996,7 @@ export type ImportBatchScalarWhereInput = {
   fileName?: Prisma.StringFilter<"ImportBatch"> | string
   storedFileName?: Prisma.StringNullableFilter<"ImportBatch"> | string | null
   status?: Prisma.EnumImportBatchStatusFilter<"ImportBatch"> | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFilter<"ImportBatch"> | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFilter<"ImportBatch"> | boolean
   totalRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   validRowCount?: Prisma.IntFilter<"ImportBatch"> | number
@@ -1000,6 +1031,7 @@ export type ImportBatchCreateWithoutRowsInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1022,6 +1054,7 @@ export type ImportBatchUncheckedCreateWithoutRowsInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1059,6 +1092,7 @@ export type ImportBatchUpdateWithoutRowsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1081,6 +1115,7 @@ export type ImportBatchUncheckedUpdateWithoutRowsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1102,6 +1137,7 @@ export type ImportBatchCreateWithoutChangesInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1124,6 +1160,7 @@ export type ImportBatchUncheckedCreateWithoutChangesInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1161,6 +1198,7 @@ export type ImportBatchUpdateWithoutChangesInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1183,6 +1221,7 @@ export type ImportBatchUncheckedUpdateWithoutChangesInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1204,6 +1243,7 @@ export type ImportBatchCreateWithoutChangeHistoryInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1226,6 +1266,7 @@ export type ImportBatchUncheckedCreateWithoutChangeHistoryInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1263,6 +1304,7 @@ export type ImportBatchUpdateWithoutChangeHistoryInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1285,6 +1327,7 @@ export type ImportBatchUncheckedUpdateWithoutChangeHistoryInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1306,6 +1349,7 @@ export type ImportBatchCreateWithoutNotificationsInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1328,6 +1372,7 @@ export type ImportBatchUncheckedCreateWithoutNotificationsInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1365,6 +1410,7 @@ export type ImportBatchUpdateWithoutNotificationsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1387,6 +1433,7 @@ export type ImportBatchUncheckedUpdateWithoutNotificationsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1409,6 +1456,7 @@ export type ImportBatchCreateManyUploadedByInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1427,6 +1475,7 @@ export type ImportBatchCreateManyReviewedByInput = {
   fileName: string
   storedFileName?: string | null
   status?: $Enums.ImportBatchStatus
+  importType?: $Enums.ImportType
   isFullSnapshot?: boolean
   totalRowCount?: number
   validRowCount?: number
@@ -1444,6 +1493,7 @@ export type ImportBatchUpdateWithoutUploadedByInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1466,6 +1516,7 @@ export type ImportBatchUncheckedUpdateWithoutUploadedByInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1488,6 +1539,7 @@ export type ImportBatchUncheckedUpdateManyWithoutUploadedByInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1505,6 +1557,7 @@ export type ImportBatchUpdateWithoutReviewedByInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1527,6 +1580,7 @@ export type ImportBatchUncheckedUpdateWithoutReviewedByInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1549,6 +1603,7 @@ export type ImportBatchUncheckedUpdateManyWithoutReviewedByInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
+  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
   isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1625,6 +1680,7 @@ export type ImportBatchSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   fileName?: boolean
   storedFileName?: boolean
   status?: boolean
+  importType?: boolean
   isFullSnapshot?: boolean
   totalRowCount?: boolean
   validRowCount?: boolean
@@ -1651,6 +1707,7 @@ export type ImportBatchSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   fileName?: boolean
   storedFileName?: boolean
   status?: boolean
+  importType?: boolean
   isFullSnapshot?: boolean
   totalRowCount?: boolean
   validRowCount?: boolean
@@ -1672,6 +1729,7 @@ export type ImportBatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   fileName?: boolean
   storedFileName?: boolean
   status?: boolean
+  importType?: boolean
   isFullSnapshot?: boolean
   totalRowCount?: boolean
   validRowCount?: boolean
@@ -1693,6 +1751,7 @@ export type ImportBatchSelectScalar = {
   fileName?: boolean
   storedFileName?: boolean
   status?: boolean
+  importType?: boolean
   isFullSnapshot?: boolean
   totalRowCount?: boolean
   validRowCount?: boolean
@@ -1707,7 +1766,7 @@ export type ImportBatchSelectScalar = {
   completedAt?: boolean
 }
 
-export type ImportBatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "storedFileName" | "status" | "isFullSnapshot" | "totalRowCount" | "validRowCount" | "invalidRowCount" | "newRowCount" | "changedRowCount" | "unchangedRowCount" | "uploadedById" | "reviewedById" | "uploadedAt" | "reviewedAt" | "completedAt", ExtArgs["result"]["importBatch"]>
+export type ImportBatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "storedFileName" | "status" | "importType" | "isFullSnapshot" | "totalRowCount" | "validRowCount" | "invalidRowCount" | "newRowCount" | "changedRowCount" | "unchangedRowCount" | "uploadedById" | "reviewedById" | "uploadedAt" | "reviewedAt" | "completedAt", ExtArgs["result"]["importBatch"]>
 export type ImportBatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
@@ -1741,6 +1800,7 @@ export type $ImportBatchPayload<ExtArgs extends runtime.Types.Extensions.Interna
     fileName: string
     storedFileName: string | null
     status: $Enums.ImportBatchStatus
+    importType: $Enums.ImportType
     isFullSnapshot: boolean
     totalRowCount: number
     validRowCount: number
@@ -2186,6 +2246,7 @@ export interface ImportBatchFieldRefs {
   readonly fileName: Prisma.FieldRef<"ImportBatch", 'String'>
   readonly storedFileName: Prisma.FieldRef<"ImportBatch", 'String'>
   readonly status: Prisma.FieldRef<"ImportBatch", 'ImportBatchStatus'>
+  readonly importType: Prisma.FieldRef<"ImportBatch", 'ImportType'>
   readonly isFullSnapshot: Prisma.FieldRef<"ImportBatch", 'Boolean'>
   readonly totalRowCount: Prisma.FieldRef<"ImportBatch", 'Int'>
   readonly validRowCount: Prisma.FieldRef<"ImportBatch", 'Int'>

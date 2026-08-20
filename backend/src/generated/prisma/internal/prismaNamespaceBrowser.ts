@@ -161,6 +161,7 @@ export const ImportBatchScalarFieldEnum = {
   fileName: 'fileName',
   storedFileName: 'storedFileName',
   status: 'status',
+  importType: 'importType',
   isFullSnapshot: 'isFullSnapshot',
   totalRowCount: 'totalRowCount',
   validRowCount: 'validRowCount',

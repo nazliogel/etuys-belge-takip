@@ -1361,6 +1361,7 @@ export const ImportBatchScalarFieldEnum = {
   fileName: 'fileName',
   storedFileName: 'storedFileName',
   status: 'status',
+  importType: 'importType',
   isFullSnapshot: 'isFullSnapshot',
   totalRowCount: 'totalRowCount',
   validRowCount: 'validRowCount',
@@ -1615,6 +1616,20 @@ export type EnumImportBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'ImportBatchStatus[]'
  */
 export type ListEnumImportBatchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ImportBatchStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ImportType'
+ */
+export type EnumImportTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ImportType'>
+    
+
+
+/**
+ * Reference to a field of type 'ImportType[]'
+ */
+export type ListEnumImportTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ImportType[]'>
     
 
 

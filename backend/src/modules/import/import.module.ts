@@ -12,10 +12,12 @@ import { CompareService } from "../../services/compare.service.js";
 import { ExcelParserService } from "../../services/excel-parser.service.js";
 import { ImportProcessService } from "../../services/import-process.service.js";
 import { ImportService } from "../../services/import.service.js";
+import { ClosedExcelParserService } from "../../services/closed-excel-parser.service.js";
 
 const importRepository = new ImportRepository();
 const importRowRepository = new ImportRowRepository();
 const excelParserService = new ExcelParserService();
+const closedExcelParserService = new ClosedExcelParserService();
 const compareRepository = new CompareRepository();
 
 const importService = new ImportService(importRepository);
@@ -24,6 +26,7 @@ const importProcessService = new ImportProcessService(
   importRepository,
   importRowRepository,
   excelParserService,
+  closedExcelParserService,
 );
 
 const compareService = new CompareService(

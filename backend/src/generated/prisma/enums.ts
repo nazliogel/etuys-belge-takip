@@ -29,6 +29,14 @@ export const ImportBatchStatus = {
 export type ImportBatchStatus = (typeof ImportBatchStatus)[keyof typeof ImportBatchStatus]
 
 
+export const ImportType = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED'
+} as const
+
+export type ImportType = (typeof ImportType)[keyof typeof ImportType]
+
+
 export const ImportRowStatus = {
   PENDING: 'PENDING',
   NEW: 'NEW',
