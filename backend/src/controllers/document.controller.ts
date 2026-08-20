@@ -16,10 +16,8 @@ export class DocumentController {
         code: "AUTH_REQUIRED",
       });
     }
-
-    const page = Number(req.query.page ?? 1);
-    const limit = Number(req.query.limit ?? 20);
-
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = 20;
     const search =
       typeof req.query.search === "string" ? req.query.search : undefined;
 
@@ -30,12 +28,33 @@ export class DocumentController {
           ? false
           : undefined;
 
+    const allowedStatuses = [
+      "ACTIVE",
+      "EXPIRING",
+      "EXPIRED",
+      "INACTIVE",
+    ] as const;
+
+    type DocumentStatus = (typeof allowedStatuses)[number];
+
+    const requestedStatus =
+      typeof req.query.status === "string"
+        ? req.query.status.toUpperCase()
+        : undefined;
+
+    const status =
+      requestedStatus &&
+      allowedStatuses.includes(requestedStatus as DocumentStatus)
+        ? (requestedStatus as DocumentStatus)
+        : undefined;
+
     const data = await this.service.getDocuments(
       {
         page,
         limit,
         search,
         isActive,
+        status,
       },
       req.user.id,
       req.user.role,
