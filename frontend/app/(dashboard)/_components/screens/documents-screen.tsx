@@ -17,6 +17,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { DocumentDetailScreen } from "./document-detail-screen";
 type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
 
+type StoredDocumentStatus = "OPEN" | "CLOSED" | "CANCELLED";
+
 type ApiDocument = {
   id: number;
   externalDocumentId: number;
@@ -27,6 +29,7 @@ type ApiDocument = {
   supportClass: string | null;
   isActive: boolean;
   status: DocumentStatus;
+  documentStatus?: StoredDocumentStatus;
 
   company?: {
     id: number;
@@ -35,7 +38,12 @@ type ApiDocument = {
     taxNumber: string;
   };
 };
-
+type CompanyApiDocument = Omit<
+  ApiDocument,
+  "status" | "documentStatus" | "company"
+> & {
+  status: StoredDocumentStatus;
+};
 type OpenDocumentTab = {
   id: string;
   documentNumber: string | null;
@@ -50,7 +58,7 @@ type CompanyDetailResponse = {
     name: string;
     taxNumber: string;
     authorizationEndDate: string | null;
-    documents: ApiDocument[];
+    documents: CompanyApiDocument[];
   };
 };
 
@@ -104,12 +112,43 @@ function formatDate(date: string | null): string {
 
   return new Intl.DateTimeFormat("tr-TR").format(parsedDate);
 }
+function calculateDocumentStatus(document: {
+  isActive: boolean;
+  documentEndDate: string | null;
+  status?: string;
+}): DocumentStatus {
+  if (
+    !document.isActive ||
+    document.status === "CLOSED" ||
+    document.status === "CANCELLED"
+  ) {
+    return "INACTIVE";
+  }
 
-export function DocumentsScreen({
-  companyId,
-  selectedDocumentId,
-  onSelectDocument,
-}: DocumentsScreenProps) {
+  if (!document.documentEndDate) {
+    return "ACTIVE";
+  }
+
+  const today = new Date();
+  const endDate = new Date(document.documentEndDate);
+
+  today.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+
+  if (endDate < today) {
+    return "EXPIRED";
+  }
+
+  const sixMonthsLater = new Date(today);
+  sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+
+  if (endDate <= sixMonthsLater) {
+    return "EXPIRING";
+  }
+
+  return "ACTIVE";
+}
+export function DocumentsScreen({ companyId }: DocumentsScreenProps) {
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -144,14 +183,7 @@ export function DocumentsScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const documentTabsRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!activeDocumentId) return;
 
-    documentTabsRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, [activeDocumentId]);
   useEffect(() => {
     async function loadDocuments() {
       setIsLoading(true);
@@ -167,6 +199,13 @@ export function DocumentsScreen({
           setDocuments(
             response.data.documents.map((document) => ({
               ...document,
+
+              // OPEN/CLOSED/CANCELLED değerini sakla
+              documentStatus: document.status,
+
+              // Ekranda gösterilecek güncel durumu hesapla
+              status: calculateDocumentStatus(document),
+
               company: {
                 id: response.data.id,
                 externalCompanyId: response.data.externalCompanyId,
@@ -256,6 +295,13 @@ export function DocumentsScreen({
     });
 
     setActiveDocumentId(documentId);
+
+    requestAnimationFrame(() => {
+      documentTabsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }
 
   function handleCloseDocument(documentId: string) {
@@ -582,15 +628,26 @@ export function DocumentsScreen({
             })}
           </div>
 
-          {/* SADECE SEÇİLİ BELGENİN DETAYI */}
-          {activeDocumentId && (
-            <div className="p-6">
-              <DocumentDetailScreen
-                key={activeDocumentId}
-                documentId={activeDocumentId}
-              />
-            </div>
-          )}
+          {/*
+            SEÇİLİ BELGENİN DETAYI
+            Açık tüm tab'lar burada aynı anda mount edilir; sadece aktif olan
+            görünür, diğerleri CSS ile gizlenir. Böylece tab değiştirirken
+            DocumentDetailScreen yeniden mount olup veriyi baştan çekmiyor
+            (tekrar "yükleniyor" durumuna düşüp içeriğin anlık kaybolması /
+            geri gelmesi - flicker - önlenmiş oluyor).
+          */}
+          <div className="p-6">
+            {openDocuments.map((document) => (
+              <div
+                key={document.id}
+                className={
+                  document.id === activeDocumentId ? "block" : "hidden"
+                }
+              >
+                <DocumentDetailScreen documentId={document.id} />
+              </div>
+            ))}
+          </div>
         </section>
       )}
     </div>

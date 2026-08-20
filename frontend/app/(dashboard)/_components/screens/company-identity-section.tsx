@@ -644,7 +644,7 @@ export function CompanyIdentitySection({
         </div>
 
         <div className="p-4">
-          <div className="flex items-stretch gap-2">
+          <div className="flex items-center gap-2">
             <textarea
               value={noteText}
               onChange={(event) => {
@@ -665,8 +665,9 @@ export function CompanyIdentitySection({
             <button
               type="button"
               onClick={handleAddNote}
-              className="shrink-0 self-stretch rounded-md bg-red-600 px-4 text-[11px] font-bold text-white transition hover:bg-red-700"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md bg-red-600 px-3 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700"
             >
+              <Plus size={13} />
               Not Ekle
             </button>
           </div>
