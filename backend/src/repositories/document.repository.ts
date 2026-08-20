@@ -1,4 +1,4 @@
-import type { DocumentStatus, Prisma } from "../generated/prisma/client.js";
+import type { Prisma } from "../generated/prisma/client.js";
 
 import { prisma } from "../config/env.js";
 
@@ -6,7 +6,6 @@ export class DocumentRepository {
   async findMany(params: {
     search?: string;
     isActive?: boolean;
-    status?: DocumentStatus;
     companyId?: number;
   }) {
     const where: Prisma.IncentiveDocumentWhereInput = {};
@@ -32,9 +31,6 @@ export class DocumentRepository {
 
     if (typeof params.isActive === "boolean") {
       where.isActive = params.isActive;
-    }
-    if (params.status) {
-      where.status = params.status;
     }
 
     if (params.companyId !== undefined) {
@@ -62,7 +58,6 @@ export class DocumentRepository {
   async count(params: {
     search?: string;
     isActive?: boolean;
-    status?: DocumentStatus;
     companyId?: number;
   }): Promise<number> {
     const where: Prisma.IncentiveDocumentWhereInput = {};
@@ -88,10 +83,6 @@ export class DocumentRepository {
 
     if (typeof params.isActive === "boolean") {
       where.isActive = params.isActive;
-    }
-
-    if (params.status) {
-      where.status = params.status;
     }
 
     if (params.companyId !== undefined) {
