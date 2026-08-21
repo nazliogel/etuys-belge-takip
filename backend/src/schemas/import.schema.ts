@@ -39,16 +39,3 @@ export const importBatchUploadSchema = z.object({
     importType: z.enum(["OPEN", "CLOSED"]).optional(),
   }),
 });
-
-export const importChangeDecisionSchema = z.object({
-  params: z.object({
-    id: positiveIntegerSchema,
-    changeId: positiveIntegerSchema,
-  }),
-
-  body: z.object({
-    status: z.enum(["APPROVED", "REJECTED"]),
-
-    rejectedReason: z.string().trim().max(500).optional().nullable(),
-  }),
-});

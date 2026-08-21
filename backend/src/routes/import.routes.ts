@@ -4,7 +4,6 @@ import { importUpload } from "../config/upload.js";
 import { authenticate } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
 import {
-  approvalController,
   compareController,
   importController,
   importProcessController,
@@ -13,7 +12,6 @@ import {
   importBatchIdSchema,
   importBatchListSchema,
   importBatchUploadSchema,
-  importChangeDecisionSchema,
 } from "../schemas/import.schema.js";
 
 export const importRouter = Router();
@@ -39,15 +37,6 @@ importRouter.post(
   "/:id/compare",
   validate(importBatchIdSchema),
   compareController.compare,
-);
-
-/*
- * Tek değişikliği onayla / reddet
- */
-importRouter.patch(
-  "/:id/changes/:changeId",
-  validate(importChangeDecisionSchema),
-  approvalController.reviewChange,
 );
 
 importRouter.get(

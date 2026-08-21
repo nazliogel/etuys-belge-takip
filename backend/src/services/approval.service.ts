@@ -2,19 +2,12 @@ import { prisma } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
-type ReviewChangeInput = {
-  importBatchId: number;
-  changeId: number;
-  reviewedById: number;
-  status: "APPROVED" | "REJECTED";
-  rejectedReason?: string | null;
-};
-
 export class ApprovalService {
-  async reviewChange(input: ReviewChangeInput) {
-    const { importBatchId, changeId, reviewedById, status, rejectedReason } =
-      input;
-
+  async applyChange(
+    importBatchId: number,
+    changeId: number,
+    changedById: number,
+  ) {
     /* =====================================================
         1. BATCH KONTROLÜ
       ===================================================== */
@@ -29,13 +22,6 @@ export class ApprovalService {
       throw new AppError("Import batch not found.", {
         statusCode: HTTP_STATUS.NOT_FOUND,
         code: "IMPORT_BATCH_NOT_FOUND",
-      });
-    }
-
-    if (batch.status !== "WAITING_APPROVAL") {
-      throw new AppError("Only imports waiting for approval can be reviewed.", {
-        statusCode: HTTP_STATUS.BAD_REQUEST,
-        code: "IMPORT_NOT_WAITING_APPROVAL",
       });
     }
 
@@ -67,9 +53,9 @@ export class ApprovalService {
           ================================================= */
 
         if (change.status !== "PENDING") {
-          throw new AppError("This change has already been reviewed.", {
+          throw new AppError("This change has already been applied.", {
             statusCode: HTTP_STATUS.BAD_REQUEST,
-            code: "IMPORT_CHANGE_ALREADY_REVIEWED",
+            code: "IMPORT_CHANGE_ALREADY_APPLIED",
           });
         }
 
@@ -240,85 +226,6 @@ export class ApprovalService {
 
           return document;
         };
-
-        /* =================================================
-            4. REDDEDİLDİYSE CANLI DB'YE DOKUNMA
-          ================================================= */
-
-        if (status === "REJECTED") {
-          const reviewedChange = await tx.importChange.update({
-            where: {
-              id: change.id,
-            },
-            data: {
-              status: "REJECTED",
-              reviewedById,
-              reviewedAt: new Date(),
-              rejectedReason: rejectedReason ?? null,
-            },
-          });
-
-          const pendingCount = await tx.importChange.count({
-            where: {
-              importBatchId,
-              status: "PENDING",
-            },
-          });
-
-          const approvedCount = await tx.importChange.count({
-            where: {
-              importBatchId,
-              status: "APPROVED",
-            },
-          });
-
-          const rejectedCount = await tx.importChange.count({
-            where: {
-              importBatchId,
-              status: "REJECTED",
-            },
-          });
-
-          let batchStatus = batch.status;
-
-          /*
-           * Artık hiç PENDING değişiklik kalmadıysa
-           * batch tamamlanır.
-           */
-          if (pendingCount === 0) {
-            const now = new Date();
-
-            const completedBatch = await tx.importBatch.update({
-              where: {
-                id: importBatchId,
-              },
-              data: {
-                status: "COMPLETED",
-                reviewedById,
-                reviewedAt: now,
-                completedAt: now,
-              },
-            });
-
-            batchStatus = completedBatch.status;
-          }
-
-          return {
-            change: reviewedChange,
-            summary: {
-              pendingCount,
-              approvedCount,
-              rejectedCount,
-            },
-            batchStatus,
-          };
-        }
-
-        /* =================================================
-            5. ONAYLANDI
-            
-            BURADAN İTİBAREN CANLI DB DEĞİŞİR.
-          ================================================= */
 
         if (!row) {
           /*
@@ -844,7 +751,7 @@ export class ApprovalService {
                 documentId,
 
                 importBatchId,
-                changedById: reviewedById,
+                changedById,
               },
             });
           }
@@ -854,19 +761,12 @@ export class ApprovalService {
             8. IMPORT CHANGE = APPROVED
           ================================================= */
 
-        const reviewedChange = await tx.importChange.update({
+        const appliedChange = await tx.importChange.update({
           where: {
             id: change.id,
           },
           data: {
-            status: "APPROVED",
-
-            reviewedById,
-
-            reviewedAt: new Date(),
-
-            rejectedReason: null,
-
+            status: "APPLIED",
             companyId,
             documentId,
           },
@@ -883,17 +783,10 @@ export class ApprovalService {
           },
         });
 
-        const approvedCount = await tx.importChange.count({
+        const appliedCount = await tx.importChange.count({
           where: {
             importBatchId,
-            status: "APPROVED",
-          },
-        });
-
-        const rejectedCount = await tx.importChange.count({
-          where: {
-            importBatchId,
-            status: "REJECTED",
+            status: "APPLIED",
           },
         });
 
@@ -912,11 +805,8 @@ export class ApprovalService {
             },
             data: {
               status: "COMPLETED",
-
-              reviewedById,
-
+              reviewedById: changedById,
               reviewedAt: now,
-
               completedAt: now,
             },
           });
@@ -925,12 +815,11 @@ export class ApprovalService {
         }
 
         return {
-          change: reviewedChange,
+          change: appliedChange,
 
           summary: {
             pendingCount,
-            approvedCount,
-            rejectedCount,
+            appliedCount,
           },
 
           batchStatus,
@@ -941,5 +830,50 @@ export class ApprovalService {
         timeout: 120_000,
       },
     );
+  }
+  async applyAllPendingChanges(importBatchId: number, changedById: number) {
+    const batch = await prisma.importBatch.findUnique({
+      where: {
+        id: importBatchId,
+      },
+    });
+
+    if (!batch) {
+      throw new AppError("Import batch not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "IMPORT_BATCH_NOT_FOUND",
+      });
+    }
+
+    const pendingChanges = await prisma.importChange.findMany({
+      where: {
+        importBatchId,
+        status: "PENDING",
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+
+    for (const change of pendingChanges) {
+      await this.applyChange(importBatchId, change.id, changedById);
+    }
+
+    const now = new Date();
+
+    const updatedBatch = await prisma.importBatch.update({
+      where: {
+        id: importBatchId,
+      },
+      data: {
+        status: "COMPLETED",
+        completedAt: now,
+      },
+    });
+
+    return {
+      batch: updatedBatch,
+      appliedChangeCount: pendingChanges.length,
+    };
   }
 }

@@ -20,7 +20,6 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 export const ImportBatchStatus = {
   UPLOADED: 'UPLOADED',
   PROCESSING: 'PROCESSING',
-  WAITING_APPROVAL: 'WAITING_APPROVAL',
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
   CANCELLED: 'CANCELLED'
@@ -51,8 +50,7 @@ export type ImportRowStatus = (typeof ImportRowStatus)[keyof typeof ImportRowSta
 
 export const ImportChangeStatus = {
   PENDING: 'PENDING',
-  APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED'
+  APPLIED: 'APPLIED'
 } as const
 
 export type ImportChangeStatus = (typeof ImportChangeStatus)[keyof typeof ImportChangeStatus]
@@ -102,7 +100,6 @@ export const NotificationType = {
   DOCUMENT_EXPIRING: 'DOCUMENT_EXPIRING',
   DOCUMENT_EXPIRED: 'DOCUMENT_EXPIRED',
   EXTENSION_EXPIRING: 'EXTENSION_EXPIRING',
-  IMPORT_WAITING_APPROVAL: 'IMPORT_WAITING_APPROVAL',
   IMPORT_COMPLETED: 'IMPORT_COMPLETED',
   SYSTEM: 'SYSTEM'
 } as const

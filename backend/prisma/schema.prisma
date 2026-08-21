@@ -15,7 +15,6 @@ enum UserRole {
 enum ImportBatchStatus {
   UPLOADED
   PROCESSING
-  WAITING_APPROVAL
   COMPLETED
   FAILED
   CANCELLED
@@ -37,8 +36,7 @@ enum ImportRowStatus {
 
 enum ImportChangeStatus {
   PENDING
-  APPROVED
-  REJECTED
+  APPLIED
 }
 
 enum ChangeType {
@@ -73,7 +71,6 @@ enum NotificationType {
   DOCUMENT_EXPIRING
   DOCUMENT_EXPIRED
   EXTENSION_EXPIRING
-  IMPORT_WAITING_APPROVAL
   IMPORT_COMPLETED
   SYSTEM
 }
@@ -90,8 +87,6 @@ model User {
   company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
   uploadedImports ImportBatch[]   @relation("ImportUploadedBy")
-  reviewedImports ImportBatch[]   @relation("ImportReviewedBy")
-  reviewedChanges ImportChange[]  @relation("ChangeReviewedBy")
   changeHistory   ChangeHistory[]
   notifications   Notification[]
 
@@ -194,17 +189,14 @@ model ImportBatch {
   changedRowCount   Int               @default(0)
   unchangedRowCount Int               @default(0)
   uploadedById      Int
-  reviewedById      Int?
 
   uploadedBy    User            @relation("ImportUploadedBy", fields: [uploadedById], references: [id])
-  reviewedBy    User?           @relation("ImportReviewedBy", fields: [reviewedById], references: [id])
   rows          ImportRow[]
   changes       ImportChange[]
   changeHistory ChangeHistory[]
   notifications Notification[]
 
   uploadedAt  DateTime  @default(now())
-  reviewedAt  DateTime?
   completedAt DateTime?
 
   @@index([status])
@@ -247,26 +239,22 @@ model ImportRow {
 }
 
 model ImportChange {
-  id             Int                @id @default(autoincrement())
-  importBatchId  Int
-  importRowId    Int?
-  companyId      Int?
-  documentId     Int?
-  entityType     EntityType
-  changeType     ChangeType
-  fieldName      String
-  oldValue       String?
-  newValue       String?
-  status         ImportChangeStatus @default(PENDING)
-  reviewedById   Int?
-  reviewedAt     DateTime?
-  rejectedReason String?
+  id            Int                @id @default(autoincrement())
+  importBatchId Int
+  importRowId   Int?
+  companyId     Int?
+  documentId    Int?
+  entityType    EntityType
+  changeType    ChangeType
+  fieldName     String
+  oldValue      String?
+  newValue      String?
+  status        ImportChangeStatus @default(PENDING)
 
   importBatch ImportBatch        @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
   importRow   ImportRow?         @relation(fields: [importRowId], references: [id], onDelete: SetNull)
   company     Company?           @relation(fields: [companyId], references: [id])
   document    IncentiveDocument? @relation(fields: [documentId], references: [id])
-  reviewedBy  User?              @relation("ChangeReviewedBy", fields: [reviewedById], references: [id])
 
   createdAt DateTime @default(now())
 

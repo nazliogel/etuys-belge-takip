@@ -2,6 +2,9 @@ import fs from "node:fs/promises";
 
 import { AppError } from "../errors/app-error.js";
 import type { ImportRepository } from "../repositories/import.repository.js";
+import type { ImportProcessService } from "./import-process.service.js";
+import type { CompareService } from "./compare.service.js";
+import type { ApprovalService } from "./approval.service.js";
 import type {
   ImportBatchListQuery,
   ImportBatchListResponse,
@@ -9,7 +12,12 @@ import type {
 import { HTTP_STATUS } from "../utils/http-status.js";
 
 export class ImportService {
-  constructor(private readonly repository: ImportRepository) {}
+  constructor(
+    private readonly repository: ImportRepository,
+    private readonly importProcessService: ImportProcessService,
+    private readonly compareService: CompareService,
+    private readonly approvalService: ApprovalService,
+  ) {}
 
   async createImportBatch(input: {
     file: Express.Multer.File;
@@ -24,8 +32,10 @@ export class ImportService {
       importType = "OPEN",
     } = input;
 
+    let batch;
+
     try {
-      return await this.repository.createBatch({
+      batch = await this.repository.createBatch({
         fileName: file.originalname,
         storedFileName: file.filename,
         uploadedById,
@@ -36,6 +46,28 @@ export class ImportService {
       await fs.unlink(file.path).catch(() => undefined);
       throw error;
     }
+
+    /*
+     * Excel'i oku ve ImportRow kayıtlarını oluştur.
+     */
+    await this.importProcessService.process(batch.id);
+
+    /*
+     * Excel ile mevcut veritabanını karşılaştır.
+     */
+    await this.compareService.compare(batch.id);
+
+    /*
+     * Bulunan tüm değişiklikleri kullanıcı onayı beklemeden
+     * doğrudan canlı veritabanına uygula.
+     */
+    await this.approvalService.applyAllPendingChanges(batch.id, uploadedById);
+
+    /*
+     * En güncel batch bilgisini döndür.
+     * Bu noktada batch COMPLETED olmalıdır.
+     */
+    return this.getImportBatch(batch.id);
   }
 
   async getImportBatches(

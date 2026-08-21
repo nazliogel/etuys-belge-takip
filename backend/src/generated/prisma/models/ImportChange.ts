@@ -32,7 +32,6 @@ export type ImportChangeAvgAggregateOutputType = {
   importRowId: number | null
   companyId: number | null
   documentId: number | null
-  reviewedById: number | null
 }
 
 export type ImportChangeSumAggregateOutputType = {
@@ -41,7 +40,6 @@ export type ImportChangeSumAggregateOutputType = {
   importRowId: number | null
   companyId: number | null
   documentId: number | null
-  reviewedById: number | null
 }
 
 export type ImportChangeMinAggregateOutputType = {
@@ -56,9 +54,6 @@ export type ImportChangeMinAggregateOutputType = {
   oldValue: string | null
   newValue: string | null
   status: $Enums.ImportChangeStatus | null
-  reviewedById: number | null
-  reviewedAt: Date | null
-  rejectedReason: string | null
   createdAt: Date | null
 }
 
@@ -74,9 +69,6 @@ export type ImportChangeMaxAggregateOutputType = {
   oldValue: string | null
   newValue: string | null
   status: $Enums.ImportChangeStatus | null
-  reviewedById: number | null
-  reviewedAt: Date | null
-  rejectedReason: string | null
   createdAt: Date | null
 }
 
@@ -92,9 +84,6 @@ export type ImportChangeCountAggregateOutputType = {
   oldValue: number
   newValue: number
   status: number
-  reviewedById: number
-  reviewedAt: number
-  rejectedReason: number
   createdAt: number
   _all: number
 }
@@ -106,7 +95,6 @@ export type ImportChangeAvgAggregateInputType = {
   importRowId?: true
   companyId?: true
   documentId?: true
-  reviewedById?: true
 }
 
 export type ImportChangeSumAggregateInputType = {
@@ -115,7 +103,6 @@ export type ImportChangeSumAggregateInputType = {
   importRowId?: true
   companyId?: true
   documentId?: true
-  reviewedById?: true
 }
 
 export type ImportChangeMinAggregateInputType = {
@@ -130,9 +117,6 @@ export type ImportChangeMinAggregateInputType = {
   oldValue?: true
   newValue?: true
   status?: true
-  reviewedById?: true
-  reviewedAt?: true
-  rejectedReason?: true
   createdAt?: true
 }
 
@@ -148,9 +132,6 @@ export type ImportChangeMaxAggregateInputType = {
   oldValue?: true
   newValue?: true
   status?: true
-  reviewedById?: true
-  reviewedAt?: true
-  rejectedReason?: true
   createdAt?: true
 }
 
@@ -166,9 +147,6 @@ export type ImportChangeCountAggregateInputType = {
   oldValue?: true
   newValue?: true
   status?: true
-  reviewedById?: true
-  reviewedAt?: true
-  rejectedReason?: true
   createdAt?: true
   _all?: true
 }
@@ -271,9 +249,6 @@ export type ImportChangeGroupByOutputType = {
   oldValue: string | null
   newValue: string | null
   status: $Enums.ImportChangeStatus
-  reviewedById: number | null
-  reviewedAt: Date | null
-  rejectedReason: string | null
   createdAt: Date
   _count: ImportChangeCountAggregateOutputType | null
   _avg: ImportChangeAvgAggregateOutputType | null
@@ -312,15 +287,11 @@ export type ImportChangeWhereInput = {
   oldValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   newValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   status?: Prisma.EnumImportChangeStatusFilter<"ImportChange"> | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.IntNullableFilter<"ImportChange"> | number | null
-  reviewedAt?: Prisma.DateTimeNullableFilter<"ImportChange"> | Date | string | null
-  rejectedReason?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ImportChange"> | Date | string
   importBatch?: Prisma.XOR<Prisma.ImportBatchScalarRelationFilter, Prisma.ImportBatchWhereInput>
   importRow?: Prisma.XOR<Prisma.ImportRowNullableScalarRelationFilter, Prisma.ImportRowWhereInput> | null
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
   document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
-  reviewedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type ImportChangeOrderByWithRelationInput = {
@@ -335,15 +306,11 @@ export type ImportChangeOrderByWithRelationInput = {
   oldValue?: Prisma.SortOrderInput | Prisma.SortOrder
   newValue?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrderInput | Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  rejectedReason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   importBatch?: Prisma.ImportBatchOrderByWithRelationInput
   importRow?: Prisma.ImportRowOrderByWithRelationInput
   company?: Prisma.CompanyOrderByWithRelationInput
   document?: Prisma.IncentiveDocumentOrderByWithRelationInput
-  reviewedBy?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ImportChangeWhereUniqueInput = Prisma.AtLeast<{
@@ -361,15 +328,11 @@ export type ImportChangeWhereUniqueInput = Prisma.AtLeast<{
   oldValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   newValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   status?: Prisma.EnumImportChangeStatusFilter<"ImportChange"> | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.IntNullableFilter<"ImportChange"> | number | null
-  reviewedAt?: Prisma.DateTimeNullableFilter<"ImportChange"> | Date | string | null
-  rejectedReason?: Prisma.StringNullableFilter<"ImportChange"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ImportChange"> | Date | string
   importBatch?: Prisma.XOR<Prisma.ImportBatchScalarRelationFilter, Prisma.ImportBatchWhereInput>
   importRow?: Prisma.XOR<Prisma.ImportRowNullableScalarRelationFilter, Prisma.ImportRowWhereInput> | null
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
   document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
-  reviewedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id">
 
 export type ImportChangeOrderByWithAggregationInput = {
@@ -384,9 +347,6 @@ export type ImportChangeOrderByWithAggregationInput = {
   oldValue?: Prisma.SortOrderInput | Prisma.SortOrder
   newValue?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrderInput | Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  rejectedReason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ImportChangeCountOrderByAggregateInput
   _avg?: Prisma.ImportChangeAvgOrderByAggregateInput
@@ -410,9 +370,6 @@ export type ImportChangeScalarWhereWithAggregatesInput = {
   oldValue?: Prisma.StringNullableWithAggregatesFilter<"ImportChange"> | string | null
   newValue?: Prisma.StringNullableWithAggregatesFilter<"ImportChange"> | string | null
   status?: Prisma.EnumImportChangeStatusWithAggregatesFilter<"ImportChange"> | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.IntNullableWithAggregatesFilter<"ImportChange"> | number | null
-  reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportChange"> | Date | string | null
-  rejectedReason?: Prisma.StringNullableWithAggregatesFilter<"ImportChange"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ImportChange"> | Date | string
 }
 
@@ -423,14 +380,11 @@ export type ImportChangeCreateInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
   importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
 
 export type ImportChangeUncheckedCreateInput = {
@@ -445,9 +399,6 @@ export type ImportChangeUncheckedCreateInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -458,14 +409,11 @@ export type ImportChangeUpdateInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
   importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
 
 export type ImportChangeUncheckedUpdateInput = {
@@ -480,9 +428,6 @@ export type ImportChangeUncheckedUpdateInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -498,9 +443,6 @@ export type ImportChangeCreateManyInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -511,8 +453,6 @@ export type ImportChangeUpdateManyMutationInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -528,9 +468,6 @@ export type ImportChangeUncheckedUpdateManyInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -556,9 +493,6 @@ export type ImportChangeCountOrderByAggregateInput = {
   oldValue?: Prisma.SortOrder
   newValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrder
-  rejectedReason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -568,7 +502,6 @@ export type ImportChangeAvgOrderByAggregateInput = {
   importRowId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
 }
 
 export type ImportChangeMaxOrderByAggregateInput = {
@@ -583,9 +516,6 @@ export type ImportChangeMaxOrderByAggregateInput = {
   oldValue?: Prisma.SortOrder
   newValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrder
-  rejectedReason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -601,9 +531,6 @@ export type ImportChangeMinOrderByAggregateInput = {
   oldValue?: Prisma.SortOrder
   newValue?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrder
-  rejectedReason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -613,49 +540,6 @@ export type ImportChangeSumOrderByAggregateInput = {
   importRowId?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
-}
-
-export type ImportChangeCreateNestedManyWithoutReviewedByInput = {
-  create?: Prisma.XOR<Prisma.ImportChangeCreateWithoutReviewedByInput, Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput> | Prisma.ImportChangeCreateWithoutReviewedByInput[] | Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput | Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput[]
-  createMany?: Prisma.ImportChangeCreateManyReviewedByInputEnvelope
-  connect?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-}
-
-export type ImportChangeUncheckedCreateNestedManyWithoutReviewedByInput = {
-  create?: Prisma.XOR<Prisma.ImportChangeCreateWithoutReviewedByInput, Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput> | Prisma.ImportChangeCreateWithoutReviewedByInput[] | Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput | Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput[]
-  createMany?: Prisma.ImportChangeCreateManyReviewedByInputEnvelope
-  connect?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-}
-
-export type ImportChangeUpdateManyWithoutReviewedByNestedInput = {
-  create?: Prisma.XOR<Prisma.ImportChangeCreateWithoutReviewedByInput, Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput> | Prisma.ImportChangeCreateWithoutReviewedByInput[] | Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput | Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput[]
-  upsert?: Prisma.ImportChangeUpsertWithWhereUniqueWithoutReviewedByInput | Prisma.ImportChangeUpsertWithWhereUniqueWithoutReviewedByInput[]
-  createMany?: Prisma.ImportChangeCreateManyReviewedByInputEnvelope
-  set?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  disconnect?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  delete?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  connect?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  update?: Prisma.ImportChangeUpdateWithWhereUniqueWithoutReviewedByInput | Prisma.ImportChangeUpdateWithWhereUniqueWithoutReviewedByInput[]
-  updateMany?: Prisma.ImportChangeUpdateManyWithWhereWithoutReviewedByInput | Prisma.ImportChangeUpdateManyWithWhereWithoutReviewedByInput[]
-  deleteMany?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
-}
-
-export type ImportChangeUncheckedUpdateManyWithoutReviewedByNestedInput = {
-  create?: Prisma.XOR<Prisma.ImportChangeCreateWithoutReviewedByInput, Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput> | Prisma.ImportChangeCreateWithoutReviewedByInput[] | Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput | Prisma.ImportChangeCreateOrConnectWithoutReviewedByInput[]
-  upsert?: Prisma.ImportChangeUpsertWithWhereUniqueWithoutReviewedByInput | Prisma.ImportChangeUpsertWithWhereUniqueWithoutReviewedByInput[]
-  createMany?: Prisma.ImportChangeCreateManyReviewedByInputEnvelope
-  set?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  disconnect?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  delete?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  connect?: Prisma.ImportChangeWhereUniqueInput | Prisma.ImportChangeWhereUniqueInput[]
-  update?: Prisma.ImportChangeUpdateWithWhereUniqueWithoutReviewedByInput | Prisma.ImportChangeUpdateWithWhereUniqueWithoutReviewedByInput[]
-  updateMany?: Prisma.ImportChangeUpdateManyWithWhereWithoutReviewedByInput | Prisma.ImportChangeUpdateManyWithWhereWithoutReviewedByInput[]
-  deleteMany?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
 }
 
 export type ImportChangeCreateNestedManyWithoutCompanyInput = {
@@ -838,86 +722,6 @@ export type EnumImportChangeStatusFieldUpdateOperationsInput = {
   set?: $Enums.ImportChangeStatus
 }
 
-export type ImportChangeCreateWithoutReviewedByInput = {
-  entityType: $Enums.EntityType
-  changeType: $Enums.ChangeType
-  fieldName: string
-  oldValue?: string | null
-  newValue?: string | null
-  status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
-  createdAt?: Date | string
-  importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
-  importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
-  company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
-  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
-}
-
-export type ImportChangeUncheckedCreateWithoutReviewedByInput = {
-  id?: number
-  importBatchId: number
-  importRowId?: number | null
-  companyId?: number | null
-  documentId?: number | null
-  entityType: $Enums.EntityType
-  changeType: $Enums.ChangeType
-  fieldName: string
-  oldValue?: string | null
-  newValue?: string | null
-  status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
-  createdAt?: Date | string
-}
-
-export type ImportChangeCreateOrConnectWithoutReviewedByInput = {
-  where: Prisma.ImportChangeWhereUniqueInput
-  create: Prisma.XOR<Prisma.ImportChangeCreateWithoutReviewedByInput, Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput>
-}
-
-export type ImportChangeCreateManyReviewedByInputEnvelope = {
-  data: Prisma.ImportChangeCreateManyReviewedByInput | Prisma.ImportChangeCreateManyReviewedByInput[]
-  skipDuplicates?: boolean
-}
-
-export type ImportChangeUpsertWithWhereUniqueWithoutReviewedByInput = {
-  where: Prisma.ImportChangeWhereUniqueInput
-  update: Prisma.XOR<Prisma.ImportChangeUpdateWithoutReviewedByInput, Prisma.ImportChangeUncheckedUpdateWithoutReviewedByInput>
-  create: Prisma.XOR<Prisma.ImportChangeCreateWithoutReviewedByInput, Prisma.ImportChangeUncheckedCreateWithoutReviewedByInput>
-}
-
-export type ImportChangeUpdateWithWhereUniqueWithoutReviewedByInput = {
-  where: Prisma.ImportChangeWhereUniqueInput
-  data: Prisma.XOR<Prisma.ImportChangeUpdateWithoutReviewedByInput, Prisma.ImportChangeUncheckedUpdateWithoutReviewedByInput>
-}
-
-export type ImportChangeUpdateManyWithWhereWithoutReviewedByInput = {
-  where: Prisma.ImportChangeScalarWhereInput
-  data: Prisma.XOR<Prisma.ImportChangeUpdateManyMutationInput, Prisma.ImportChangeUncheckedUpdateManyWithoutReviewedByInput>
-}
-
-export type ImportChangeScalarWhereInput = {
-  AND?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
-  OR?: Prisma.ImportChangeScalarWhereInput[]
-  NOT?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
-  id?: Prisma.IntFilter<"ImportChange"> | number
-  importBatchId?: Prisma.IntFilter<"ImportChange"> | number
-  importRowId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
-  companyId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
-  documentId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
-  entityType?: Prisma.EnumEntityTypeFilter<"ImportChange"> | $Enums.EntityType
-  changeType?: Prisma.EnumChangeTypeFilter<"ImportChange"> | $Enums.ChangeType
-  fieldName?: Prisma.StringFilter<"ImportChange"> | string
-  oldValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
-  newValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
-  status?: Prisma.EnumImportChangeStatusFilter<"ImportChange"> | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.IntNullableFilter<"ImportChange"> | number | null
-  reviewedAt?: Prisma.DateTimeNullableFilter<"ImportChange"> | Date | string | null
-  rejectedReason?: Prisma.StringNullableFilter<"ImportChange"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"ImportChange"> | Date | string
-}
-
 export type ImportChangeCreateWithoutCompanyInput = {
   entityType: $Enums.EntityType
   changeType: $Enums.ChangeType
@@ -925,13 +729,10 @@ export type ImportChangeCreateWithoutCompanyInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
   importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
 
 export type ImportChangeUncheckedCreateWithoutCompanyInput = {
@@ -945,9 +746,6 @@ export type ImportChangeUncheckedCreateWithoutCompanyInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -977,6 +775,24 @@ export type ImportChangeUpdateManyWithWhereWithoutCompanyInput = {
   data: Prisma.XOR<Prisma.ImportChangeUpdateManyMutationInput, Prisma.ImportChangeUncheckedUpdateManyWithoutCompanyInput>
 }
 
+export type ImportChangeScalarWhereInput = {
+  AND?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
+  OR?: Prisma.ImportChangeScalarWhereInput[]
+  NOT?: Prisma.ImportChangeScalarWhereInput | Prisma.ImportChangeScalarWhereInput[]
+  id?: Prisma.IntFilter<"ImportChange"> | number
+  importBatchId?: Prisma.IntFilter<"ImportChange"> | number
+  importRowId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
+  companyId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
+  documentId?: Prisma.IntNullableFilter<"ImportChange"> | number | null
+  entityType?: Prisma.EnumEntityTypeFilter<"ImportChange"> | $Enums.EntityType
+  changeType?: Prisma.EnumChangeTypeFilter<"ImportChange"> | $Enums.ChangeType
+  fieldName?: Prisma.StringFilter<"ImportChange"> | string
+  oldValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
+  newValue?: Prisma.StringNullableFilter<"ImportChange"> | string | null
+  status?: Prisma.EnumImportChangeStatusFilter<"ImportChange"> | $Enums.ImportChangeStatus
+  createdAt?: Prisma.DateTimeFilter<"ImportChange"> | Date | string
+}
+
 export type ImportChangeCreateWithoutDocumentInput = {
   entityType: $Enums.EntityType
   changeType: $Enums.ChangeType
@@ -984,13 +800,10 @@ export type ImportChangeCreateWithoutDocumentInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
   importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
 
 export type ImportChangeUncheckedCreateWithoutDocumentInput = {
@@ -1004,9 +817,6 @@ export type ImportChangeUncheckedCreateWithoutDocumentInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1043,13 +853,10 @@ export type ImportChangeCreateWithoutImportBatchInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
   importRow?: Prisma.ImportRowCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
 
 export type ImportChangeUncheckedCreateWithoutImportBatchInput = {
@@ -1063,9 +870,6 @@ export type ImportChangeUncheckedCreateWithoutImportBatchInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1102,13 +906,10 @@ export type ImportChangeCreateWithoutImportRowInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
   importBatch: Prisma.ImportBatchCreateNestedOneWithoutChangesInput
   company?: Prisma.CompanyCreateNestedOneWithoutImportChangesInput
   document?: Prisma.IncentiveDocumentCreateNestedOneWithoutImportChangesInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedChangesInput
 }
 
 export type ImportChangeUncheckedCreateWithoutImportRowInput = {
@@ -1122,9 +923,6 @@ export type ImportChangeUncheckedCreateWithoutImportRowInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1154,73 +952,6 @@ export type ImportChangeUpdateManyWithWhereWithoutImportRowInput = {
   data: Prisma.XOR<Prisma.ImportChangeUpdateManyMutationInput, Prisma.ImportChangeUncheckedUpdateManyWithoutImportRowInput>
 }
 
-export type ImportChangeCreateManyReviewedByInput = {
-  id?: number
-  importBatchId: number
-  importRowId?: number | null
-  companyId?: number | null
-  documentId?: number | null
-  entityType: $Enums.EntityType
-  changeType: $Enums.ChangeType
-  fieldName: string
-  oldValue?: string | null
-  newValue?: string | null
-  status?: $Enums.ImportChangeStatus
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
-  createdAt?: Date | string
-}
-
-export type ImportChangeUpdateWithoutReviewedByInput = {
-  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
-  changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
-  fieldName?: Prisma.StringFieldUpdateOperationsInput | string
-  oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
-  importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
-  company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
-  document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
-}
-
-export type ImportChangeUncheckedUpdateWithoutReviewedByInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
-  changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
-  fieldName?: Prisma.StringFieldUpdateOperationsInput | string
-  oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type ImportChangeUncheckedUpdateManyWithoutReviewedByInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
-  importRowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
-  changeType?: Prisma.EnumChangeTypeFieldUpdateOperationsInput | $Enums.ChangeType
-  fieldName?: Prisma.StringFieldUpdateOperationsInput | string
-  oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
 export type ImportChangeCreateManyCompanyInput = {
   id?: number
   importBatchId: number
@@ -1232,9 +963,6 @@ export type ImportChangeCreateManyCompanyInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1245,13 +973,10 @@ export type ImportChangeUpdateWithoutCompanyInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
   importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
 
 export type ImportChangeUncheckedUpdateWithoutCompanyInput = {
@@ -1265,9 +990,6 @@ export type ImportChangeUncheckedUpdateWithoutCompanyInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1282,9 +1004,6 @@ export type ImportChangeUncheckedUpdateManyWithoutCompanyInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1299,9 +1018,6 @@ export type ImportChangeCreateManyDocumentInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1312,13 +1028,10 @@ export type ImportChangeUpdateWithoutDocumentInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
   importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
 
 export type ImportChangeUncheckedUpdateWithoutDocumentInput = {
@@ -1332,9 +1045,6 @@ export type ImportChangeUncheckedUpdateWithoutDocumentInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1349,9 +1059,6 @@ export type ImportChangeUncheckedUpdateManyWithoutDocumentInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1366,9 +1073,6 @@ export type ImportChangeCreateManyImportBatchInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1379,13 +1083,10 @@ export type ImportChangeUpdateWithoutImportBatchInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importRow?: Prisma.ImportRowUpdateOneWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
 
 export type ImportChangeUncheckedUpdateWithoutImportBatchInput = {
@@ -1399,9 +1100,6 @@ export type ImportChangeUncheckedUpdateWithoutImportBatchInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1416,9 +1114,6 @@ export type ImportChangeUncheckedUpdateManyWithoutImportBatchInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1433,9 +1128,6 @@ export type ImportChangeCreateManyImportRowInput = {
   oldValue?: string | null
   newValue?: string | null
   status?: $Enums.ImportChangeStatus
-  reviewedById?: number | null
-  reviewedAt?: Date | string | null
-  rejectedReason?: string | null
   createdAt?: Date | string
 }
 
@@ -1446,13 +1138,10 @@ export type ImportChangeUpdateWithoutImportRowInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   importBatch?: Prisma.ImportBatchUpdateOneRequiredWithoutChangesNestedInput
   company?: Prisma.CompanyUpdateOneWithoutImportChangesNestedInput
   document?: Prisma.IncentiveDocumentUpdateOneWithoutImportChangesNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedChangesNestedInput
 }
 
 export type ImportChangeUncheckedUpdateWithoutImportRowInput = {
@@ -1466,9 +1155,6 @@ export type ImportChangeUncheckedUpdateWithoutImportRowInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1483,9 +1169,6 @@ export type ImportChangeUncheckedUpdateManyWithoutImportRowInput = {
   oldValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   newValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumImportChangeStatusFieldUpdateOperationsInput | $Enums.ImportChangeStatus
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rejectedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1503,15 +1186,11 @@ export type ImportChangeSelect<ExtArgs extends runtime.Types.Extensions.Internal
   oldValue?: boolean
   newValue?: boolean
   status?: boolean
-  reviewedById?: boolean
-  reviewedAt?: boolean
-  rejectedReason?: boolean
   createdAt?: boolean
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }, ExtArgs["result"]["importChange"]>
 
 export type ImportChangeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1526,15 +1205,11 @@ export type ImportChangeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   oldValue?: boolean
   newValue?: boolean
   status?: boolean
-  reviewedById?: boolean
-  reviewedAt?: boolean
-  rejectedReason?: boolean
   createdAt?: boolean
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }, ExtArgs["result"]["importChange"]>
 
 export type ImportChangeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1549,15 +1224,11 @@ export type ImportChangeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   oldValue?: boolean
   newValue?: boolean
   status?: boolean
-  reviewedById?: boolean
-  reviewedAt?: boolean
-  rejectedReason?: boolean
   createdAt?: boolean
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }, ExtArgs["result"]["importChange"]>
 
 export type ImportChangeSelectScalar = {
@@ -1572,33 +1243,27 @@ export type ImportChangeSelectScalar = {
   oldValue?: boolean
   newValue?: boolean
   status?: boolean
-  reviewedById?: boolean
-  reviewedAt?: boolean
-  rejectedReason?: boolean
   createdAt?: boolean
 }
 
-export type ImportChangeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "importRowId" | "companyId" | "documentId" | "entityType" | "changeType" | "fieldName" | "oldValue" | "newValue" | "status" | "reviewedById" | "reviewedAt" | "rejectedReason" | "createdAt", ExtArgs["result"]["importChange"]>
+export type ImportChangeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "importRowId" | "companyId" | "documentId" | "entityType" | "changeType" | "fieldName" | "oldValue" | "newValue" | "status" | "createdAt", ExtArgs["result"]["importChange"]>
 export type ImportChangeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }
 export type ImportChangeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }
 export type ImportChangeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   importRow?: boolean | Prisma.ImportChange$importRowArgs<ExtArgs>
   company?: boolean | Prisma.ImportChange$companyArgs<ExtArgs>
   document?: boolean | Prisma.ImportChange$documentArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportChange$reviewedByArgs<ExtArgs>
 }
 
 export type $ImportChangePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1608,7 +1273,6 @@ export type $ImportChangePayload<ExtArgs extends runtime.Types.Extensions.Intern
     importRow: Prisma.$ImportRowPayload<ExtArgs> | null
     company: Prisma.$CompanyPayload<ExtArgs> | null
     document: Prisma.$IncentiveDocumentPayload<ExtArgs> | null
-    reviewedBy: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1622,9 +1286,6 @@ export type $ImportChangePayload<ExtArgs extends runtime.Types.Extensions.Intern
     oldValue: string | null
     newValue: string | null
     status: $Enums.ImportChangeStatus
-    reviewedById: number | null
-    reviewedAt: Date | null
-    rejectedReason: string | null
     createdAt: Date
   }, ExtArgs["result"]["importChange"]>
   composites: {}
@@ -2024,7 +1685,6 @@ export interface Prisma__ImportChangeClient<T, Null = never, ExtArgs extends run
   importRow<T extends Prisma.ImportChange$importRowArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$importRowArgs<ExtArgs>>): Prisma.Prisma__ImportRowClient<runtime.Types.Result.GetResult<Prisma.$ImportRowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   company<T extends Prisma.ImportChange$companyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$companyArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   document<T extends Prisma.ImportChange$documentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$documentArgs<ExtArgs>>): Prisma.Prisma__IncentiveDocumentClient<runtime.Types.Result.GetResult<Prisma.$IncentiveDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  reviewedBy<T extends Prisma.ImportChange$reviewedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportChange$reviewedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2065,9 +1725,6 @@ export interface ImportChangeFieldRefs {
   readonly oldValue: Prisma.FieldRef<"ImportChange", 'String'>
   readonly newValue: Prisma.FieldRef<"ImportChange", 'String'>
   readonly status: Prisma.FieldRef<"ImportChange", 'ImportChangeStatus'>
-  readonly reviewedById: Prisma.FieldRef<"ImportChange", 'Int'>
-  readonly reviewedAt: Prisma.FieldRef<"ImportChange", 'DateTime'>
-  readonly rejectedReason: Prisma.FieldRef<"ImportChange", 'String'>
   readonly createdAt: Prisma.FieldRef<"ImportChange", 'DateTime'>
 }
     
@@ -2524,25 +2181,6 @@ export type ImportChange$documentArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   include?: Prisma.IncentiveDocumentInclude<ExtArgs> | null
   where?: Prisma.IncentiveDocumentWhereInput
-}
-
-/**
- * ImportChange.reviewedBy
- */
-export type ImportChange$reviewedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the User
-   */
-  select?: Prisma.UserSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the User
-   */
-  omit?: Prisma.UserOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
 }
 
 /**

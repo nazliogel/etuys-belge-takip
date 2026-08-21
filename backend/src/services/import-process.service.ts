@@ -87,10 +87,7 @@ export class ImportProcessService {
         invalidRowCount: parsedResult.invalidRowCount,
       });
 
-      await this.importRepository.updateStatus(
-        importBatchId,
-        "WAITING_APPROVAL",
-      );
+      await this.importRepository.updateStatus(importBatchId, "PROCESSING");
 
       return this.importRepository.findById(importBatchId);
     } catch (error) {

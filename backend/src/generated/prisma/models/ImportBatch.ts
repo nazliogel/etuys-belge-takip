@@ -35,7 +35,6 @@ export type ImportBatchAvgAggregateOutputType = {
   changedRowCount: number | null
   unchangedRowCount: number | null
   uploadedById: number | null
-  reviewedById: number | null
 }
 
 export type ImportBatchSumAggregateOutputType = {
@@ -47,7 +46,6 @@ export type ImportBatchSumAggregateOutputType = {
   changedRowCount: number | null
   unchangedRowCount: number | null
   uploadedById: number | null
-  reviewedById: number | null
 }
 
 export type ImportBatchMinAggregateOutputType = {
@@ -64,9 +62,7 @@ export type ImportBatchMinAggregateOutputType = {
   changedRowCount: number | null
   unchangedRowCount: number | null
   uploadedById: number | null
-  reviewedById: number | null
   uploadedAt: Date | null
-  reviewedAt: Date | null
   completedAt: Date | null
 }
 
@@ -84,9 +80,7 @@ export type ImportBatchMaxAggregateOutputType = {
   changedRowCount: number | null
   unchangedRowCount: number | null
   uploadedById: number | null
-  reviewedById: number | null
   uploadedAt: Date | null
-  reviewedAt: Date | null
   completedAt: Date | null
 }
 
@@ -104,9 +98,7 @@ export type ImportBatchCountAggregateOutputType = {
   changedRowCount: number
   unchangedRowCount: number
   uploadedById: number
-  reviewedById: number
   uploadedAt: number
-  reviewedAt: number
   completedAt: number
   _all: number
 }
@@ -121,7 +113,6 @@ export type ImportBatchAvgAggregateInputType = {
   changedRowCount?: true
   unchangedRowCount?: true
   uploadedById?: true
-  reviewedById?: true
 }
 
 export type ImportBatchSumAggregateInputType = {
@@ -133,7 +124,6 @@ export type ImportBatchSumAggregateInputType = {
   changedRowCount?: true
   unchangedRowCount?: true
   uploadedById?: true
-  reviewedById?: true
 }
 
 export type ImportBatchMinAggregateInputType = {
@@ -150,9 +140,7 @@ export type ImportBatchMinAggregateInputType = {
   changedRowCount?: true
   unchangedRowCount?: true
   uploadedById?: true
-  reviewedById?: true
   uploadedAt?: true
-  reviewedAt?: true
   completedAt?: true
 }
 
@@ -170,9 +158,7 @@ export type ImportBatchMaxAggregateInputType = {
   changedRowCount?: true
   unchangedRowCount?: true
   uploadedById?: true
-  reviewedById?: true
   uploadedAt?: true
-  reviewedAt?: true
   completedAt?: true
 }
 
@@ -190,9 +176,7 @@ export type ImportBatchCountAggregateInputType = {
   changedRowCount?: true
   unchangedRowCount?: true
   uploadedById?: true
-  reviewedById?: true
   uploadedAt?: true
-  reviewedAt?: true
   completedAt?: true
   _all?: true
 }
@@ -297,9 +281,7 @@ export type ImportBatchGroupByOutputType = {
   changedRowCount: number
   unchangedRowCount: number
   uploadedById: number
-  reviewedById: number | null
   uploadedAt: Date
-  reviewedAt: Date | null
   completedAt: Date | null
   _count: ImportBatchCountAggregateOutputType | null
   _avg: ImportBatchAvgAggregateOutputType | null
@@ -340,12 +322,9 @@ export type ImportBatchWhereInput = {
   changedRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   unchangedRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   uploadedById?: Prisma.IntFilter<"ImportBatch"> | number
-  reviewedById?: Prisma.IntNullableFilter<"ImportBatch"> | number | null
   uploadedAt?: Prisma.DateTimeFilter<"ImportBatch"> | Date | string
-  reviewedAt?: Prisma.DateTimeNullableFilter<"ImportBatch"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ImportBatch"> | Date | string | null
   uploadedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  reviewedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   rows?: Prisma.ImportRowListRelationFilter
   changes?: Prisma.ImportChangeListRelationFilter
   changeHistory?: Prisma.ChangeHistoryListRelationFilter
@@ -366,12 +345,9 @@ export type ImportBatchOrderByWithRelationInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadedBy?: Prisma.UserOrderByWithRelationInput
-  reviewedBy?: Prisma.UserOrderByWithRelationInput
   rows?: Prisma.ImportRowOrderByRelationAggregateInput
   changes?: Prisma.ImportChangeOrderByRelationAggregateInput
   changeHistory?: Prisma.ChangeHistoryOrderByRelationAggregateInput
@@ -395,12 +371,9 @@ export type ImportBatchWhereUniqueInput = Prisma.AtLeast<{
   changedRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   unchangedRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   uploadedById?: Prisma.IntFilter<"ImportBatch"> | number
-  reviewedById?: Prisma.IntNullableFilter<"ImportBatch"> | number | null
   uploadedAt?: Prisma.DateTimeFilter<"ImportBatch"> | Date | string
-  reviewedAt?: Prisma.DateTimeNullableFilter<"ImportBatch"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ImportBatch"> | Date | string | null
   uploadedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  reviewedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   rows?: Prisma.ImportRowListRelationFilter
   changes?: Prisma.ImportChangeListRelationFilter
   changeHistory?: Prisma.ChangeHistoryListRelationFilter
@@ -421,9 +394,7 @@ export type ImportBatchOrderByWithAggregationInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ImportBatchCountOrderByAggregateInput
   _avg?: Prisma.ImportBatchAvgOrderByAggregateInput
@@ -449,9 +420,7 @@ export type ImportBatchScalarWhereWithAggregatesInput = {
   changedRowCount?: Prisma.IntWithAggregatesFilter<"ImportBatch"> | number
   unchangedRowCount?: Prisma.IntWithAggregatesFilter<"ImportBatch"> | number
   uploadedById?: Prisma.IntWithAggregatesFilter<"ImportBatch"> | number
-  reviewedById?: Prisma.IntNullableWithAggregatesFilter<"ImportBatch"> | number | null
   uploadedAt?: Prisma.DateTimeWithAggregatesFilter<"ImportBatch"> | Date | string
-  reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportBatch"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportBatch"> | Date | string | null
 }
 
@@ -468,10 +437,8 @@ export type ImportBatchCreateInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   uploadedBy: Prisma.UserCreateNestedOneWithoutUploadedImportsInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedImportsInput
   rows?: Prisma.ImportRowCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutImportBatchInput
@@ -492,9 +459,7 @@ export type ImportBatchUncheckedCreateInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedById: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   rows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutImportBatchInput
@@ -515,10 +480,8 @@ export type ImportBatchUpdateInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploadedBy?: Prisma.UserUpdateOneRequiredWithoutUploadedImportsNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedImportsNestedInput
   rows?: Prisma.ImportRowUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutImportBatchNestedInput
@@ -539,9 +502,7 @@ export type ImportBatchUncheckedUpdateInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rows?: Prisma.ImportRowUncheckedUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUncheckedUpdateManyWithoutImportBatchNestedInput
@@ -563,9 +524,7 @@ export type ImportBatchCreateManyInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedById: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
 }
 
@@ -582,7 +541,6 @@ export type ImportBatchUpdateManyMutationInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -600,9 +558,7 @@ export type ImportBatchUncheckedUpdateManyInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -630,9 +586,7 @@ export type ImportBatchCountOrderByAggregateInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
 }
 
@@ -645,7 +599,6 @@ export type ImportBatchAvgOrderByAggregateInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
 }
 
 export type ImportBatchMaxOrderByAggregateInput = {
@@ -662,9 +615,7 @@ export type ImportBatchMaxOrderByAggregateInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
 }
 
@@ -682,9 +633,7 @@ export type ImportBatchMinOrderByAggregateInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
-  reviewedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
 }
 
@@ -697,7 +646,6 @@ export type ImportBatchSumOrderByAggregateInput = {
   changedRowCount?: Prisma.SortOrder
   unchangedRowCount?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
-  reviewedById?: Prisma.SortOrder
 }
 
 export type ImportBatchScalarRelationFilter = {
@@ -717,24 +665,10 @@ export type ImportBatchCreateNestedManyWithoutUploadedByInput = {
   connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
 }
 
-export type ImportBatchCreateNestedManyWithoutReviewedByInput = {
-  create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutReviewedByInput, Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput> | Prisma.ImportBatchCreateWithoutReviewedByInput[] | Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput | Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput[]
-  createMany?: Prisma.ImportBatchCreateManyReviewedByInputEnvelope
-  connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-}
-
 export type ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput = {
   create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutUploadedByInput, Prisma.ImportBatchUncheckedCreateWithoutUploadedByInput> | Prisma.ImportBatchCreateWithoutUploadedByInput[] | Prisma.ImportBatchUncheckedCreateWithoutUploadedByInput[]
   connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutUploadedByInput | Prisma.ImportBatchCreateOrConnectWithoutUploadedByInput[]
   createMany?: Prisma.ImportBatchCreateManyUploadedByInputEnvelope
-  connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-}
-
-export type ImportBatchUncheckedCreateNestedManyWithoutReviewedByInput = {
-  create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutReviewedByInput, Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput> | Prisma.ImportBatchCreateWithoutReviewedByInput[] | Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput | Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput[]
-  createMany?: Prisma.ImportBatchCreateManyReviewedByInputEnvelope
   connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
 }
 
@@ -752,20 +686,6 @@ export type ImportBatchUpdateManyWithoutUploadedByNestedInput = {
   deleteMany?: Prisma.ImportBatchScalarWhereInput | Prisma.ImportBatchScalarWhereInput[]
 }
 
-export type ImportBatchUpdateManyWithoutReviewedByNestedInput = {
-  create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutReviewedByInput, Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput> | Prisma.ImportBatchCreateWithoutReviewedByInput[] | Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput | Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput[]
-  upsert?: Prisma.ImportBatchUpsertWithWhereUniqueWithoutReviewedByInput | Prisma.ImportBatchUpsertWithWhereUniqueWithoutReviewedByInput[]
-  createMany?: Prisma.ImportBatchCreateManyReviewedByInputEnvelope
-  set?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  disconnect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  delete?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  update?: Prisma.ImportBatchUpdateWithWhereUniqueWithoutReviewedByInput | Prisma.ImportBatchUpdateWithWhereUniqueWithoutReviewedByInput[]
-  updateMany?: Prisma.ImportBatchUpdateManyWithWhereWithoutReviewedByInput | Prisma.ImportBatchUpdateManyWithWhereWithoutReviewedByInput[]
-  deleteMany?: Prisma.ImportBatchScalarWhereInput | Prisma.ImportBatchScalarWhereInput[]
-}
-
 export type ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput = {
   create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutUploadedByInput, Prisma.ImportBatchUncheckedCreateWithoutUploadedByInput> | Prisma.ImportBatchCreateWithoutUploadedByInput[] | Prisma.ImportBatchUncheckedCreateWithoutUploadedByInput[]
   connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutUploadedByInput | Prisma.ImportBatchCreateOrConnectWithoutUploadedByInput[]
@@ -777,20 +697,6 @@ export type ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput = {
   connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
   update?: Prisma.ImportBatchUpdateWithWhereUniqueWithoutUploadedByInput | Prisma.ImportBatchUpdateWithWhereUniqueWithoutUploadedByInput[]
   updateMany?: Prisma.ImportBatchUpdateManyWithWhereWithoutUploadedByInput | Prisma.ImportBatchUpdateManyWithWhereWithoutUploadedByInput[]
-  deleteMany?: Prisma.ImportBatchScalarWhereInput | Prisma.ImportBatchScalarWhereInput[]
-}
-
-export type ImportBatchUncheckedUpdateManyWithoutReviewedByNestedInput = {
-  create?: Prisma.XOR<Prisma.ImportBatchCreateWithoutReviewedByInput, Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput> | Prisma.ImportBatchCreateWithoutReviewedByInput[] | Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput[]
-  connectOrCreate?: Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput | Prisma.ImportBatchCreateOrConnectWithoutReviewedByInput[]
-  upsert?: Prisma.ImportBatchUpsertWithWhereUniqueWithoutReviewedByInput | Prisma.ImportBatchUpsertWithWhereUniqueWithoutReviewedByInput[]
-  createMany?: Prisma.ImportBatchCreateManyReviewedByInputEnvelope
-  set?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  disconnect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  delete?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  connect?: Prisma.ImportBatchWhereUniqueInput | Prisma.ImportBatchWhereUniqueInput[]
-  update?: Prisma.ImportBatchUpdateWithWhereUniqueWithoutReviewedByInput | Prisma.ImportBatchUpdateWithWhereUniqueWithoutReviewedByInput[]
-  updateMany?: Prisma.ImportBatchUpdateManyWithWhereWithoutReviewedByInput | Prisma.ImportBatchUpdateManyWithWhereWithoutReviewedByInput[]
   deleteMany?: Prisma.ImportBatchScalarWhereInput | Prisma.ImportBatchScalarWhereInput[]
 }
 
@@ -875,9 +781,7 @@ export type ImportBatchCreateWithoutUploadedByInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedImportsInput
   rows?: Prisma.ImportRowCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutImportBatchInput
@@ -897,9 +801,7 @@ export type ImportBatchUncheckedCreateWithoutUploadedByInput = {
   newRowCount?: number
   changedRowCount?: number
   unchangedRowCount?: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   rows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutImportBatchInput
@@ -914,61 +816,6 @@ export type ImportBatchCreateOrConnectWithoutUploadedByInput = {
 
 export type ImportBatchCreateManyUploadedByInputEnvelope = {
   data: Prisma.ImportBatchCreateManyUploadedByInput | Prisma.ImportBatchCreateManyUploadedByInput[]
-  skipDuplicates?: boolean
-}
-
-export type ImportBatchCreateWithoutReviewedByInput = {
-  fileName: string
-  storedFileName?: string | null
-  status?: $Enums.ImportBatchStatus
-  importType?: $Enums.ImportType
-  isFullSnapshot?: boolean
-  totalRowCount?: number
-  validRowCount?: number
-  invalidRowCount?: number
-  newRowCount?: number
-  changedRowCount?: number
-  unchangedRowCount?: number
-  uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
-  completedAt?: Date | string | null
-  uploadedBy: Prisma.UserCreateNestedOneWithoutUploadedImportsInput
-  rows?: Prisma.ImportRowCreateNestedManyWithoutImportBatchInput
-  changes?: Prisma.ImportChangeCreateNestedManyWithoutImportBatchInput
-  changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutImportBatchInput
-  notifications?: Prisma.NotificationCreateNestedManyWithoutImportBatchInput
-}
-
-export type ImportBatchUncheckedCreateWithoutReviewedByInput = {
-  id?: number
-  fileName: string
-  storedFileName?: string | null
-  status?: $Enums.ImportBatchStatus
-  importType?: $Enums.ImportType
-  isFullSnapshot?: boolean
-  totalRowCount?: number
-  validRowCount?: number
-  invalidRowCount?: number
-  newRowCount?: number
-  changedRowCount?: number
-  unchangedRowCount?: number
-  uploadedById: number
-  uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
-  completedAt?: Date | string | null
-  rows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutImportBatchInput
-  changes?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutImportBatchInput
-  changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutImportBatchInput
-  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutImportBatchInput
-}
-
-export type ImportBatchCreateOrConnectWithoutReviewedByInput = {
-  where: Prisma.ImportBatchWhereUniqueInput
-  create: Prisma.XOR<Prisma.ImportBatchCreateWithoutReviewedByInput, Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput>
-}
-
-export type ImportBatchCreateManyReviewedByInputEnvelope = {
-  data: Prisma.ImportBatchCreateManyReviewedByInput | Prisma.ImportBatchCreateManyReviewedByInput[]
   skipDuplicates?: boolean
 }
 
@@ -1005,26 +852,8 @@ export type ImportBatchScalarWhereInput = {
   changedRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   unchangedRowCount?: Prisma.IntFilter<"ImportBatch"> | number
   uploadedById?: Prisma.IntFilter<"ImportBatch"> | number
-  reviewedById?: Prisma.IntNullableFilter<"ImportBatch"> | number | null
   uploadedAt?: Prisma.DateTimeFilter<"ImportBatch"> | Date | string
-  reviewedAt?: Prisma.DateTimeNullableFilter<"ImportBatch"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ImportBatch"> | Date | string | null
-}
-
-export type ImportBatchUpsertWithWhereUniqueWithoutReviewedByInput = {
-  where: Prisma.ImportBatchWhereUniqueInput
-  update: Prisma.XOR<Prisma.ImportBatchUpdateWithoutReviewedByInput, Prisma.ImportBatchUncheckedUpdateWithoutReviewedByInput>
-  create: Prisma.XOR<Prisma.ImportBatchCreateWithoutReviewedByInput, Prisma.ImportBatchUncheckedCreateWithoutReviewedByInput>
-}
-
-export type ImportBatchUpdateWithWhereUniqueWithoutReviewedByInput = {
-  where: Prisma.ImportBatchWhereUniqueInput
-  data: Prisma.XOR<Prisma.ImportBatchUpdateWithoutReviewedByInput, Prisma.ImportBatchUncheckedUpdateWithoutReviewedByInput>
-}
-
-export type ImportBatchUpdateManyWithWhereWithoutReviewedByInput = {
-  where: Prisma.ImportBatchScalarWhereInput
-  data: Prisma.XOR<Prisma.ImportBatchUpdateManyMutationInput, Prisma.ImportBatchUncheckedUpdateManyWithoutReviewedByInput>
 }
 
 export type ImportBatchCreateWithoutRowsInput = {
@@ -1040,10 +869,8 @@ export type ImportBatchCreateWithoutRowsInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   uploadedBy: Prisma.UserCreateNestedOneWithoutUploadedImportsInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedImportsInput
   changes?: Prisma.ImportChangeCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutImportBatchInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutImportBatchInput
@@ -1063,9 +890,7 @@ export type ImportBatchUncheckedCreateWithoutRowsInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedById: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   changes?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutImportBatchInput
@@ -1101,10 +926,8 @@ export type ImportBatchUpdateWithoutRowsInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploadedBy?: Prisma.UserUpdateOneRequiredWithoutUploadedImportsNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedImportsNestedInput
   changes?: Prisma.ImportChangeUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutImportBatchNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutImportBatchNestedInput
@@ -1124,9 +947,7 @@ export type ImportBatchUncheckedUpdateWithoutRowsInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   changes?: Prisma.ImportChangeUncheckedUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutImportBatchNestedInput
@@ -1146,10 +967,8 @@ export type ImportBatchCreateWithoutChangesInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   uploadedBy: Prisma.UserCreateNestedOneWithoutUploadedImportsInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedImportsInput
   rows?: Prisma.ImportRowCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutImportBatchInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutImportBatchInput
@@ -1169,9 +988,7 @@ export type ImportBatchUncheckedCreateWithoutChangesInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedById: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   rows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutImportBatchInput
@@ -1207,10 +1024,8 @@ export type ImportBatchUpdateWithoutChangesInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploadedBy?: Prisma.UserUpdateOneRequiredWithoutUploadedImportsNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedImportsNestedInput
   rows?: Prisma.ImportRowUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutImportBatchNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutImportBatchNestedInput
@@ -1230,9 +1045,7 @@ export type ImportBatchUncheckedUpdateWithoutChangesInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rows?: Prisma.ImportRowUncheckedUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutImportBatchNestedInput
@@ -1252,10 +1065,8 @@ export type ImportBatchCreateWithoutChangeHistoryInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   uploadedBy: Prisma.UserCreateNestedOneWithoutUploadedImportsInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedImportsInput
   rows?: Prisma.ImportRowCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeCreateNestedManyWithoutImportBatchInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutImportBatchInput
@@ -1275,9 +1086,7 @@ export type ImportBatchUncheckedCreateWithoutChangeHistoryInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedById: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   rows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutImportBatchInput
@@ -1313,10 +1122,8 @@ export type ImportBatchUpdateWithoutChangeHistoryInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploadedBy?: Prisma.UserUpdateOneRequiredWithoutUploadedImportsNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedImportsNestedInput
   rows?: Prisma.ImportRowUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUpdateManyWithoutImportBatchNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutImportBatchNestedInput
@@ -1336,9 +1143,7 @@ export type ImportBatchUncheckedUpdateWithoutChangeHistoryInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rows?: Prisma.ImportRowUncheckedUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUncheckedUpdateManyWithoutImportBatchNestedInput
@@ -1358,10 +1163,8 @@ export type ImportBatchCreateWithoutNotificationsInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   uploadedBy: Prisma.UserCreateNestedOneWithoutUploadedImportsInput
-  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedImportsInput
   rows?: Prisma.ImportRowCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeCreateNestedManyWithoutImportBatchInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutImportBatchInput
@@ -1381,9 +1184,7 @@ export type ImportBatchUncheckedCreateWithoutNotificationsInput = {
   changedRowCount?: number
   unchangedRowCount?: number
   uploadedById: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
   rows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutImportBatchInput
   changes?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutImportBatchInput
@@ -1419,10 +1220,8 @@ export type ImportBatchUpdateWithoutNotificationsInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploadedBy?: Prisma.UserUpdateOneRequiredWithoutUploadedImportsNestedInput
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedImportsNestedInput
   rows?: Prisma.ImportRowUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutImportBatchNestedInput
@@ -1442,9 +1241,7 @@ export type ImportBatchUncheckedUpdateWithoutNotificationsInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rows?: Prisma.ImportRowUncheckedUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUncheckedUpdateManyWithoutImportBatchNestedInput
@@ -1464,28 +1261,7 @@ export type ImportBatchCreateManyUploadedByInput = {
   newRowCount?: number
   changedRowCount?: number
   unchangedRowCount?: number
-  reviewedById?: number | null
   uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
-  completedAt?: Date | string | null
-}
-
-export type ImportBatchCreateManyReviewedByInput = {
-  id?: number
-  fileName: string
-  storedFileName?: string | null
-  status?: $Enums.ImportBatchStatus
-  importType?: $Enums.ImportType
-  isFullSnapshot?: boolean
-  totalRowCount?: number
-  validRowCount?: number
-  invalidRowCount?: number
-  newRowCount?: number
-  changedRowCount?: number
-  unchangedRowCount?: number
-  uploadedById: number
-  uploadedAt?: Date | string
-  reviewedAt?: Date | string | null
   completedAt?: Date | string | null
 }
 
@@ -1502,9 +1278,7 @@ export type ImportBatchUpdateWithoutUploadedByInput = {
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedImportsNestedInput
   rows?: Prisma.ImportRowUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUpdateManyWithoutImportBatchNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutImportBatchNestedInput
@@ -1524,9 +1298,7 @@ export type ImportBatchUncheckedUpdateWithoutUploadedByInput = {
   newRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rows?: Prisma.ImportRowUncheckedUpdateManyWithoutImportBatchNestedInput
   changes?: Prisma.ImportChangeUncheckedUpdateManyWithoutImportBatchNestedInput
@@ -1547,73 +1319,7 @@ export type ImportBatchUncheckedUpdateManyWithoutUploadedByInput = {
   newRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
   unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  reviewedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-}
-
-export type ImportBatchUpdateWithoutReviewedByInput = {
-  fileName?: Prisma.StringFieldUpdateOperationsInput | string
-  storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
-  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
-  isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  invalidRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  newRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  uploadedBy?: Prisma.UserUpdateOneRequiredWithoutUploadedImportsNestedInput
-  rows?: Prisma.ImportRowUpdateManyWithoutImportBatchNestedInput
-  changes?: Prisma.ImportChangeUpdateManyWithoutImportBatchNestedInput
-  changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutImportBatchNestedInput
-  notifications?: Prisma.NotificationUpdateManyWithoutImportBatchNestedInput
-}
-
-export type ImportBatchUncheckedUpdateWithoutReviewedByInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  fileName?: Prisma.StringFieldUpdateOperationsInput | string
-  storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
-  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
-  isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  invalidRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  newRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  rows?: Prisma.ImportRowUncheckedUpdateManyWithoutImportBatchNestedInput
-  changes?: Prisma.ImportChangeUncheckedUpdateManyWithoutImportBatchNestedInput
-  changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutImportBatchNestedInput
-  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutImportBatchNestedInput
-}
-
-export type ImportBatchUncheckedUpdateManyWithoutReviewedByInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  fileName?: Prisma.StringFieldUpdateOperationsInput | string
-  storedFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumImportBatchStatusFieldUpdateOperationsInput | $Enums.ImportBatchStatus
-  importType?: Prisma.EnumImportTypeFieldUpdateOperationsInput | $Enums.ImportType
-  isFullSnapshot?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  totalRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  validRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  invalidRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  newRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  changedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  unchangedRowCount?: Prisma.IntFieldUpdateOperationsInput | number
-  uploadedById?: Prisma.IntFieldUpdateOperationsInput | number
-  uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -1689,12 +1395,9 @@ export type ImportBatchSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   changedRowCount?: boolean
   unchangedRowCount?: boolean
   uploadedById?: boolean
-  reviewedById?: boolean
   uploadedAt?: boolean
-  reviewedAt?: boolean
   completedAt?: boolean
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
   rows?: boolean | Prisma.ImportBatch$rowsArgs<ExtArgs>
   changes?: boolean | Prisma.ImportBatch$changesArgs<ExtArgs>
   changeHistory?: boolean | Prisma.ImportBatch$changeHistoryArgs<ExtArgs>
@@ -1716,12 +1419,9 @@ export type ImportBatchSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   changedRowCount?: boolean
   unchangedRowCount?: boolean
   uploadedById?: boolean
-  reviewedById?: boolean
   uploadedAt?: boolean
-  reviewedAt?: boolean
   completedAt?: boolean
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
 }, ExtArgs["result"]["importBatch"]>
 
 export type ImportBatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1738,12 +1438,9 @@ export type ImportBatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   changedRowCount?: boolean
   unchangedRowCount?: boolean
   uploadedById?: boolean
-  reviewedById?: boolean
   uploadedAt?: boolean
-  reviewedAt?: boolean
   completedAt?: boolean
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
 }, ExtArgs["result"]["importBatch"]>
 
 export type ImportBatchSelectScalar = {
@@ -1760,16 +1457,13 @@ export type ImportBatchSelectScalar = {
   changedRowCount?: boolean
   unchangedRowCount?: boolean
   uploadedById?: boolean
-  reviewedById?: boolean
   uploadedAt?: boolean
-  reviewedAt?: boolean
   completedAt?: boolean
 }
 
-export type ImportBatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "storedFileName" | "status" | "importType" | "isFullSnapshot" | "totalRowCount" | "validRowCount" | "invalidRowCount" | "newRowCount" | "changedRowCount" | "unchangedRowCount" | "uploadedById" | "reviewedById" | "uploadedAt" | "reviewedAt" | "completedAt", ExtArgs["result"]["importBatch"]>
+export type ImportBatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "storedFileName" | "status" | "importType" | "isFullSnapshot" | "totalRowCount" | "validRowCount" | "invalidRowCount" | "newRowCount" | "changedRowCount" | "unchangedRowCount" | "uploadedById" | "uploadedAt" | "completedAt", ExtArgs["result"]["importBatch"]>
 export type ImportBatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
   rows?: boolean | Prisma.ImportBatch$rowsArgs<ExtArgs>
   changes?: boolean | Prisma.ImportBatch$changesArgs<ExtArgs>
   changeHistory?: boolean | Prisma.ImportBatch$changeHistoryArgs<ExtArgs>
@@ -1778,18 +1472,15 @@ export type ImportBatchInclude<ExtArgs extends runtime.Types.Extensions.Internal
 }
 export type ImportBatchIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
 }
 export type ImportBatchIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  reviewedBy?: boolean | Prisma.ImportBatch$reviewedByArgs<ExtArgs>
 }
 
 export type $ImportBatchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ImportBatch"
   objects: {
     uploadedBy: Prisma.$UserPayload<ExtArgs>
-    reviewedBy: Prisma.$UserPayload<ExtArgs> | null
     rows: Prisma.$ImportRowPayload<ExtArgs>[]
     changes: Prisma.$ImportChangePayload<ExtArgs>[]
     changeHistory: Prisma.$ChangeHistoryPayload<ExtArgs>[]
@@ -1809,9 +1500,7 @@ export type $ImportBatchPayload<ExtArgs extends runtime.Types.Extensions.Interna
     changedRowCount: number
     unchangedRowCount: number
     uploadedById: number
-    reviewedById: number | null
     uploadedAt: Date
-    reviewedAt: Date | null
     completedAt: Date | null
   }, ExtArgs["result"]["importBatch"]>
   composites: {}
@@ -2208,7 +1897,6 @@ readonly fields: ImportBatchFieldRefs;
 export interface Prisma__ImportBatchClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   uploadedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  reviewedBy<T extends Prisma.ImportBatch$reviewedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportBatch$reviewedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   rows<T extends Prisma.ImportBatch$rowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportBatch$rowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   changes<T extends Prisma.ImportBatch$changesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportBatch$changesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportChangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   changeHistory<T extends Prisma.ImportBatch$changeHistoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImportBatch$changeHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2255,9 +1943,7 @@ export interface ImportBatchFieldRefs {
   readonly changedRowCount: Prisma.FieldRef<"ImportBatch", 'Int'>
   readonly unchangedRowCount: Prisma.FieldRef<"ImportBatch", 'Int'>
   readonly uploadedById: Prisma.FieldRef<"ImportBatch", 'Int'>
-  readonly reviewedById: Prisma.FieldRef<"ImportBatch", 'Int'>
   readonly uploadedAt: Prisma.FieldRef<"ImportBatch", 'DateTime'>
-  readonly reviewedAt: Prisma.FieldRef<"ImportBatch", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"ImportBatch", 'DateTime'>
 }
     
@@ -2657,25 +2343,6 @@ export type ImportBatchDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Limit how many ImportBatches to delete.
    */
   limit?: number
-}
-
-/**
- * ImportBatch.reviewedBy
- */
-export type ImportBatch$reviewedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the User
-   */
-  select?: Prisma.UserSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the User
-   */
-  omit?: Prisma.UserOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
 }
 
 /**
