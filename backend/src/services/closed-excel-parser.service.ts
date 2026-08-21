@@ -86,6 +86,10 @@ export class ClosedExcelParserService {
 
       const parsedRow = this.parseRow(rowNumber, row, headerMap);
 
+      if (!parsedRow) {
+        continue;
+      }
+
       if (parsedRow.errorMessage) {
         invalidRowCount += 1;
       } else {
@@ -141,7 +145,7 @@ export class ClosedExcelParserService {
     rowNumber: number,
     row: ExcelJS.Row,
     headerMap: Partial<Record<HeaderKey, number>>,
-  ): ParsedClosedImportRow {
+  ): ParsedClosedImportRow | null {
     const rawData = this.buildRawData(row, headerMap);
 
     const externalCompanyId = this.getNumberValue(
@@ -190,6 +194,10 @@ export class ClosedExcelParserService {
 
     const documentStatus = this.getDocumentStatus(processStatus);
 
+    if (this.shouldSkipRow(externalDocumentId, processStatus)) {
+      return null;
+    }
+
     const errors: string[] = [];
 
     if (!externalCompanyId) {
@@ -225,6 +233,29 @@ export class ClosedExcelParserService {
       rawData,
       errorMessage: errors.length > 0 ? errors.join(" ") : null,
     };
+  }
+
+  private shouldSkipRow(
+    externalDocumentId: number | null,
+    processStatus: string | null,
+  ): boolean {
+    if (externalDocumentId) {
+      return false;
+    }
+
+    if (!processStatus) {
+      return false;
+    }
+
+    const normalized = processStatus.trim().toLocaleLowerCase("tr-TR");
+
+    return (
+      normalized.includes("kapalı/iptal belge yok") ||
+      normalized.includes("yetki süresi dolmuş") ||
+      normalized.includes("yetki yetersiz") ||
+      normalized.includes("firma özellikle atlandı") ||
+      normalized.startsWith("hata:")
+    );
   }
 
   private getDocumentStatus(
