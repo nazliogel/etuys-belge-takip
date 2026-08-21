@@ -388,7 +388,7 @@ export class CompareService {
 
     const changes: ChangeInput[] = [];
 
-    this.compareCompany(row, company, changes);
+    this.compareCompany(row, company, changes, importType);
     this.compareAuthorization(row, company, changes);
 
     const openDocument =
@@ -500,6 +500,7 @@ export class CompareService {
     row: ImportRowData,
     company: ExistingCompany,
     changes: ChangeInput[],
+    importType: "OPEN" | "CLOSED",
   ) {
     this.addChangeIfDifferent(changes, {
       entityType: "COMPANY",
@@ -517,13 +518,15 @@ export class CompareService {
       companyId: company.id,
     });
 
-    this.addChangeIfDifferent(changes, {
-      entityType: "COMPANY",
-      fieldName: "processStatus",
-      oldValue: company.processStatus,
-      newValue: row.processStatus,
-      companyId: company.id,
-    });
+    if (importType === "OPEN") {
+      this.addChangeIfDifferent(changes, {
+        entityType: "COMPANY",
+        fieldName: "processStatus",
+        oldValue: company.processStatus,
+        newValue: row.processStatus,
+        companyId: company.id,
+      });
+    }
 
     if (!company.isActive) {
       changes.push({
