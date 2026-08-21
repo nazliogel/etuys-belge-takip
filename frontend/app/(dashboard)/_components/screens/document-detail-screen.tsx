@@ -254,7 +254,7 @@ export function DocumentDetailScreen({
               <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
 
               <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Belge Operasyon Bilgileri
+                Belge Bilgileri
               </h3>
             </div>
 

@@ -504,7 +504,7 @@ export function DocumentsScreen({
                             </p>
 
                             <p className="font-mono text-[11px] text-slate-400">
-                              ID: #{doc.id}
+                              ID: {doc.externalDocumentId}
                             </p>
                           </div>
                         </div>
