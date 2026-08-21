@@ -581,7 +581,7 @@ export function CompanyIdentitySection({
 
             <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
               <TableField
-                label="Yatırımcı Adı"
+                label="Yatırımcı Türü"
                 value={identityForm.investorName}
                 onChange={(value) =>
                   handleIdentityFieldChange("investorName", value)

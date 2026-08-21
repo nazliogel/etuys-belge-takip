@@ -102,6 +102,7 @@ export const CompanyScalarFieldEnum = {
   name: 'name',
   taxNumber: 'taxNumber',
   processStatus: 'processStatus',
+  consultant: 'consultant',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -36,6 +36,7 @@ export class CompanyService {
             name: company.name,
             taxNumber: company.taxNumber,
             processStatus: company.processStatus,
+            consultant: company.consultant,
             isActive: company.isActive,
             authorizationEndDate:
               company.authorization?.authorizationEndDate?.toISOString() ??
@@ -74,6 +75,7 @@ export class CompanyService {
           name: company.name,
           taxNumber: company.taxNumber,
           processStatus: company.processStatus,
+          consultant: company.consultant,
           isActive: company.isActive,
           authorizationEndDate:
             company.authorization?.authorizationEndDate?.toISOString() ?? null,
@@ -120,6 +122,7 @@ export class CompanyService {
       name: company.name,
       taxNumber: company.taxNumber,
       processStatus: company.processStatus,
+      consultant: company.consultant,
       isActive: company.isActive,
 
       authorizationEndDate:
@@ -173,6 +176,7 @@ export class CompanyService {
       name: company.name,
       taxNumber: company.taxNumber,
       processStatus: company.processStatus,
+      consultant: company.consultant,
       isActive: company.isActive,
 
       authorizationEndDate:
@@ -191,6 +195,7 @@ export class CompanyService {
         documentEndDate: document.documentEndDate?.toISOString() ?? null,
         extensionDate: document.extensionDate?.toISOString() ?? null,
         supportClass: document.supportClass,
+        status: document.status,
         isActive: document.isActive,
       })),
     };

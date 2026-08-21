@@ -42,6 +42,7 @@ export type CompanyMinAggregateOutputType = {
   name: string | null
   taxNumber: string | null
   processStatus: string | null
+  consultant: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -53,6 +54,7 @@ export type CompanyMaxAggregateOutputType = {
   name: string | null
   taxNumber: string | null
   processStatus: string | null
+  consultant: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -64,6 +66,7 @@ export type CompanyCountAggregateOutputType = {
   name: number
   taxNumber: number
   processStatus: number
+  consultant: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -87,6 +90,7 @@ export type CompanyMinAggregateInputType = {
   name?: true
   taxNumber?: true
   processStatus?: true
+  consultant?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -98,6 +102,7 @@ export type CompanyMaxAggregateInputType = {
   name?: true
   taxNumber?: true
   processStatus?: true
+  consultant?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -109,6 +114,7 @@ export type CompanyCountAggregateInputType = {
   name?: true
   taxNumber?: true
   processStatus?: true
+  consultant?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -207,6 +213,7 @@ export type CompanyGroupByOutputType = {
   name: string
   taxNumber: string
   processStatus: string | null
+  consultant: string | null
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -241,6 +248,7 @@ export type CompanyWhereInput = {
   name?: Prisma.StringFilter<"Company"> | string
   taxNumber?: Prisma.StringFilter<"Company"> | string
   processStatus?: Prisma.StringNullableFilter<"Company"> | string | null
+  consultant?: Prisma.StringNullableFilter<"Company"> | string | null
   isActive?: Prisma.BoolFilter<"Company"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Company"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Company"> | Date | string
@@ -260,6 +268,7 @@ export type CompanyOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   taxNumber?: Prisma.SortOrder
   processStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  consultant?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -282,6 +291,7 @@ export type CompanyWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Company"> | string
   taxNumber?: Prisma.StringFilter<"Company"> | string
   processStatus?: Prisma.StringNullableFilter<"Company"> | string | null
+  consultant?: Prisma.StringNullableFilter<"Company"> | string | null
   isActive?: Prisma.BoolFilter<"Company"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Company"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Company"> | Date | string
@@ -301,6 +311,7 @@ export type CompanyOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   taxNumber?: Prisma.SortOrder
   processStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  consultant?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -320,6 +331,7 @@ export type CompanyScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Company"> | string
   taxNumber?: Prisma.StringWithAggregatesFilter<"Company"> | string
   processStatus?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
+  consultant?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Company"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Company"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Company"> | Date | string
@@ -330,6 +342,7 @@ export type CompanyCreateInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -349,6 +362,7 @@ export type CompanyUncheckedCreateInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -367,6 +381,7 @@ export type CompanyUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -386,6 +401,7 @@ export type CompanyUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -405,6 +421,7 @@ export type CompanyCreateManyInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -415,6 +432,7 @@ export type CompanyUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -426,6 +444,7 @@ export type CompanyUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -442,6 +461,7 @@ export type CompanyCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   taxNumber?: Prisma.SortOrder
   processStatus?: Prisma.SortOrder
+  consultant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -458,6 +478,7 @@ export type CompanyMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   taxNumber?: Prisma.SortOrder
   processStatus?: Prisma.SortOrder
+  consultant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -469,6 +490,7 @@ export type CompanyMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   taxNumber?: Prisma.SortOrder
   processStatus?: Prisma.SortOrder
+  consultant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -615,6 +637,7 @@ export type CompanyCreateWithoutUsersInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -633,6 +656,7 @@ export type CompanyUncheckedCreateWithoutUsersInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -666,6 +690,7 @@ export type CompanyUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -684,6 +709,7 @@ export type CompanyUncheckedUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -701,6 +727,7 @@ export type CompanyCreateWithoutAuthorizationInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -719,6 +746,7 @@ export type CompanyUncheckedCreateWithoutAuthorizationInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -752,6 +780,7 @@ export type CompanyUpdateWithoutAuthorizationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -770,6 +799,7 @@ export type CompanyUncheckedUpdateWithoutAuthorizationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -787,6 +817,7 @@ export type CompanyCreateWithoutDocumentsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -805,6 +836,7 @@ export type CompanyUncheckedCreateWithoutDocumentsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -838,6 +870,7 @@ export type CompanyUpdateWithoutDocumentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -856,6 +889,7 @@ export type CompanyUncheckedUpdateWithoutDocumentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -873,6 +907,7 @@ export type CompanyCreateWithoutClosedDocumentsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -891,6 +926,7 @@ export type CompanyUncheckedCreateWithoutClosedDocumentsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -924,6 +960,7 @@ export type CompanyUpdateWithoutClosedDocumentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -942,6 +979,7 @@ export type CompanyUncheckedUpdateWithoutClosedDocumentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -959,6 +997,7 @@ export type CompanyCreateWithoutImportRowsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -977,6 +1016,7 @@ export type CompanyUncheckedCreateWithoutImportRowsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1010,6 +1050,7 @@ export type CompanyUpdateWithoutImportRowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1028,6 +1069,7 @@ export type CompanyUncheckedUpdateWithoutImportRowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1045,6 +1087,7 @@ export type CompanyCreateWithoutImportChangesInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1063,6 +1106,7 @@ export type CompanyUncheckedCreateWithoutImportChangesInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1096,6 +1140,7 @@ export type CompanyUpdateWithoutImportChangesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1114,6 +1159,7 @@ export type CompanyUncheckedUpdateWithoutImportChangesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1131,6 +1177,7 @@ export type CompanyCreateWithoutChangeHistoryInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1149,6 +1196,7 @@ export type CompanyUncheckedCreateWithoutChangeHistoryInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1182,6 +1230,7 @@ export type CompanyUpdateWithoutChangeHistoryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1200,6 +1249,7 @@ export type CompanyUncheckedUpdateWithoutChangeHistoryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1217,6 +1267,7 @@ export type CompanyCreateWithoutNotificationsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1235,6 +1286,7 @@ export type CompanyUncheckedCreateWithoutNotificationsInput = {
   name: string
   taxNumber: string
   processStatus?: string | null
+  consultant?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1268,6 +1320,7 @@ export type CompanyUpdateWithoutNotificationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1286,6 +1339,7 @@ export type CompanyUncheckedUpdateWithoutNotificationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1389,6 +1443,7 @@ export type CompanySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name?: boolean
   taxNumber?: boolean
   processStatus?: boolean
+  consultant?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1409,6 +1464,7 @@ export type CompanySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   name?: boolean
   taxNumber?: boolean
   processStatus?: boolean
+  consultant?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1420,6 +1476,7 @@ export type CompanySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   name?: boolean
   taxNumber?: boolean
   processStatus?: boolean
+  consultant?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1431,12 +1488,13 @@ export type CompanySelectScalar = {
   name?: boolean
   taxNumber?: boolean
   processStatus?: boolean
+  consultant?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "externalCompanyId" | "name" | "taxNumber" | "processStatus" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["company"]>
+export type CompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "externalCompanyId" | "name" | "taxNumber" | "processStatus" | "consultant" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["company"]>
 export type CompanyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Company$usersArgs<ExtArgs>
   authorization?: boolean | Prisma.Company$authorizationArgs<ExtArgs>
@@ -1469,6 +1527,7 @@ export type $CompanyPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     name: string
     taxNumber: string
     processStatus: string | null
+    consultant: string | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1908,6 +1967,7 @@ export interface CompanyFieldRefs {
   readonly name: Prisma.FieldRef<"Company", 'String'>
   readonly taxNumber: Prisma.FieldRef<"Company", 'String'>
   readonly processStatus: Prisma.FieldRef<"Company", 'String'>
+  readonly consultant: Prisma.FieldRef<"Company", 'String'>
   readonly isActive: Prisma.FieldRef<"Company", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Company", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Company", 'DateTime'>
