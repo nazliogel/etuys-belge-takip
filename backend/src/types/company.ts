@@ -7,6 +7,7 @@ export type CompanyListQuery = {
 
 export type UpdateCompanyInput = {
   processStatus?: string;
+  consultant?: string | null;
   isActive?: boolean;
 };
 
@@ -16,12 +17,10 @@ export type CompanyListItem = {
   name: string;
   taxNumber: string;
   processStatus: string | null;
+  consultant: string | null;
   isActive: boolean;
-
   authorizationEndDate: string | null;
-
   documentCount: number;
-
   createdAt: string;
   updatedAt: string;
 };
@@ -35,6 +34,7 @@ export type CompanyDetail = CompanyListItem & {
     documentEndDate: string | null;
     extensionDate: string | null;
     supportClass: string | null;
+    status: "OPEN" | "CLOSED" | "CANCELLED";
     isActive: boolean;
   }[];
 };

@@ -107,6 +107,7 @@ model Company {
   name              String
   taxNumber         String
   processStatus     String?
+  consultant        String?
   isActive          Boolean @default(true)
 
   users           User[]

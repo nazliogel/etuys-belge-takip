@@ -1,16 +1,18 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
   CalendarDays,
   Clock3,
+  Download,
   FileText,
   Hash,
   Landmark,
+  Loader2,
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
@@ -130,6 +132,10 @@ export function DocumentDetailScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
+  // PDF çıktısı için: yakalanacak alanın referansı ve üretim durumu
+  const printRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
   useEffect(() => {
     async function loadDocument() {
       setIsLoading(true);
@@ -155,6 +161,100 @@ export function DocumentDetailScreen({
 
     loadDocument();
   }, [documentId]);
+
+  async function handleDownloadPdf() {
+    if (!printRef.current || !document || isGeneratingPdf) {
+      return;
+    }
+
+    setIsGeneratingPdf(true);
+
+    try {
+      // Bu iki paket projeye eklenmeli: npm install html2canvas-pro jspdf
+      // (html2canvas-pro kullanıyoruz çünkü orijinal html2canvas paketi
+      // Tailwind v4'ün ürettiği lab()/oklch() gibi modern CSS renk
+      // fonksiyonlarını tanımıyor ve "Attempting to parse an unsupported
+      // color function" hatası veriyor.)
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import("html2canvas-pro"),
+        import("jspdf"),
+      ]);
+
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+
+        // PDF her ekran genişliğinde aynı oluşturulsun
+        width: 794,
+        height: 1123,
+        windowWidth: 1280,
+        windowHeight: 1600,
+
+        ignoreElements: (el) => el.hasAttribute("data-pdf-ignore"),
+
+        onclone: (clonedDocument) => {
+          const pdfDocument = clonedDocument.querySelector<HTMLElement>(
+            "[data-pdf-document]",
+          );
+
+          const pdfContent =
+            clonedDocument.querySelector<HTMLElement>("[data-pdf-content]");
+
+          const pdfFooter =
+            clonedDocument.querySelector<HTMLElement>("[data-pdf-footer]");
+
+          if (pdfDocument) {
+            pdfDocument.style.width = "794px";
+            pdfDocument.style.height = "1123px";
+            pdfDocument.style.maxWidth = "none";
+            pdfDocument.style.borderRadius = "0";
+            pdfDocument.style.boxShadow = "none";
+            pdfDocument.style.overflow = "hidden";
+          }
+
+          if (pdfContent) {
+            pdfContent.style.height = "100%";
+            pdfContent.style.display = "flex";
+            pdfContent.style.flexDirection = "column";
+            pdfContent.style.boxSizing = "border-box";
+          }
+
+          if (pdfFooter) {
+            pdfFooter.style.marginTop = "auto";
+            pdfFooter.style.color = "#000000";
+          }
+        },
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+      const safeDocNumber = (document.documentNumber ?? "belge").replace(
+        /[^\p{L}\p{N}_-]+/gu,
+        "_",
+      );
+      const safeCompanyName = document.company.name.replace(
+        /[^\p{L}\p{N}_-]+/gu,
+        "_",
+      );
+
+      pdf.save(`${safeDocNumber}-${safeCompanyName}.pdf`);
+    } catch (error) {
+      console.error("PDF oluşturulamadı:", error);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -323,17 +423,44 @@ export function DocumentDetailScreen({
     </div>
   );
 
+  // "PDF indir" butonu — data-pdf-ignore sayesinde çıktının kendisine dahil olmaz
+  const DownloadPdfButton = (
+    <button
+      type="button"
+      onClick={handleDownloadPdf}
+      disabled={isGeneratingPdf}
+      data-pdf-ignore="true"
+      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {isGeneratingPdf ? (
+        <>
+          <Loader2 size={16} className="animate-spin" />
+          PDF hazırlanıyor...
+        </>
+      ) : (
+        <>
+          <Download size={16} />
+          PDF indir
+        </>
+      )}
+    </button>
+  );
+
   return (
     <div className="space-y-6">
       {!inline ? (
         <section>
-          <Link
-            href="/documents"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-900"
-          >
-            <ArrowLeft size={17} />
-            Belgelerime dön
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/documents"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-900"
+            >
+              <ArrowLeft size={17} />
+              Belgelerime dön
+            </Link>
+
+            {DownloadPdfButton}
+          </div>
 
           <div className="mt-5 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
             <div>
@@ -360,152 +487,172 @@ export function DocumentDetailScreen({
               {document.documentNumber ?? "-"} Numaralı Belge
             </h2>
           </div>
-          {StatusChip}
+          <div className="flex flex-col items-end gap-3">
+            {StatusChip}
+            {DownloadPdfButton}
+          </div>
         </section>
       )}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <InfoCard
-          label="Belge Numarası"
-          value={document.documentNumber ?? "-"}
-          icon={<Hash size={19} />}
-        />
-        <InfoCard
-          label="Belge Başlangıç"
-          value={formatDate(document.documentStartDate)}
-          icon={<CalendarDays size={19} />}
-        />
-        <InfoCard
-          label="Belge Bitiş"
-          value={formatDate(document.documentEndDate)}
-          icon={<Clock3 size={19} />}
-        />
-        <InfoCard
-          label="Destekleme Sınıfı"
-          value={document.supportClass ?? "-"}
-          icon={<Landmark size={19} />}
-        />
-      </section>
+      {/* PDF çıktısına dahil edilecek alan buradan başlıyor */}
+      <div>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <InfoCard
+            label="Belge Numarası"
+            value={document.documentNumber ?? "-"}
+            icon={<Hash size={19} />}
+          />
+          <InfoCard
+            label="Belge Başlangıç"
+            value={formatDate(document.documentStartDate)}
+            icon={<CalendarDays size={19} />}
+          />
+          <InfoCard
+            label="Belge Bitiş"
+            value={formatDate(document.documentEndDate)}
+            icon={<Clock3 size={19} />}
+          />
+          <InfoCard
+            label="Destekleme Sınıfı"
+            value={document.supportClass ?? "-"}
+            icon={<Landmark size={19} />}
+          />
+        </section>
 
-      <section className="rounded-3xl bg-slate-50/70 p-3 sm:p-8">
-        <div className="flex justify-center">
-          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-            <Landmark
-              size={200}
-              strokeWidth={1}
-              className="pointer-events-none absolute -right-12 -top-12 text-slate-900/[0.03]"
-            />
+        <section className="mt-6 rounded-3xl bg-slate-50/70 p-3 sm:p-8">
+          <div className="flex justify-center">
+            <div
+              ref={printRef}
+              data-pdf-document
+              className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"
+            >
+              <Landmark
+                size={200}
+                strokeWidth={1}
+                className="pointer-events-none absolute -right-12 -top-12 text-slate-900/[0.03]"
+              />
 
-            <div className="relative px-5 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
-              {/* BELGE BAŞLIĞI */}
-              <header className="text-center">
-                <h1 className="text-xl font-extrabold uppercase tracking-[0.25em] text-slate-900 sm:text-2xl">
-                  Yatırım Teşvik Belgesi
-                </h1>
-                <div className="mx-auto mt-4 h-0.5 w-24 bg-slate-900" />
-              </header>
+              <div
+                data-pdf-content
+                className="relative px-5 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-14"
+              >
+                {/* BELGE BAŞLIĞI */}
+                <header className="text-center">
+                  <h1 className="text-xl font-extrabold uppercase tracking-[0.25em] text-slate-900 sm:text-2xl">
+                    Yatırım Teşvik Belgesi
+                  </h1>
+                  <div className="mx-auto mt-4 h-0.5 w-24 bg-slate-900" />
+                </header>
 
-              <div className="mt-8 border-t-2 border-slate-800" />
-              <div className="mt-1 border-t border-slate-800" />
+                <div className="mt-8 border-t-2 border-slate-800" />
+                <div className="mt-1 border-t border-slate-800" />
 
-              {/* SAYI / KONU / TARİH */}
-              <div className="mt-8 flex flex-wrap items-start justify-between gap-4 text-sm text-slate-700">
-                <div>
-                  <p className="font-medium">
-                    Sayı:{" "}
-                    <span className="font-bold text-slate-900">
-                      {document.documentNumber ?? "-"}
-                    </span>
-                  </p>
+                {/* SAYI / KONU / TARİH */}
+                <div className="mt-8 flex flex-wrap items-start justify-between gap-4 text-sm text-slate-700">
+                  <div>
+                    <p className="font-medium">
+                      Sayı:{" "}
+                      <span className="font-bold text-slate-900">
+                        {document.documentNumber ?? "-"}
+                      </span>
+                    </p>
 
-                  <p className="mt-1 font-medium">
-                    Konu:{" "}
-                    <span className="font-normal text-slate-700">
-                      Yatırım Teşvik Belgesi Bilgileri
-                    </span>
-                  </p>
+                    <p className="mt-1 font-medium">
+                      Konu:{" "}
+                      <span className="font-normal text-slate-700">
+                        Yatırım Teşvik Belgesi Bilgileri
+                      </span>
+                    </p>
+                  </div>
+
+                  <p className="font-medium text-slate-600">{today}</p>
                 </div>
 
-                <p className="font-medium text-slate-600">{today}</p>
+                {/* BELGE BİLGİLERİ */}
+                <div className="mt-10 text-center">
+                  <h2 className="text-lg font-bold uppercase tracking-[0.2em] text-slate-900">
+                    Belge Bilgileri
+                  </h2>
+                  <div className="mx-auto mt-2 h-px w-16 bg-slate-300" />
+                </div>
+
+                <p className="mt-8 text-sm leading-7 text-slate-700">
+                  Aşağıda,{" "}
+                  <span className="font-semibold text-slate-900">
+                    {document.company.name}
+                  </span>{" "}
+                  unvanlı firmaya ait{" "}
+                  <span className="font-semibold text-slate-900">
+                    {document.documentNumber ?? "-"}
+                  </span>{" "}
+                  sayılı Yatırım Teşvik Belgesi&apos;ne ilişkin bilgiler resmi
+                  kayıtlardan alınarak sunulmuştur.
+                </p>
+
+                <dl className="mt-8 divide-y divide-slate-200 border-y border-slate-200">
+                  <FormRow
+                    label="Belge ID"
+                    value={String(document.externalDocumentId)}
+                  />
+
+                  <FormRow
+                    label="Belge No"
+                    value={document.documentNumber ?? "-"}
+                  />
+
+                  <FormRow
+                    label="Belge Başlangıç Tarihi"
+                    value={formatDate(document.documentStartDate)}
+                  />
+
+                  <FormRow
+                    label="Belge Bitiş Tarihi"
+                    value={formatDate(document.documentEndDate)}
+                  />
+
+                  <FormRow
+                    label="Süre Uzatım Tarihi"
+                    value={formatDate(document.extensionDate)}
+                  />
+
+                  <FormRow
+                    label="Destekleme Sınıfı"
+                    value={document.supportClass ?? "-"}
+                  />
+
+                  <FormRow label="Firma Ünvanı" value={document.company.name} />
+
+                  <FormRow
+                    label="İşlem Durumu"
+                    value={document.company.processStatus ?? "-"}
+                  />
+
+                  <FormRow
+                    label="Yetki Bitiş Tarihi"
+                    value={formatDate(document.company.authorizationEndDate)}
+                  />
+
+                  <FormRow
+                    label="Belge Durumu"
+                    value={document.isActive ? "Aktif" : "Pasif"}
+                  />
+                </dl>
+
+                <p className="mt-8 text-sm leading-7 text-slate-700">
+                  Bilgilerinize sunulur.
+                </p>
+                <p
+                  data-pdf-footer
+                  className="mt-10 border-t border-slate-300 pt-3 text-center text-[9px] font-medium leading-tight text-black"
+                >
+                  Bu doküman bilgilendirme amacıyla oluşturulmuştur, resmi belge
+                  değildir.
+                </p>
               </div>
-
-              {/* BELGE BİLGİLERİ */}
-              <div className="mt-10 text-center">
-                <h2 className="text-lg font-bold uppercase tracking-[0.2em] text-slate-900">
-                  Belge Bilgileri
-                </h2>
-                <div className="mx-auto mt-2 h-px w-16 bg-slate-300" />
-              </div>
-
-              <p className="mt-8 text-sm leading-7 text-slate-700">
-                Aşağıda,{" "}
-                <span className="font-semibold text-slate-900">
-                  {document.company.name}
-                </span>{" "}
-                unvanlı firmaya ait{" "}
-                <span className="font-semibold text-slate-900">
-                  {document.documentNumber ?? "-"}
-                </span>{" "}
-                sayılı Yatırım Teşvik Belgesi&apos;ne ilişkin bilgiler resmi
-                kayıtlardan alınarak sunulmuştur.
-              </p>
-
-              <dl className="mt-8 divide-y divide-slate-200 border-y border-slate-200">
-                <FormRow
-                  label="Belge ID"
-                  value={String(document.externalDocumentId)}
-                />
-
-                <FormRow
-                  label="Belge No"
-                  value={document.documentNumber ?? "-"}
-                />
-
-                <FormRow
-                  label="Belge Başlangıç Tarihi"
-                  value={formatDate(document.documentStartDate)}
-                />
-
-                <FormRow
-                  label="Belge Bitiş Tarihi"
-                  value={formatDate(document.documentEndDate)}
-                />
-
-                <FormRow
-                  label="Süre Uzatım Tarihi"
-                  value={formatDate(document.extensionDate)}
-                />
-
-                <FormRow
-                  label="Destekleme Sınıfı"
-                  value={document.supportClass ?? "-"}
-                />
-
-                <FormRow label="Firma Ünvanı" value={document.company.name} />
-
-                <FormRow
-                  label="İşlem Durumu"
-                  value={document.company.processStatus ?? "-"}
-                />
-
-                <FormRow
-                  label="Yetki Bitiş Tarihi"
-                  value={formatDate(document.company.authorizationEndDate)}
-                />
-
-                <FormRow
-                  label="Belge Durumu"
-                  value={document.isActive ? "Aktif" : "Pasif"}
-                />
-              </dl>
-
-              <p className="mt-8 text-sm leading-7 text-slate-700">
-                Bilgilerinize sunulur.
-              </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
