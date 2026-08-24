@@ -1,4 +1,3 @@
-import { ApprovalController } from "../../controllers/approval.controller.js";
 import { CompareController } from "../../controllers/compare.controller.js";
 import { ImportController } from "../../controllers/import.controller.js";
 import { ImportProcessController } from "../../controllers/import-process.controller.js";
@@ -20,8 +19,6 @@ const excelParserService = new ExcelParserService();
 const closedExcelParserService = new ClosedExcelParserService();
 const compareRepository = new CompareRepository();
 
-const importService = new ImportService(importRepository);
-
 const importProcessService = new ImportProcessService(
   importRepository,
   importRowRepository,
@@ -37,6 +34,13 @@ const compareService = new CompareService(
 
 const approvalService = new ApprovalService();
 
+const importService = new ImportService(
+  importRepository,
+  importProcessService,
+  compareService,
+  approvalService,
+);
+
 export const importController = new ImportController(importService);
 
 export const importProcessController = new ImportProcessController(
@@ -44,5 +48,3 @@ export const importProcessController = new ImportProcessController(
 );
 
 export const compareController = new CompareController(compareService);
-
-export const approvalController = new ApprovalController(approvalService);

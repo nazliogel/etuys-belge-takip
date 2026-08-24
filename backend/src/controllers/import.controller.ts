@@ -31,7 +31,6 @@ export class ImportController {
       status: status as
         | "UPLOADED"
         | "PROCESSING"
-        | "WAITING_APPROVAL"
         | "COMPLETED"
         | "FAILED"
         | "CANCELLED"
@@ -94,7 +93,7 @@ export class ImportController {
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.CREATED,
-      message: "Import file uploaded successfully.",
+      message: "Import completed and database updated successfully.",
       data,
     });
   };

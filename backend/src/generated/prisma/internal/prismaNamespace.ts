@@ -1371,9 +1371,7 @@ export const ImportBatchScalarFieldEnum = {
   changedRowCount: 'changedRowCount',
   unchangedRowCount: 'unchangedRowCount',
   uploadedById: 'uploadedById',
-  reviewedById: 'reviewedById',
   uploadedAt: 'uploadedAt',
-  reviewedAt: 'reviewedAt',
   completedAt: 'completedAt'
 } as const
 
@@ -1419,9 +1417,6 @@ export const ImportChangeScalarFieldEnum = {
   oldValue: 'oldValue',
   newValue: 'newValue',
   status: 'status',
-  reviewedById: 'reviewedById',
-  reviewedAt: 'reviewedAt',
-  rejectedReason: 'rejectedReason',
   createdAt: 'createdAt'
 } as const
 

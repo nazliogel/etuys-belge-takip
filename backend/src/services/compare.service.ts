@@ -321,7 +321,7 @@ export class CompareService {
               id: importBatchId,
             },
             data: {
-              status: "WAITING_APPROVAL",
+              status: "PROCESSING",
               newRowCount,
               changedRowCount,
               unchangedRowCount,
