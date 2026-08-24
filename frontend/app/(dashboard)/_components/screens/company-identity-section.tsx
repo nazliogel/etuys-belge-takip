@@ -299,18 +299,23 @@ export function CompanyIdentitySection({
     setIdentitySaved(false);
   }
 
-  function handleSaveIdentity() {
-    const validationErrors = validateIdentityForm(identityForm);
-    setIdentityErrors(validationErrors);
+function handleSaveIdentity() {
+  if (!identityForm.consultant) {
+    setIdentityErrors({
+      consultant: "Danışman seçimi zorunludur.",
+    });
 
-    if (Object.keys(validationErrors).length > 0) {
-      setIdentitySaved(false);
-      return;
-    }
-
-    // Burada gerçek bir API çağrısı yapılacaksa handleSaveIdentity içine eklenmeli.
-    setIdentitySaved(true);
+    setIdentitySaved(false);
+    return;
   }
+
+  setIdentityErrors({});
+  setIdentitySaved(true);
+
+  setTimeout(() => {
+    setIdentitySaved(false);
+  }, 3000);
+}
 
   function handleAddContact() {
     const validationErrors = validateContactForm(contact);
@@ -493,6 +498,7 @@ export function CompanyIdentitySection({
                 onChange={(value) =>
                   handleIdentityFieldChange("investorStatus", value)
                 }
+                readOnly
                 error={identityErrors.investorStatus}
               />
               <TableField
@@ -504,6 +510,7 @@ export function CompanyIdentitySection({
                     value.replace(/\D/g, "").slice(0, 10),
                   )
                 }
+                readOnly
                 error={identityErrors.taxNumber}
                 placeholder="10 haneli"
               />
@@ -518,6 +525,7 @@ export function CompanyIdentitySection({
                 }
                 error={identityErrors.mersisNumber}
                 placeholder="16 haneli"
+                readOnly
               />
             </div>
 
@@ -533,6 +541,7 @@ export function CompanyIdentitySection({
                 }
                 error={identityErrors.nationalId}
                 placeholder="11 haneli"
+                readOnly
               />
               <TableField
                 label="Ticaret Sicil No"
@@ -541,6 +550,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("tradeRegistryNumber", value)
                 }
                 error={identityErrors.tradeRegistryNumber}
+                readOnly
               />
               <TableField
                 label="Tescil Tarihi"
@@ -550,6 +560,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("registrationDate", value)
                 }
                 error={identityErrors.registrationDate}
+                readOnly
               />
             </div>
 
@@ -559,6 +570,7 @@ export function CompanyIdentitySection({
                 value={identityForm.city}
                 onChange={(value) => handleIdentityFieldChange("city", value)}
                 error={identityErrors.city}
+                readOnly
               />
               <TableField
                 label="İlçe"
@@ -567,6 +579,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("district", value)
                 }
                 error={identityErrors.district}
+                readOnly
               />
               <TableField
                 label="Danışman"
@@ -576,6 +589,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("consultant", value)
                 }
                 error={identityErrors.consultant}
+                
               />
             </div>
 
@@ -587,6 +601,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("investorName", value)
                 }
                 error={identityErrors.investorName}
+                readOnly
               />
               <TableField
                 label="Yatırımcı Adresi"
@@ -595,6 +610,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("investorAddress", value)
                 }
                 error={identityErrors.investorAddress}
+                readOnly
               />
               <TableField
                 label="Ana Faaliyet Konusu"
@@ -604,6 +620,7 @@ export function CompanyIdentitySection({
                   handleIdentityFieldChange("mainActivity", value)
                 }
                 error={identityErrors.mainActivity}
+                readOnly
               />
             </div>
           </div>
@@ -1030,6 +1047,7 @@ function TableField({
   onChange,
   error,
   placeholder,
+  readOnly = false,
 }: {
   label: string;
   type?: string;
@@ -1038,6 +1056,7 @@ function TableField({
   onChange: (value: string) => void;
   error?: string;
   placeholder?: string;
+  readOnly?: boolean;
 }) {
   return (
     <div className="flex items-stretch">
@@ -1053,25 +1072,31 @@ function TableField({
             <select
               value={value}
               onChange={(event) => onChange(event.target.value)}
+              disabled={readOnly}
               aria-invalid={Boolean(error)}
-              className={`h-9 w-full appearance-none border-0 bg-white pl-3 pr-8 text-xs text-slate-900 outline-none focus:bg-red-50/20 ${
-                error ? "bg-red-50/30" : ""
-              }`}
+              className={`h-9 w-full appearance-none border-0 pl-3 pr-8 text-xs outline-none ${
+                readOnly
+                  ? "cursor-not-allowed bg-slate-100 text-slate-600"
+                  : "bg-white text-slate-900 focus:bg-red-50/20"
+              } ${error ? "bg-red-50/30" : ""}`}
             >
               <option value="" disabled>
                 Seçiniz
               </option>
-              {options.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
+
+              {options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
                 </option>
               ))}
             </select>
 
-            <ChevronDown
-              size={13}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-            />
+            {!readOnly && (
+              <ChevronDown
+                size={13}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+            )}
           </>
         ) : (
           <input
@@ -1079,10 +1104,14 @@ function TableField({
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
+            readOnly={readOnly}
+            aria-readonly={readOnly}
             aria-invalid={Boolean(error)}
-            className={`h-9 w-full border-0 bg-white px-3 text-xs text-slate-900 outline-none focus:bg-red-50/20 ${
-              error ? "bg-red-50/30" : ""
-            }`}
+            className={`h-9 w-full border-0 px-3 text-xs outline-none ${
+              readOnly
+                ? "cursor-not-allowed bg-slate-100 text-slate-600"
+                : "bg-white text-slate-900 focus:bg-red-50/20"
+            } ${error ? "bg-red-50/30" : ""}`}
           />
         )}
 

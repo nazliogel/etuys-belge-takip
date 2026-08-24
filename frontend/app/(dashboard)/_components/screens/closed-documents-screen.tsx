@@ -2,8 +2,6 @@
 
 import {
   Archive,
-  Ban,
-  CalendarX,
   Check,
   ChevronRight,
   FileText,
@@ -16,19 +14,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DocumentDetailScreen } from "@/app/(dashboard)/_components/screens/document-detail-screen";
 import { apiFetch } from "@/lib/api";
 
-type ClosureReason = "EXPIRED" | "CANCELLED" | "COMPLETED" | "OTHER";
-
 type ApiClosedDocument = {
   id: number;
+  externalDocumentId: number;
   documentNumber: string | null;
-  companyId: number;
-  companyName: string;
-  taxNumber: string;
   documentStartDate: string | null;
   documentEndDate: string | null;
-  closedDate: string | null;
-  closureReason: ClosureReason | null;
+  extensionDate: string | null;
   supportClass: string | null;
+  status: "CLOSED" | "CANCELLED";
+  isActive?: boolean;
+  company: {
+    id: number;
+    externalCompanyId: number;
+    name: string;
+    taxNumber: string;
+  };
 };
 
 type ClosedDocumentListResponse = {
@@ -42,16 +43,6 @@ type ClosedDocumentListResponse = {
 
 const PAGE_SIZE = 20;
 
-type ReasonFilter = "all" | ClosureReason;
-
-const reasonOptions: { key: ReasonFilter; label: string }[] = [
-  { key: "all", label: "Tümü" },
-  { key: "EXPIRED", label: "Süresi Dolmuş" },
-  { key: "CANCELLED", label: "İptal Edilmiş" },
-  { key: "COMPLETED", label: "Tamamlanmış" },
-  { key: "OTHER", label: "Diğer" },
-];
-
 function formatDate(date: string | null): string {
   if (!date) return "-";
   const parsed = new Date(date);
@@ -61,32 +52,53 @@ function formatDate(date: string | null): string {
 
 export function ClosedDocumentsScreen() {
   const [page, setPage] = useState(1);
-  const [documents] = useState<ApiClosedDocument[]>([]);
-  const totalCount = documents.length;
-  const isLoading = false;
-  const loadError = "";
+  const [documents, setDocuments] = useState<ApiClosedDocument[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [reasonFilter, setReasonFilter] = useState<ReasonFilter>("all");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
 
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
+  /* KAPALI BELGELERİ API'DEN GETİR */
   useEffect(() => {
-    function handleOutsideClick(event: MouseEvent) {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
-        setIsFilterOpen(false);
+    async function loadClosedDocuments() {
+      setIsLoading(true);
+      setLoadError("");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+
+        if (searchQuery.trim()) {
+          params.set("search", searchQuery.trim());
+        }
+
+        const response = await apiFetch<ClosedDocumentListResponse>(
+          `/closed-documents?${params.toString()}`,
+        );
+
+        setDocuments(response.data.items);
+        setTotalCount(response.data.totalCount);
+      } catch (error) {
+        setDocuments([]);
+        setTotalCount(0);
+
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : "Kapalı belgeler yüklenemedi.",
+        );
+      } finally {
+        setIsLoading(false);
       }
     }
-    if (isFilterOpen) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    }
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [isFilterOpen]);
+
+    void loadClosedDocuments();
+  }, [page, searchQuery]);
 
   useEffect(() => {
     if (activeDocumentId) {
@@ -98,18 +110,6 @@ export function ClosedDocumentsScreen() {
       }, 50);
     }
   }, [activeDocumentId]);
-
-  const stats = useMemo(() => {
-    return {
-      toplam: totalCount,
-      suresiDolmus: documents.filter((d) => d.closureReason === "EXPIRED")
-        .length,
-      iptalEdilmis: documents.filter((d) => d.closureReason === "CANCELLED")
-        .length,
-      tamamlanmis: documents.filter((d) => d.closureReason === "COMPLETED")
-        .length,
-    };
-  }, [documents, totalCount]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const firstRecord = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -134,38 +134,6 @@ export function ClosedDocumentsScreen() {
               belgelerini görüntüleyin.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* OPERASYON ÖZETİ */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-4 md:divide-y-0">
-          <ClosedStat
-            label="Toplam Kapalı"
-            value={String(stats.toplam)}
-            icon={<Archive size={15} />}
-          />
-
-          <ClosedStat
-            label="Süresi Dolmuş"
-            value={String(stats.suresiDolmus)}
-            icon={<CalendarX size={15} />}
-            valueClass="text-amber-600"
-          />
-
-          <ClosedStat
-            label="İptal Edilmiş"
-            value={String(stats.iptalEdilmis)}
-            icon={<Ban size={15} />}
-            valueClass="text-red-600"
-          />
-
-          <ClosedStat
-            label="Tamamlanmış"
-            value={String(stats.tamamlanmis)}
-            icon={<Check size={15} />}
-            valueClass="text-emerald-600"
-          />
         </div>
       </section>
 
@@ -215,58 +183,6 @@ export function ClosedDocumentsScreen() {
                 </button>
               )}
             </div>
-
-            {/* Filtre */}
-            <div className="relative" ref={filterRef}>
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen((current) => !current)}
-                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition sm:w-auto ${
-                  reasonFilter !== "all"
-                    ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
-                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                <Filter size={14} />
-                Kapanma Nedeni
-                {reasonFilter !== "all" && (
-                  <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                    1
-                  </span>
-                )}
-              </button>
-
-              {isFilterOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
-                  <p className="px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Kapanma Nedeni
-                  </p>
-
-                  {reasonOptions.map((option) => {
-                    const isActive = reasonFilter === option.key;
-                    return (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => {
-                          setReasonFilter(option.key);
-                          setPage(1);
-                          setIsFilterOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-medium transition ${
-                          isActive
-                            ? "bg-red-50 text-red-700"
-                            : "text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        {option.label}
-                        {isActive && <Check size={15} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
@@ -276,10 +192,11 @@ export function ClosedDocumentsScreen() {
               <tr>
                 <th className="px-6 py-3.5">Belge No</th>
                 <th className="px-6 py-3.5">Firma</th>
+                <th className="px-6 py-3.5">Belge Başlangıç</th>
                 <th className="px-6 py-3.5">Belge Bitiş</th>
-                <th className="px-6 py-3.5">Kapanma Tarihi</th>
-                <th className="px-6 py-3.5">Kapanma Nedeni</th>
-                <th className="px-6 py-3.5">Destek Sınıfı</th>
+                <th className="px-6 py-3.5">Süre Uzatım</th>
+                <th className="px-6 py-3.5">Destekleme Sınıfı</th>
+                <th className="px-6 py-3.5">Durum</th>
                 <th className="px-6 py-3.5 text-right">Detay</th>
               </tr>
             </thead>
@@ -287,7 +204,7 @@ export function ClosedDocumentsScreen() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-medium text-slate-500">
                       Belgeler yükleniyor...
                     </p>
@@ -295,7 +212,7 @@ export function ClosedDocumentsScreen() {
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-semibold text-red-700">
                       Belgeler yüklenemedi
                     </p>
@@ -304,7 +221,7 @@ export function ClosedDocumentsScreen() {
                 </tr>
               ) : documents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-medium text-slate-500">
                       Kapalı belge bulunamadı.
                     </p>
@@ -337,19 +254,26 @@ export function ClosedDocumentsScreen() {
                               {doc.documentNumber ?? "-"}
                             </p>
                             <p className="font-mono text-[11px] text-slate-400">
-                              ID: #{doc.id}
+                              ID: {doc.externalDocumentId}
                             </p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {doc.companyName}
+                      <td className="max-w-xs px-6 py-4">
+                        <p
+                          title={doc.company.name}
+                          className="truncate text-sm font-semibold text-slate-900"
+                        >
+                          {doc.company.name}
                         </p>
+
                         <p className="font-mono text-[11px] text-slate-500">
-                          {doc.taxNumber}
+                          VKN: {doc.company.taxNumber}
                         </p>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                        {formatDate(doc.documentStartDate)}
                       </td>
 
                       <td className="px-6 py-4 text-xs font-medium text-slate-600">
@@ -357,16 +281,19 @@ export function ClosedDocumentsScreen() {
                       </td>
 
                       <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                        {formatDate(doc.closedDate)}
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <ClosureBadge reason={doc.closureReason} />
+                        {formatDate(doc.extensionDate)}
                       </td>
 
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                           {doc.supportClass ?? "-"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                          Kapalı / İptal
                         </span>
                       </td>
 
@@ -421,7 +348,7 @@ export function ClosedDocumentsScreen() {
             <button
               type="button"
               disabled={page <= 1 || isLoading}
-              onClick={() => setPage((current) => current - 1)}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Önceki
@@ -435,7 +362,9 @@ export function ClosedDocumentsScreen() {
             <button
               type="button"
               disabled={page >= totalPages || isLoading}
-              onClick={() => setPage((current) => current + 1)}
+              onClick={() =>
+                setPage((current) => Math.min(totalPages, current + 1))
+              }
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Sonraki
@@ -467,7 +396,8 @@ export function ClosedDocumentsScreen() {
           <DocumentDetailScreen
             documentId={activeDocumentId}
             inline
-            variant="admin"
+            variant="company"
+            isClosed
           />
         </section>
       )}
@@ -505,59 +435,5 @@ function ClosedStat({
         </p>
       </div>
     </div>
-  );
-}
-
-function ClosureBadge({ reason }: { reason: ClosureReason | null }) {
-  const config: Record<
-    ClosureReason,
-    {
-      label: string;
-      dot: string;
-      text: string;
-      bg: string;
-      border: string;
-    }
-  > = {
-    EXPIRED: {
-      label: "Süresi Dolmuş",
-      dot: "bg-amber-500",
-      text: "text-amber-700",
-      bg: "bg-amber-50",
-      border: "border-amber-200/60",
-    },
-    CANCELLED: {
-      label: "İptal Edilmiş",
-      dot: "bg-red-500",
-      text: "text-red-700",
-      bg: "bg-red-50",
-      border: "border-red-200/60",
-    },
-    COMPLETED: {
-      label: "Tamamlanmış",
-      dot: "bg-emerald-500",
-      text: "text-emerald-700",
-      bg: "bg-emerald-50",
-      border: "border-emerald-200/60",
-    },
-    OTHER: {
-      label: "Diğer",
-      dot: "bg-slate-400",
-      text: "text-slate-600",
-      bg: "bg-slate-100",
-      border: "border-slate-200",
-    },
-  };
-
-  const key = reason ?? "OTHER";
-  const c = config[key];
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
-      {c.label}
-    </span>
   );
 }

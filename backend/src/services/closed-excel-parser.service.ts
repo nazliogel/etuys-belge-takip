@@ -194,10 +194,6 @@ export class ClosedExcelParserService {
 
     const documentStatus = this.getDocumentStatus(processStatus);
 
-    if (this.shouldSkipRow(externalDocumentId, processStatus)) {
-      return null;
-    }
-
     const errors: string[] = [];
 
     if (!externalCompanyId) {
@@ -208,12 +204,22 @@ export class ClosedExcelParserService {
       errors.push("Firma Adı zorunludur.");
     }
 
-    if (!externalDocumentId) {
-      errors.push("Belge ID zorunludur.");
+    const hasDocumentData =
+      externalDocumentId !== null ||
+      documentNumber !== null ||
+      documentStartDate !== null ||
+      documentEndDate !== null ||
+      extensionDate !== null ||
+      supportClass !== null;
+
+    if (hasDocumentData && !externalDocumentId) {
+      errors.push("Belge bilgisi bulunan satırlarda Belge ID zorunludur.");
     }
 
-    if (!documentStatus) {
-      errors.push("İşlem Durumu kapalı veya iptal olmalıdır.");
+    if (externalDocumentId && !documentStatus) {
+      errors.push(
+        "Belge ID bulunan satırlarda İşlem Durumu kapalı veya iptal olmalıdır.",
+      );
     }
 
     return {
@@ -233,29 +239,6 @@ export class ClosedExcelParserService {
       rawData,
       errorMessage: errors.length > 0 ? errors.join(" ") : null,
     };
-  }
-
-  private shouldSkipRow(
-    externalDocumentId: number | null,
-    processStatus: string | null,
-  ): boolean {
-    if (externalDocumentId) {
-      return false;
-    }
-
-    if (!processStatus) {
-      return false;
-    }
-
-    const normalized = processStatus.trim().toLocaleLowerCase("tr-TR");
-
-    return (
-      normalized.includes("kapalı/iptal belge yok") ||
-      normalized.includes("yetki süresi dolmuş") ||
-      normalized.includes("yetki yetersiz") ||
-      normalized.includes("firma özellikle atlandı") ||
-      normalized.startsWith("hata:")
-    );
   }
 
   private getDocumentStatus(

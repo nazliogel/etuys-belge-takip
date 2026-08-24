@@ -80,6 +80,19 @@ type DocumentListResponse = {
     };
   };
 };
+type ClosedDocumentListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: Array<
+      Omit<ApiDocument, "status" | "isActive" | "documentStatus"> & {
+        status: "CLOSED";
+        isActive?: boolean;
+      }
+    >;
+    totalCount: number;
+  };
+};
 
 type DocumentDetailResponse = {
   success: boolean;
@@ -158,7 +171,6 @@ export function DocumentsScreen({
   const searchParams = useSearchParams();
 
   const requestedStatus = searchParams.get("status");
-
   const status: DocumentStatus | undefined =
     requestedStatus === "ACTIVE" ||
     requestedStatus === "EXPIRING" ||
@@ -171,7 +183,7 @@ export function DocumentsScreen({
   const [openDocuments, setOpenDocuments] = useState<OpenDocumentTab[]>([]);
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [closedDocumentCount, setClosedDocumentCount] = useState(0);
   const [summary, setSummary] = useState({
     total: 0,
     active: 0,
@@ -204,7 +216,7 @@ export function DocumentsScreen({
             (document) => ({
               ...document,
 
-              // Veritabanındaki OPEN/CLOSED/CANCELLED değerini sakla
+              // Veritabanındaki OPEN/INACTIVE/CANCELLED değerini sakla
               documentStatus: document.status,
 
               // Tarihe göre ekranda gösterilecek durumu hesapla
@@ -242,28 +254,70 @@ export function DocumentsScreen({
           return;
         }
 
-        // COMPANY kullanıcısıysa backend token üzerinden
-        // kullanıcının firmasını kendisi bulur.
         const params = new URLSearchParams({
           page: String(currentPage),
           limit: "20",
         });
 
-        if (status) {
-          params.set("status", status);
-        }
-
         if (searchQuery.trim()) {
           params.set("search", searchQuery.trim());
         }
 
-        const response = await apiFetch<DocumentListResponse>(
-          `/documents?${params.toString()}`,
-        );
+        if (status === "INACTIVE") {
+          const [closedResponse, summaryResponse] = await Promise.all([
+            apiFetch<ClosedDocumentListResponse>(
+              `/closed-documents?${params.toString()}`,
+            ),
+
+            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+          ]);
+
+          const totalCount = closedResponse.data.totalCount;
+          const limit = 20;
+
+          const mappedDocuments: ApiDocument[] = closedResponse.data.items.map(
+            (document) => ({
+              ...document,
+              isActive: false,
+              status: "INACTIVE",
+              documentStatus: "CLOSED",
+            }),
+          );
+
+          /*
+           * Yalnızca alttaki tablo kapalı belgelerle değiştirilir.
+           */
+          setDocuments(mappedDocuments);
+          setTotalPages(Math.max(1, Math.ceil(totalCount / limit)));
+          setAuthorizationEndDate(null);
+
+          /*
+           * Üst kartlarda genel belge sayıları korunur.
+           */
+          setSummary(summaryResponse.data.summary);
+          setClosedDocumentCount(totalCount);
+
+          return;
+        }
+        /*
+         * Aktif, süresi yaklaşan ve süresi dolmuş belgeler
+         * normal documents endpointinden geliyor.
+         */
+        if (status) {
+          params.set("status", status);
+        }
+
+        const [response, closedResponse] = await Promise.all([
+          apiFetch<DocumentListResponse>(`/documents?${params.toString()}`),
+
+          apiFetch<ClosedDocumentListResponse>(
+            "/closed-documents?page=1&limit=1",
+          ),
+        ]);
 
         setSummary(response.data.summary);
+        setClosedDocumentCount(closedResponse.data.totalCount);
         setTotalPages(response.data.totalPages);
-
         setDocuments(response.data.items);
 
         if (response.data.items.length > 0) {
@@ -364,8 +418,13 @@ export function DocumentsScreen({
       </section>
 
       {/* OPERASYON ÖZETİ */}
+      {variant === "admin" && (
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-3 xl:grid-cols-5 xl:divide-y-0">
+        <div
+          className={`grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-4 md:divide-y-0 ${
+            variant === "admin" ? "xl:grid-cols-5" : "xl:grid-cols-4"
+          }`}
+        >
           <OperationStat
             label="Toplam Belge"
             value={String(summary.total)}
@@ -389,13 +448,15 @@ export function DocumentsScreen({
             onClick={() => router.push("/documents?status=EXPIRED")}
           />
 
-          <OperationStat
-            label="Kapalı / İptal"
-            value={String(summary.inactive)}
-            icon={<ShieldCheck size={15} />}
-            valueClass="text-slate-600"
-            onClick={() => router.push("/documents?status=INACTIVE")}
-          />
+          {variant === "admin" && (
+            <OperationStat
+              label="Kapalı / İptal"
+              value={String(closedDocumentCount)}
+              icon={<ShieldCheck size={15} />}
+              valueClass="text-slate-600"
+              onClick={() => router.push("/documents?status=INACTIVE")}
+            />
+          )}
           <OperationStat
             label="Süresi Yaklaşan"
             value={String(summary.expiring)}
@@ -405,6 +466,7 @@ export function DocumentsScreen({
           />
         </div>
       </section>
+      )}
 
       {/* BELGE LİSTESİ */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
@@ -670,6 +732,7 @@ export function DocumentsScreen({
                 <DocumentDetailScreen
                   documentId={document.id}
                   variant={variant}
+                  isClosed={status === "INACTIVE"}
                 />
               </div>
             ))}
