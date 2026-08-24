@@ -7,11 +7,7 @@ import { useRouter } from "next/navigation";
 import { getSessionUser, type SessionUser } from "@/lib/mock-auth";
 import { DashboardShell } from "./_components/dashboard-shell";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
 
@@ -39,7 +35,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <DashboardShell role={user.role} userName={user.name}>
+    <DashboardShell
+      role={user.role}
+      userName={user.name}
+      companyName={user.companyName}
+    >
       {children}
     </DashboardShell>
   );

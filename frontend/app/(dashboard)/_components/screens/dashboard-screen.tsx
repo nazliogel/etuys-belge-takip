@@ -72,6 +72,14 @@ type DocumentListResponse = {
     };
   };
 };
+type ClosedDocumentListResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiDocument[];
+    totalCount: number;
+  };
+};
 type ImportBatchStatus =
   | "UPLOADED"
   | "PROCESSING"
@@ -271,49 +279,122 @@ type SummaryItem = {
   clickable: boolean;
 };
 
+/**
+ * Dashboard verileri için tek bir localStorage cache anahtarı.
+ * Tüm istatistikler + yaklaşan süreler + son işlemler burada tutulur,
+ * component her mount olduğunda önce bu cache okunur (varsa) ve state
+ * o veriyle başlatılır; API cevabı geldiğinde arka planda güncellenir.
+ */
+const DASHBOARD_CACHE_KEY = "dashboard-overview-cache";
+
+type DashboardCache = {
+  totalCompanies: number;
+  totalDocuments: number;
+  activeDocumentItems: ApiDocument[];
+  activeDocuments: number;
+  expiredDocuments: number;
+  expiringDocuments: number;
+  closedCancelledDocuments: number;
+  upcomingDeadlines: ApiDocument[];
+  recentImports: ApiImportBatch[];
+  latestImportBatch: ApiImportBatch | null;
+  recentChanges: ApiImportChange[];
+};
+
+function readDashboardCache(): DashboardCache | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as DashboardCache) : null;
+  } catch (error) {
+    console.error("Dashboard önbelleği okunamadı:", error);
+    return null;
+  }
+}
+
 export function DashboardScreen() {
   const router = useRouter();
-  const [totalCompanies, setTotalCompanies] = useState<number | null>(null);
-  const [activeDocumentItems, setActiveDocumentItems] = useState<ApiDocument[]>(
-    [],
+
+  // Lazy initializer: component ilk render'ında localStorage'daki son
+  // veriyle doluyor, böylece sayfa geçişinde "Yükleniyor..." beklemeden
+  // önceki veri anında görünür.
+  const [totalCompanies, setTotalCompanies] = useState<number | null>(
+    () => readDashboardCache()?.totalCompanies ?? null,
   );
-  const [activeDocuments, setActiveDocuments] = useState<number | null>(null);
+  const [activeDocumentItems, setActiveDocumentItems] = useState<ApiDocument[]>(
+    () => readDashboardCache()?.activeDocumentItems ?? [],
+  );
+  const [totalDocuments, setTotalDocuments] = useState<number | null>(
+    () => readDashboardCache()?.totalDocuments ?? null,
+  );
+
+  const [activeDocuments, setActiveDocuments] = useState<number | null>(
+    () => readDashboardCache()?.activeDocuments ?? null,
+  );
+
+  const [expiredDocuments, setExpiredDocuments] = useState<number | null>(
+    () => readDashboardCache()?.expiredDocuments ?? null,
+  );
+
   const [expiringDocuments, setExpiringDocuments] = useState<number | null>(
-    null,
+    () => readDashboardCache()?.expiringDocuments ?? null,
   );
   const [closedCancelledDocuments, setClosedCancelledDocuments] = useState<
     number | null
-  >(null);
-  const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>([]);
-  const [recentImports, setRecentImports] = useState<ApiImportBatch[]>([]);
-  const [recentChanges, setRecentChanges] = useState<ApiImportChange[]>([]);
+  >(() => readDashboardCache()?.closedCancelledDocuments ?? null);
+  const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
+    () => readDashboardCache()?.upcomingDeadlines ?? [],
+  );
+  const [recentImports, setRecentImports] = useState<ApiImportBatch[]>(
+    () => readDashboardCache()?.recentImports ?? [],
+  );
+  const [recentChanges, setRecentChanges] = useState<ApiImportChange[]>(
+    () => readDashboardCache()?.recentChanges ?? [],
+  );
   const [latestImportBatch, setLatestImportBatch] =
-    useState<ApiImportBatch | null>(null);
+    useState<ApiImportBatch | null>(
+      () => readDashboardCache()?.latestImportBatch ?? null,
+    );
+
+  // Sadece hiç cache yoksa (ör. ilk ziyaret) "Yükleniyor..." göster.
+  // Cache varsa, veri zaten ekranda; bu flag arka plandaki yenilemeyi
+  // kullanıcıya spinner olarak yansıtmaz.
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    () => readDashboardCache() === null,
+  );
 
   useEffect(() => {
-    async function loadDashboardStats() {
+    const hadCachedData = readDashboardCache() !== null;
+
+    async function loadDashboardData() {
       try {
         const [
           companyResponse,
           activeDocumentResponse,
           documentResponse,
           expiringResponse,
+          closedDocumentResponse,
           importResponse,
         ] = await Promise.all([
           apiFetch<CompanyListResponse>("/companies?page=1&limit=1"),
+
           apiFetch<DocumentListResponse>(
             "/documents?status=ACTIVE&page=1&limit=20",
           ),
+
           apiFetch<DocumentListResponse>("/documents"),
+
           apiFetch<DocumentListResponse>("/documents?status=EXPIRING&limit=20"),
+
+          apiFetch<ClosedDocumentListResponse>(
+            "/closed-documents?page=1&limit=1",
+          ),
+
           apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=5"),
         ]);
-
-        setTotalCompanies(companyResponse.data.totalCount);
-        setActiveDocumentItems(activeDocumentResponse.data.items);
-        setActiveDocuments(documentResponse.data.summary.active);
-        setExpiringDocuments(documentResponse.data.summary.expiring);
-        setClosedCancelledDocuments(documentResponse.data.summary.inactive);
 
         const sortedExpiringItems = [...expiringResponse.data.items].sort(
           (a, b) => {
@@ -334,89 +415,163 @@ export function DashboardScreen() {
           },
         );
 
-        setUpcomingDeadlines(sortedExpiringItems);
-        setRecentImports(importResponse.data.items);
-
         const latestBatch = importResponse.data.items[0] ?? null;
 
-        setLatestImportBatch(latestBatch);
+        let changes: ApiImportChange[] = [];
 
         if (latestBatch) {
           const changesResponse = await apiFetch<ImportChangesApiResponse>(
             `/imports/${latestBatch.id}/changes`,
           );
 
-          setRecentChanges(changesResponse.data.changes);
-        } else {
-          setRecentChanges([]);
+          changes = changesResponse.data.changes;
+        }
+
+        const cache: DashboardCache = {
+          totalCompanies: companyResponse.data.totalCount,
+          totalDocuments: documentResponse.data.summary.total,
+          activeDocumentItems: activeDocumentResponse.data.items,
+          activeDocuments: documentResponse.data.summary.active,
+          expiredDocuments: documentResponse.data.summary.expired,
+          expiringDocuments: documentResponse.data.summary.expiring,
+          closedCancelledDocuments: closedDocumentResponse.data.totalCount,
+          upcomingDeadlines: sortedExpiringItems,
+          recentImports: importResponse.data.items,
+          latestImportBatch: latestBatch,
+          recentChanges: changes,
+        };
+
+        setTotalCompanies(cache.totalCompanies);
+        setTotalDocuments(cache.totalDocuments);
+        setActiveDocumentItems(cache.activeDocumentItems);
+        setActiveDocuments(cache.activeDocuments);
+        setExpiredDocuments(cache.expiredDocuments);
+        setExpiringDocuments(cache.expiringDocuments);
+        setClosedCancelledDocuments(cache.closedCancelledDocuments);
+        setUpcomingDeadlines(cache.upcomingDeadlines);
+        setRecentImports(cache.recentImports);
+        setLatestImportBatch(cache.latestImportBatch);
+        setRecentChanges(cache.recentChanges);
+
+        try {
+          localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(cache));
+        } catch (error) {
+          console.error("Dashboard önbelleği yazılamadı:", error);
         }
       } catch (error) {
         console.error("Dashboard istatistikleri alınamadı:", error);
-        setTotalCompanies(0);
-        setActiveDocumentItems([]);
-        setActiveDocuments(0);
-        setExpiringDocuments(0);
 
-        setClosedCancelledDocuments(0);
-        setUpcomingDeadlines([]);
-        setRecentImports([]);
-        setLatestImportBatch(null);
-        setRecentChanges([]);
+        // Cache'ten gelen veri zaten ekranda gösteriliyorsa, geçici bir
+        // ağ hatası yüzünden ekranı sıfırlama; sadece cache hiç yoksa
+        // boş/0 durumuna düş.
+        if (!hadCachedData) {
+  setTotalCompanies(0);
+  setTotalDocuments(0);
+  setActiveDocumentItems([]);
+  setActiveDocuments(0);
+  setExpiredDocuments(0);
+  setExpiringDocuments(0);
+          setClosedCancelledDocuments(0);
+          setUpcomingDeadlines([]);
+          setRecentImports([]);
+          setLatestImportBatch(null);
+          setRecentChanges([]);
+        }
+      } finally {
+        setIsInitialLoading(false);
       }
     }
 
-    loadDashboardStats();
+    loadDashboardData();
   }, []);
 
   const user = getSessionUser();
   const isCompany = user?.role === "COMPANY";
 
-  const summaryItems: SummaryItem[] = [
-    {
-      title: "Toplam Firma",
-      value: totalCompanies === null ? "..." : String(totalCompanies),
-      description: "Sistemde kayıtlı firma",
-      icon: Building2,
-      href: "/companies",
-      clickable: true,
-    },
-    {
-      title: "Aktif Belge",
-      value: activeDocuments === null ? "..." : String(activeDocuments),
-      description: "Aktif durumda bulunan belge",
-      icon: FileCheck2,
-      href: "/documents?status=ACTIVE",
-      clickable: true,
-    },
-    {
-      title: "Süresi Yaklaşan",
-      value: expiringDocuments === null ? "..." : String(expiringDocuments),
-      description: "6 ay içinde süresi dolacak belge",
-      icon: CalendarClock,
-      href: "/documents?status=EXPIRING",
-      clickable: true,
-    },
-    {
-      title: "Kapalı / İptal",
-      value:
-        closedCancelledDocuments === null
-          ? "..."
-          : String(closedCancelledDocuments),
-      description: "Kapatılmış veya iptal edilmiş belge",
-      icon: Ban,
-      href: "/documents?status=INACTIVE",
-      clickable: true,
-    },
-    {
-      title: "Yeni Bildirim",
-      value: "7",
-      description: "Okunmamış bildirim",
-      icon: Bell,
-      href: "/notifications",
-      clickable: true,
-    },
-  ];
+const adminSummaryItems: SummaryItem[] = [
+  {
+    title: "Toplam Firma",
+    value: totalCompanies === null ? "..." : String(totalCompanies),
+    description: "Sistemde kayıtlı firma",
+    icon: Building2,
+    href: "/companies",
+    clickable: true,
+  },
+  {
+    title: "Aktif Belge",
+    value: activeDocuments === null ? "..." : String(activeDocuments),
+    description: "Aktif durumda bulunan belge",
+    icon: FileCheck2,
+    href: "/documents?status=ACTIVE",
+    clickable: true,
+  },
+  {
+    title: "Süresi Yaklaşan",
+    value: expiringDocuments === null ? "..." : String(expiringDocuments),
+    description: "6 ay içinde süresi dolacak belge",
+    icon: CalendarClock,
+    href: "/documents?status=EXPIRING",
+    clickable: true,
+  },
+  {
+    title: "Kapalı / İptal",
+    value:
+      closedCancelledDocuments === null
+        ? "..."
+        : String(closedCancelledDocuments),
+    description: "Kapatılmış veya iptal edilmiş belge",
+    icon: Ban,
+    href: "/documents?status=INACTIVE",
+    clickable: true,
+  },
+  {
+    title: "Yeni Bildirim",
+    value: "7",
+    description: "Okunmamış bildirim",
+    icon: Bell,
+    href: "/notifications",
+    clickable: true,
+  },
+];
 
+const companySummaryItems: SummaryItem[] = [
+  {
+    title: "Toplam Belge",
+    value: totalDocuments === null ? "..." : String(totalDocuments),
+    description: "Firmanıza ait toplam belge",
+    icon: FileCheck2,
+    href: "/documents",
+    clickable: true,
+  },
+  {
+    title: "Aktif",
+    value: activeDocuments === null ? "..." : String(activeDocuments),
+    description: "Aktif durumda bulunan belge",
+    icon: FileCheck2,
+    href: "/documents?status=ACTIVE",
+    clickable: true,
+  },
+  {
+    title: "Süresi Dolmuş",
+    value: expiredDocuments === null ? "..." : String(expiredDocuments),
+    description: "Süresi dolmuş belge",
+    icon: Clock3,
+    href: "/documents?status=EXPIRED",
+    clickable: true,
+  },
+  {
+    title: "Süresi Yaklaşan",
+    value: expiringDocuments === null ? "..." : String(expiringDocuments),
+    description: "6 ay içinde süresi dolacak belge",
+    icon: CalendarClock,
+    href: "/documents?status=EXPIRING",
+    clickable: true,
+  },
+];
+
+const summaryItems = isCompany
+  ? companySummaryItems
+  : adminSummaryItems;
   return (
     <div className="space-y-6 pb-8">
       {/* SAYFA BAŞLIĞI */}
@@ -540,7 +695,7 @@ export function DashboardScreen() {
           </div>
 
           <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
-            {expiringDocuments === null ? (
+            {isInitialLoading ? (
               <p className="py-6 text-center text-xs text-slate-400">
                 Yükleniyor...
               </p>
@@ -627,7 +782,7 @@ export function DashboardScreen() {
             </div>
 
             <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
-              {expiringDocuments === null ? (
+              {isInitialLoading ? (
                 <p className="py-6 text-center text-xs text-slate-400">
                   Yükleniyor...
                 </p>
@@ -705,7 +860,7 @@ export function DashboardScreen() {
             </div>
 
             <div className="max-h-[360px] divide-y divide-slate-100 overflow-y-auto">
-              {activeDocuments === null ? (
+              {isInitialLoading ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Aktif belgeler yükleniyor...
                 </p>

@@ -4,7 +4,6 @@
 import {
   AlertCircle,
   ArrowRight,
-  CheckCircle2,
   ChevronRight,
   Clock3,
   Download,
@@ -12,12 +11,11 @@ import {
   FileUp,
   Inbox,
   Info,
-  Layers,
+  
   RefreshCw,
   RotateCcw,
   Search,
   ShieldCheck,
-  TrendingUp,
   Upload,
   X,
 } from "lucide-react";
@@ -35,7 +33,22 @@ import { apiFetch } from "@/lib/api";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILE_SIZE_LABEL = `${MAX_FILE_SIZE / (1024 * 1024)} MB`;
 
-const EXPECTED_COLUMNS = [
+/* ---------- Belge / künye tipleri ----------
+ * Backend'deki Prisma şemasındaki `ImportType` enum'u ile birebir
+ * eşleşir: OPEN | CLOSED | KUNYE. "Açık Belgeler" ve "Kapalı-İptal
+ * Belgeler" aynı kolon şemasını (BELGE_COLUMNS) paylaşır — hangisinin
+ * açık/kapalı/iptal olduğu satır bazlı "İşlem Durumu" (DocumentStatus:
+ * OPEN/CLOSED/CANCELLED) ile belirleniyor, import tipi sadece hangi
+ * batch'e ait olduğunu ayırıyor.
+ *
+ * ÖNEMLİ: `KUNYE` değeri backend'deki ImportType enum'unda henüz yok.
+ * Bu ekranın çalışması için backend'e aşağıdaki şema eklentisinin
+ * uygulanması gerekiyor (ayrı olarak paylaşılan schema-kunye-ek.prisma
+ * dosyasına bakın): ImportType.KUNYE, CompanyRegistry modeli,
+ * EntityType.COMPANY_REGISTRY ve ImportRow'a künye alanları.
+ */
+
+const BELGE_COLUMNS = [
   "Firma ID",
   "Firma Adı",
   "VKN",
@@ -47,6 +60,83 @@ const EXPECTED_COLUMNS = [
   "Süre Uzatım",
   "Destekleme Sınıfı",
   "İşlem Durumu",
+];
+
+// Künye ekranındaki form alanlarından çıkarıldı. Gerçek Excel dosyasındaki
+// kolon SIRASI bunlarla birebir aynı olmayabilir — ilk künye dosyası
+// yüklenmeden önce başlık satırıyla karşılaştırıp gerekirse sırayı
+// düzeltin. "Vergi No" ve "Danışman" backend'de zaten Company.taxNumber /
+// Company.consultant alanlarıyla karşılanıyor.
+const KUNYE_COLUMNS = [
+  "Yatırımcı Durumu",
+  "Vergi No",
+  "Mersis No",
+  "Kimlik No",
+  "Ticaret Sicil No",
+  "Tescil Tarihi",
+  "İl",
+  "İlçe",
+  "Danışman",
+  "Yatırımcı Türü",
+  "Yatırımcı Adresi",
+  "Ana Faaliyet Konusu",
+];
+
+// Backend'in ImportType enum değerleriyle birebir aynı: OPEN | CLOSED.
+// KUNYE, backend'e eklenmesi önerilen üçüncü değer (bkz. yukarıdaki not).
+type DocumentType = "OPEN" | "CLOSED" | "KUNYE";
+
+type DocumentTypeConfig = {
+  key: DocumentType;
+  label: string;
+  shortLabel: string;
+  description: string;
+  columns: string[];
+  columnsConfirmed: boolean;
+  dotClass: string;
+  badgeClass: string;
+};
+
+const DOCUMENT_TYPES: Record<DocumentType, DocumentTypeConfig> = {
+  OPEN: {
+    key: "OPEN",
+    label: "Açık Belgeler",
+    shortLabel: "Açık",
+    description:
+      "Halihazırda yürürlükte olan / süresi devam eden belgeler.",
+    columns: BELGE_COLUMNS,
+    columnsConfirmed: true,
+    dotClass: "bg-emerald-500",
+    badgeClass: "bg-emerald-50 text-emerald-700",
+  },
+  CLOSED: {
+    key: "CLOSED",
+    label: "Kapalı-İptal Belgeler",
+    shortLabel: "Kapalı-İptal",
+    description:
+      "Süresi dolmuş veya iptal edilmiş belgeler. Kolon yapısı Açık Belgeler ile aynıdır.",
+    columns: BELGE_COLUMNS,
+    columnsConfirmed: true,
+    dotClass: "bg-slate-400",
+    badgeClass: "bg-slate-100 text-slate-600",
+  },
+  KUNYE: {
+    key: "KUNYE",
+    label: "Künye Bilgileri",
+    shortLabel: "Künye",
+    description:
+      "Firma tanım / yatırımcı künye bilgileri. Backend'de ImportType.KUNYE desteği eklenmeden bu tip gönderilemez.",
+    columns: KUNYE_COLUMNS,
+    columnsConfirmed: true,
+    dotClass: "bg-indigo-500",
+    badgeClass: "bg-indigo-50 text-indigo-700",
+  },
+};
+
+const DOCUMENT_TYPE_LIST: DocumentTypeConfig[] = [
+  DOCUMENT_TYPES.OPEN,
+  DOCUMENT_TYPES.CLOSED,
+  DOCUMENT_TYPES.KUNYE,
 ];
 
 type ImportStatus =
@@ -68,6 +158,7 @@ type ImportRecord = {
   invalidRows: number;
   unchangedRows: number;
   status: ImportStatus;
+  importType: DocumentType;
 };
 
 type ImportBatchApi = {
@@ -80,6 +171,10 @@ type ImportBatchApi = {
   changedRowCount: number;
   unchangedRowCount: number;
   uploadedAt: string;
+  // Prisma: ImportBatch.importType (@default(OPEN)). Eski kayıtlarda bu
+  // alan zaten DB tarafında OPEN olarak dolu geliyor; API yine de
+  // döndürmezse aşağıda OPEN'a düşülüyor.
+  importType?: DocumentType;
 };
 
 type ImportListResponse = {
@@ -147,6 +242,13 @@ const STATUS_FILTERS: { key: "ALL" | ImportStatus; label: string }[] = [
   { key: "FAILED", label: "Hatalı" },
 ];
 
+const TYPE_FILTERS: { key: "ALL" | DocumentType; label: string }[] = [
+  { key: "ALL", label: "Tümü" },
+  { key: "OPEN", label: DOCUMENT_TYPES.OPEN.shortLabel },
+  { key: "CLOSED", label: DOCUMENT_TYPES.CLOSED.shortLabel },
+  { key: "KUNYE", label: DOCUMENT_TYPES.KUNYE.shortLabel },
+];
+
 function formatFileSize(size: number) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
@@ -165,11 +267,23 @@ function StatusBadge({ status }: { status: ImportStatus }) {
   );
 }
 
+function TypeBadge({ importType }: { importType: DocumentType }) {
+  const meta = DOCUMENT_TYPES[importType];
+  return (
+    <span
+      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold ${meta.badgeClass}`}
+    >
+      {meta.shortLabel}
+    </span>
+  );
+}
+
 export function ExcelImportScreen() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
+  const [selectedType, setSelectedType] = useState<DocumentType>("OPEN");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -182,6 +296,9 @@ export function ExcelImportScreen() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | ImportStatus>("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | DocumentType>("ALL");
+
+  const activeTypeConfig = DOCUMENT_TYPES[selectedType];
 
   async function loadImports() {
     try {
@@ -206,6 +323,9 @@ export function ExcelImportScreen() {
         invalidRows: item.invalidRowCount,
         unchangedRows: item.unchangedRowCount,
         status: item.status,
+        // Eski kayıtlarda importType alanı boş dönerse "Açık Belgeler"
+        // kabul ediyoruz — bu veriler zaten açık belgelere ait.
+        importType: item.importType ?? "OPEN",
       }));
       setRecentImports(mapped);
     } catch (error) {
@@ -244,10 +364,11 @@ export function ExcelImportScreen() {
     const q = search.trim().toLowerCase();
     return recentImports.filter((i) => {
       if (statusFilter !== "ALL" && i.status !== statusFilter) return false;
+      if (typeFilter !== "ALL" && i.importType !== typeFilter) return false;
       if (q && !i.fileName.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [recentImports, search, statusFilter]);
+  }, [recentImports, search, statusFilter, typeFilter]);
 
   function validateAndSelectFile(file?: File) {
     setFileError("");
@@ -301,8 +422,16 @@ export function ExcelImportScreen() {
     setCurrentStep("upload");
   }
 
+  function handleSelectType(type: DocumentType) {
+    if (isUploading) return;
+    setSelectedType(type);
+    setFileError("");
+  }
+
   function handleDownloadTemplate() {
-    console.info("Örnek Excel şablonu indirme tetiklendi.");
+    console.info(
+      `Örnek Excel şablonu indirme tetiklendi. (${activeTypeConfig.label})`,
+    );
   }
   function handleViewReport(importId: number) {
     router.push(`/excel-import/${importId}`);
@@ -318,6 +447,9 @@ export function ExcelImportScreen() {
       const formData = new FormData();
       formData.append("file", selectedFile);
       formData.append("isFullSnapshot", "true");
+      // Prisma: ImportBatch.importType. "KUNYE" değeri backend'de enum'a
+      // eklenene kadar bu istek reddedilebilir (bkz. dosya başındaki not).
+      formData.append("importType", selectedType);
 
       const uploadResponse = await apiFetch<ImportActionResponse>(
         "/imports/upload",
@@ -378,7 +510,7 @@ export function ExcelImportScreen() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              
+
               <button
                 type="button"
                 onClick={() => loadImports()}
@@ -418,6 +550,50 @@ export function ExcelImportScreen() {
               </div>
 
               <div className="p-4">
+                {/* Belge tipi seçici */}
+                <div className="mb-3">
+                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    Belge Tipi
+                  </p>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {DOCUMENT_TYPE_LIST.map((type) => {
+                      const active = selectedType === type.key;
+                      return (
+                        <button
+                          key={type.key}
+                          type="button"
+                          onClick={() => handleSelectType(type.key)}
+                          disabled={isUploading}
+                          aria-pressed={active}
+                          className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                            active
+                              ? "border-red-300 bg-red-50/70"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${type.dotClass}`}
+                          />
+                          <span
+                            className={`flex-1 truncate text-xs font-semibold ${
+                              active ? "text-red-700" : "text-slate-700"
+                            }`}
+                          >
+                            {type.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedType === "KUNYE" && (
+                    <p className="mt-1.5 flex items-start gap-1.5 text-[10px] leading-4 text-amber-700">
+                      <Info size={11} className="mt-0.5 shrink-0" />
+                      Bu tip backendde ImportType.KUNYE eklenene kadar
+                      yüklenemez.
+                    </p>
+                  )}
+                </div>
+
                 {/* Drop zone */}
                 <div
                   onDragEnter={handleDragEnter}
@@ -466,7 +642,8 @@ export function ExcelImportScreen() {
                         </span>
                       </p>
                       <span className="mt-2 text-[10px] font-medium text-slate-400">
-                        XLSX · XLS · Maks. {MAX_FILE_SIZE_LABEL}
+                        {activeTypeConfig.label} · XLSX · XLS · Maks.{" "}
+                        {MAX_FILE_SIZE_LABEL}
                       </span>
                     </div>
                   ) : (
@@ -483,7 +660,8 @@ export function ExcelImportScreen() {
                             {selectedFile.name}
                           </p>
                           <p className="mt-0.5 text-xs font-medium tabular-nums text-slate-500">
-                            {formatFileSize(selectedFile.size)}
+                            {formatFileSize(selectedFile.size)} ·{" "}
+                            {activeTypeConfig.shortLabel}
                           </p>
                         </div>
                         <button
@@ -605,10 +783,10 @@ export function ExcelImportScreen() {
                     aria-expanded={showColumns}
                   >
                     <span className="font-medium text-slate-500 group-hover:text-slate-700">
-                      Beklenen kolon
+                      Beklenen kolon ({activeTypeConfig.shortLabel})
                     </span>
                     <span className="flex items-center gap-1 font-semibold text-red-600">
-                      {EXPECTED_COLUMNS.length} kolon
+                      {activeTypeConfig.columns.length} kolon
                       <ChevronRight
                         size={12}
                         className={`transition-transform duration-200 ${
@@ -631,7 +809,7 @@ export function ExcelImportScreen() {
                           </span>
                         </div>
                         <div className="grid grid-cols-1 gap-x-2 gap-y-0.5">
-                          {EXPECTED_COLUMNS.map((col, i) => (
+                          {activeTypeConfig.columns.map((col, i) => (
                             <div
                               key={col}
                               className="flex items-center gap-2 rounded px-1 py-0.5 hover:bg-white"
@@ -648,6 +826,13 @@ export function ExcelImportScreen() {
                             </div>
                           ))}
                         </div>
+                        {selectedType === "KUNYE" && (
+                          <p className="mt-1.5 px-1 text-[10px] leading-4 text-slate-500">
+                            Sıra, künye formundaki alan listesinden
+                            türetildi — gerçek Excel başlık satırıyla
+                            karşılaştırıp gerekirse düzeltin.
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -705,8 +890,50 @@ export function ExcelImportScreen() {
                 </div>
               </div>
 
-              {/* Filter chips */}
+              {/* Tip filter chips */}
               <div className="flex flex-wrap items-center gap-1.5">
+                <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Tip
+                </span>
+                {TYPE_FILTERS.map((f) => {
+                  const count =
+                    f.key === "ALL"
+                      ? recentImports.length
+                      : recentImports.filter(
+                          (i) => i.importType === f.key,
+                        ).length;
+                  const active = typeFilter === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => setTypeFilter(f.key)}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+                        active
+                          ? "bg-slate-900 text-white"
+                          : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      {f.label}
+                      <span
+                        className={`rounded px-1 text-[10px] font-bold tabular-nums ${
+                          active
+                            ? "bg-white/25 text-white"
+                            : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Durum filter chips */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Durum
+                </span>
                 {STATUS_FILTERS.map((f) => {
                   const count =
                     f.key === "ALL"
@@ -760,12 +987,12 @@ export function ExcelImportScreen() {
                     <table className="w-full table-fixed border-collapse text-left">
                       <colgroup>
                         <col />
-                        <col className="w-[9%]" />
+                        <col className="w-[8%]" />
+                        <col className="w-[7%]" />
                         <col className="w-[8%]" />
                         <col className="w-[9%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[8%]" />
-                        <col className="w-[14%]" />
+                        <col className="w-[7%]" />
+                        <col className="w-[12%]" />
                         <col className="w-[36px]" />
                       </colgroup>
                       <thead>
@@ -800,11 +1027,14 @@ export function ExcelImportScreen() {
                                   <p className="truncate text-xs font-semibold text-slate-900 group-hover:text-red-700">
                                     {item.fileName}
                                   </p>
-                                  <div className="mt-0.5 flex items-center gap-1 text-[10px] text-slate-500">
-                                    <Clock3 size={9} />
-                                    <span className="truncate">
-                                      {item.date}
+                                  <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-500">
+                                    <span className="flex items-center gap-1">
+                                      <Clock3 size={9} />
+                                      <span className="truncate">
+                                        {item.date}
+                                      </span>
                                     </span>
+                                    <TypeBadge importType={item.importType} />
                                   </div>
                                 </div>
                               </div>
@@ -878,9 +1108,12 @@ export function ExcelImportScreen() {
                               <p className="truncate text-sm font-semibold text-slate-900">
                                 {item.fileName}
                               </p>
-                              <p className="text-xs text-slate-500">
-                                {item.date}
-                              </p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-xs text-slate-500">
+                                  {item.date}
+                                </p>
+                                <TypeBadge importType={item.importType} />
+                              </div>
                             </div>
                           </div>
                           <StatusBadge status={item.status} />
