@@ -10,7 +10,9 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { apiFetch } from "@/lib/api";
 
 type CompanyIdentitySectionProps = {
   companyId: string;
@@ -34,32 +36,40 @@ type IdentityForm = {
   city: string;
   district: string;
   consultant: string;
-  investorName: string;
+  investorType: string;
   investorAddress: string;
   mainActivity: string;
 };
 
+type CompanyIdentityResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    companyId: number;
+    externalCompanyId: number;
+    investorStatus: string | null;
+    taxNumber: string | null;
+    mersisNumber: string | null;
+    nationalId: string | null;
+    tradeRegistryNumber: string | null;
+    registrationDate: string | null;
+    city: string | null;
+    district: string | null;
+    consultant: string | null;
+    investorType: string | null;
+    investorAddress: string | null;
+    mainActivity: string | null;
+  };
+};
+
 type IdentityErrors = Partial<Record<keyof IdentityForm, string>>;
 
-const FAALIYET_OPTIONS = [
-  "İmalat",
-  "İnşaat",
-  "Bilişim / Yazılım",
-  "Tarım ve Hayvancılık",
-  "Gıda Üretimi",
-  "Tekstil",
-  "Enerji",
-  "Toptan / Perakende Ticaret",
-  "Lojistik ve Taşımacılık",
-  "Turizm ve Konaklama",
-  "Sağlık Hizmetleri",
-  "Eğitim",
-  "Otomotiv",
-  "Kimya",
-  "Hizmet",
+const DANISMAN_OPTIONS = [
+  "Erkan Akkaş",
+  "Beyza Başaran",
+  "Emin Kutay İnangu",
+  "Salih Şahin",
 ];
-
-const DANISMAN_OPTIONS = ["Beyza Başaran", "Emin Kutay İnangu", "Salih Şahin"];
 
 const NAME_REGEX = /^[A-Za-zÇĞİÖŞÜçğıöşü\s'-]+$/;
 const EMAIL_REGEX =
@@ -76,7 +86,7 @@ const initialIdentityForm: IdentityForm = {
   city: "",
   district: "",
   consultant: "",
-  investorName: "",
+  investorType: "",
   investorAddress: "",
   mainActivity: "",
 };
@@ -110,27 +120,6 @@ function formatPhoneInput(rawValue: string): string {
   const block4 = normalized.slice(9, 11);
 
   return [block1, block2, block3, block4].filter(Boolean).join(" ");
-}
-
-// T.C. kimlik numarası resmi doğrulama algoritması
-function isValidNationalId(value: string): boolean {
-  if (!/^\d{11}$/.test(value) || value[0] === "0") {
-    return false;
-  }
-
-  const digits = value.split("").map(Number);
-  const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
-  const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
-  const digit10 = (((oddSum * 7 - evenSum) % 10) + 10) % 10;
-
-  if (digit10 !== digits[9]) {
-    return false;
-  }
-
-  const sumFirst10 = digits.slice(0, 10).reduce((total, digit) => total + digit, 0);
-  const digit11 = sumFirst10 % 10;
-
-  return digit11 === digits[10];
 }
 
 function validateContactForm(form: ContactForm): ContactErrors {
@@ -168,89 +157,8 @@ function validateContactForm(form: ContactForm): ContactErrors {
 function validateIdentityForm(form: IdentityForm): IdentityErrors {
   const errors: IdentityErrors = {};
 
-  const investorStatus = form.investorStatus.trim();
-  const taxNumber = form.taxNumber.trim();
-  const mersisNumber = form.mersisNumber.trim();
-  const nationalId = form.nationalId.trim();
-  const tradeRegistryNumber = form.tradeRegistryNumber.trim();
-  const city = form.city.trim();
-  const district = form.district.trim();
-  const investorName = form.investorName.trim();
-  const investorAddress = form.investorAddress.trim();
-
-  if (!investorStatus) {
-    errors.investorStatus = "Yatırımcı durumu zorunludur.";
-  }
-
-  if (!taxNumber) {
-    errors.taxNumber = "Vergi numarası zorunludur.";
-  } else if (!/^\d{10}$/.test(taxNumber)) {
-    errors.taxNumber = "Vergi numarası 10 haneli olmalıdır.";
-  }
-
-  if (!mersisNumber) {
-    errors.mersisNumber = "Mersis numarası zorunludur.";
-  } else if (!/^\d{16}$/.test(mersisNumber)) {
-    errors.mersisNumber = "Mersis numarası 16 haneli olmalıdır.";
-  }
-
-  if (!nationalId) {
-    errors.nationalId = "Kimlik numarası zorunludur.";
-  } else if (!isValidNationalId(nationalId)) {
-    errors.nationalId = "Geçerli bir T.C. kimlik numarası girin.";
-  }
-
-  if (!tradeRegistryNumber) {
-    errors.tradeRegistryNumber = "Ticaret sicil numarası zorunludur.";
-  } else if (tradeRegistryNumber.length > 30) {
-    errors.tradeRegistryNumber =
-      "Ticaret sicil numarası en fazla 30 karakter olabilir.";
-  }
-
-  if (!form.registrationDate) {
-    errors.registrationDate = "Tescil tarihi zorunludur.";
-  } else {
-    const selectedDate = new Date(form.registrationDate);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-
-    if (Number.isNaN(selectedDate.getTime())) {
-      errors.registrationDate = "Geçerli bir tarih girin.";
-    } else if (selectedDate > today) {
-      errors.registrationDate = "Tescil tarihi bugünden ileri bir tarih olamaz.";
-    }
-  }
-
-  if (!city) {
-    errors.city = "İl alanı zorunludur.";
-  } else if (!NAME_REGEX.test(city)) {
-    errors.city = "İl alanında yalnızca harf kullanabilirsiniz.";
-  }
-
-  if (!district) {
-    errors.district = "İlçe alanı zorunludur.";
-  } else if (!NAME_REGEX.test(district)) {
-    errors.district = "İlçe alanında yalnızca harf kullanabilirsiniz.";
-  }
-
   if (!form.consultant) {
     errors.consultant = "Danışman seçimi zorunludur.";
-  }
-
-  if (!investorName) {
-    errors.investorName = "Yatırımcı adı zorunludur.";
-  } else if (investorName.length < 2) {
-    errors.investorName = "Yatırımcı adı en az 2 karakter olmalıdır.";
-  }
-
-  if (!investorAddress) {
-    errors.investorAddress = "Yatırımcı adresi zorunludur.";
-  } else if (investorAddress.length < 5) {
-    errors.investorAddress = "Yatırımcı adresi en az 5 karakter olmalıdır.";
-  }
-
-  if (!form.mainActivity) {
-    errors.mainActivity = "Ana faaliyet konusu seçimi zorunludur.";
   }
 
   return errors;
@@ -260,11 +168,43 @@ export function CompanyIdentitySection({
   companyId,
 }: CompanyIdentitySectionProps) {
   // FİRMA KÜNYE BİLGİLERİ
-  const [identityForm, setIdentityForm] = useState<IdentityForm>(
-    initialIdentityForm,
-  );
+  const [identityForm, setIdentityForm] =
+    useState<IdentityForm>(initialIdentityForm);
   const [identityErrors, setIdentityErrors] = useState<IdentityErrors>({});
   const [identitySaved, setIdentitySaved] = useState(false);
+
+  useEffect(() => {
+    async function fetchIdentity() {
+      try {
+        const result = await apiFetch<CompanyIdentityResponse>(
+          `/companies/${companyId}/identity`,
+        );
+
+        const data = result.data;
+
+        setIdentityForm({
+          investorStatus: data.investorStatus ?? "",
+          taxNumber: data.taxNumber ?? "",
+          mersisNumber: data.mersisNumber ?? "",
+          nationalId: data.nationalId ?? "",
+          tradeRegistryNumber: data.tradeRegistryNumber ?? "",
+          registrationDate: data.registrationDate
+            ? data.registrationDate.slice(0, 10)
+            : "",
+          city: data.city ?? "",
+          district: data.district ?? "",
+          consultant: data.consultant ?? "",
+          investorType: data.investorType ?? "",
+          investorAddress: data.investorAddress ?? "",
+          mainActivity: data.mainActivity ?? "",
+        });
+      } catch (error) {
+        console.error("Firma künye bilgileri alınamadı:", error);
+      }
+    }
+
+    void fetchIdentity();
+  }, [companyId]);
 
   // İLETİŞİM BİLGİLERİ
   const [contact, setContact] = useState<ContactForm>(initialContactForm);
@@ -285,13 +225,9 @@ export function CompanyIdentitySection({
   const [noteText, setNoteText] = useState("");
   const [noteError, setNoteError] = useState<string | null>(null);
   const [notes, setNotes] = useState<CompanyNote[]>([]);
-  const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(
-    null,
-  );
+  const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null);
   const [editingNoteText, setEditingNoteText] = useState("");
-  const [editingNoteError, setEditingNoteError] = useState<string | null>(
-    null,
-  );
+  const [editingNoteError, setEditingNoteError] = useState<string | null>(null);
 
   function handleIdentityFieldChange(field: keyof IdentityForm, value: string) {
     setIdentityForm((current) => ({ ...current, [field]: value }));
@@ -299,7 +235,7 @@ export function CompanyIdentitySection({
     setIdentitySaved(false);
   }
 
-  function handleSaveIdentity() {
+  async function handleSaveIdentity() {
     const validationErrors = validateIdentityForm(identityForm);
     setIdentityErrors(validationErrors);
 
@@ -308,8 +244,23 @@ export function CompanyIdentitySection({
       return;
     }
 
-    // Burada gerçek bir API çağrısı yapılacaksa handleSaveIdentity içine eklenmeli.
-    setIdentitySaved(true);
+    try {
+      await apiFetch(`/companies/${companyId}/consultant`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          consultant: identityForm.consultant,
+        }),
+      });
+
+      setIdentitySaved(true);
+
+      setTimeout(() => {
+        setIdentitySaved(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Danışman kaydedilemedi:", error);
+      setIdentitySaved(false);
+    }
   }
 
   function handleAddContact() {
@@ -490,34 +441,19 @@ export function CompanyIdentitySection({
               <TableField
                 label="Yatırımcı Durumu"
                 value={identityForm.investorStatus}
-                onChange={(value) =>
-                  handleIdentityFieldChange("investorStatus", value)
-                }
-                error={identityErrors.investorStatus}
+                readOnly
               />
+
               <TableField
                 label="Vergi No"
                 value={identityForm.taxNumber}
-                onChange={(value) =>
-                  handleIdentityFieldChange(
-                    "taxNumber",
-                    value.replace(/\D/g, "").slice(0, 10),
-                  )
-                }
-                error={identityErrors.taxNumber}
-                placeholder="10 haneli"
+                readOnly
               />
+
               <TableField
                 label="Mersis No"
                 value={identityForm.mersisNumber}
-                onChange={(value) =>
-                  handleIdentityFieldChange(
-                    "mersisNumber",
-                    value.replace(/\D/g, "").slice(0, 16),
-                  )
-                }
-                error={identityErrors.mersisNumber}
-                placeholder="16 haneli"
+                readOnly
               />
             </div>
 
@@ -525,49 +461,27 @@ export function CompanyIdentitySection({
               <TableField
                 label="Kimlik No"
                 value={identityForm.nationalId}
-                onChange={(value) =>
-                  handleIdentityFieldChange(
-                    "nationalId",
-                    value.replace(/\D/g, "").slice(0, 11),
-                  )
-                }
-                error={identityErrors.nationalId}
-                placeholder="11 haneli"
+                readOnly
               />
+
               <TableField
                 label="Ticaret Sicil No"
                 value={identityForm.tradeRegistryNumber}
-                onChange={(value) =>
-                  handleIdentityFieldChange("tradeRegistryNumber", value)
-                }
-                error={identityErrors.tradeRegistryNumber}
+                readOnly
               />
+
               <TableField
                 label="Tescil Tarihi"
-                type="date"
                 value={identityForm.registrationDate}
-                onChange={(value) =>
-                  handleIdentityFieldChange("registrationDate", value)
-                }
-                error={identityErrors.registrationDate}
+                readOnly
               />
             </div>
 
             <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
-              <TableField
-                label="İl"
-                value={identityForm.city}
-                onChange={(value) => handleIdentityFieldChange("city", value)}
-                error={identityErrors.city}
-              />
-              <TableField
-                label="İlçe"
-                value={identityForm.district}
-                onChange={(value) =>
-                  handleIdentityFieldChange("district", value)
-                }
-                error={identityErrors.district}
-              />
+              <TableField label="İl" value={identityForm.city} readOnly />
+
+              <TableField label="İlçe" value={identityForm.district} readOnly />
+
               <TableField
                 label="Danışman"
                 options={DANISMAN_OPTIONS}
@@ -582,28 +496,22 @@ export function CompanyIdentitySection({
             <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
               <TableField
                 label="Yatırımcı Türü"
-                value={identityForm.investorName}
-                onChange={(value) =>
-                  handleIdentityFieldChange("investorName", value)
-                }
-                error={identityErrors.investorName}
+                value={identityForm.investorType}
+                readOnly
               />
+
               <TableField
                 label="Yatırımcı Adresi"
                 value={identityForm.investorAddress}
-                onChange={(value) =>
-                  handleIdentityFieldChange("investorAddress", value)
-                }
-                error={identityErrors.investorAddress}
+                readOnly
+                multiline
               />
+
               <TableField
                 label="Ana Faaliyet Konusu"
-                options={FAALIYET_OPTIONS}
                 value={identityForm.mainActivity}
-                onChange={(value) =>
-                  handleIdentityFieldChange("mainActivity", value)
-                }
-                error={identityErrors.mainActivity}
+                readOnly
+                multiline
               />
             </div>
           </div>
@@ -1007,7 +915,9 @@ export function CompanyIdentitySection({
                       {isEditing && Object.keys(editErrors).length > 0 && (
                         <p className="mt-1 flex items-center gap-1 text-[10px] font-medium text-red-600">
                           <AlertCircle size={10} />
-                          {Object.values(editErrors).filter(Boolean).join(" • ")}
+                          {Object.values(editErrors)
+                            .filter(Boolean)
+                            .join(" • ")}
                         </p>
                       )}
                     </div>
@@ -1030,14 +940,18 @@ function TableField({
   onChange,
   error,
   placeholder,
+  readOnly = false,
+  multiline = false,
 }: {
   label: string;
   type?: string;
   options?: string[];
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   error?: string;
   placeholder?: string;
+  readOnly?: boolean;
+  multiline?: boolean;
 }) {
   return (
     <div className="flex items-stretch">
@@ -1048,11 +962,11 @@ function TableField({
       </div>
 
       <div className="relative flex-1">
-        {options ? (
+        {options && !readOnly ? (
           <>
             <select
               value={value}
-              onChange={(event) => onChange(event.target.value)}
+              onChange={(event) => onChange?.(event.target.value)}
               aria-invalid={Boolean(error)}
               className={`h-9 w-full appearance-none border-0 bg-white pl-3 pr-8 text-xs text-slate-900 outline-none focus:bg-red-50/20 ${
                 error ? "bg-red-50/30" : ""
@@ -1061,6 +975,7 @@ function TableField({
               <option value="" disabled>
                 Seçiniz
               </option>
+
               {options.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -1073,16 +988,33 @@ function TableField({
               className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
           </>
+        ) : multiline ? (
+          <textarea
+            value={value}
+            onChange={(event) => onChange?.(event.target.value)}
+            placeholder={placeholder}
+            readOnly={readOnly}
+            aria-invalid={Boolean(error)}
+            rows={2}
+            className={`min-h-[56px] w-full resize-none border-0 px-3 py-2 text-xs leading-5 text-slate-900 outline-none ${
+              readOnly
+                ? "cursor-default bg-slate-50/70"
+                : "bg-white focus:bg-red-50/20"
+            } ${error ? "bg-red-50/30" : ""}`}
+          />
         ) : (
           <input
             type={type}
             value={value}
-            onChange={(event) => onChange(event.target.value)}
+            onChange={(event) => onChange?.(event.target.value)}
             placeholder={placeholder}
+            readOnly={readOnly}
             aria-invalid={Boolean(error)}
-            className={`h-9 w-full border-0 bg-white px-3 text-xs text-slate-900 outline-none focus:bg-red-50/20 ${
-              error ? "bg-red-50/30" : ""
-            }`}
+            className={`h-9 w-full border-0 px-3 text-xs text-slate-900 outline-none ${
+              readOnly
+                ? "cursor-default bg-slate-50/70"
+                : "bg-white focus:bg-red-50/20"
+            } ${error ? "bg-red-50/30" : ""}`}
           />
         )}
 

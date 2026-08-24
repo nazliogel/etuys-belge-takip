@@ -52,6 +52,11 @@ export type User = Prisma.UserModel
  */
 export type Company = Prisma.CompanyModel
 /**
+ * Model CompanyIdentity
+ * 
+ */
+export type CompanyIdentity = Prisma.CompanyIdentityModel
+/**
  * Model CompanyAuthorization
  * 
  */

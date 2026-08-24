@@ -10,6 +10,7 @@
  */
 export type * from './models/User.js'
 export type * from './models/Company.js'
+export type * from './models/CompanyIdentity.js'
 export type * from './models/CompanyAuthorization.js'
 export type * from './models/IncentiveDocument.js'
 export type * from './models/ClosedIncentiveDocument.js'

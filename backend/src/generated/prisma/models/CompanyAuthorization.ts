@@ -391,10 +391,6 @@ export type CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyAuthorizationUpdateToOneWithWhereWithoutCompanyInput, Prisma.CompanyAuthorizationUpdateWithoutCompanyInput>, Prisma.CompanyAuthorizationUncheckedUpdateWithoutCompanyInput>
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type CompanyAuthorizationCreateWithoutCompanyInput = {
   authorizationEndDate?: Date | string | null
   createdAt?: Date | string

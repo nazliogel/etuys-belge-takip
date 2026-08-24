@@ -149,4 +149,26 @@ export class CompanyRepository {
       },
     });
   }
+
+  async updateTaxNumber(companyId: number, taxNumber: string) {
+    return prisma.company.update({
+      where: {
+        id: companyId,
+      },
+      data: {
+        taxNumber,
+      },
+    });
+  }
+
+  async updateConsultant(companyId: number, consultant: string) {
+    return prisma.company.update({
+      where: {
+        id: companyId,
+      },
+      data: {
+        consultant,
+      },
+    });
+  }
 }

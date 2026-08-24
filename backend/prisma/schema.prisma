@@ -107,6 +107,7 @@ model Company {
 
   users           User[]
   authorization   CompanyAuthorization?
+  identity        CompanyIdentity?
   documents       IncentiveDocument[]
   importRows      ImportRow[]
   closedDocuments ClosedIncentiveDocument[]
@@ -119,6 +120,29 @@ model Company {
 
   @@index([taxNumber])
   @@index([name])
+}
+
+model CompanyIdentity {
+  id        Int @id @default(autoincrement())
+  companyId Int @unique
+
+  investorStatus      String?
+  mersisNumber        String?
+  investorType        String?
+  investorAddress     String?
+  registrationDate    DateTime? @db.Date
+  tradeRegistryNumber String?
+  nationalId          String?
+  city                String?
+  district            String?
+  mainActivity        String?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 model CompanyAuthorization {

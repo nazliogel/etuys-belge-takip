@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Company: 'Company',
+  CompanyIdentity: 'CompanyIdentity',
   CompanyAuthorization: 'CompanyAuthorization',
   IncentiveDocument: 'IncentiveDocument',
   ClosedIncentiveDocument: 'ClosedIncentiveDocument',
@@ -109,6 +110,26 @@ export const CompanyScalarFieldEnum = {
 } as const
 
 export type CompanyScalarFieldEnum = (typeof CompanyScalarFieldEnum)[keyof typeof CompanyScalarFieldEnum]
+
+
+export const CompanyIdentityScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  investorStatus: 'investorStatus',
+  mersisNumber: 'mersisNumber',
+  investorType: 'investorType',
+  investorAddress: 'investorAddress',
+  registrationDate: 'registrationDate',
+  tradeRegistryNumber: 'tradeRegistryNumber',
+  nationalId: 'nationalId',
+  city: 'city',
+  district: 'district',
+  mainActivity: 'mainActivity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyIdentityScalarFieldEnum = (typeof CompanyIdentityScalarFieldEnum)[keyof typeof CompanyIdentityScalarFieldEnum]
 
 
 export const CompanyAuthorizationScalarFieldEnum = {
