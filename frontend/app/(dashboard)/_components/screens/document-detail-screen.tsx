@@ -21,6 +21,7 @@ interface DocumentDetailScreenProps {
   documentId: string;
   inline?: boolean;
   variant?: "admin" | "company";
+  isClosed?: boolean;
 }
 
 type ApiDocumentDetail = {
@@ -31,7 +32,8 @@ type ApiDocumentDetail = {
   documentEndDate: string | null;
   extensionDate: string | null;
   supportClass: string | null;
-  isActive: boolean;
+  isActive?: boolean;
+  status?: "OPEN" | "CLOSED" | "CANCELLED";
 
   company: {
     id?: number;
@@ -67,10 +69,14 @@ function formatDate(date: string | null): string {
 }
 
 function getDocumentStatus(document: ApiDocumentDetail) {
-  if (!document.isActive) {
+  if (
+    document.status === "CLOSED" ||
+    document.status === "CANCELLED" ||
+    document.isActive === false
+  ) {
     return {
-      label: "Pasif",
-      description: "Belge aktif durumda değildir.",
+      label: "Kapalı / İptal",
+      description: "Belge kapalı veya iptal durumundadır.",
       dot: "bg-slate-500",
       className: "bg-slate-100 text-slate-700",
     };
@@ -122,11 +128,11 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     className: "bg-emerald-50 text-emerald-700",
   };
 }
-
 export function DocumentDetailScreen({
   documentId,
   inline = false,
   variant = "company",
+  isClosed = false,
 }: DocumentDetailScreenProps) {
   const [document, setDocument] = useState<ApiDocumentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,11 +149,17 @@ export function DocumentDetailScreen({
       setDocument(null);
 
       try {
-        const response = await apiFetch<DocumentDetailResponse>(
-          `/documents/${documentId}`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}`
+          : `/documents/${documentId}`;
 
-        setDocument(response.data);
+        const response = await apiFetch<DocumentDetailResponse>(endpoint);
+
+        setDocument({
+          ...response.data,
+          isActive: isClosed ? false : response.data.isActive,
+          status: isClosed ? "CLOSED" : response.data.status,
+        });
       } catch (error) {
         setLoadError(
           error instanceof Error
@@ -160,7 +172,7 @@ export function DocumentDetailScreen({
     }
 
     loadDocument();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   async function handleDownloadPdf() {
     if (!printRef.current || !document || isGeneratingPdf) {
@@ -632,10 +644,7 @@ export function DocumentDetailScreen({
                     value={formatDate(document.company.authorizationEndDate)}
                   />
 
-                  <FormRow
-                    label="Belge Durumu"
-                    value={document.isActive ? "Aktif" : "Pasif"}
-                  />
+                  <FormRow label="Belge Durumu" value={status.label} />
                 </dl>
 
                 <p className="mt-8 text-sm leading-7 text-slate-700">
@@ -643,7 +652,7 @@ export function DocumentDetailScreen({
                 </p>
                 <p
                   data-pdf-footer
-                  className="mt-10 border-t border-slate-300 pt-3 text-center text-[9px] font-medium leading-tight text-black"
+                  className="mt-10 border-t border-slate-300 pt-3 text-center text-[13px] font-medium leading-tight text-black"
                 >
                   Bu doküman bilgilendirme amacıyla oluşturulmuştur, resmi belge
                   değildir.
