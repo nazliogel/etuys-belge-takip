@@ -80,11 +80,7 @@ type CompanyNote = {
 
 type IdentityErrors = Partial<Record<keyof IdentityForm, string>>;
 
-const DANISMAN_OPTIONS = [
-  "Beyza Başaran",
-  "Emin Kutay İnangu",
-  "Salih Şahin",
-];
+const DANISMAN_OPTIONS = ["Beyza Başaran", "Emin Kutay İnangu", "Salih Şahin"];
 
 const NAME_REGEX = /^[A-Za-zÇĞİÖŞÜçğıöşü\s'-]+$/;
 const EMAIL_REGEX =
@@ -1027,7 +1023,7 @@ function TableField({
         </span>
       </div>
 
-      <div className="relative flex-1">
+      <div className="relative flex flex-1">
         {options && !readOnly ? (
           <>
             <select
@@ -1062,9 +1058,9 @@ function TableField({
             readOnly={readOnly}
             aria-invalid={Boolean(error)}
             rows={2}
-            className={`min-h-[56px] w-full resize-none border-0 px-3 py-2 text-xs leading-5 text-slate-900 outline-none ${
+            className={`h-full min-h-[56px] w-full resize-none border-0 px-3 py-2 text-xs leading-5 text-slate-900 outline-none ${
               readOnly
-                ? "cursor-default bg-slate-50/70"
+                ? "cursor-not-allowed bg-slate-100 text-slate-500"
                 : "bg-white focus:bg-red-50/20"
             } ${error ? "bg-red-50/30" : ""}`}
           />
@@ -1076,9 +1072,9 @@ function TableField({
             placeholder={placeholder}
             readOnly={readOnly}
             aria-invalid={Boolean(error)}
-            className={`h-9 w-full border-0 px-3 text-xs text-slate-900 outline-none ${
+            className={`h-full min-h-9 w-full border-0 px-3 text-xs text-slate-900 outline-none ${
               readOnly
-                ? "cursor-default bg-slate-50/70"
+                ? "cursor-not-allowed bg-slate-100 text-slate-500"
                 : "bg-white focus:bg-red-50/20"
             } ${error ? "bg-red-50/30" : ""}`}
           />
