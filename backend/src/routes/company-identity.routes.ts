@@ -14,6 +14,7 @@ import { CompanyIdentityImportService } from "../services/company-identity-impor
 import { CompanyIdentityService } from "../services/company-identity.service.js";
 import { CompanyContactService } from "../services/company-contact.service.js";
 import { CompanyNoteService } from "../services/company-note.service.js";
+import { ImportRepository } from "../repositories/import.repository.js";
 
 const router = Router();
 
@@ -22,6 +23,7 @@ const companyRepository = new CompanyRepository();
 const companyContactRepository = new CompanyContactRepository();
 
 const companyNoteRepository = new CompanyNoteRepository();
+const importRepository = new ImportRepository();
 
 const companyIdentityService = new CompanyIdentityService(
   companyIdentityRepository,
@@ -43,6 +45,7 @@ const companyIdentityExcelParserService =
 const companyIdentityImportService = new CompanyIdentityImportService(
   companyIdentityExcelParserService,
   companyIdentityService,
+  importRepository,
 );
 
 const companyIdentityController = new CompanyIdentityController(

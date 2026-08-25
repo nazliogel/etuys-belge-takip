@@ -81,7 +81,6 @@ type CompanyNote = {
 type IdentityErrors = Partial<Record<keyof IdentityForm, string>>;
 
 const DANISMAN_OPTIONS = [
-  "Erkan Akkaş",
   "Beyza Başaran",
   "Emin Kutay İnangu",
   "Salih Şahin",

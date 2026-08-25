@@ -23,6 +23,7 @@ enum ImportBatchStatus {
 enum ImportType {
   OPEN
   CLOSED
+  COMPANY_IDENTITY
 }
 
 enum ImportRowStatus {

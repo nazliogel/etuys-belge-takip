@@ -23,7 +23,7 @@ export class ImportService {
     file: Express.Multer.File;
     uploadedById: number;
     isFullSnapshot?: boolean;
-    importType?: "OPEN" | "CLOSED";
+    importType?: "OPEN" | "CLOSED" | "COMPANY_IDENTITY";
   }) {
     const {
       file,

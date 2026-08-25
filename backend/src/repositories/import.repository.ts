@@ -8,7 +8,7 @@ export class ImportRepository {
     storedFileName: string;
     uploadedById: number;
     isFullSnapshot?: boolean;
-    importType?: "OPEN" | "CLOSED";
+    importType?: "OPEN" | "CLOSED" | "COMPANY_IDENTITY";
   }) {
     return prisma.importBatch.create({
       data: {
@@ -138,6 +138,7 @@ export class ImportRepository {
       },
       data: {
         status,
+        completedAt: status === "COMPLETED" ? new Date() : undefined,
       },
     });
   }

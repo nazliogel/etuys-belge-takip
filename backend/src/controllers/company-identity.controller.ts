@@ -56,10 +56,23 @@ export class CompanyIdentityController {
 
   importExcel = async (req: Request, res: Response<ApiResponse<unknown>>) => {
     if (!req.file) {
-      throw new Error("Excel file is required.");
+      throw new AppError("Excel file is required.", {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        code: "COMPANY_IDENTITY_FILE_REQUIRED",
+      });
     }
 
-    const data = await this.importService.import(req.file.path);
+    if (!req.user) {
+      throw new AppError("Authentication required.", {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        code: "AUTHENTICATION_REQUIRED",
+      });
+    }
+
+    const data = await this.importService.import({
+      file: req.file,
+      uploadedById: req.user.id,
+    });
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,

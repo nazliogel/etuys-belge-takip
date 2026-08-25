@@ -43,7 +43,7 @@ const EXPECTED_HEADERS = {
   documentEndDate: ["Belge Bitiş"],
   extensionDate: ["Süre Uzatım", "Süre Uzatım Tarihi"],
   supportClass: ["Destekleme Sınıfı"],
-  processStatus: ["İşlem Durumu"],
+  processStatus: ["Belge Durumu"],
 } as const;
 
 type HeaderKey = keyof typeof EXPECTED_HEADERS;
@@ -218,7 +218,7 @@ export class ClosedExcelParserService {
 
     if (externalDocumentId && !documentStatus) {
       errors.push(
-        "Belge ID bulunan satırlarda İşlem Durumu kapalı veya iptal olmalıdır.",
+        "Belge ID bulunan satırlarda Belge Durumu kapalı veya iptal olmalıdır.",
       );
     }
 
