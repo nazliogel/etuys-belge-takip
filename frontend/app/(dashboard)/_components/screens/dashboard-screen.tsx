@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { getSessionUser } from "@/lib/mock-auth";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   Building2,
@@ -12,7 +12,6 @@ import {
   Clock3,
   FileCheck2,
   Pencil,
-  Upload,
   ArrowUpRight,
   Ban,
 } from "lucide-react";
@@ -77,6 +76,32 @@ type ClosedDocumentListResponse = {
   message: string;
   data: {
     items: ApiDocument[];
+    totalCount: number;
+  };
+};
+type ExtensionEligibleDocument = {
+  id: number;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  documentStartDate: string | null;
+  documentEndDate: string;
+  extensionDate: string;
+  extensionApplicationStartDate: string;
+  supportClass: string | null;
+  isActive: boolean;
+  company: {
+    id: number;
+    externalCompanyId: number;
+    name: string;
+    taxNumber: string;
+  };
+};
+
+type ExtensionEligibleResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ExtensionEligibleDocument[];
     totalCount: number;
   };
 };
@@ -295,6 +320,7 @@ type DashboardCache = {
   expiredDocuments: number;
   expiringDocuments: number;
   closedCancelledDocuments: number;
+  extensionEligibleDocuments: number;
   upcomingDeadlines: ApiDocument[];
   recentImports: ApiImportBatch[];
   latestImportBatch: ApiImportBatch | null;
@@ -345,6 +371,9 @@ export function DashboardScreen() {
   const [closedCancelledDocuments, setClosedCancelledDocuments] = useState<
     number | null
   >(() => readDashboardCache()?.closedCancelledDocuments ?? null);
+  const [extensionEligibleDocuments, setExtensionEligibleDocuments] = useState<
+    number | null
+  >(() => readDashboardCache()?.extensionEligibleDocuments ?? null);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
     () => readDashboardCache()?.upcomingDeadlines ?? [],
   );
@@ -377,6 +406,7 @@ export function DashboardScreen() {
           documentResponse,
           expiringResponse,
           closedDocumentResponse,
+          extensionEligibleResponse,
           importResponse,
         ] = await Promise.all([
           apiFetch<CompanyListResponse>("/companies?page=1&limit=1"),
@@ -392,6 +422,8 @@ export function DashboardScreen() {
           apiFetch<ClosedDocumentListResponse>(
             "/closed-documents?page=1&limit=1",
           ),
+
+          apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
 
           apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=5"),
         ]);
@@ -435,6 +467,7 @@ export function DashboardScreen() {
           expiredDocuments: documentResponse.data.summary.expired,
           expiringDocuments: documentResponse.data.summary.expiring,
           closedCancelledDocuments: closedDocumentResponse.data.totalCount,
+          extensionEligibleDocuments: extensionEligibleResponse.data.totalCount,
           upcomingDeadlines: sortedExpiringItems,
           recentImports: importResponse.data.items,
           latestImportBatch: latestBatch,
@@ -448,6 +481,7 @@ export function DashboardScreen() {
         setExpiredDocuments(cache.expiredDocuments);
         setExpiringDocuments(cache.expiringDocuments);
         setClosedCancelledDocuments(cache.closedCancelledDocuments);
+        setExtensionEligibleDocuments(cache.extensionEligibleDocuments);
         setUpcomingDeadlines(cache.upcomingDeadlines);
         setRecentImports(cache.recentImports);
         setLatestImportBatch(cache.latestImportBatch);
@@ -465,13 +499,14 @@ export function DashboardScreen() {
         // ağ hatası yüzünden ekranı sıfırlama; sadece cache hiç yoksa
         // boş/0 durumuna düş.
         if (!hadCachedData) {
-  setTotalCompanies(0);
-  setTotalDocuments(0);
-  setActiveDocumentItems([]);
-  setActiveDocuments(0);
-  setExpiredDocuments(0);
-  setExpiringDocuments(0);
+          setTotalCompanies(0);
+          setTotalDocuments(0);
+          setActiveDocumentItems([]);
+          setActiveDocuments(0);
+          setExpiredDocuments(0);
+          setExpiringDocuments(0);
           setClosedCancelledDocuments(0);
+          setExtensionEligibleDocuments(0);
           setUpcomingDeadlines([]);
           setRecentImports([]);
           setLatestImportBatch(null);
@@ -488,90 +523,110 @@ export function DashboardScreen() {
   const user = getSessionUser();
   const isCompany = user?.role === "COMPANY";
 
-const adminSummaryItems: SummaryItem[] = [
-  {
-    title: "Toplam Firma",
-    value: totalCompanies === null ? "..." : String(totalCompanies),
-    description: "Sistemde kayıtlı firma",
-    icon: Building2,
-    href: "/companies",
-    clickable: true,
-  },
-  {
-    title: "Aktif Belge",
-    value: activeDocuments === null ? "..." : String(activeDocuments),
-    description: "Aktif durumda bulunan belge",
-    icon: FileCheck2,
-    href: "/documents?status=ACTIVE",
-    clickable: true,
-  },
-  {
-    title: "Süresi Yaklaşan",
-    value: expiringDocuments === null ? "..." : String(expiringDocuments),
-    description: "6 ay içinde süresi dolacak belge",
-    icon: CalendarClock,
-    href: "/documents?status=EXPIRING",
-    clickable: true,
-  },
-  {
-    title: "Kapalı / İptal",
-    value:
-      closedCancelledDocuments === null
-        ? "..."
-        : String(closedCancelledDocuments),
-    description: "Kapatılmış veya iptal edilmiş belge",
-    icon: Ban,
-    href: "/documents?status=INACTIVE",
-    clickable: true,
-  },
-  {
-    title: "Yeni Bildirim",
-    value: "7",
-    description: "Okunmamış bildirim",
-    icon: Bell,
-    href: "/notifications",
-    clickable: true,
-  },
-];
+  const adminSummaryItems: SummaryItem[] = [
+    {
+      title: "Toplam Firma",
+      value: totalCompanies === null ? "..." : String(totalCompanies),
+      description: "Sistemde kayıtlı firma",
+      icon: Building2,
+      href: "/companies",
+      clickable: true,
+    },
+    {
+      title: "Aktif Belge",
+      value: activeDocuments === null ? "..." : String(activeDocuments),
+      description: "Aktif durumda bulunan belge",
+      icon: FileCheck2,
+      href: "/documents?status=ACTIVE",
+      clickable: true,
+    },
+    {
+      title: "Süresi Yaklaşan",
+      value: expiringDocuments === null ? "..." : String(expiringDocuments),
+      description: "6 ay içinde süresi dolacak belge",
+      icon: CalendarClock,
+      href: "/documents?status=EXPIRING",
+      clickable: true,
+    },
+    {
+      title: "Süre Uzatma Müracatı Yapılabilecekler",
+      value:
+        extensionEligibleDocuments === null
+          ? "..."
+          : String(extensionEligibleDocuments),
+      description: "Süre uzatma başvurusu yapılabilecek belgeler",
+      icon: CalendarClock,
+      href: "/documents/extension-eligible",
+      clickable: true,
+    },
+    {
+      title: "Kapalı / İptal",
+      value:
+        closedCancelledDocuments === null
+          ? "..."
+          : String(closedCancelledDocuments),
+      description: "Kapatılmış veya iptal edilmiş belge",
+      icon: Ban,
+      href: "/documents?status=INACTIVE",
+      clickable: true,
+    },
+    {
+      title: "Yeni Bildirim",
+      value: "7",
+      description: "Okunmamış bildirim",
+      icon: Bell,
+      href: "/notifications",
+      clickable: true,
+    },
+  ];
 
-const companySummaryItems: SummaryItem[] = [
-  {
-    title: "Toplam Belge",
-    value: totalDocuments === null ? "..." : String(totalDocuments),
-    description: "Firmanıza ait toplam belge",
-    icon: FileCheck2,
-    href: "/documents",
-    clickable: true,
-  },
-  {
-    title: "Aktif",
-    value: activeDocuments === null ? "..." : String(activeDocuments),
-    description: "Aktif durumda bulunan belge",
-    icon: FileCheck2,
-    href: "/documents?status=ACTIVE",
-    clickable: true,
-  },
-  {
-    title: "Süresi Dolmuş",
-    value: expiredDocuments === null ? "..." : String(expiredDocuments),
-    description: "Süresi dolmuş belge",
-    icon: Clock3,
-    href: "/documents?status=EXPIRED",
-    clickable: true,
-  },
-  {
-    title: "Süresi Yaklaşan",
-    value: expiringDocuments === null ? "..." : String(expiringDocuments),
-    description: "6 ay içinde süresi dolacak belge",
-    icon: CalendarClock,
-    href: "/documents?status=EXPIRING",
-    clickable: true,
-  },
-];
+  const companySummaryItems: SummaryItem[] = [
+    {
+      title: "Toplam Belge",
+      value: totalDocuments === null ? "..." : String(totalDocuments),
+      description: "Firmanıza ait toplam belge",
+      icon: FileCheck2,
+      href: "/documents",
+      clickable: true,
+    },
+    {
+      title: "Aktif",
+      value: activeDocuments === null ? "..." : String(activeDocuments),
+      description: "Aktif durumda bulunan belge",
+      icon: FileCheck2,
+      href: "/documents?status=ACTIVE",
+      clickable: true,
+    },
+    {
+      title: "Süresi Dolmuş",
+      value: expiredDocuments === null ? "..." : String(expiredDocuments),
+      description: "Süresi dolmuş belge",
+      icon: Clock3,
+      href: "/documents?status=EXPIRED",
+      clickable: true,
+    },
+    {
+      title: "Süresi Yaklaşan",
+      value: expiringDocuments === null ? "..." : String(expiringDocuments),
+      description: "6 ay içinde süresi dolacak belge",
+      icon: CalendarClock,
+      href: "/documents?status=EXPIRING",
+      clickable: true,
+    },
+    {
+      title: "Süre Uzatma Müracatı",
+      value:
+        extensionEligibleDocuments === null
+          ? "..."
+          : String(extensionEligibleDocuments),
+      description: "Süre uzatma başvurusu yapılabilecek belge",
+      icon: CalendarClock,
+      href: "/documents/extension-eligible",
+      clickable: true,
+    },
+  ];
 
-const summaryItems = isCompany
-  ? companySummaryItems
-  : adminSummaryItems;
+  const summaryItems = isCompany ? companySummaryItems : adminSummaryItems;
   return (
     <div className="space-y-6 pb-8">
       {/* SAYFA BAŞLIĞI */}
@@ -603,7 +658,7 @@ const summaryItems = isCompany
       </header>
 
       {/* İSTATİSTİK KARTLARI */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {summaryItems.map((item) => {
           const Icon = item.icon;
 

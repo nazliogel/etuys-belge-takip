@@ -9,4 +9,6 @@ documentRouter.use(authenticate);
 
 documentRouter.get("/", documentController.list);
 
+documentRouter.get("/extension-eligible", documentController.extensionEligible);
+
 documentRouter.get("/:id", documentController.getById);

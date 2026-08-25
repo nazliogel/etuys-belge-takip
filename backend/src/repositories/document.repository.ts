@@ -7,6 +7,7 @@ export class DocumentRepository {
     search?: string;
     isActive?: boolean;
     companyId?: number;
+    status?: "OPEN" | "CLOSED" | "CANCELLED";
   }) {
     const where: Prisma.IncentiveDocumentWhereInput = {};
 
@@ -35,6 +36,10 @@ export class DocumentRepository {
 
     if (params.companyId !== undefined) {
       where.companyId = params.companyId;
+    }
+
+    if (params.status) {
+      where.status = params.status;
     }
 
     return prisma.incentiveDocument.findMany({

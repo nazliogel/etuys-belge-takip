@@ -47,6 +47,81 @@ function calculateDocumentStatus(document: {
 
   return "ACTIVE";
 }
+function normalizeDate(date: Date): Date {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+}
+function formatDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function subtractMonths(date: Date, months: number): Date {
+  const result = new Date(date);
+
+  const originalDay = result.getDate();
+
+  result.setDate(1);
+  result.setMonth(result.getMonth() - months);
+
+  const lastDayOfTargetMonth = new Date(
+    result.getFullYear(),
+    result.getMonth() + 1,
+    0,
+  ).getDate();
+
+  result.setDate(Math.min(originalDay, lastDayOfTargetMonth));
+
+  return normalizeDate(result);
+}
+
+function canApplyForExtension(document: {
+  isActive: boolean;
+  status: string;
+  documentEndDate: Date | null;
+  extensionDate: Date | null;
+}): boolean {
+  if (!document.isActive) {
+    return false;
+  }
+
+  if (document.status !== "OPEN") {
+    return false;
+  }
+
+  if (!document.documentEndDate || !document.extensionDate) {
+    return false;
+  }
+
+  const documentEndDate = normalizeDate(document.documentEndDate);
+  const extensionDate = normalizeDate(document.extensionDate);
+  const today = normalizeDate(new Date());
+
+  // Belge bitiş ve süre uzatım tarihleri aynıysa
+  // süre uzatma zaten yapılmış demektir.
+  if (documentEndDate.getTime() === extensionDate.getTime()) {
+    return false;
+  }
+
+  // Süre uzatma müracatı belge bitişinden 6 ay önce başlar.
+  const applicationStartDate = subtractMonths(documentEndDate, 6);
+
+  // Henüz müracat zamanı gelmemiş.
+  if (today < applicationStartDate) {
+    return false;
+  }
+
+  // Süre uzatma için son tarih geçmiş.
+  if (today > extensionDate) {
+    return false;
+  }
+
+  return true;
+}
 
 export class DocumentService {
   constructor(
@@ -127,6 +202,66 @@ export class DocumentService {
       limit: query.limit,
       totalPages,
       summary,
+    };
+  }
+
+  async getExtensionEligibleDocuments(userId: number, role: UserRole) {
+    let companyId: number | undefined;
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      companyId = company.id;
+    }
+
+    const documents = await this.documentRepository.findMany({
+      isActive: true,
+      status: "OPEN",
+      companyId,
+    });
+
+    const eligibleDocuments = documents
+      .filter((document) => canApplyForExtension(document))
+      .map((document) => {
+        const documentEndDate = document.documentEndDate!;
+        const extensionDate = document.extensionDate!;
+        const applicationStartDate = subtractMonths(documentEndDate, 6);
+
+        return {
+          id: document.id,
+          externalDocumentId: document.externalDocumentId,
+          documentNumber: document.documentNumber,
+          documentStartDate: document.documentStartDate
+            ? formatDateOnly(document.documentStartDate)
+            : null,
+
+          documentEndDate: formatDateOnly(documentEndDate),
+
+          extensionDate: formatDateOnly(extensionDate),
+
+          extensionApplicationStartDate: formatDateOnly(applicationStartDate),
+          supportClass: document.supportClass,
+          isActive: document.isActive,
+
+          company: {
+            id: document.company.id,
+            externalCompanyId: document.company.externalCompanyId,
+            name: document.company.name,
+            taxNumber: document.company.taxNumber,
+          },
+        };
+      });
+
+    return {
+      items: eligibleDocuments,
+      totalCount: eligibleDocuments.length,
     };
   }
 
