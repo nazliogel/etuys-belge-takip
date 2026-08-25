@@ -437,52 +437,46 @@ export function ExcelImportScreen() {
     router.push(`/excel-import/${importId}`);
   }
 
-  async function handleUpload() {
-    if (!selectedFile || isUploading) return;
-    setIsUploading(true);
+ async function handleUpload() {
+  if (!selectedFile || isUploading) return;
+  setIsUploading(true);
+  setCurrentStep("upload");
+  setUploadProgress(10);
+  setFileError("");
+  try {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("isFullSnapshot", "true");
+    formData.append("importType", selectedType);
+
+    // /imports/upload backend'de process + compare + apply adımlarının
+    // tamamını senkron yapıp COMPLETED durumundaki batch'i döndürüyor.
+    // Ayrıca /process veya /compare çağırmaya gerek yok — çağrılırsa
+    // batch zaten COMPLETED olduğu için 409 döner.
+    setUploadProgress(50);
+    await apiFetch<ImportActionResponse>("/imports/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    setCurrentStep("done");
+    setUploadProgress(90);
+    await loadImports();
+    setUploadProgress(100);
+
+    setSelectedFile(null);
+    setUploadProgress(0);
     setCurrentStep("upload");
-    setUploadProgress(10);
-    setFileError("");
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("isFullSnapshot", "true");
-      // Prisma: ImportBatch.importType. "KUNYE" değeri backend'de enum'a
-      // eklenene kadar bu istek reddedilebilir (bkz. dosya başındaki not).
-      formData.append("importType", selectedType);
-
-      const uploadResponse = await apiFetch<ImportActionResponse>(
-        "/imports/upload",
-        { method: "POST", body: formData },
-      );
-      const importId = uploadResponse.data.id;
-      setUploadProgress(35);
-
-      setCurrentStep("process");
-      await apiFetch(`/imports/${importId}/process`, { method: "POST" });
-      setUploadProgress(65);
-
-      setCurrentStep("compare");
-      await apiFetch(`/imports/${importId}/compare`, { method: "POST" });
-      setUploadProgress(90);
-
-      setCurrentStep("done");
-      await loadImports();
-      setUploadProgress(100);
-
-      setSelectedFile(null);
-      setUploadProgress(0);
-      setCurrentStep("upload");
-    } catch (error) {
-      setFileError(
-        error instanceof Error
-          ? error.message
-          : "Excel dosyası işlenirken beklenmeyen bir hata oluştu.",
-      );
-    } finally {
-      setIsUploading(false);
-    }
+  } catch (error) {
+    setFileError(
+      error instanceof Error
+        ? error.message
+        : "Excel dosyası işlenirken beklenmeyen bir hata oluştu.",
+    );
+  } finally {
+    setIsUploading(false);
   }
+}
 
   return (
     <div className="bg-slate-50">
