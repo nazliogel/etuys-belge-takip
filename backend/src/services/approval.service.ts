@@ -805,12 +805,9 @@ export class ApprovalService {
             },
             data: {
               status: "COMPLETED",
-              reviewedById: changedById,
-              reviewedAt: now,
               completedAt: now,
             },
           });
-
           batchStatus = completedBatch.status;
         }
 

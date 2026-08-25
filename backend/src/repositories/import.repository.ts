@@ -77,14 +77,6 @@ export class ImportRepository {
             email: true,
           },
         },
-        reviewedBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
         rows: {
           orderBy: {
             rowNumber: "asc",
