@@ -28,26 +28,26 @@ export function AppHeader({
 
       <div className="flex items-center gap-3">
         {!isAdmin && (
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="hidden items-center gap-6 lg:flex">
             {/* DANIŞMAN BİLGİSİ */}
-            <div className="border-r border-blue-600 pr-5 text-right">
-              <p className="text-[9px] font-medium uppercase tracking-wide text-blue-200">
+            <div className="border-r border-blue-600 pr-6 text-right">
+              <p className="text-xs font-medium uppercase tracking-wide text-blue-200">
                 Danışmanınız
               </p>
 
-              <p className="text-xs font-semibold text-white">
+              <p className="text-sm font-semibold text-white">
                 {displayedConsultantName}
               </p>
 
               {displayedConsultantPhone ? (
                 <a
                   href={`tel:${displayedConsultantPhone.replace(/\s/g, "")}`}
-                  className="mt-0.5 block text-[10px] font-medium text-blue-100 transition hover:text-white hover:underline"
+                  className="mt-0.5 block text-sm font-medium text-blue-100 transition hover:text-white hover:underline"
                 >
                   {displayedConsultantPhone}
                 </a>
               ) : (
-                <p className="mt-0.5 text-[10px] font-medium text-blue-300">
+                <p className="mt-0.5 text-sm font-medium text-blue-300">
                   Telefon bilgisi yok
                 </p>
               )}
@@ -55,20 +55,20 @@ export function AppHeader({
 
             {/* GENEL İLETİŞİM */}
             <div className="text-right">
-              <p className="text-[9px] font-medium uppercase tracking-wide text-blue-200">
+              <p className="text-xs font-medium uppercase tracking-wide text-blue-200">
                 Genel İletişim
               </p>
 
               <a
                 href="tel:+902164506007"
-                className="block text-[10px] font-medium text-white hover:underline"
+                className="block text-sm font-medium text-white hover:underline"
               >
                 +90 216 450 60 07 (Pbx)
               </a>
 
               <a
                 href="mailto:info@akkasgroup.com"
-                className="block text-[10px] text-blue-200 hover:text-white"
+                className="block text-sm text-blue-200 hover:text-white"
               >
                 info@akkasgroup.com
               </a>
@@ -78,11 +78,11 @@ export function AppHeader({
 
         <div className="flex items-center gap-3 rounded-xl border border-blue-700/80 bg-blue-700/50 px-3.5 py-1.5 transition hover:bg-blue-700/70">
           <div className="text-right">
-            <p className="text-xs font-semibold leading-tight text-white">
+            <p className="text-sm font-semibold leading-tight text-white">
               {userName}
             </p>
 
-            <span className="inline-block text-[10px] font-medium text-blue-200">
+            <span className="inline-block text-sm font-medium text-blue-200">
               {isAdmin ? "Sistem Yöneticisi" : "Firma Temsilcisi"}
             </span>
           </div>
