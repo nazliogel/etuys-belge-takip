@@ -7,12 +7,17 @@ import { AppSidebar } from "./app-sidebar";
 interface DashboardShellProps {
   role: UserRole;
   userName: string;
+  companyName?: string | null;
+  consultantName?: string | null;
+  consultantPhone?: string | null;
   children: ReactNode;
 }
 
 export function DashboardShell({
   role,
   userName,
+  consultantName,
+  consultantPhone,
   children,
 }: DashboardShellProps) {
   return (
@@ -20,7 +25,12 @@ export function DashboardShell({
       <AppSidebar role={role} userName={userName} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppHeader userName={userName} role={role} />
+        <AppHeader
+          userName={userName}
+          role={role}
+          consultantName={consultantName}
+          consultantPhone={consultantPhone}
+        />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
