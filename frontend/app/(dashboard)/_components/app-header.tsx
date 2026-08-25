@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { UserRound } from "lucide-react";
-
 import type { UserRole } from "../_lib/permissions";
 
 interface AppHeaderProps {
@@ -17,7 +14,10 @@ export function AppHeader({
   consultantPhone,
 }: AppHeaderProps) {
   const isAdmin = role === "ADMIN";
-  const displayedConsultantPhone = consultantPhone?.trim() || "0555 555 55 55";
+
+  const displayedConsultantName = consultantName?.trim() || "—";
+  const displayedConsultantPhone = consultantPhone?.trim() || null;
+
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-blue-900 bg-blue-800 px-6 text-blue-100 backdrop-blur-md">
       <div className="flex items-center gap-3">
@@ -36,15 +36,21 @@ export function AppHeader({
               </p>
 
               <p className="text-xs font-semibold text-white">
-                {consultantName?.trim() || "Salih Şahin"}
+                {displayedConsultantName}
               </p>
 
-              <a
-                href={`tel:${displayedConsultantPhone.replace(/\s/g, "")}`}
-                className="mt-0.5 block text-[10px] font-medium text-blue-100 transition hover:text-white hover:underline"
-              >
-                {displayedConsultantPhone}
-              </a>
+              {displayedConsultantPhone ? (
+                <a
+                  href={`tel:${displayedConsultantPhone.replace(/\s/g, "")}`}
+                  className="mt-0.5 block text-[10px] font-medium text-blue-100 transition hover:text-white hover:underline"
+                >
+                  {displayedConsultantPhone}
+                </a>
+              ) : (
+                <p className="mt-0.5 text-[10px] font-medium text-blue-300">
+                  Telefon bilgisi yok
+                </p>
+              )}
             </div>
 
             {/* GENEL İLETİŞİM */}

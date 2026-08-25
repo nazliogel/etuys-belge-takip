@@ -18,6 +18,7 @@ export type CompanyListItem = {
   taxNumber: string;
   processStatus: string | null;
   consultant: string | null;
+  consultantPhone: string | null;
   isActive: boolean;
   authorizationEndDate: string | null;
   documentCount: number;
@@ -33,6 +34,7 @@ export type CompanyDetail = CompanyListItem & {
     documentStartDate: string | null;
     documentEndDate: string | null;
     extensionDate: string | null;
+   
     supportClass: string | null;
     status: "OPEN" | "CLOSED" | "CANCELLED";
     isActive: boolean;
