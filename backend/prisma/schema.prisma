@@ -89,6 +89,7 @@ model User {
   uploadedImports ImportBatch[]   @relation("ImportUploadedBy")
   changeHistory   ChangeHistory[]
   notifications   Notification[]
+  companyNotes    CompanyNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,6 +115,8 @@ model Company {
   importChanges   ImportChange[]
   changeHistory   ChangeHistory[]
   notifications   Notification[]
+  contacts        CompanyContact[]
+  notes           CompanyNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -143,6 +146,37 @@ model CompanyIdentity {
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
+}
+
+model CompanyContact {
+  id        Int    @id @default(autoincrement())
+  companyId Int
+  fullName  String
+  email     String
+  phone     String
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model CompanyNote {
+  id        Int    @id @default(autoincrement())
+  companyId Int
+  text      String
+  authorId  Int?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([authorId])
 }
 
 model CompanyAuthorization {

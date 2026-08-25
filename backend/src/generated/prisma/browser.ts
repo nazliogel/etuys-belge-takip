@@ -33,6 +33,16 @@ export type Company = Prisma.CompanyModel
  */
 export type CompanyIdentity = Prisma.CompanyIdentityModel
 /**
+ * Model CompanyContact
+ * 
+ */
+export type CompanyContact = Prisma.CompanyContactModel
+/**
+ * Model CompanyNote
+ * 
+ */
+export type CompanyNote = Prisma.CompanyNoteModel
+/**
  * Model CompanyAuthorization
  * 
  */

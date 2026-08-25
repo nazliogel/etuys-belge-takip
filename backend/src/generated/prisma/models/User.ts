@@ -264,6 +264,7 @@ export type UserWhereInput = {
   uploadedImports?: Prisma.ImportBatchListRelationFilter
   changeHistory?: Prisma.ChangeHistoryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  companyNotes?: Prisma.CompanyNoteListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -281,6 +282,7 @@ export type UserOrderByWithRelationInput = {
   uploadedImports?: Prisma.ImportBatchOrderByRelationAggregateInput
   changeHistory?: Prisma.ChangeHistoryOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  companyNotes?: Prisma.CompanyNoteOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -301,6 +303,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   uploadedImports?: Prisma.ImportBatchListRelationFilter
   changeHistory?: Prisma.ChangeHistoryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  companyNotes?: Prisma.CompanyNoteListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -350,6 +353,7 @@ export type UserCreateInput = {
   uploadedImports?: Prisma.ImportBatchCreateNestedManyWithoutUploadedByInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -366,6 +370,7 @@ export type UserUncheckedCreateInput = {
   uploadedImports?: Prisma.ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUpdateInput = {
@@ -381,6 +386,7 @@ export type UserUpdateInput = {
   uploadedImports?: Prisma.ImportBatchUpdateManyWithoutUploadedByNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -397,6 +403,7 @@ export type UserUncheckedUpdateInput = {
   uploadedImports?: Prisma.ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -495,14 +502,14 @@ export type UserOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
-}
-
 export type UserNullableScalarRelationFilter = {
   is?: Prisma.UserWhereInput | null
   isNot?: Prisma.UserWhereInput | null
+}
+
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -579,6 +586,22 @@ export type UserUncheckedUpdateManyWithoutCompanyNestedInput = {
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
+export type UserCreateNestedOneWithoutCompanyNotesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotesInput, Prisma.UserUncheckedCreateWithoutCompanyNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCompanyNotesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutCompanyNotesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotesInput, Prisma.UserUncheckedCreateWithoutCompanyNotesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCompanyNotesInput
+  upsert?: Prisma.UserUpsertWithoutCompanyNotesInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCompanyNotesInput, Prisma.UserUpdateWithoutCompanyNotesInput>, Prisma.UserUncheckedUpdateWithoutCompanyNotesInput>
+}
+
 export type UserCreateNestedOneWithoutUploadedImportsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutUploadedImportsInput, Prisma.UserUncheckedCreateWithoutUploadedImportsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutUploadedImportsInput
@@ -637,6 +660,7 @@ export type UserCreateWithoutCompanyInput = {
   uploadedImports?: Prisma.ImportBatchCreateNestedManyWithoutUploadedByInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutCompanyInput = {
@@ -652,6 +676,7 @@ export type UserUncheckedCreateWithoutCompanyInput = {
   uploadedImports?: Prisma.ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutCompanyInput = {
@@ -696,6 +721,84 @@ export type UserScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }
 
+export type UserCreateWithoutCompanyNotesInput = {
+  firstName: string
+  lastName: string
+  email: string
+  passwordHash: string
+  role?: $Enums.UserRole
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  company?: Prisma.CompanyCreateNestedOneWithoutUsersInput
+  uploadedImports?: Prisma.ImportBatchCreateNestedManyWithoutUploadedByInput
+  changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCompanyNotesInput = {
+  id?: number
+  firstName: string
+  lastName: string
+  email: string
+  passwordHash: string
+  role?: $Enums.UserRole
+  isActive?: boolean
+  companyId?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  uploadedImports?: Prisma.ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCompanyNotesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotesInput, Prisma.UserUncheckedCreateWithoutCompanyNotesInput>
+}
+
+export type UserUpsertWithoutCompanyNotesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCompanyNotesInput, Prisma.UserUncheckedUpdateWithoutCompanyNotesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotesInput, Prisma.UserUncheckedCreateWithoutCompanyNotesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCompanyNotesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCompanyNotesInput, Prisma.UserUncheckedUpdateWithoutCompanyNotesInput>
+}
+
+export type UserUpdateWithoutCompanyNotesInput = {
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  company?: Prisma.CompanyUpdateOneWithoutUsersNestedInput
+  uploadedImports?: Prisma.ImportBatchUpdateManyWithoutUploadedByNestedInput
+  changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCompanyNotesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  uploadedImports?: Prisma.ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutUploadedImportsInput = {
   firstName: string
   lastName: string
@@ -708,6 +811,7 @@ export type UserCreateWithoutUploadedImportsInput = {
   company?: Prisma.CompanyCreateNestedOneWithoutUsersInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutUploadedImportsInput = {
@@ -723,6 +827,7 @@ export type UserUncheckedCreateWithoutUploadedImportsInput = {
   updatedAt?: Date | string
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutUploadedImportsInput = {
@@ -753,6 +858,7 @@ export type UserUpdateWithoutUploadedImportsInput = {
   company?: Prisma.CompanyUpdateOneWithoutUsersNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUploadedImportsInput = {
@@ -768,6 +874,7 @@ export type UserUncheckedUpdateWithoutUploadedImportsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutChangeHistoryInput = {
@@ -782,6 +889,7 @@ export type UserCreateWithoutChangeHistoryInput = {
   company?: Prisma.CompanyCreateNestedOneWithoutUsersInput
   uploadedImports?: Prisma.ImportBatchCreateNestedManyWithoutUploadedByInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutChangeHistoryInput = {
@@ -797,6 +905,7 @@ export type UserUncheckedCreateWithoutChangeHistoryInput = {
   updatedAt?: Date | string
   uploadedImports?: Prisma.ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutChangeHistoryInput = {
@@ -827,6 +936,7 @@ export type UserUpdateWithoutChangeHistoryInput = {
   company?: Prisma.CompanyUpdateOneWithoutUsersNestedInput
   uploadedImports?: Prisma.ImportBatchUpdateManyWithoutUploadedByNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChangeHistoryInput = {
@@ -842,6 +952,7 @@ export type UserUncheckedUpdateWithoutChangeHistoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   uploadedImports?: Prisma.ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -856,6 +967,7 @@ export type UserCreateWithoutNotificationsInput = {
   company?: Prisma.CompanyCreateNestedOneWithoutUsersInput
   uploadedImports?: Prisma.ImportBatchCreateNestedManyWithoutUploadedByInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
+  companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -871,6 +983,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   updatedAt?: Date | string
   uploadedImports?: Prisma.ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
+  companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -901,6 +1014,7 @@ export type UserUpdateWithoutNotificationsInput = {
   company?: Prisma.CompanyUpdateOneWithoutUsersNestedInput
   uploadedImports?: Prisma.ImportBatchUpdateManyWithoutUploadedByNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
+  companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -916,6 +1030,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   uploadedImports?: Prisma.ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
+  companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateManyCompanyInput = {
@@ -942,6 +1057,7 @@ export type UserUpdateWithoutCompanyInput = {
   uploadedImports?: Prisma.ImportBatchUpdateManyWithoutUploadedByNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompanyInput = {
@@ -957,6 +1073,7 @@ export type UserUncheckedUpdateWithoutCompanyInput = {
   uploadedImports?: Prisma.ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutCompanyInput = {
@@ -980,12 +1097,14 @@ export type UserCountOutputType = {
   uploadedImports: number
   changeHistory: number
   notifications: number
+  companyNotes: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   uploadedImports?: boolean | UserCountOutputTypeCountUploadedImportsArgs
   changeHistory?: boolean | UserCountOutputTypeCountChangeHistoryArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  companyNotes?: boolean | UserCountOutputTypeCountCompanyNotesArgs
 }
 
 /**
@@ -1019,6 +1138,13 @@ export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.NotificationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCompanyNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CompanyNoteWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1035,6 +1161,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   uploadedImports?: boolean | Prisma.User$uploadedImportsArgs<ExtArgs>
   changeHistory?: boolean | Prisma.User$changeHistoryArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  companyNotes?: boolean | Prisma.User$companyNotesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1085,6 +1212,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   uploadedImports?: boolean | Prisma.User$uploadedImportsArgs<ExtArgs>
   changeHistory?: boolean | Prisma.User$changeHistoryArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  companyNotes?: boolean | Prisma.User$companyNotesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1101,6 +1229,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     uploadedImports: Prisma.$ImportBatchPayload<ExtArgs>[]
     changeHistory: Prisma.$ChangeHistoryPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    companyNotes: Prisma.$CompanyNotePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1511,6 +1640,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   uploadedImports<T extends Prisma.User$uploadedImportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$uploadedImportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   changeHistory<T extends Prisma.User$changeHistoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$changeHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  companyNotes<T extends Prisma.User$companyNotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$companyNotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2039,6 +2169,30 @@ export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.companyNotes
+ */
+export type User$companyNotesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyNote
+   */
+  select?: Prisma.CompanyNoteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CompanyNote
+   */
+  omit?: Prisma.CompanyNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyNoteInclude<ExtArgs> | null
+  where?: Prisma.CompanyNoteWhereInput
+  orderBy?: Prisma.CompanyNoteOrderByWithRelationInput | Prisma.CompanyNoteOrderByWithRelationInput[]
+  cursor?: Prisma.CompanyNoteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CompanyNoteScalarFieldEnum | Prisma.CompanyNoteScalarFieldEnum[]
 }
 
 /**

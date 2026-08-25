@@ -24,6 +24,10 @@ type ContactForm = {
   phone: string;
 };
 
+type CompanyContact = ContactForm & {
+  id: number;
+};
+
 type ContactErrors = Partial<Record<keyof ContactForm, string>>;
 
 type IdentityForm = {
@@ -60,6 +64,18 @@ type CompanyIdentityResponse = {
     investorAddress: string | null;
     mainActivity: string | null;
   };
+};
+
+type CompanyNote = {
+  id: number;
+  text: string;
+  author: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type IdentityErrors = Partial<Record<keyof IdentityForm, string>>;
@@ -174,13 +190,27 @@ export function CompanyIdentitySection({
   const [identitySaved, setIdentitySaved] = useState(false);
 
   useEffect(() => {
-    async function fetchIdentity() {
+    async function fetchCompanyData() {
       try {
-        const result = await apiFetch<CompanyIdentityResponse>(
-          `/companies/${companyId}/identity`,
+        const [identityResult, contactsResult, notesResult] = await Promise.all(
+          [
+            apiFetch<CompanyIdentityResponse>(
+              `/companies/${companyId}/identity`,
+            ),
+
+            apiFetch<{
+              success: boolean;
+              data: CompanyContact[];
+            }>(`/companies/${companyId}/contacts`),
+
+            apiFetch<{
+              success: boolean;
+              data: CompanyNote[];
+            }>(`/companies/${companyId}/notes`),
+          ],
         );
 
-        const data = result.data;
+        const data = identityResult.data;
 
         setIdentityForm({
           investorStatus: data.investorStatus ?? "",
@@ -198,29 +228,25 @@ export function CompanyIdentitySection({
           investorAddress: data.investorAddress ?? "",
           mainActivity: data.mainActivity ?? "",
         });
+
+        setContacts(contactsResult.data);
+        setNotes(notesResult.data);
       } catch (error) {
-        console.error("Firma künye bilgileri alınamadı:", error);
+        console.error("Firma bilgileri alınamadı:", error);
       }
     }
 
-    void fetchIdentity();
+    void fetchCompanyData();
   }, [companyId]);
 
   // İLETİŞİM BİLGİLERİ
   const [contact, setContact] = useState<ContactForm>(initialContactForm);
   const [contactErrors, setContactErrors] = useState<ContactErrors>({});
-  const [contacts, setContacts] = useState<ContactForm[]>([]);
+  const [contacts, setContacts] = useState<CompanyContact[]>([]);
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<ContactForm>(initialContactForm);
   const [editErrors, setEditErrors] = useState<ContactErrors>({});
-
-  // NOTLAR
-  type CompanyNote = {
-    text: string;
-    author: string;
-    createdAt: string;
-  };
 
   const [noteText, setNoteText] = useState("");
   const [noteError, setNoteError] = useState<string | null>(null);
@@ -263,7 +289,7 @@ export function CompanyIdentitySection({
     }
   }
 
-  function handleAddContact() {
+  async function handleAddContact() {
     const validationErrors = validateContactForm(contact);
     setContactErrors(validationErrors);
 
@@ -271,17 +297,26 @@ export function CompanyIdentitySection({
       return;
     }
 
-    setContacts((current) => [
-      ...current,
-      {
-        fullName: contact.fullName.trim(),
-        email: contact.email.trim(),
-        phone: contact.phone.trim(),
-      },
-    ]);
+    try {
+      const result = await apiFetch<{
+        success: boolean;
+        data: CompanyContact;
+      }>(`/companies/${companyId}/contacts`, {
+        method: "POST",
+        body: JSON.stringify({
+          fullName: contact.fullName.trim(),
+          email: contact.email.trim(),
+          phone: contact.phone.trim(),
+        }),
+      });
 
-    setContact(initialContactForm);
-    setContactErrors({});
+      setContacts((current) => [...current, result.data]);
+
+      setContact(initialContactForm);
+      setContactErrors({});
+    } catch (error) {
+      console.error("Yetkili eklenemedi:", error);
+    }
   }
 
   function handleContactFieldChange(field: keyof ContactForm, value: string) {
@@ -306,7 +341,7 @@ export function CompanyIdentitySection({
     setEditErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     if (editingIndex === null) return;
 
     const validationErrors = validateContactForm(editDraft);
@@ -316,22 +351,34 @@ export function CompanyIdentitySection({
       return;
     }
 
-    setContacts((current) =>
-      current.map((item, i) =>
-        i === editingIndex
-          ? {
-              fullName: editDraft.fullName.trim(),
-              email: editDraft.email.trim(),
-              phone: editDraft.phone.trim(),
-            }
-          : item,
-      ),
-    );
+    const contactToUpdate = contacts[editingIndex];
 
-    handleCancelEdit();
+    try {
+      const result = await apiFetch<{
+        success: boolean;
+        data: CompanyContact;
+      }>(`/companies/${companyId}/contacts/${contactToUpdate.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          fullName: editDraft.fullName.trim(),
+          email: editDraft.email.trim(),
+          phone: editDraft.phone.trim(),
+        }),
+      });
+
+      setContacts((current) =>
+        current.map((item) =>
+          item.id === contactToUpdate.id ? result.data : item,
+        ),
+      );
+
+      handleCancelEdit();
+    } catch (error) {
+      console.error("Yetkili güncellenemedi:", error);
+    }
   }
 
-  function handleAddNote() {
+  async function handleAddNote() {
     const text = noteText.trim();
 
     if (!text) {
@@ -349,25 +396,24 @@ export function CompanyIdentitySection({
       return;
     }
 
-    const now = new Date();
-
-    setNotes((current) => [
-      {
-        text,
-        author: "Nazlı Ögel",
-        createdAt: now.toLocaleString("tr-TR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+    try {
+      const result = await apiFetch<{
+        success: boolean;
+        data: CompanyNote;
+      }>(`/companies/${companyId}/notes`, {
+        method: "POST",
+        body: JSON.stringify({
+          text,
         }),
-      },
-      ...current,
-    ]);
+      });
 
-    setNoteText("");
-    setNoteError(null);
+      setNotes((current) => [result.data, ...current]);
+
+      setNoteText("");
+      setNoteError(null);
+    } catch (error) {
+      console.error("Not eklenemedi:", error);
+    }
   }
 
   function handleStartEditNote(index: number) {
@@ -382,7 +428,7 @@ export function CompanyIdentitySection({
     setEditingNoteError(null);
   }
 
-  function handleSaveEditNote() {
+  async function handleSaveEditNote() {
     if (editingNoteIndex === null) return;
 
     const text = editingNoteText.trim();
@@ -402,18 +448,29 @@ export function CompanyIdentitySection({
       return;
     }
 
-    setNotes((current) =>
-      current.map((note, index) =>
-        index === editingNoteIndex
-          ? {
-              ...note,
-              text,
-            }
-          : note,
-      ),
-    );
+    const noteToUpdate = notes[editingNoteIndex];
 
-    handleCancelEditNote();
+    try {
+      const result = await apiFetch<{
+        success: boolean;
+        data: CompanyNote;
+      }>(`/companies/${companyId}/notes/${noteToUpdate.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          text,
+        }),
+      });
+
+      setNotes((current) =>
+        current.map((note) =>
+          note.id === noteToUpdate.id ? result.data : note,
+        ),
+      );
+
+      handleCancelEditNote();
+    } catch (error) {
+      console.error("Not güncellenemedi:", error);
+    }
   }
 
   return (
@@ -594,7 +651,7 @@ export function CompanyIdentitySection({
 
                 return (
                   <div
-                    key={`${companyId}-note-${index}`}
+                    key={note.id}
                     className={`px-4 py-3 transition ${
                       isEditing ? "bg-amber-50/40" : "hover:bg-slate-50/60"
                     }`}
@@ -663,12 +720,22 @@ export function CompanyIdentitySection({
 
                         <div className="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
                           <span className="font-semibold text-slate-500">
-                            {note.author}
+                            {note.author
+                              ? `${note.author.firstName} ${note.author.lastName}`
+                              : "Bilinmeyen Kullanıcı"}
                           </span>
 
                           <span>•</span>
 
-                          <span>{note.createdAt}</span>
+                          <span>
+                            {new Date(note.createdAt).toLocaleString("tr-TR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
                         </div>
                       </>
                     )}
@@ -813,7 +880,7 @@ export function CompanyIdentitySection({
 
                   return (
                     <div
-                      key={`${companyId}-${index}`}
+                      key={item.id}
                       className={`px-3 py-1.5 text-xs transition ${
                         isEditing ? "bg-red-50/40" : "hover:bg-slate-50/60"
                       }`}
