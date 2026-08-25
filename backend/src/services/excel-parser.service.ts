@@ -40,7 +40,7 @@ const EXPECTED_HEADERS = {
   documentEndDate: ["Belge Bitiş"],
   extensionDate: ["Süre Uzatım", "Süre Uzatım Tarihi"],
   supportClass: ["Destekleme Sınıfı"],
-  processStatus: ["İşlem Durumu"],
+  processStatus: ["Belge Durumu", "İşlem Durumu"],
 } as const;
 
 type HeaderKey = keyof typeof EXPECTED_HEADERS;
