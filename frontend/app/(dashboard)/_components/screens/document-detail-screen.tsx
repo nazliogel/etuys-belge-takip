@@ -553,11 +553,11 @@ export function DocumentDetailScreen({
                   <h1 className="text-xl font-extrabold uppercase tracking-[0.25em] text-slate-900 sm:text-2xl">
                     Yatırım Teşvik Belgesi
                   </h1>
-                  <div className="mx-auto mt-4 h-0.5 w-24 bg-slate-900" />
+                   <div className="mt-8 border-t-2 border-slate-800" />
                 </header>
 
-                <div className="mt-8 border-t-2 border-slate-800" />
-                <div className="mt-1 border-t border-slate-800" />
+              
+        
 
                 {/* SAYI / KONU / TARİH */}
                 <div className="mt-8 flex flex-wrap items-start justify-between gap-4 text-sm text-slate-700">
