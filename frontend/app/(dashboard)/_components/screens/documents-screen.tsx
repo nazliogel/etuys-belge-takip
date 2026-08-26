@@ -93,6 +93,14 @@ type ClosedDocumentListResponse = {
     totalCount: number;
   };
 };
+type ExtensionEligibleResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiDocument[];
+    totalCount: number;
+  };
+};
 
 type DocumentDetailResponse = {
   success: boolean;
@@ -171,6 +179,8 @@ export function DocumentsScreen({
   const searchParams = useSearchParams();
 
   const requestedStatus = searchParams.get("status");
+  const requestedView = searchParams.get("view");
+  const isExtensionEligibleView = requestedView === "extension-eligible";
   const status: DocumentStatus | undefined =
     requestedStatus === "ACTIVE" ||
     requestedStatus === "EXPIRING" ||
@@ -184,6 +194,7 @@ export function DocumentsScreen({
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [closedDocumentCount, setClosedDocumentCount] = useState(0);
+  const [extensionEligibleCount, setExtensionEligibleCount] = useState(0);
   const [summary, setSummary] = useState({
     total: 0,
     active: 0,
@@ -262,15 +273,59 @@ export function DocumentsScreen({
         if (searchQuery.trim()) {
           params.set("search", searchQuery.trim());
         }
+        if (isExtensionEligibleView) {
+          const [extensionResponse, summaryResponse, closedResponse] =
+            await Promise.all([
+              apiFetch<ExtensionEligibleResponse>(
+                "/documents/extension-eligible",
+              ),
+              apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+              apiFetch<ClosedDocumentListResponse>(
+                "/closed-documents?page=1&limit=1",
+              ),
+            ]);
 
+          const normalizedSearch = searchQuery
+            .trim()
+            .toLocaleLowerCase("tr-TR");
+
+          const eligibleDocuments = extensionResponse.data.items
+            .filter((document) => {
+              if (!normalizedSearch) return true;
+
+              return [
+                document.documentNumber,
+                document.company?.name,
+                document.company?.taxNumber,
+              ].some((value) =>
+                value?.toLocaleLowerCase("tr-TR").includes(normalizedSearch),
+              );
+            })
+            .map((document) => ({
+              ...document,
+              status: calculateDocumentStatus(document),
+            }));
+
+          setDocuments(eligibleDocuments);
+          setSummary(summaryResponse.data.summary);
+          setClosedDocumentCount(closedResponse.data.totalCount);
+          setExtensionEligibleCount(extensionResponse.data.totalCount);
+          setTotalPages(1);
+          setAuthorizationEndDate(null);
+
+          return;
+        }
         if (status === "INACTIVE") {
-          const [closedResponse, summaryResponse] = await Promise.all([
-            apiFetch<ClosedDocumentListResponse>(
-              `/closed-documents?${params.toString()}`,
-            ),
-
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-          ]);
+          const [closedResponse, summaryResponse, extensionResponse] =
+            await Promise.all([
+              apiFetch<ClosedDocumentListResponse>(
+                `/closed-documents?${params.toString()}`,
+              ),
+              apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+              apiFetch<ExtensionEligibleResponse>(
+                "/documents/extension-eligible",
+              ),
+            ]);
 
           const totalCount = closedResponse.data.totalCount;
           const limit = 20;
@@ -296,7 +351,7 @@ export function DocumentsScreen({
            */
           setSummary(summaryResponse.data.summary);
           setClosedDocumentCount(totalCount);
-
+          setExtensionEligibleCount(extensionResponse.data.totalCount);
           return;
         }
         /*
@@ -307,16 +362,21 @@ export function DocumentsScreen({
           params.set("status", status);
         }
 
-        const [response, closedResponse] = await Promise.all([
-          apiFetch<DocumentListResponse>(`/documents?${params.toString()}`),
-
-          apiFetch<ClosedDocumentListResponse>(
-            "/closed-documents?page=1&limit=1",
-          ),
-        ]);
+        const [response, closedResponse, extensionResponse] = await Promise.all(
+          [
+            apiFetch<DocumentListResponse>(`/documents?${params.toString()}`),
+            apiFetch<ClosedDocumentListResponse>(
+              "/closed-documents?page=1&limit=1",
+            ),
+            apiFetch<ExtensionEligibleResponse>(
+              "/documents/extension-eligible",
+            ),
+          ],
+        );
 
         setSummary(response.data.summary);
         setClosedDocumentCount(closedResponse.data.totalCount);
+        setExtensionEligibleCount(extensionResponse.data.totalCount);
         setTotalPages(response.data.totalPages);
         setDocuments(response.data.items);
 
@@ -346,11 +406,11 @@ export function DocumentsScreen({
     }
 
     void loadDocuments();
-  }, [companyId, currentPage, status, searchQuery]);
+  }, [companyId, currentPage, status, searchQuery, isExtensionEligibleView]);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
-  }, [status, searchQuery]);
+  }, [status, searchQuery, isExtensionEligibleView]);
   function handleOpenDocument(
     documentId: string,
     documentNumber: string | null,
@@ -419,53 +479,62 @@ export function DocumentsScreen({
 
       {/* OPERASYON ÖZETİ */}
       {variant === "admin" && (
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div
-          className={`grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-4 md:divide-y-0 ${
-            variant === "admin" ? "xl:grid-cols-5" : "xl:grid-cols-4"
-          }`}
-        >
-          <OperationStat
-            label="Toplam Belge"
-            value={String(summary.total)}
-            icon={<FileText size={15} />}
-            onClick={() => router.push("/documents")}
-          />
-
-          <OperationStat
-            label="Aktif"
-            value={String(summary.active)}
-            icon={<FileCheck2 size={15} />}
-            valueClass="text-emerald-600"
-            onClick={() => router.push("/documents?status=ACTIVE")}
-          />
-
-          <OperationStat
-            label="Süresi Dolmuş"
-            value={String(summary.expired)}
-            icon={<ShieldCheck size={15} />}
-            valueClass="text-red-600"
-            onClick={() => router.push("/documents?status=EXPIRED")}
-          />
-
-          {variant === "admin" && (
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div
+            className={`grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-4 md:divide-y-0 ${
+              variant === "admin" ? "xl:grid-cols-6" : "xl:grid-cols-4"
+            }`}
+          >
             <OperationStat
-              label="Kapalı / İptal"
-              value={String(closedDocumentCount)}
-              icon={<ShieldCheck size={15} />}
-              valueClass="text-slate-600"
-              onClick={() => router.push("/documents?status=INACTIVE")}
+              label="Toplam Belge"
+              value={String(summary.total)}
+              icon={<FileText size={15} />}
+              onClick={() => router.push("/documents")}
             />
-          )}
-          <OperationStat
-            label="Süresi Yaklaşan"
-            value={String(summary.expiring)}
-            icon={<CalendarDays size={15} />}
-            valueClass="text-amber-600"
-            onClick={() => router.push("/documents?status=EXPIRING")}
-          />
-        </div>
-      </section>
+
+            <OperationStat
+              label="Süre Uzatma"
+              value={String(extensionEligibleCount)}
+              icon={<CalendarDays size={15} />}
+              valueClass="text-red-600"
+              onClick={() => router.push("/documents?view=extension-eligible")}
+            />
+
+            <OperationStat
+              label="Süresi Yaklaşan"
+              value={String(summary.expiring)}
+              icon={<CalendarDays size={15} />}
+              valueClass="text-amber-600"
+              onClick={() => router.push("/documents?status=EXPIRING")}
+            />
+
+            <OperationStat
+              label="Süresi Dolmuş"
+              value={String(summary.expired)}
+              icon={<ShieldCheck size={15} />}
+              valueClass="text-red-600"
+              onClick={() => router.push("/documents?status=EXPIRED")}
+            />
+
+            <OperationStat
+              label="Aktif"
+              value={String(summary.active)}
+              icon={<FileCheck2 size={15} />}
+              valueClass="text-emerald-600"
+              onClick={() => router.push("/documents?status=ACTIVE")}
+            />
+
+            {variant === "admin" && (
+              <OperationStat
+                label="Kapalı / İptal"
+                value={String(closedDocumentCount)}
+                icon={<ShieldCheck size={15} />}
+                valueClass="text-slate-600"
+                onClick={() => router.push("/documents?status=INACTIVE")}
+              />
+            )}
+          </div>
+        </section>
       )}
 
       {/* BELGE LİSTESİ */}

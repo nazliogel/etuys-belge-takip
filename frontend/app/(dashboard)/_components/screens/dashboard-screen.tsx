@@ -377,9 +377,9 @@ export function DashboardScreen() {
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
     () => readDashboardCache()?.upcomingDeadlines ?? [],
   );
-  const [recentImports, setRecentImports] = useState<ApiImportBatch[]>(
-    () => readDashboardCache()?.recentImports ?? [],
-  );
+ const [, setRecentImports] = useState<ApiImportBatch[]>(
+  () => readDashboardCache()?.recentImports ?? [],
+);
   const [recentChanges, setRecentChanges] = useState<ApiImportChange[]>(
     () => readDashboardCache()?.recentChanges ?? [],
   );
@@ -424,7 +424,6 @@ export function DashboardScreen() {
           ),
 
           apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
-
           apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=5"),
         ]);
 
@@ -549,14 +548,14 @@ export function DashboardScreen() {
       clickable: true,
     },
     {
-      title: "Süre Uzatma Müracatı Yapılabilecekler",
+      title: "Süre Uzatma Müracaatı Yapılabilecekler",
       value:
         extensionEligibleDocuments === null
           ? "..."
           : String(extensionEligibleDocuments),
       description: "Süre uzatma başvurusu yapılabilecek belgeler",
       icon: CalendarClock,
-      href: "/documents/extension-eligible",
+       href: "/documents?view=extension-eligible",
       clickable: true,
     },
     {
@@ -621,7 +620,7 @@ export function DashboardScreen() {
           : String(extensionEligibleDocuments),
       description: "Süre uzatma başvurusu yapılabilecek belge",
       icon: CalendarClock,
-      href: "/documents/extension-eligible",
+      href: "/documents?view=extension-eligible",
       clickable: true,
     },
   ];
