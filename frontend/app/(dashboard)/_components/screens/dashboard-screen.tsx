@@ -158,7 +158,14 @@ type ApiImportChange = {
     documentNumber: string | null;
   } | null;
 };
-
+type RecentImportChange = ApiImportChange & {
+  importBatch: {
+    id: number;
+    fileName: string;
+    uploadedAt: string;
+    status: ImportBatchStatus;
+  };
+};
 type ImportChangesApiResponse = {
   success: boolean;
   message: string;
@@ -310,7 +317,7 @@ type SummaryItem = {
  * component her mount olduğunda önce bu cache okunur (varsa) ve state
  * o veriyle başlatılır; API cevabı geldiğinde arka planda güncellenir.
  */
-const DASHBOARD_CACHE_KEY = "dashboard-overview-cache";
+const DASHBOARD_CACHE_KEY = "dashboard-overview-cache-v2";
 
 type DashboardCache = {
   totalCompanies: number;
@@ -323,8 +330,7 @@ type DashboardCache = {
   extensionEligibleDocuments: number;
   upcomingDeadlines: ApiDocument[];
   recentImports: ApiImportBatch[];
-  latestImportBatch: ApiImportBatch | null;
-  recentChanges: ApiImportChange[];
+  recentChanges: RecentImportChange[];
 };
 
 function readDashboardCache(): DashboardCache | null {
@@ -377,16 +383,13 @@ export function DashboardScreen() {
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
     () => readDashboardCache()?.upcomingDeadlines ?? [],
   );
- const [, setRecentImports] = useState<ApiImportBatch[]>(
-  () => readDashboardCache()?.recentImports ?? [],
-);
-  const [recentChanges, setRecentChanges] = useState<ApiImportChange[]>(
+  const [recentImports, setRecentImports] = useState<ApiImportBatch[]>(
+    () => readDashboardCache()?.recentImports ?? [],
+  );
+
+  const [recentChanges, setRecentChanges] = useState<RecentImportChange[]>(
     () => readDashboardCache()?.recentChanges ?? [],
   );
-  const [latestImportBatch, setLatestImportBatch] =
-    useState<ApiImportBatch | null>(
-      () => readDashboardCache()?.latestImportBatch ?? null,
-    );
 
   // Sadece hiç cache yoksa (ör. ilk ziyaret) "Yükleniyor..." göster.
   // Cache varsa, veri zaten ekranda; bu flag arka plandaki yenilemeyi
@@ -424,7 +427,7 @@ export function DashboardScreen() {
           ),
 
           apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
-          apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=5"),
+          apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=3"),
         ]);
 
         const sortedExpiringItems = [...expiringResponse.data.items].sort(
@@ -446,17 +449,27 @@ export function DashboardScreen() {
           },
         );
 
-        const latestBatch = importResponse.data.items[0] ?? null;
+        const lastThreeImports = importResponse.data.items.slice(0, 3);
 
-        let changes: ApiImportChange[] = [];
+        const changeResponses = await Promise.all(
+          lastThreeImports.map(async (importBatch) => {
+            const changesResponse = await apiFetch<ImportChangesApiResponse>(
+              `/imports/${importBatch.id}/changes`,
+            );
 
-        if (latestBatch) {
-          const changesResponse = await apiFetch<ImportChangesApiResponse>(
-            `/imports/${latestBatch.id}/changes`,
-          );
+            return changesResponse.data.changes.map((change) => ({
+              ...change,
+              importBatch: {
+                id: importBatch.id,
+                fileName: importBatch.fileName,
+                uploadedAt: importBatch.uploadedAt,
+                status: importBatch.status,
+              },
+            }));
+          }),
+        );
 
-          changes = changesResponse.data.changes;
-        }
+        const changes: RecentImportChange[] = changeResponses.flat();
 
         const cache: DashboardCache = {
           totalCompanies: companyResponse.data.totalCount,
@@ -468,8 +481,7 @@ export function DashboardScreen() {
           closedCancelledDocuments: closedDocumentResponse.data.totalCount,
           extensionEligibleDocuments: extensionEligibleResponse.data.totalCount,
           upcomingDeadlines: sortedExpiringItems,
-          recentImports: importResponse.data.items,
-          latestImportBatch: latestBatch,
+          recentImports: lastThreeImports,
           recentChanges: changes,
         };
 
@@ -483,7 +495,6 @@ export function DashboardScreen() {
         setExtensionEligibleDocuments(cache.extensionEligibleDocuments);
         setUpcomingDeadlines(cache.upcomingDeadlines);
         setRecentImports(cache.recentImports);
-        setLatestImportBatch(cache.latestImportBatch);
         setRecentChanges(cache.recentChanges);
 
         try {
@@ -508,7 +519,7 @@ export function DashboardScreen() {
           setExtensionEligibleDocuments(0);
           setUpcomingDeadlines([]);
           setRecentImports([]);
-          setLatestImportBatch(null);
+
           setRecentChanges([]);
         }
       } finally {
@@ -555,7 +566,7 @@ export function DashboardScreen() {
           : String(extensionEligibleDocuments),
       description: "Süre uzatma başvurusu yapılabilecek belgeler",
       icon: CalendarClock,
-       href: "/documents?view=extension-eligible",
+      href: "/documents?view=extension-eligible",
       clickable: true,
     },
     {
@@ -812,23 +823,13 @@ export function DashboardScreen() {
                     Son İşlemler
                   </h2>
                   <p className="mt-0.5 text-xs text-slate-500">
-                    {latestImportBatch
-                      ? `${latestImportBatch.fileName} • ${formatEventDate(latestImportBatch.uploadedAt)}`
-                      : "Sistem üzerinde gerçekleştirilen son hareketler."}
+                    Son {recentImports.length} Excel yüklemesinde yapılan
+                    değişiklikler.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                {latestImportBatch && (
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      getBatchStatusBadge(latestImportBatch.status).className
-                    }`}
-                  >
-                    {getBatchStatusBadge(latestImportBatch.status).label}
-                  </span>
-                )}
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                   {recentChanges.length} Değişiklik
                 </span>
@@ -842,7 +843,7 @@ export function DashboardScreen() {
                 </p>
               ) : recentChanges.length === 0 ? (
                 <p className="py-6 text-center text-xs text-slate-400">
-                  Son Excel yüklemesinde değişiklik bulunmuyor.
+                  Son 3 Excel yüklemesinde değişiklik bulunmuyor.
                 </p>
               ) : (
                 recentChanges.map((change) => (
@@ -855,11 +856,31 @@ export function DashboardScreen() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm text-slate-900">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          {change.importBatch.fileName}
+                        </span>
+
+                        <span className="text-[10px] text-slate-400">
+                          {formatEventDate(change.importBatch.uploadedAt)}
+                        </span>
+
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            getBatchStatusBadge(change.importBatch.status)
+                              .className
+                          }`}
+                        >
+                          {getBatchStatusBadge(change.importBatch.status).label}
+                        </span>
+                      </div>
+
+                      <p className="text-sm font-semibold text-slate-900">
                         {change.company?.name ??
                           change.document?.documentNumber ??
                           "Kayıt"}
                       </p>
+
                       <p className="mt-0.5 text-xs text-slate-500">
                         {getChangeFieldLabel(change.fieldName)}:{" "}
                         <span className="text-slate-400 line-through">
