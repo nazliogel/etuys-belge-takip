@@ -149,8 +149,7 @@ function calculateDocumentStatus(document: {
     return "INACTIVE";
   }
 
-  // Süre uzatımı varsa onu, yoksa normal bitiş tarihini kullan
-  const effectiveEndDate = document.extensionDate ?? document.documentEndDate;
+  const effectiveEndDate = document.documentEndDate;
 
   if (!effectiveEndDate) {
     return "ACTIVE";
@@ -224,49 +223,118 @@ export function DocumentsScreen({
       try {
         // ADMIN tarafından firma seçilmişse
         if (companyId) {
-          const response = await apiFetch<CompanyDetailResponse>(
-            `/companies/${companyId}`,
+          const [companyResponse, closedResponse] = await Promise.all([
+            apiFetch<CompanyDetailResponse>(`/companies/${companyId}`),
+
+            // Kapalı belgeleri ayrı endpoint'ten al
+            apiFetch<ClosedDocumentListResponse>(
+              "/closed-documents?page=1&limit=1000",
+            ),
+          ]);
+
+          /*
+           * Sadece seçilen firmaya ait kapalı/iptal belgeler
+           */
+          const companyClosedDocuments = closedResponse.data.items.filter(
+            (document) => document.company?.id === Number(companyId),
           );
 
-          const mappedDocuments: ApiDocument[] = response.data.documents.map(
-            (document) => ({
-              ...document,
+          /*
+           * Kapalı belgelerin externalDocumentId değerleri
+           */
+          const closedExternalDocumentIds = new Set(
+            companyClosedDocuments.map(
+              (document) => document.externalDocumentId,
+            ),
+          );
 
-              // Veritabanındaki OPEN/INACTIVE/CANCELLED değerini sakla
+          /*
+           * Firma endpoint'inden gelen belgelerden kapalı/iptal
+           * tablosunda bulunanları çıkar.
+           */
+          const openCompanyDocuments: ApiDocument[] =
+            companyResponse.data.documents
+              .filter(
+                (document) =>
+                  !closedExternalDocumentIds.has(document.externalDocumentId) &&
+                  document.status !== "CLOSED" &&
+                  document.status !== "CANCELLED",
+              )
+              .map((document) => ({
+                ...document,
+                documentStatus: document.status,
+                status: calculateDocumentStatus(document),
+
+                company: {
+                  id: companyResponse.data.id,
+                  externalCompanyId: companyResponse.data.externalCompanyId,
+                  name: companyResponse.data.name,
+                  taxNumber: companyResponse.data.taxNumber,
+                },
+              }));
+
+          /*
+           * Kapalı belgeleri ayrı şekilde hazırla.
+           */
+          const closedCompanyDocuments: ApiDocument[] =
+            companyClosedDocuments.map((document) => ({
+              ...document,
+              isActive: false,
+              status: "INACTIVE" as const,
               documentStatus: document.status,
 
-              // Tarihe göre ekranda gösterilecek durumu hesapla
-              status: calculateDocumentStatus(document),
-
-              company: {
-                id: response.data.id,
-                externalCompanyId: response.data.externalCompanyId,
-                name: response.data.name,
-                taxNumber: response.data.taxNumber,
+              company: document.company ?? {
+                id: companyResponse.data.id,
+                externalCompanyId: companyResponse.data.externalCompanyId,
+                name: companyResponse.data.name,
+                taxNumber: companyResponse.data.taxNumber,
               },
-            }),
-          );
+            }));
 
-          setDocuments(mappedDocuments);
+          /*
+           * Kullanıcı Kapalı/İptal kartına bastıysa yalnızca kapalıları,
+           * diğer durumlarda açık belgeleri göster.
+           */
+          const selectedDocuments =
+            status === "INACTIVE"
+              ? closedCompanyDocuments
+              : status
+                ? openCompanyDocuments.filter(
+                    (document) => document.status === status,
+                  )
+                : [...openCompanyDocuments, ...closedCompanyDocuments];
+
+          setDocuments(selectedDocuments);
+          const activeCount = openCompanyDocuments.filter(
+            (document) => document.status === "ACTIVE",
+          ).length;
+
+          const expiringCount = openCompanyDocuments.filter(
+            (document) => document.status === "EXPIRING",
+          ).length;
+
+          const expiredCount = openCompanyDocuments.filter(
+            (document) => document.status === "EXPIRED",
+          ).length;
+
+          const inactiveCount = closedCompanyDocuments.length;
+
+          const totalDocumentCount =
+            activeCount + expiringCount + expiredCount + inactiveCount;
 
           setSummary({
-            total: mappedDocuments.length,
-            active: mappedDocuments.filter(
-              (document) => document.status === "ACTIVE",
-            ).length,
-            expiring: mappedDocuments.filter(
-              (document) => document.status === "EXPIRING",
-            ).length,
-            expired: mappedDocuments.filter(
-              (document) => document.status === "EXPIRED",
-            ).length,
-            inactive: mappedDocuments.filter(
-              (document) => document.status === "INACTIVE",
-            ).length,
+            total: totalDocumentCount,
+            active: activeCount,
+            expiring: expiringCount,
+            expired: expiredCount,
+            inactive: inactiveCount,
           });
 
+          setClosedDocumentCount(inactiveCount);
           setTotalPages(1);
-          setAuthorizationEndDate(response.data.authorizationEndDate);
+
+          setAuthorizationEndDate(companyResponse.data.authorizationEndDate);
+
           return;
         }
 
@@ -286,7 +354,7 @@ export function DocumentsScreen({
               ),
               apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
               apiFetch<ClosedDocumentListResponse>(
-                "/closed-documents?page=1&limit=1",
+                "/closed-documents?page=1&limit=1000",
               ),
             ]);
 
@@ -294,7 +362,18 @@ export function DocumentsScreen({
             .trim()
             .toLocaleLowerCase("tr-TR");
 
-          const eligibleDocuments = extensionResponse.data.items
+          const closedExternalDocumentIds = new Set(
+            closedResponse.data.items.map(
+              (document) => document.externalDocumentId,
+            ),
+          );
+
+          const openEligibleDocuments = extensionResponse.data.items.filter(
+            (document) =>
+              !closedExternalDocumentIds.has(document.externalDocumentId),
+          );
+
+          const eligibleDocuments = openEligibleDocuments
             .filter((document) => {
               if (!normalizedSearch) return true;
 
@@ -314,10 +393,9 @@ export function DocumentsScreen({
           setDocuments(eligibleDocuments);
           setSummary(summaryResponse.data.summary);
           setClosedDocumentCount(closedResponse.data.totalCount);
-          setExtensionEligibleCount(extensionResponse.data.totalCount);
+          setExtensionEligibleCount(openEligibleDocuments.length);
           setTotalPages(1);
           setAuthorizationEndDate(null);
-
           return;
         }
         if (status === "INACTIVE") {
@@ -379,22 +457,104 @@ export function DocumentsScreen({
           [
             apiFetch<DocumentListResponse>(`/documents?${params.toString()}`),
             apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
+              "/closed-documents?page=1&limit=1000",
             ),
             apiFetch<ExtensionEligibleResponse>(
               "/documents/extension-eligible",
             ),
           ],
         );
+        /*
+         * Kapalı/iptal belge ID'lerini belirle.
+         */
+        const closedExternalDocumentIds = new Set(
+          closedResponse.data.items.map(
+            (document) => document.externalDocumentId,
+          ),
+        );
 
-        setSummary(response.data.summary);
-        setClosedDocumentCount(closedResponse.data.totalCount);
-        setExtensionEligibleCount(extensionResponse.data.totalCount);
+        /*
+         * Kapalı/iptal belgeleri açık belge listesinden çıkar.
+         */
+        const visibleOpenDocuments = response.data.items.filter(
+          (document) =>
+            !closedExternalDocumentIds.has(document.externalDocumentId),
+        );
+
+        /*
+         * Kapalı belgelerin backend özetinde hangi tarih durumuna
+         * dahil edildiğini hesapla.
+         */
+        const closedStatusCounts = {
+          active: 0,
+          expiring: 0,
+          expired: 0,
+        };
+
+        closedResponse.data.items.forEach((document) => {
+          const calculatedStatus = calculateDocumentStatus({
+            ...document,
+            isActive: true,
+            status: "OPEN",
+          });
+
+          if (calculatedStatus === "ACTIVE") {
+            closedStatusCounts.active += 1;
+          }
+
+          if (calculatedStatus === "EXPIRING") {
+            closedStatusCounts.expiring += 1;
+          }
+
+          if (calculatedStatus === "EXPIRED") {
+            closedStatusCounts.expired += 1;
+          }
+        });
+
+        /*
+         * Kapalı belgeleri aktif/yaklaşan/dolmuş sayılarından çıkar.
+         */
+        const activeCount = Math.max(
+          response.data.summary.active - closedStatusCounts.active,
+          0,
+        );
+
+        const expiringCount = Math.max(
+          response.data.summary.expiring - closedStatusCounts.expiring,
+          0,
+        );
+
+        const expiredCount = Math.max(
+          response.data.summary.expired - closedStatusCounts.expired,
+          0,
+        );
+
+        const inactiveCount = closedResponse.data.totalCount;
+
+        /*
+         * Toplam belge; açık durumlar ve kapalı/iptal belgelerin toplamıdır.
+         */
+        const totalDocumentCount =
+          activeCount + expiringCount + expiredCount + inactiveCount;
+
+        setSummary({
+          total: totalDocumentCount,
+          active: activeCount,
+          expiring: expiringCount,
+          expired: expiredCount,
+          inactive: inactiveCount,
+        });
+        const openExtensionEligibleCount = extensionResponse.data.items.filter(
+          (document) =>
+            !closedExternalDocumentIds.has(document.externalDocumentId),
+        ).length;
+        setClosedDocumentCount(inactiveCount);
+        setExtensionEligibleCount(openExtensionEligibleCount);
         setTotalPages(response.data.totalPages);
-        setDocuments(response.data.items);
+        setDocuments(visibleOpenDocuments);
 
-        if (response.data.items.length > 0) {
-          const firstDocumentId = response.data.items[0].id;
+        if (visibleOpenDocuments.length > 0) {
+          const firstDocumentId = visibleOpenDocuments[0].id;
 
           const detailResponse = await apiFetch<DocumentDetailResponse>(
             `/documents/${firstDocumentId}`,
@@ -469,7 +629,14 @@ export function DocumentsScreen({
       return remaining;
     });
   }
+  function goToDocumentView(params?: string) {
+    const path = companyId ? "/companies" : "/documents";
+    const url = params ? `${path}?${params}` : path;
 
+    router.replace(url, {
+      scroll: false,
+    });
+  }
   return (
     <div className="space-y-5">
       {/* BAŞLIK */}
@@ -504,7 +671,7 @@ export function DocumentsScreen({
               label="Toplam Belge"
               value={String(summary.total)}
               icon={<FileText size={15} />}
-              onClick={() => router.push("/documents")}
+              onClick={() => goToDocumentView()}
             />
 
             <OperationStat
@@ -512,7 +679,7 @@ export function DocumentsScreen({
               value={String(extensionEligibleCount)}
               icon={<CalendarDays size={15} />}
               valueClass="text-red-600"
-              onClick={() => router.push("/documents?view=extension-eligible")}
+              onClick={() => goToDocumentView("view=extension-eligible")}
             />
 
             <OperationStat
@@ -520,7 +687,7 @@ export function DocumentsScreen({
               value={String(summary.expiring)}
               icon={<CalendarDays size={15} />}
               valueClass="text-amber-600"
-              onClick={() => router.push("/documents?status=EXPIRING")}
+              onClick={() => goToDocumentView("status=EXPIRING")}
             />
 
             <OperationStat
@@ -528,7 +695,7 @@ export function DocumentsScreen({
               value={String(summary.expired)}
               icon={<ShieldCheck size={15} />}
               valueClass="text-red-600"
-              onClick={() => router.push("/documents?status=EXPIRED")}
+              onClick={() => goToDocumentView("status=EXPIRED")}
             />
 
             <OperationStat
@@ -536,7 +703,7 @@ export function DocumentsScreen({
               value={String(summary.active)}
               icon={<FileCheck2 size={15} />}
               valueClass="text-emerald-600"
-              onClick={() => router.push("/documents?status=ACTIVE")}
+              onClick={() => goToDocumentView("status=ACTIVE")}
             />
 
             {variant === "admin" && (
@@ -545,7 +712,7 @@ export function DocumentsScreen({
                 value={String(closedDocumentCount)}
                 icon={<ShieldCheck size={15} />}
                 valueClass="text-slate-600"
-                onClick={() => router.push("/documents?status=INACTIVE")}
+                onClick={() => goToDocumentView("status=INACTIVE")}
               />
             )}
           </div>
