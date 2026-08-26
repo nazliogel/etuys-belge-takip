@@ -111,3 +111,38 @@ export type Notification = Prisma.NotificationModel
  * 
  */
 export type SystemSetting = Prisma.SystemSettingModel
+/**
+ * Model DocumentDetail
+ * 
+ */
+export type DocumentDetail = Prisma.DocumentDetailModel
+/**
+ * Model DocumentProduct
+ * 
+ */
+export type DocumentProduct = Prisma.DocumentProductModel
+/**
+ * Model DocumentSupport
+ * 
+ */
+export type DocumentSupport = Prisma.DocumentSupportModel
+/**
+ * Model DocumentFinancialInfo
+ * 
+ */
+export type DocumentFinancialInfo = Prisma.DocumentFinancialInfoModel
+/**
+ * Model DocumentDomesticMachine
+ * 
+ */
+export type DocumentDomesticMachine = Prisma.DocumentDomesticMachineModel
+/**
+ * Model DocumentImportedMachine
+ * 
+ */
+export type DocumentImportedMachine = Prisma.DocumentImportedMachineModel
+/**
+ * Model DocumentSpecialCondition
+ * 
+ */
+export type DocumentSpecialCondition = Prisma.DocumentSpecialConditionModel

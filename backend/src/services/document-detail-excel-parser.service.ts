@@ -1,0 +1,1077 @@
+import ExcelJS from "exceljs";
+
+export type RawExcelData = Record<string, unknown>;
+
+export type ParsedDocumentRow = {
+  sheetName: "Belgeler";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  investmentType: string | null;
+  rawData: RawExcelData;
+};
+
+export type ParsedProductRow = {
+  sheetName: "Urunler";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+
+  productName: string | null;
+  us97Code: string | null;
+  us97Description: string | null;
+  naceCode: string | null;
+  naceDescription: string | null;
+  unit: string | null;
+
+  existingCapacity: number | null;
+  additionalCapacity: number | null;
+  totalCapacity: number | null;
+
+  rawData: RawExcelData;
+};
+
+export type ParsedSupportRow = {
+  sheetName: "Destek Unsurlari";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+
+  supportType: string | null;
+  supportTypeCode: string | null;
+  supportRate: string | null;
+  supportRateCode: string | null;
+  supportDescription: string | null;
+
+  rawData: RawExcelData;
+};
+
+export type ParsedFinancialInfoRow = {
+  sheetName: "Finansal Bilgiler";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+
+  externalFinancialInfoId: string | null;
+  totalInvestment: number | null;
+  totalFinancing: number | null;
+  equity: number | null;
+  foreignResources: number | null;
+
+  rawData: RawExcelData;
+};
+
+export type ParsedDomesticMachineRow = {
+  sheetName: "Yerli Liste";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+
+  externalMachineId: number | null;
+  sequenceNumber: number | null;
+  name: string | null;
+  quantity: number | null;
+  unit: string | null;
+  unitPriceTl: number | null;
+  totalTl: number | null;
+  gtipCode: string | null;
+  gtipDescription: string | null;
+
+  rawData: RawExcelData;
+};
+
+export type ParsedImportedMachineRow = {
+  sheetName: "Ithal Liste";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+
+  externalMachineId: number | null;
+  sequenceNumber: number | null;
+  name: string | null;
+  quantity: number | null;
+  unit: string | null;
+
+  gtipCode: string | null;
+  gtipDescription: string | null;
+
+  currency: string | null;
+  fobAmount: number | null;
+  fobAmountTl: number | null;
+  cifAmountTl: number | null;
+
+  usedMachine: string | null;
+
+  rawData: RawExcelData;
+};
+
+export type ParsedSpecialConditionRow = {
+  sheetName: "Ozel Sartlar";
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number;
+  documentNumber: string | null;
+
+  conditionCode: string | null;
+  conditionName: string | null;
+  description: string | null;
+
+  rawData: RawExcelData;
+};
+
+export type ParsedDocumentDetailResult = {
+  documents: ParsedDocumentRow[];
+  products: ParsedProductRow[];
+  supports: ParsedSupportRow[];
+  financialInfos: ParsedFinancialInfoRow[];
+  domesticMachines: ParsedDomesticMachineRow[];
+  importedMachines: ParsedImportedMachineRow[];
+  specialConditions: ParsedSpecialConditionRow[];
+
+  totalRowCount: number;
+};
+
+type HeaderMap = Map<string, number>;
+
+function unwrapCellValue(value: unknown): unknown {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (typeof value !== "object") {
+    return value;
+  }
+
+  const objectValue = value as Record<string, unknown>;
+
+  if ("result" in objectValue) {
+    return unwrapCellValue(objectValue.result);
+  }
+
+  if ("text" in objectValue && typeof objectValue.text === "string") {
+    return objectValue.text;
+  }
+
+  if ("richText" in objectValue && Array.isArray(objectValue.richText)) {
+    return objectValue.richText
+      .map((item) => {
+        if (item && typeof item === "object" && "text" in item) {
+          return String((item as { text?: unknown }).text ?? "");
+        }
+
+        return "";
+      })
+      .join("");
+  }
+
+  if ("hyperlink" in objectValue && "text" in objectValue) {
+    return objectValue.text;
+  }
+
+  return value;
+}
+
+function normalizeValue(value: unknown): string | null {
+  const unwrapped = unwrapCellValue(value);
+
+  if (unwrapped === null || unwrapped === undefined || unwrapped === "") {
+    return null;
+  }
+
+  if (unwrapped instanceof Date) {
+    return unwrapped.toISOString();
+  }
+
+  const normalized = String(unwrapped).trim();
+
+  return normalized || null;
+}
+
+function normalizeInteger(value: unknown): number | null {
+  const normalized = normalizeValue(value);
+
+  if (!normalized) {
+    return null;
+  }
+
+  const cleaned = normalized.replace(/\s/g, "").replace(/\.0+$/, "");
+
+  const parsed = Number(cleaned);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return Math.trunc(parsed);
+}
+
+function normalizeDecimal(value: unknown): number | null {
+  const unwrapped = unwrapCellValue(value);
+
+  if (unwrapped === null || unwrapped === undefined || unwrapped === "") {
+    return null;
+  }
+
+  if (typeof unwrapped === "number") {
+    return Number.isFinite(unwrapped) ? unwrapped : null;
+  }
+
+  let normalized = String(unwrapped)
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/₺/g, "")
+    .replace(/TL/gi, "");
+
+  if (!normalized) {
+    return null;
+  }
+
+  /*
+   * Örnekler:
+   * 1.234.567,89 -> 1234567.89
+   * 1,234,567.89 -> 1234567.89
+   * 1234,56      -> 1234.56
+   */
+  const lastComma = normalized.lastIndexOf(",");
+  const lastDot = normalized.lastIndexOf(".");
+
+  if (lastComma > lastDot) {
+    normalized = normalized.replace(/\./g, "").replace(",", ".");
+  } else if (lastDot > lastComma && lastComma !== -1) {
+    normalized = normalized.replace(/,/g, "");
+  } else if (lastComma !== -1 && lastDot === -1) {
+    normalized = normalized.replace(",", ".");
+  }
+
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toJsonValue(value: unknown): unknown {
+  const unwrapped = unwrapCellValue(value);
+
+  if (unwrapped === null || unwrapped === undefined) {
+    return null;
+  }
+
+  if (unwrapped instanceof Date) {
+    return unwrapped.toISOString();
+  }
+
+  if (
+    typeof unwrapped === "string" ||
+    typeof unwrapped === "number" ||
+    typeof unwrapped === "boolean"
+  ) {
+    return unwrapped;
+  }
+
+  return String(unwrapped);
+}
+
+function normalizeHeader(value: unknown): string {
+  return (
+    normalizeValue(value)
+      ?.toLocaleLowerCase("tr-TR")
+      .replace(/\s+/g, " ")
+      .trim() ?? ""
+  );
+}
+
+function buildHeaderMap(worksheet: ExcelJS.Worksheet): HeaderMap {
+  const map: HeaderMap = new Map();
+
+  const headerRow = worksheet.getRow(1);
+
+  for (
+    let columnNumber = 1;
+    columnNumber <= worksheet.columnCount;
+    columnNumber += 1
+  ) {
+    const originalHeader = normalizeValue(
+      headerRow.getCell(columnNumber).value,
+    );
+
+    if (!originalHeader) {
+      continue;
+    }
+
+    map.set(normalizeHeader(originalHeader), columnNumber);
+  }
+
+  return map;
+}
+
+function findColumn(headerMap: HeaderMap, aliases: string[]): number | null {
+  for (const alias of aliases) {
+    const column = headerMap.get(normalizeHeader(alias));
+
+    if (column !== undefined) {
+      return column;
+    }
+  }
+
+  return null;
+}
+
+function getCellByAliases(
+  row: ExcelJS.Row,
+  headerMap: HeaderMap,
+  aliases: string[],
+): unknown {
+  const column = findColumn(headerMap, aliases);
+
+  if (column === null) {
+    return null;
+  }
+
+  return row.getCell(column).value;
+}
+
+function requireColumn(
+  worksheet: ExcelJS.Worksheet,
+  headerMap: HeaderMap,
+  aliases: string[],
+  fieldName: string,
+): number {
+  const column = findColumn(headerMap, aliases);
+
+  if (column === null) {
+    throw new Error(
+      `"${worksheet.name}" sayfasında "${fieldName}" sütunu bulunamadı. Kabul edilen başlıklar: ${aliases.join(
+        ", ",
+      )}`,
+    );
+  }
+
+  return column;
+}
+
+function rowToRawData(
+  worksheet: ExcelJS.Worksheet,
+  row: ExcelJS.Row,
+): RawExcelData {
+  const rawData: RawExcelData = {};
+
+  const headerRow = worksheet.getRow(1);
+
+  for (
+    let columnNumber = 1;
+    columnNumber <= worksheet.columnCount;
+    columnNumber += 1
+  ) {
+    const header = normalizeValue(headerRow.getCell(columnNumber).value);
+
+    if (!header) {
+      continue;
+    }
+
+    rawData[header] = toJsonValue(row.getCell(columnNumber).value);
+  }
+
+  return rawData;
+}
+
+function getExternalDocumentId(
+  worksheet: ExcelJS.Worksheet,
+  row: ExcelJS.Row,
+  headerMap: HeaderMap,
+): number | null {
+  const value = getCellByAliases(row, headerMap, [
+    "Belge ID",
+    "Belge Id",
+    "BelgeID",
+    "BelgeId",
+  ]);
+
+  const id = normalizeInteger(value);
+
+  if (id === null) {
+    return null;
+  }
+
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error(
+      `"${worksheet.name}" sayfasında ${row.number}. satırdaki Belge ID geçersiz: ${String(
+        value ?? "",
+      )}`,
+    );
+  }
+
+  return id;
+}
+
+function getCommonValues(
+  worksheet: ExcelJS.Worksheet,
+  row: ExcelJS.Row,
+  headerMap: HeaderMap,
+) {
+  const externalDocumentId = getExternalDocumentId(worksheet, row, headerMap);
+
+  if (externalDocumentId === null) {
+    return null;
+  }
+
+  return {
+    externalCompanyId: normalizeInteger(
+      getCellByAliases(row, headerMap, ["Firma ID", "Firma Id", "FirmaID"]),
+    ),
+
+    companyName: normalizeValue(
+      getCellByAliases(row, headerMap, ["Firma Adı", "Firma Adi"]),
+    ),
+
+    externalDocumentId,
+
+    documentNumber: normalizeValue(
+      getCellByAliases(row, headerMap, [
+        "Belge No",
+        "Belge Numarası",
+        "Belge Numarasi",
+      ]),
+    ),
+
+    rawData: rowToRawData(worksheet, row),
+  };
+}
+
+export class DocumentDetailExcelParserService {
+  async parse(filePath: string): Promise<ParsedDocumentDetailResult> {
+    const workbook = new ExcelJS.Workbook();
+
+    await workbook.xlsx.readFile(filePath);
+
+    const documentsSheet = this.getRequiredWorksheet(workbook, ["Belgeler"]);
+
+    const productsSheet = this.getRequiredWorksheet(workbook, [
+      "Urunler",
+      "Ürünler",
+    ]);
+
+    const supportsSheet = this.getRequiredWorksheet(workbook, [
+      "Destek Unsurlari",
+      "Destek Unsurları",
+    ]);
+
+    const financialSheet = this.getRequiredWorksheet(workbook, [
+      "Finansal Bilgiler",
+    ]);
+
+    const domesticSheet = this.getRequiredWorksheet(workbook, ["Yerli Liste"]);
+
+    const importedSheet = this.getRequiredWorksheet(workbook, [
+      "Ithal Liste",
+      "İthal Liste",
+    ]);
+
+    const conditionsSheet = this.getRequiredWorksheet(workbook, [
+      "Ozel Sartlar",
+      "Özel Şartlar",
+    ]);
+
+    const documents = this.parseDocuments(documentsSheet);
+
+    const products = this.parseProducts(productsSheet);
+
+    const supports = this.parseSupports(supportsSheet);
+
+    const financialInfos = this.parseFinancialInfos(financialSheet);
+
+    const domesticMachines = this.parseDomesticMachines(domesticSheet);
+
+    const importedMachines = this.parseImportedMachines(importedSheet);
+
+    const specialConditions = this.parseSpecialConditions(conditionsSheet);
+
+    return {
+      documents,
+      products,
+      supports,
+      financialInfos,
+      domesticMachines,
+      importedMachines,
+      specialConditions,
+
+      totalRowCount:
+        documents.length +
+        products.length +
+        supports.length +
+        financialInfos.length +
+        domesticMachines.length +
+        importedMachines.length +
+        specialConditions.length,
+    };
+  }
+
+  private getRequiredWorksheet(
+    workbook: ExcelJS.Workbook,
+    aliases: string[],
+  ): ExcelJS.Worksheet {
+    for (const alias of aliases) {
+      const direct = workbook.getWorksheet(alias);
+
+      if (direct) {
+        return direct;
+      }
+
+      const normalizedAlias = normalizeHeader(alias);
+
+      const worksheet = workbook.worksheets.find(
+        (item) => normalizeHeader(item.name) === normalizedAlias,
+      );
+
+      if (worksheet) {
+        return worksheet;
+      }
+    }
+
+    throw new Error(
+      `Excel dosyasında gerekli çalışma sayfası bulunamadı: ${aliases.join(
+        " / ",
+      )}`,
+    );
+  }
+
+  private validateBelgeIdColumn(
+    worksheet: ExcelJS.Worksheet,
+    headerMap: HeaderMap,
+  ): void {
+    requireColumn(
+      worksheet,
+      headerMap,
+      ["Belge ID", "Belge Id", "BelgeID", "BelgeId"],
+      "Belge ID",
+    );
+  }
+
+  private parseDocuments(worksheet: ExcelJS.Worksheet): ParsedDocumentRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedDocumentRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Belgeler",
+        rowNumber,
+
+        ...common,
+
+        investmentType: normalizeValue(
+          getCellByAliases(row, headerMap, ["Yatırım Cinsi", "Yatirim Cinsi"]),
+        ),
+      });
+    }
+
+    return result;
+  }
+
+  private parseProducts(worksheet: ExcelJS.Worksheet): ParsedProductRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedProductRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Urunler",
+        rowNumber,
+
+        ...common,
+
+        productName: normalizeValue(
+          getCellByAliases(row, headerMap, ["Ürün Adı", "Urun Adi"]),
+        ),
+
+        us97Code: normalizeValue(
+          getCellByAliases(row, headerMap, ["US97 Kodu", "US-97 Kodu"]),
+        ),
+
+        us97Description: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "US97 Açıklaması",
+            "US97 Aciklamasi",
+            "US-97 Açıklaması",
+          ]),
+        ),
+
+        naceCode: normalizeValue(
+          getCellByAliases(row, headerMap, ["NACE Kodu", "Nace Kodu"]),
+        ),
+
+        naceDescription: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "NACE Açıklaması",
+            "NACE Aciklamasi",
+            "Nace Açıklaması",
+          ]),
+        ),
+
+        unit: normalizeValue(
+          getCellByAliases(row, headerMap, ["Kapasite Birimi", "Birim"]),
+        ),
+
+        existingCapacity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Mevcut Kapasite"]),
+        ),
+
+        additionalCapacity: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "İlave Kapasite",
+            "Ilave Kapasite",
+          ]),
+        ),
+
+        totalCapacity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Toplam Kapasite"]),
+        ),
+      });
+    }
+
+    return result;
+  }
+
+  private parseSupports(worksheet: ExcelJS.Worksheet): ParsedSupportRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedSupportRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Destek Unsurlari",
+        rowNumber,
+
+        ...common,
+
+        supportType: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Destek Unsuru",
+            "Destek Unsuru Adı",
+            "Destek Unsuru Adi",
+          ]),
+        ),
+
+        supportTypeCode: normalizeValue(
+          getCellByAliases(row, headerMap, ["Destek Unsuru Kodu"]),
+        ),
+
+        supportRate: normalizeValue(
+          getCellByAliases(row, headerMap, ["Destek Oranı", "Destek Orani"]),
+        ),
+
+        supportRateCode: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Destek Oran Kodu",
+            "Destek Oranı Kodu",
+          ]),
+        ),
+
+        supportDescription: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Destek Oran Açıklaması",
+            "Destek Oran Aciklamasi",
+            "Destek Açıklaması",
+          ]),
+        ),
+      });
+    }
+
+    return result;
+  }
+
+  private parseFinancialInfos(
+    worksheet: ExcelJS.Worksheet,
+  ): ParsedFinancialInfoRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedFinancialInfoRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Finansal Bilgiler",
+        rowNumber,
+
+        ...common,
+
+        externalFinancialInfoId: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Finansal Bilgi ID",
+            "Finansal Bilgi Id",
+            "Finansal ID",
+            "ID",
+          ]),
+        ),
+
+        totalInvestment: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Toplam Yatırım",
+            "Toplam Yatirim",
+            "Toplam Yatırım Tutarı",
+            "Toplam Yatirim Tutari",
+          ]),
+        ),
+
+        totalFinancing: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Toplam Finansman",
+            "Toplam Finansman Tutarı",
+            "Toplam Finansman Tutari",
+          ]),
+        ),
+
+        equity: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Öz Kaynaklar",
+            "Özkaynaklar",
+            "Oz Kaynaklar",
+          ]),
+        ),
+
+        foreignResources: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Yabancı Kaynaklar",
+            "Yabanci Kaynaklar",
+          ]),
+        ),
+      });
+    }
+
+    return result;
+  }
+
+  private parseDomesticMachines(
+    worksheet: ExcelJS.Worksheet,
+  ): ParsedDomesticMachineRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedDomesticMachineRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Yerli Liste",
+        rowNumber,
+
+        ...common,
+
+        externalMachineId: normalizeInteger(
+          getCellByAliases(row, headerMap, [
+            "Makine ID",
+            "Makine Id",
+            "Liste ID",
+            "Liste Id",
+            "ID",
+          ]),
+        ),
+
+        sequenceNumber: normalizeInteger(
+          getCellByAliases(row, headerMap, ["Sıra No", "Sira No", "Sıra"]),
+        ),
+
+        name: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Makine Teçhizat Adı",
+            "Makine Techizat Adi",
+            "Makine Adı",
+            "Makine Adi",
+            "Malzeme Adı",
+            "Malzeme Adi",
+            "Adı",
+            "Adi",
+          ]),
+        ),
+
+        quantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Miktar", "Adet"]),
+        ),
+
+        unit: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Birim",
+            "Ölçü Birimi",
+            "Olcu Birimi",
+          ]),
+        ),
+
+        unitPriceTl: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Birim Fiyat TL",
+            "Birim Fiyatı TL",
+            "Birim Fiyati TL",
+            "Birim Fiyat",
+          ]),
+        ),
+
+        totalTl: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Toplam TL",
+            "Toplam Tutar TL",
+            "Toplam Tutar",
+          ]),
+        ),
+
+        gtipCode: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "GTİP Kodu",
+            "GTIP Kodu",
+            "GTİP",
+            "GTIP",
+          ]),
+        ),
+
+        gtipDescription: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "GTİP Açıklaması",
+            "GTIP Açıklaması",
+            "GTIP Aciklamasi",
+          ]),
+        ),
+      });
+    }
+
+    return result;
+  }
+
+  private parseImportedMachines(
+    worksheet: ExcelJS.Worksheet,
+  ): ParsedImportedMachineRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedImportedMachineRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Ithal Liste",
+        rowNumber,
+
+        ...common,
+
+        externalMachineId: normalizeInteger(
+          getCellByAliases(row, headerMap, [
+            "Makine ID",
+            "Makine Id",
+            "Liste ID",
+            "Liste Id",
+            "ID",
+          ]),
+        ),
+
+        sequenceNumber: normalizeInteger(
+          getCellByAliases(row, headerMap, ["Sıra No", "Sira No", "Sıra"]),
+        ),
+
+        name: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Makine Teçhizat Adı",
+            "Makine Techizat Adi",
+            "Makine Adı",
+            "Makine Adi",
+            "Malzeme Adı",
+            "Malzeme Adi",
+            "Adı",
+            "Adi",
+          ]),
+        ),
+
+        quantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Miktar", "Adet"]),
+        ),
+
+        unit: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Birim",
+            "Ölçü Birimi",
+            "Olcu Birimi",
+          ]),
+        ),
+
+        gtipCode: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "GTİP Kodu",
+            "GTIP Kodu",
+            "GTİP",
+            "GTIP",
+          ]),
+        ),
+
+        gtipDescription: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "GTİP Açıklaması",
+            "GTIP Açıklaması",
+            "GTIP Aciklamasi",
+          ]),
+        ),
+
+        currency: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Döviz Cinsi",
+            "Doviz Cinsi",
+            "Para Birimi",
+          ]),
+        ),
+
+        fobAmount: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "FOB Tutarı",
+            "FOB Tutari",
+            "FOB Tutar",
+          ]),
+        ),
+
+        fobAmountTl: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "FOB Tutarı TL",
+            "FOB Tutari TL",
+            "FOB TL",
+          ]),
+        ),
+
+        cifAmountTl: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "CIF Tutarı TL",
+            "CIF Tutari TL",
+            "CİF Tutarı TL",
+            "CIF TL",
+          ]),
+        ),
+
+        usedMachine: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Kullanılmış Makine",
+            "Kullanilmis Makine",
+            "Kullanılmış",
+            "Kullanilmis",
+          ]),
+        ),
+      });
+    }
+
+    return result;
+  }
+
+  private parseSpecialConditions(
+    worksheet: ExcelJS.Worksheet,
+  ): ParsedSpecialConditionRow[] {
+    const headerMap = buildHeaderMap(worksheet);
+
+    this.validateBelgeIdColumn(worksheet, headerMap);
+
+    const result: ParsedSpecialConditionRow[] = [];
+
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+
+      const common = getCommonValues(worksheet, row, headerMap);
+
+      if (!common) {
+        continue;
+      }
+
+      result.push({
+        sheetName: "Ozel Sartlar",
+        rowNumber,
+
+        ...common,
+
+        conditionCode: normalizeValue(
+          getCellByAliases(row, headerMap, ["Şart Kodu", "Sart Kodu"]),
+        ),
+
+        conditionName: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Şart Adı",
+            "Sart Adi",
+            "Özel Şart",
+            "Ozel Sart",
+          ]),
+        ),
+
+        description: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "Açıklama",
+            "Aciklama",
+            "Şart Açıklaması",
+            "Sart Aciklamasi",
+          ]),
+        ),
+      });
+    }
+
+    return result;
+  }
+}

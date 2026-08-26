@@ -89,6 +89,13 @@ export class CompareService {
           if (batch.status === "CANCELLED") {
             throw new Error("İptal edilmiş import batch karşılaştırılamaz.");
           }
+          const importType = batch.importType;
+
+          if (importType !== "OPEN" && importType !== "CLOSED") {
+            throw new Error(
+              `Bu import tipi karşılaştırma işlemini desteklemiyor: ${importType}`,
+            );
+          }
 
           /*
            * Endpoint ikinci kez çalıştırılırsa aynı değişikliklerin
@@ -172,11 +179,7 @@ export class CompareService {
 
             const existingCompany = companyMap.get(row.externalCompanyId);
 
-            const result = this.compareRow(
-              row,
-              existingCompany,
-              batch.importType,
-            );
+            const result = this.compareRow(row, existingCompany, importType);
 
             if (result.status === "NEW") {
               newRowCount += 1;

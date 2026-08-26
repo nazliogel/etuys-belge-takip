@@ -64,7 +64,14 @@ export const ModelName = {
   ImportChange: 'ImportChange',
   ChangeHistory: 'ChangeHistory',
   Notification: 'Notification',
-  SystemSetting: 'SystemSetting'
+  SystemSetting: 'SystemSetting',
+  DocumentDetail: 'DocumentDetail',
+  DocumentProduct: 'DocumentProduct',
+  DocumentSupport: 'DocumentSupport',
+  DocumentFinancialInfo: 'DocumentFinancialInfo',
+  DocumentDomesticMachine: 'DocumentDomesticMachine',
+  DocumentImportedMachine: 'DocumentImportedMachine',
+  DocumentSpecialCondition: 'DocumentSpecialCondition'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -229,6 +236,7 @@ export type ImportBatchScalarFieldEnum = (typeof ImportBatchScalarFieldEnum)[key
 export const ImportRowScalarFieldEnum = {
   id: 'id',
   importBatchId: 'importBatchId',
+  sheetName: 'sheetName',
   rowNumber: 'rowNumber',
   status: 'status',
   externalCompanyId: 'externalCompanyId',
@@ -316,6 +324,123 @@ export const SystemSettingScalarFieldEnum = {
 } as const
 
 export type SystemSettingScalarFieldEnum = (typeof SystemSettingScalarFieldEnum)[keyof typeof SystemSettingScalarFieldEnum]
+
+
+export const DocumentDetailScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  investmentType: 'investmentType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentDetailScalarFieldEnum = (typeof DocumentDetailScalarFieldEnum)[keyof typeof DocumentDetailScalarFieldEnum]
+
+
+export const DocumentProductScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  productName: 'productName',
+  us97Code: 'us97Code',
+  us97Description: 'us97Description',
+  naceCode: 'naceCode',
+  naceDescription: 'naceDescription',
+  unit: 'unit',
+  existingCapacity: 'existingCapacity',
+  additionalCapacity: 'additionalCapacity',
+  totalCapacity: 'totalCapacity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentProductScalarFieldEnum = (typeof DocumentProductScalarFieldEnum)[keyof typeof DocumentProductScalarFieldEnum]
+
+
+export const DocumentSupportScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  supportType: 'supportType',
+  supportTypeCode: 'supportTypeCode',
+  supportRate: 'supportRate',
+  supportRateCode: 'supportRateCode',
+  supportDescription: 'supportDescription',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentSupportScalarFieldEnum = (typeof DocumentSupportScalarFieldEnum)[keyof typeof DocumentSupportScalarFieldEnum]
+
+
+export const DocumentFinancialInfoScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  externalFinancialInfoId: 'externalFinancialInfoId',
+  totalInvestment: 'totalInvestment',
+  totalFinancing: 'totalFinancing',
+  equity: 'equity',
+  foreignResources: 'foreignResources',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentFinancialInfoScalarFieldEnum = (typeof DocumentFinancialInfoScalarFieldEnum)[keyof typeof DocumentFinancialInfoScalarFieldEnum]
+
+
+export const DocumentDomesticMachineScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  externalMachineId: 'externalMachineId',
+  sequenceNumber: 'sequenceNumber',
+  name: 'name',
+  quantity: 'quantity',
+  unit: 'unit',
+  unitPriceTl: 'unitPriceTl',
+  totalTl: 'totalTl',
+  gtipCode: 'gtipCode',
+  gtipDescription: 'gtipDescription',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentDomesticMachineScalarFieldEnum = (typeof DocumentDomesticMachineScalarFieldEnum)[keyof typeof DocumentDomesticMachineScalarFieldEnum]
+
+
+export const DocumentImportedMachineScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  externalMachineId: 'externalMachineId',
+  sequenceNumber: 'sequenceNumber',
+  name: 'name',
+  quantity: 'quantity',
+  unit: 'unit',
+  gtipCode: 'gtipCode',
+  gtipDescription: 'gtipDescription',
+  currency: 'currency',
+  fobAmount: 'fobAmount',
+  fobAmountTl: 'fobAmountTl',
+  cifAmountTl: 'cifAmountTl',
+  usedMachine: 'usedMachine',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentImportedMachineScalarFieldEnum = (typeof DocumentImportedMachineScalarFieldEnum)[keyof typeof DocumentImportedMachineScalarFieldEnum]
+
+
+export const DocumentSpecialConditionScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  conditionCode: 'conditionCode',
+  conditionName: 'conditionName',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentSpecialConditionScalarFieldEnum = (typeof DocumentSpecialConditionScalarFieldEnum)[keyof typeof DocumentSpecialConditionScalarFieldEnum]
 
 
 export const SortOrder = {

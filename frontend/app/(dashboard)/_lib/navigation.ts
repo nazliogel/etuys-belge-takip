@@ -42,6 +42,48 @@ export const navigationItems = [
     permission: "documents:view",
   },
   {
+    label: "Yatırım Cinsi",
+    href: "/document-details/investment-type",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
+    label: "Ürün Bilgileri",
+    href: "/document-details/products",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
+    label: "Destek Unsurları",
+    href: "/document-details/supports",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
+    label: "Finansal Bilgiler",
+    href: "/document-details/financial",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
+    label: "Yerli Liste",
+    href: "/document-details/domestic-machines",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
+    label: "İthal Liste",
+    href: "/document-details/imported-machines",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
+    label: "Özel Şartlar",
+    href: "/document-details/special-conditions",
+    icon: FileText,
+    permission: "documents:view",
+  },
+  {
     label: "Excel Yükleme",
     href: "/excel-import",
     icon: FileSpreadsheet,
