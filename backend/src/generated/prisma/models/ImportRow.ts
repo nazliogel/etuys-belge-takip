@@ -49,6 +49,7 @@ export type ImportRowSumAggregateOutputType = {
 export type ImportRowMinAggregateOutputType = {
   id: number | null
   importBatchId: number | null
+  sheetName: string | null
   rowNumber: number | null
   status: $Enums.ImportRowStatus | null
   externalCompanyId: number | null
@@ -72,6 +73,7 @@ export type ImportRowMinAggregateOutputType = {
 export type ImportRowMaxAggregateOutputType = {
   id: number | null
   importBatchId: number | null
+  sheetName: string | null
   rowNumber: number | null
   status: $Enums.ImportRowStatus | null
   externalCompanyId: number | null
@@ -95,6 +97,7 @@ export type ImportRowMaxAggregateOutputType = {
 export type ImportRowCountAggregateOutputType = {
   id: number
   importBatchId: number
+  sheetName: number
   rowNumber: number
   status: number
   externalCompanyId: number
@@ -141,6 +144,7 @@ export type ImportRowSumAggregateInputType = {
 export type ImportRowMinAggregateInputType = {
   id?: true
   importBatchId?: true
+  sheetName?: true
   rowNumber?: true
   status?: true
   externalCompanyId?: true
@@ -164,6 +168,7 @@ export type ImportRowMinAggregateInputType = {
 export type ImportRowMaxAggregateInputType = {
   id?: true
   importBatchId?: true
+  sheetName?: true
   rowNumber?: true
   status?: true
   externalCompanyId?: true
@@ -187,6 +192,7 @@ export type ImportRowMaxAggregateInputType = {
 export type ImportRowCountAggregateInputType = {
   id?: true
   importBatchId?: true
+  sheetName?: true
   rowNumber?: true
   status?: true
   externalCompanyId?: true
@@ -298,6 +304,7 @@ export type ImportRowGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type ImportRowGroupByOutputType = {
   id: number
   importBatchId: number
+  sheetName: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId: number | null
@@ -345,6 +352,7 @@ export type ImportRowWhereInput = {
   NOT?: Prisma.ImportRowWhereInput | Prisma.ImportRowWhereInput[]
   id?: Prisma.IntFilter<"ImportRow"> | number
   importBatchId?: Prisma.IntFilter<"ImportRow"> | number
+  sheetName?: Prisma.StringFilter<"ImportRow"> | string
   rowNumber?: Prisma.IntFilter<"ImportRow"> | number
   status?: Prisma.EnumImportRowStatusFilter<"ImportRow"> | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
@@ -373,6 +381,7 @@ export type ImportRowWhereInput = {
 export type ImportRowOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sheetName?: Prisma.SortOrder
   rowNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   externalCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -400,11 +409,12 @@ export type ImportRowOrderByWithRelationInput = {
 
 export type ImportRowWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  importBatchId_rowNumber?: Prisma.ImportRowImportBatchIdRowNumberCompoundUniqueInput
+  importBatchId_sheetName_rowNumber?: Prisma.ImportRowImportBatchIdSheetNameRowNumberCompoundUniqueInput
   AND?: Prisma.ImportRowWhereInput | Prisma.ImportRowWhereInput[]
   OR?: Prisma.ImportRowWhereInput[]
   NOT?: Prisma.ImportRowWhereInput | Prisma.ImportRowWhereInput[]
   importBatchId?: Prisma.IntFilter<"ImportRow"> | number
+  sheetName?: Prisma.StringFilter<"ImportRow"> | string
   rowNumber?: Prisma.IntFilter<"ImportRow"> | number
   status?: Prisma.EnumImportRowStatusFilter<"ImportRow"> | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
@@ -428,11 +438,12 @@ export type ImportRowWhereUniqueInput = Prisma.AtLeast<{
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null
   document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
   changes?: Prisma.ImportChangeListRelationFilter
-}, "id" | "importBatchId_rowNumber">
+}, "id" | "importBatchId_sheetName_rowNumber">
 
 export type ImportRowOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sheetName?: Prisma.SortOrder
   rowNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   externalCompanyId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -465,6 +476,7 @@ export type ImportRowScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ImportRowScalarWhereWithAggregatesInput | Prisma.ImportRowScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"ImportRow"> | number
   importBatchId?: Prisma.IntWithAggregatesFilter<"ImportRow"> | number
+  sheetName?: Prisma.StringWithAggregatesFilter<"ImportRow"> | string
   rowNumber?: Prisma.IntWithAggregatesFilter<"ImportRow"> | number
   status?: Prisma.EnumImportRowStatusWithAggregatesFilter<"ImportRow"> | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.IntNullableWithAggregatesFilter<"ImportRow"> | number | null
@@ -487,6 +499,7 @@ export type ImportRowScalarWhereWithAggregatesInput = {
 }
 
 export type ImportRowCreateInput = {
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -513,6 +526,7 @@ export type ImportRowCreateInput = {
 export type ImportRowUncheckedCreateInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -536,6 +550,7 @@ export type ImportRowUncheckedCreateInput = {
 }
 
 export type ImportRowUpdateInput = {
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -562,6 +577,7 @@ export type ImportRowUpdateInput = {
 export type ImportRowUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -587,6 +603,7 @@ export type ImportRowUncheckedUpdateInput = {
 export type ImportRowCreateManyInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -609,6 +626,7 @@ export type ImportRowCreateManyInput = {
 }
 
 export type ImportRowUpdateManyMutationInput = {
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -631,6 +649,7 @@ export type ImportRowUpdateManyMutationInput = {
 export type ImportRowUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -662,14 +681,16 @@ export type ImportRowOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type ImportRowImportBatchIdRowNumberCompoundUniqueInput = {
+export type ImportRowImportBatchIdSheetNameRowNumberCompoundUniqueInput = {
   importBatchId: number
+  sheetName: string
   rowNumber: number
 }
 
 export type ImportRowCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sheetName?: Prisma.SortOrder
   rowNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   externalCompanyId?: Prisma.SortOrder
@@ -704,6 +725,7 @@ export type ImportRowAvgOrderByAggregateInput = {
 export type ImportRowMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sheetName?: Prisma.SortOrder
   rowNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   externalCompanyId?: Prisma.SortOrder
@@ -727,6 +749,7 @@ export type ImportRowMaxOrderByAggregateInput = {
 export type ImportRowMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sheetName?: Prisma.SortOrder
   rowNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
   externalCompanyId?: Prisma.SortOrder
@@ -913,6 +936,7 @@ export type ImportRowUpdateOneWithoutChangesNestedInput = {
 }
 
 export type ImportRowCreateWithoutCompanyInput = {
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -938,6 +962,7 @@ export type ImportRowCreateWithoutCompanyInput = {
 export type ImportRowUncheckedCreateWithoutCompanyInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -991,6 +1016,7 @@ export type ImportRowScalarWhereInput = {
   NOT?: Prisma.ImportRowScalarWhereInput | Prisma.ImportRowScalarWhereInput[]
   id?: Prisma.IntFilter<"ImportRow"> | number
   importBatchId?: Prisma.IntFilter<"ImportRow"> | number
+  sheetName?: Prisma.StringFilter<"ImportRow"> | string
   rowNumber?: Prisma.IntFilter<"ImportRow"> | number
   status?: Prisma.EnumImportRowStatusFilter<"ImportRow"> | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
@@ -1013,6 +1039,7 @@ export type ImportRowScalarWhereInput = {
 }
 
 export type ImportRowCreateWithoutDocumentInput = {
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1038,6 +1065,7 @@ export type ImportRowCreateWithoutDocumentInput = {
 export type ImportRowUncheckedCreateWithoutDocumentInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1086,6 +1114,7 @@ export type ImportRowUpdateManyWithWhereWithoutDocumentInput = {
 }
 
 export type ImportRowCreateWithoutImportBatchInput = {
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1110,6 +1139,7 @@ export type ImportRowCreateWithoutImportBatchInput = {
 
 export type ImportRowUncheckedCreateWithoutImportBatchInput = {
   id?: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1159,6 +1189,7 @@ export type ImportRowUpdateManyWithWhereWithoutImportBatchInput = {
 }
 
 export type ImportRowCreateWithoutChangesInput = {
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1184,6 +1215,7 @@ export type ImportRowCreateWithoutChangesInput = {
 export type ImportRowUncheckedCreateWithoutChangesInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1222,6 +1254,7 @@ export type ImportRowUpdateToOneWithWhereWithoutChangesInput = {
 }
 
 export type ImportRowUpdateWithoutChangesInput = {
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1247,6 +1280,7 @@ export type ImportRowUpdateWithoutChangesInput = {
 export type ImportRowUncheckedUpdateWithoutChangesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1271,6 +1305,7 @@ export type ImportRowUncheckedUpdateWithoutChangesInput = {
 export type ImportRowCreateManyCompanyInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1292,6 +1327,7 @@ export type ImportRowCreateManyCompanyInput = {
 }
 
 export type ImportRowUpdateWithoutCompanyInput = {
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1317,6 +1353,7 @@ export type ImportRowUpdateWithoutCompanyInput = {
 export type ImportRowUncheckedUpdateWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1341,6 +1378,7 @@ export type ImportRowUncheckedUpdateWithoutCompanyInput = {
 export type ImportRowUncheckedUpdateManyWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1364,6 +1402,7 @@ export type ImportRowUncheckedUpdateManyWithoutCompanyInput = {
 export type ImportRowCreateManyDocumentInput = {
   id?: number
   importBatchId: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1385,6 +1424,7 @@ export type ImportRowCreateManyDocumentInput = {
 }
 
 export type ImportRowUpdateWithoutDocumentInput = {
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1410,6 +1450,7 @@ export type ImportRowUpdateWithoutDocumentInput = {
 export type ImportRowUncheckedUpdateWithoutDocumentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1434,6 +1475,7 @@ export type ImportRowUncheckedUpdateWithoutDocumentInput = {
 export type ImportRowUncheckedUpdateManyWithoutDocumentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   importBatchId?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1456,6 +1498,7 @@ export type ImportRowUncheckedUpdateManyWithoutDocumentInput = {
 
 export type ImportRowCreateManyImportBatchInput = {
   id?: number
+  sheetName?: string
   rowNumber: number
   status: $Enums.ImportRowStatus
   externalCompanyId?: number | null
@@ -1478,6 +1521,7 @@ export type ImportRowCreateManyImportBatchInput = {
 }
 
 export type ImportRowUpdateWithoutImportBatchInput = {
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1502,6 +1546,7 @@ export type ImportRowUpdateWithoutImportBatchInput = {
 
 export type ImportRowUncheckedUpdateWithoutImportBatchInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1526,6 +1571,7 @@ export type ImportRowUncheckedUpdateWithoutImportBatchInput = {
 
 export type ImportRowUncheckedUpdateManyWithoutImportBatchInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  sheetName?: Prisma.StringFieldUpdateOperationsInput | string
   rowNumber?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumImportRowStatusFieldUpdateOperationsInput | $Enums.ImportRowStatus
   externalCompanyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1581,6 +1627,7 @@ export type ImportRowCountOutputTypeCountChangesArgs<ExtArgs extends runtime.Typ
 export type ImportRowSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   importBatchId?: boolean
+  sheetName?: boolean
   rowNumber?: boolean
   status?: boolean
   externalCompanyId?: boolean
@@ -1610,6 +1657,7 @@ export type ImportRowSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type ImportRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   importBatchId?: boolean
+  sheetName?: boolean
   rowNumber?: boolean
   status?: boolean
   externalCompanyId?: boolean
@@ -1637,6 +1685,7 @@ export type ImportRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type ImportRowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   importBatchId?: boolean
+  sheetName?: boolean
   rowNumber?: boolean
   status?: boolean
   externalCompanyId?: boolean
@@ -1664,6 +1713,7 @@ export type ImportRowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type ImportRowSelectScalar = {
   id?: boolean
   importBatchId?: boolean
+  sheetName?: boolean
   rowNumber?: boolean
   status?: boolean
   externalCompanyId?: boolean
@@ -1685,7 +1735,7 @@ export type ImportRowSelectScalar = {
   createdAt?: boolean
 }
 
-export type ImportRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "rowNumber" | "status" | "externalCompanyId" | "companyName" | "taxNumber" | "authorizationEndDate" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "documentStatus" | "processStatus" | "companyId" | "documentId" | "rawData" | "errorMessage" | "createdAt", ExtArgs["result"]["importRow"]>
+export type ImportRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "sheetName" | "rowNumber" | "status" | "externalCompanyId" | "companyName" | "taxNumber" | "authorizationEndDate" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "documentStatus" | "processStatus" | "companyId" | "documentId" | "rawData" | "errorMessage" | "createdAt", ExtArgs["result"]["importRow"]>
 export type ImportRowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   company?: boolean | Prisma.ImportRow$companyArgs<ExtArgs>
@@ -1715,6 +1765,7 @@ export type $ImportRowPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     importBatchId: number
+    sheetName: string
     rowNumber: number
     status: $Enums.ImportRowStatus
     externalCompanyId: number | null
@@ -2163,6 +2214,7 @@ export interface Prisma__ImportRowClient<T, Null = never, ExtArgs extends runtim
 export interface ImportRowFieldRefs {
   readonly id: Prisma.FieldRef<"ImportRow", 'Int'>
   readonly importBatchId: Prisma.FieldRef<"ImportRow", 'Int'>
+  readonly sheetName: Prisma.FieldRef<"ImportRow", 'String'>
   readonly rowNumber: Prisma.FieldRef<"ImportRow", 'Int'>
   readonly status: Prisma.FieldRef<"ImportRow", 'ImportRowStatus'>
   readonly externalCompanyId: Prisma.FieldRef<"ImportRow", 'Int'>
