@@ -86,7 +86,7 @@ type ClosedDocumentListResponse = {
   data: {
     items: Array<
       Omit<ApiDocument, "status" | "isActive" | "documentStatus"> & {
-        status: "CLOSED";
+        status: "CLOSED" | "CANCELLED";
         isActive?: boolean;
       }
     >;
@@ -334,8 +334,12 @@ export function DocumentsScreen({
             (document) => ({
               ...document,
               isActive: false,
+
+              // Liste filtresi için kullanılacak hesaplanan durum
               status: "INACTIVE",
-              documentStatus: "CLOSED",
+
+              // Excel/veritabanından gelen gerçek belge durumu
+              documentStatus: document.status,
             }),
           );
 
@@ -673,7 +677,13 @@ export function DocumentsScreen({
                       </td>
 
                       <td className="px-6 py-4">
-                        <StatusBadge status={doc.status} />
+                        <StatusBadge
+                          status={
+                            doc.status === "INACTIVE"
+                              ? (doc.documentStatus ?? "INACTIVE")
+                              : doc.status
+                          }
+                        />
                       </td>
 
                       <td className="px-6 py-4">
@@ -884,6 +894,21 @@ function StatusBadge({ status }: { status: string }) {
       text: "text-amber-700",
       bg: "bg-amber-50",
       border: "border-amber-200/60",
+    },
+    CLOSED: {
+      label: "Kapalı",
+      dot: "bg-blue-500",
+      text: "text-blue-700",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+    },
+
+    CANCELLED: {
+      label: "İptal",
+      dot: "bg-red-500",
+      text: "text-red-700",
+      bg: "bg-red-50",
+      border: "border-red-200/60",
     },
     INACTIVE: {
       label: "Kapalı-İptal",

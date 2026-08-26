@@ -69,16 +69,21 @@ function formatDate(date: string | null): string {
 }
 
 function getDocumentStatus(document: ApiDocumentDetail) {
-  if (
-    document.status === "CLOSED" ||
-    document.status === "CANCELLED" ||
-    document.isActive === false
-  ) {
+  if (document.status === "CANCELLED") {
     return {
-      label: "Kapalı / İptal",
-      description: "Belge kapalı veya iptal durumundadır.",
-      dot: "bg-slate-500",
-      className: "bg-slate-100 text-slate-700",
+      label: "İptal",
+      description: "Belge iptal edilmiştir.",
+      dot: "bg-red-500",
+      className: "bg-red-50 text-red-700",
+    };
+  }
+
+  if (document.status === "CLOSED" || document.isActive === false) {
+    return {
+      label: "Kapalı",
+      description: "Belge kapatılmıştır.",
+      dot: "bg-blue-500",
+      className: "bg-blue-50 text-blue-700 border border-blue-200",
     };
   }
 
@@ -158,7 +163,9 @@ export function DocumentDetailScreen({
         setDocument({
           ...response.data,
           isActive: isClosed ? false : response.data.isActive,
-          status: isClosed ? "CLOSED" : response.data.status,
+          status: isClosed
+            ? (response.data.status ?? "CLOSED")
+            : response.data.status,
         });
       } catch (error) {
         setLoadError(
@@ -553,11 +560,8 @@ export function DocumentDetailScreen({
                   <h1 className="text-xl font-extrabold uppercase tracking-[0.25em] text-slate-900 sm:text-2xl">
                     Yatırım Teşvik Belgesi
                   </h1>
-                   <div className="mt-8 border-t-2 border-slate-800" />
+                  <div className="mt-8 border-t-2 border-slate-800" />
                 </header>
-
-              
-        
 
                 {/* SAYI / KONU / TARİH */}
                 <div className="mt-8 flex flex-wrap items-start justify-between gap-4 text-sm text-slate-700">
