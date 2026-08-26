@@ -377,9 +377,9 @@ export function DashboardScreen() {
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
     () => readDashboardCache()?.upcomingDeadlines ?? [],
   );
- const [, setRecentImports] = useState<ApiImportBatch[]>(
-  () => readDashboardCache()?.recentImports ?? [],
-);
+  const [, setRecentImports] = useState<ApiImportBatch[]>(
+    () => readDashboardCache()?.recentImports ?? [],
+  );
   const [recentChanges, setRecentChanges] = useState<ApiImportChange[]>(
     () => readDashboardCache()?.recentChanges ?? [],
   );
@@ -448,15 +448,20 @@ export function DashboardScreen() {
 
         const latestBatch = importResponse.data.items[0] ?? null;
 
-        let changes: ApiImportChange[] = [];
+        // Son 3 Excel yüklemesini al
+        const lastThreeBatches = importResponse.data.items.slice(0, 3);
 
-        if (latestBatch) {
-          const changesResponse = await apiFetch<ImportChangesApiResponse>(
-            `/imports/${latestBatch.id}/changes`,
-          );
+        // Son 3 yüklemenin değişikliklerini paralel olarak getir
+        const changeResponses = await Promise.all(
+          lastThreeBatches.map((batch) =>
+            apiFetch<ImportChangesApiResponse>(`/imports/${batch.id}/changes`),
+          ),
+        );
 
-          changes = changesResponse.data.changes;
-        }
+        // Üç yüklemedeki değişiklikleri tek listede birleştir
+        const changes = changeResponses.flatMap(
+          (response) => response.data.changes,
+        );
 
         const cache: DashboardCache = {
           totalCompanies: companyResponse.data.totalCount,
@@ -548,14 +553,14 @@ export function DashboardScreen() {
       clickable: true,
     },
     {
-      title: "Süre Uzatma Müracaatı Yapılabilecekler",
+      title: "Süre Uzatma ",
       value:
         extensionEligibleDocuments === null
           ? "..."
           : String(extensionEligibleDocuments),
       description: "Süre uzatma başvurusu yapılabilecek belgeler",
       icon: CalendarClock,
-       href: "/documents?view=extension-eligible",
+      href: "/documents?view=extension-eligible",
       clickable: true,
     },
     {

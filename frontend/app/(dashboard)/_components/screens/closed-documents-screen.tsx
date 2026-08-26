@@ -81,7 +81,17 @@ export function ClosedDocumentsScreen() {
           `/closed-documents?${params.toString()}`,
         );
 
-        setDocuments(response.data.items);
+        const sortedDocuments = [...response.data.items].sort((a, b) => {
+          const aDate = a.documentEndDate;
+          const bDate = b.documentEndDate;
+          if (!aDate && !bDate) return 0;
+          if (!aDate) return 1;
+          if (!bDate) return -1;
+
+          return new Date(bDate).getTime() - new Date(aDate).getTime();
+        });
+
+        setDocuments(sortedDocuments);
         setTotalCount(response.data.totalCount);
       } catch (error) {
         setDocuments([]);
@@ -291,9 +301,22 @@ export function ClosedDocumentsScreen() {
                       </td>
 
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
-                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                          Kapalı / İptal
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold ${
+                            doc.status === "CANCELLED"
+                              ? "border-red-200 bg-red-50 text-red-700"
+                              : "border-slate-200 bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              doc.status === "CANCELLED"
+                                ? "bg-red-500"
+                                : "bg-slate-400"
+                            }`}
+                          />
+
+                          {doc.status === "CANCELLED" ? "İptal" : "Kapalı"}
                         </span>
                       </td>
 

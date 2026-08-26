@@ -47,6 +47,7 @@ type CompanyApiDocument = Omit<
 type OpenDocumentTab = {
   id: string;
   documentNumber: string | null;
+  isClosed: boolean;
 };
 
 type CompanyDetailResponse = {
@@ -86,7 +87,7 @@ type ClosedDocumentListResponse = {
   data: {
     items: Array<
       Omit<ApiDocument, "status" | "isActive" | "documentStatus"> & {
-        status: "CLOSED";
+        status: "CLOSED" | "CANCELLED";
         isActive?: boolean;
       }
     >;
@@ -137,6 +138,7 @@ function formatDate(date: string | null): string {
 function calculateDocumentStatus(document: {
   isActive: boolean;
   documentEndDate: string | null;
+  extensionDate: string | null;
   status?: string;
 }): DocumentStatus {
   if (
@@ -147,12 +149,15 @@ function calculateDocumentStatus(document: {
     return "INACTIVE";
   }
 
-  if (!document.documentEndDate) {
+  // Süre uzatımı varsa onu, yoksa normal bitiş tarihini kullan
+  const effectiveEndDate = document.extensionDate ?? document.documentEndDate;
+
+  if (!effectiveEndDate) {
     return "ACTIVE";
   }
 
   const today = new Date();
-  const endDate = new Date(document.documentEndDate);
+  const endDate = new Date(effectiveEndDate);
 
   today.setHours(0, 0, 0, 0);
   endDate.setHours(0, 0, 0, 0);
@@ -330,14 +335,22 @@ export function DocumentsScreen({
           const totalCount = closedResponse.data.totalCount;
           const limit = 20;
 
-          const mappedDocuments: ApiDocument[] = closedResponse.data.items.map(
-            (document) => ({
+          const mappedDocuments: ApiDocument[] = closedResponse.data.items
+            .map((document) => ({
               ...document,
               isActive: false,
-              status: "INACTIVE",
-              documentStatus: "CLOSED",
-            }),
-          );
+              status: "INACTIVE" as const,
+              documentStatus: document.status,
+            }))
+            .sort((a, b) => {
+              const aDate = a.documentEndDate;
+              const bDate = b.documentEndDate;
+              if (!aDate && !bDate) return 0;
+              if (!aDate) return 1;
+              if (!bDate) return -1;
+
+              return new Date(bDate).getTime() - new Date(aDate).getTime();
+            });
 
           /*
            * Yalnızca alttaki tablo kapalı belgelerle değiştirilir.
@@ -414,6 +427,7 @@ export function DocumentsScreen({
   function handleOpenDocument(
     documentId: string,
     documentNumber: string | null,
+    isClosed: boolean,
   ) {
     setOpenDocuments((current) => {
       const alreadyOpen = current.some(
@@ -427,6 +441,7 @@ export function DocumentsScreen({
         {
           id: documentId,
           documentNumber,
+          isClosed,
         },
       ];
     });
@@ -673,7 +688,13 @@ export function DocumentsScreen({
                       </td>
 
                       <td className="px-6 py-4">
-                        <StatusBadge status={doc.status} />
+                        <StatusBadge
+                          status={
+                            doc.status === "INACTIVE"
+                              ? (doc.documentStatus ?? doc.status)
+                              : doc.status
+                          }
+                        />
                       </td>
 
                       <td className="px-6 py-4">
@@ -684,6 +705,8 @@ export function DocumentsScreen({
                               handleOpenDocument(
                                 String(doc.id),
                                 doc.documentNumber,
+                                doc.documentStatus === "CLOSED" ||
+                                  doc.documentStatus === "CANCELLED",
                               )
                             }
                             className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
@@ -801,7 +824,7 @@ export function DocumentsScreen({
                 <DocumentDetailScreen
                   documentId={document.id}
                   variant={variant}
-                  isClosed={status === "INACTIVE"}
+                  isClosed={document.isClosed}
                 />
               </div>
             ))}
@@ -884,6 +907,21 @@ function StatusBadge({ status }: { status: string }) {
       text: "text-amber-700",
       bg: "bg-amber-50",
       border: "border-amber-200/60",
+    },
+    CLOSED: {
+      label: "Kapalı",
+      dot: "bg-blue-500",
+      text: "text-blue-700",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+    },
+
+    CANCELLED: {
+      label: "İptal",
+      dot: "bg-red-500",
+      text: "text-red-700",
+      bg: "bg-red-50",
+      border: "border-red-200",
     },
     INACTIVE: {
       label: "Kapalı-İptal",
