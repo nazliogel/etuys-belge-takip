@@ -25,6 +25,7 @@ enum ImportType {
   CLOSED
   COMPANY_IDENTITY
   DOCUMENT_DETAIL
+  COMPANY_REQUEST
 }
 
 enum ImportRowStatus {
@@ -119,6 +120,7 @@ model Company {
   notifications   Notification[]
   contacts        CompanyContact[]
   notes           CompanyNote[]
+  companyRequests CompanyRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -148,6 +150,36 @@ model CompanyIdentity {
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
+}
+
+model CompanyRequest {
+  id                 Int     @id @default(autoincrement())
+  companyId          Int
+  requestNumber      Int
+  externalDocumentId Int?
+  documentNumber     String?
+
+  note              String?
+  requestType       String?
+  requestStatus     String?
+  department        String?
+  assignedPersonnel String?
+  informationPerson String?
+
+  applicationDate DateTime?
+  completionDate  DateTime? @db.Date
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, requestNumber])
+  @@index([companyId])
+  @@index([requestNumber])
+  @@index([externalDocumentId])
+  @@index([documentNumber])
+  @@index([applicationDate])
 }
 
 model CompanyContact {

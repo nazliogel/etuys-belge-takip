@@ -54,6 +54,7 @@ export const ModelName = {
   User: 'User',
   Company: 'Company',
   CompanyIdentity: 'CompanyIdentity',
+  CompanyRequest: 'CompanyRequest',
   CompanyContact: 'CompanyContact',
   CompanyNote: 'CompanyNote',
   CompanyAuthorization: 'CompanyAuthorization',
@@ -139,6 +140,27 @@ export const CompanyIdentityScalarFieldEnum = {
 } as const
 
 export type CompanyIdentityScalarFieldEnum = (typeof CompanyIdentityScalarFieldEnum)[keyof typeof CompanyIdentityScalarFieldEnum]
+
+
+export const CompanyRequestScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  requestNumber: 'requestNumber',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  note: 'note',
+  requestType: 'requestType',
+  requestStatus: 'requestStatus',
+  department: 'department',
+  assignedPersonnel: 'assignedPersonnel',
+  informationPerson: 'informationPerson',
+  applicationDate: 'applicationDate',
+  completionDate: 'completionDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyRequestScalarFieldEnum = (typeof CompanyRequestScalarFieldEnum)[keyof typeof CompanyRequestScalarFieldEnum]
 
 
 export const CompanyContactScalarFieldEnum = {

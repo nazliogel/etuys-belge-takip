@@ -32,7 +32,8 @@ export const ImportType = {
   OPEN: 'OPEN',
   CLOSED: 'CLOSED',
   COMPANY_IDENTITY: 'COMPANY_IDENTITY',
-  DOCUMENT_DETAIL: 'DOCUMENT_DETAIL'
+  DOCUMENT_DETAIL: 'DOCUMENT_DETAIL',
+  COMPANY_REQUEST: 'COMPANY_REQUEST'
 } as const
 
 export type ImportType = (typeof ImportType)[keyof typeof ImportType]
