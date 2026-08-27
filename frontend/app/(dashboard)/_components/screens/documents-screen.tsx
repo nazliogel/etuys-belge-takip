@@ -8,6 +8,7 @@ import {
   FileText,
   Search,
   ShieldCheck,
+  ShieldAlert,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -49,6 +50,14 @@ type OpenDocumentTab = {
   id: string;
   documentNumber: string | null;
   isClosed: boolean;
+};
+
+type AuthMeResponse = {
+  user: {
+    id: number;
+    role: "ADMIN" | "COMPANY";
+    companyId: number | null;
+  };
 };
 
 type CompanyDetailResponse = {
@@ -165,6 +174,23 @@ function formatDate(date: string | null): string {
 
   return new Intl.DateTimeFormat("tr-TR").format(parsedDate);
 }
+function hasValidAuthorization(authorizationEndDate: string | null): boolean {
+  if (!authorizationEndDate) {
+    return false;
+  }
+
+  const endDate = new Date(authorizationEndDate);
+  const today = new Date();
+
+  if (Number.isNaN(endDate.getTime())) {
+    return false;
+  }
+
+  endDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return endDate.getTime() >= today.getTime();
+}
 function calculateDocumentStatus(document: {
   isActive: boolean;
   documentEndDate: string | null;
@@ -242,13 +268,52 @@ export function DocumentsScreen({
   const [companyStatusFilter, setCompanyStatusFilter] =
     useState<DocumentStatus | null>(null);
 
-  const [, setAuthorizationEndDate] = useState<string | null>(null);
+  const [authorizationEndDate, setAuthorizationEndDate] = useState<
+    string | null
+  >(null);
 
+  const [isAuthorizationLoading, setIsAuthorizationLoading] = useState(
+    variant === "company",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const documentTabsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    async function loadCompanyAuthorization() {
+      if (variant !== "company" || companyId) {
+        setIsAuthorizationLoading(false);
+        return;
+      }
 
+      setIsAuthorizationLoading(true);
+
+      try {
+        const authResponse = await apiFetch<AuthMeResponse>("/auth/me");
+        const userCompanyId = authResponse.user.companyId;
+
+        if (!userCompanyId) {
+          setAuthorizationEndDate(null);
+          return;
+        }
+
+        const companyResponse = await apiFetch<CompanyDetailResponse>(
+          `/companies/${userCompanyId}`,
+        );
+
+        setAuthorizationEndDate(
+          companyResponse.data.authorizationEndDate ?? null,
+        );
+      } catch (error) {
+        console.error("Firma yetkilendirmesi alınamadı:", error);
+        setAuthorizationEndDate(null);
+      } finally {
+        setIsAuthorizationLoading(false);
+      }
+    }
+
+    void loadCompanyAuthorization();
+  }, [companyId, variant]);
   useEffect(() => {
     async function loadDocuments() {
       setIsLoading(true);
@@ -444,18 +509,20 @@ export function DocumentsScreen({
         setTotalPages(response.data.totalPages);
         setDocuments(response.data.items);
 
-        if (response.data.items.length > 0) {
-          const firstDocumentId = response.data.items[0].id;
+        if (variant !== "company") {
+          if (response.data.items.length > 0) {
+            const firstDocumentId = response.data.items[0].id;
 
-          const detailResponse = await apiFetch<DocumentDetailResponse>(
-            `/documents/${firstDocumentId}`,
-          );
+            const detailResponse = await apiFetch<DocumentDetailResponse>(
+              `/documents/${firstDocumentId}`,
+            );
 
-          setAuthorizationEndDate(
-            detailResponse.data.company.authorizationEndDate ?? null,
-          );
-        } else {
-          setAuthorizationEndDate(null);
+            setAuthorizationEndDate(
+              detailResponse.data.company.authorizationEndDate ?? null,
+            );
+          } else {
+            setAuthorizationEndDate(null);
+          }
         }
       } catch (error) {
         setDocuments([]);
@@ -470,7 +537,14 @@ export function DocumentsScreen({
     }
 
     void loadDocuments();
-  }, [companyId, currentPage, status, searchQuery, isExtensionEligibleView]);
+  }, [
+    companyId,
+    currentPage,
+    status,
+    searchQuery,
+    isExtensionEligibleView,
+    variant,
+  ]);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
@@ -522,6 +596,8 @@ export function DocumentsScreen({
       return remaining;
     });
   }
+  const authorizationIsValid = hasValidAuthorization(authorizationEndDate);
+
   const visibleDocuments = companyId
     ? documents.filter((document) => {
         // Süre Uzatma kartına basıldıysa
@@ -741,9 +817,50 @@ export function DocumentsScreen({
               ) : visibleDocuments.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center">
-                    <p className="text-sm font-medium text-slate-500">
-                      Bu firmaya ait belge bulunamadı.
-                    </p>
+                    {(companyId || variant === "company") &&
+                    documents.length === 0 &&
+                    !isAuthorizationLoading &&
+                    !authorizationIsValid ? (
+                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-6 py-5 text-left">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+                          <div className="flex min-w-0 flex-1 items-start gap-4">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
+                              <ShieldAlert size={21} strokeWidth={1.8} />
+                            </div>
+
+                            <div className="min-w-0">
+                              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+                                Yetkilendirme gerekli
+                              </span>
+
+                              <h3 className="mt-1 text-base font-bold text-slate-900">
+                                Yetki süreniz dolmuştur.
+                              </h3>
+
+                              <p className="mt-1.5 text-sm leading-6 text-slate-600">
+                                Firmanın belge bilgilerinin görüntülenebilmesi
+                                için yeniden yetkilendirme yapılmalıdır.
+                              </p>
+                            </div>
+                          </div>
+
+                          {variant === "company" && (
+                            <div className="border-t border-slate-200 pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
+                              <p className="text-xs font-medium leading-5 text-slate-600">
+                                Yetkilendirme işlemi için lütfen danışmanınız
+                                ile iletişime geçiniz.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-medium text-slate-500">
+                        {documents.length > 0
+                          ? "Seçilen kritere uygun belge bulunamadı."
+                          : "Belge bulunamadı."}
+                      </p>
+                    )}
                   </td>
                 </tr>
               ) : (

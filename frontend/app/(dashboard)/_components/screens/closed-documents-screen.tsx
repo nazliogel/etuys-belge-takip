@@ -5,11 +5,11 @@ import {
   Check,
   ChevronRight,
   FileText,
-  Filter,
+  ShieldAlert,
   Search,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DocumentDetailScreen } from "@/app/(dashboard)/_components/screens/document-detail-screen";
 import { apiFetch } from "@/lib/api";
@@ -40,6 +40,25 @@ type ClosedDocumentListResponse = {
     totalCount: number;
   };
 };
+type AuthMeResponse = {
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: "ADMIN" | "COMPANY";
+    companyId: number | null;
+    isActive: boolean;
+  };
+};
+
+type CompanyDetailResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    authorizationEndDate: string | null;
+  };
+};
 
 const PAGE_SIZE = 20;
 
@@ -49,7 +68,23 @@ function formatDate(date: string | null): string {
   if (Number.isNaN(parsed.getTime())) return "-";
   return new Intl.DateTimeFormat("tr-TR").format(parsed);
 }
+function hasValidAuthorization(authorizationEndDate: string | null): boolean {
+  if (!authorizationEndDate) {
+    return false;
+  }
 
+  const endDate = new Date(authorizationEndDate);
+  const today = new Date();
+
+  if (Number.isNaN(endDate.getTime())) {
+    return false;
+  }
+
+  endDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return endDate.getTime() >= today.getTime();
+}
 export function ClosedDocumentsScreen() {
   const [page, setPage] = useState(1);
   const [documents, setDocuments] = useState<ApiClosedDocument[]>([]);
@@ -57,10 +92,47 @@ export function ClosedDocumentsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [isCompanyUser, setIsCompanyUser] = useState(false);
+  const [authorizationEndDate, setAuthorizationEndDate] = useState<
+    string | null
+  >(null);
+  const [isAuthorizationLoading, setIsAuthorizationLoading] = useState(true);
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    async function loadAuthorization() {
+      setIsAuthorizationLoading(true);
 
+      try {
+        const authResponse = await apiFetch<AuthMeResponse>("/auth/me");
+        const user = authResponse.user;
+        const isCompany = user.role === "COMPANY";
+
+        setIsCompanyUser(isCompany);
+
+        if (!isCompany || !user.companyId) {
+          setAuthorizationEndDate(null);
+          return;
+        }
+
+        const companyResponse = await apiFetch<CompanyDetailResponse>(
+          `/companies/${user.companyId}`,
+        );
+        setAuthorizationEndDate(
+          companyResponse.data.authorizationEndDate ?? null,
+        );
+      } catch (error) {
+        console.error("Yetkilendirme bilgisi alınamadı:", error);
+
+        setIsCompanyUser(false);
+        setAuthorizationEndDate(null);
+      } finally {
+        setIsAuthorizationLoading(false);
+      }
+    }
+
+    void loadAuthorization();
+  }, []);
   /* KAPALI BELGELERİ API'DEN GETİR */
   useEffect(() => {
     async function loadClosedDocuments() {
@@ -114,6 +186,8 @@ export function ClosedDocumentsScreen() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const firstRecord = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const lastRecord = Math.min(page * PAGE_SIZE, totalCount);
+
+  const authorizationIsValid = hasValidAuthorization(authorizationEndDate);
 
   return (
     <div className="space-y-5">
@@ -202,7 +276,7 @@ export function ClosedDocumentsScreen() {
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
+              {isLoading || isAuthorizationLoading ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-medium text-slate-500">
@@ -221,10 +295,44 @@ export function ClosedDocumentsScreen() {
                 </tr>
               ) : documents.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
-                    <p className="text-sm font-medium text-slate-500">
-                      Kapalı belge bulunamadı.
-                    </p>
+                  <td colSpan={8} className="px-6 py-12">
+                    {isCompanyUser && !authorizationIsValid ? (
+                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-6 py-5 text-left">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+                          <div className="flex min-w-0 flex-1 items-start gap-4">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
+                              <ShieldAlert size={21} strokeWidth={1.8} />
+                            </div>
+
+                            <div className="min-w-0">
+                              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+                                Yetkilendirme gerekli
+                              </span>
+
+                              <h3 className="mt-1 text-base font-bold text-slate-900">
+                                Yetki süreniz dolmuştur.
+                              </h3>
+
+                              <p className="mt-1.5 text-sm leading-6 text-slate-600">
+                                Firmanın belge bilgilerinin görüntülenebilmesi
+                                için yeniden yetkilendirme yapılmalıdır.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-slate-200 pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
+                            <p className="text-xs font-medium leading-5 text-slate-600">
+                              Yetkilendirme işlemi için lütfen danışmanınız ile
+                              iletişime geçiniz.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-center text-sm font-medium text-slate-500">
+                        Belge bulunamadı.
+                      </p>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -409,6 +517,7 @@ export function ClosedDocumentsScreen() {
    ALT BİLEŞENLER
 ===================================================== */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ClosedStat({
   label,
   value,
