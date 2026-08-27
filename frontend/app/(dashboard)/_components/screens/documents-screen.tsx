@@ -685,7 +685,7 @@ export function DocumentsScreen({
                   setCompanyStatusFilter(null);
                   setShowCompanyExtensionEligible(true);
                 } else {
-                  router.push("/documents/extension-eligible");
+                  router.push("/documents?view=extension-eligible");
                 }
               }}
             />
@@ -934,13 +934,20 @@ export function DocumentsScreen({
                       </td>
 
                       <td className="px-6 py-4">
-                        <StatusBadge
-                          status={
-                            doc.status === "INACTIVE"
-                              ? (doc.documentStatus ?? "INACTIVE")
-                              : doc.status
-                          }
-                        />
+                        {isExtensionEligibleView ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            Müracaat Yapılabilir
+                          </span>
+                        ) : (
+                          <StatusBadge
+                            status={
+                              doc.status === "INACTIVE"
+                                ? (doc.documentStatus ?? "INACTIVE")
+                                : doc.status
+                            }
+                          />
+                        )}
                       </td>
 
                       <td className="px-6 py-4">
