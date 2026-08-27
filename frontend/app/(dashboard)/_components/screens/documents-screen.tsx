@@ -45,8 +45,10 @@ type CompanyApiDocument = Omit<
   status: StoredDocumentStatus;
 };
 type OpenDocumentTab = {
+  key: string;
   id: string;
   documentNumber: string | null;
+  isClosed: boolean;
 };
 
 type CompanyDetailResponse = {
@@ -93,6 +95,9 @@ type ClosedDocumentListResponse = {
     totalCount: number;
   };
 };
+
+type ClosedApiDocument = ClosedDocumentListResponse["data"]["items"][number];
+
 type ExtensionEligibleResponse = {
   success: boolean;
   message: string;
@@ -123,6 +128,32 @@ interface DocumentsScreenProps {
   ) => void;
 }
 
+async function fetchAllClosedDocuments(): Promise<ClosedApiDocument[]> {
+  const limit = 100;
+
+  const firstResponse = await apiFetch<ClosedDocumentListResponse>(
+    `/closed-documents?page=1&limit=${limit}`,
+  );
+
+  const totalPages = Math.ceil(firstResponse.data.totalCount / limit);
+
+  if (totalPages <= 1) {
+    return firstResponse.data.items;
+  }
+
+  const remainingResponses = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) =>
+      apiFetch<ClosedDocumentListResponse>(
+        `/closed-documents?page=${index + 2}&limit=${limit}`,
+      ),
+    ),
+  );
+
+  return [
+    ...firstResponse.data.items,
+    ...remainingResponses.flatMap((response) => response.data.items),
+  ];
+}
 function formatDate(date: string | null): string {
   if (!date) return "-";
 
@@ -191,8 +222,12 @@ export function DocumentsScreen({
 
   const [currentPage, setCurrentPage] = useState(1);
   const [openDocuments, setOpenDocuments] = useState<OpenDocumentTab[]>([]);
-  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+  const [activeDocumentKey, setActiveDocumentKey] = useState<string | null>(
+    null,
+  );
   const [totalPages, setTotalPages] = useState(1);
+  const [showCompanyExtensionEligible, setShowCompanyExtensionEligible] =
+    useState(false);
   const [closedDocumentCount, setClosedDocumentCount] = useState(0);
   const [extensionEligibleCount, setExtensionEligibleCount] = useState(0);
   const [summary, setSummary] = useState({
@@ -203,6 +238,9 @@ export function DocumentsScreen({
     inactive: 0,
   });
   const [documents, setDocuments] = useState<ApiDocument[]>([]);
+
+  const [companyStatusFilter, setCompanyStatusFilter] =
+    useState<DocumentStatus | null>(null);
 
   const [, setAuthorizationEndDate] = useState<string | null>(null);
 
@@ -217,22 +255,17 @@ export function DocumentsScreen({
       setLoadError("");
 
       try {
-        // ADMIN tarafından firma seçilmişse
         if (companyId) {
-          const response = await apiFetch<CompanyDetailResponse>(
-            `/companies/${companyId}`,
-          );
+          const [response, allClosedDocuments] = await Promise.all([
+            apiFetch<CompanyDetailResponse>(`/companies/${companyId}`),
+            fetchAllClosedDocuments(),
+          ]);
 
-          const mappedDocuments: ApiDocument[] = response.data.documents.map(
+          const openDocuments: ApiDocument[] = response.data.documents.map(
             (document) => ({
               ...document,
-
-              // Veritabanındaki OPEN/INACTIVE/CANCELLED değerini sakla
               documentStatus: document.status,
-
-              // Tarihe göre ekranda gösterilecek durumu hesapla
               status: calculateDocumentStatus(document),
-
               company: {
                 id: response.data.id,
                 externalCompanyId: response.data.externalCompanyId,
@@ -241,6 +274,31 @@ export function DocumentsScreen({
               },
             }),
           );
+
+          const companyClosedDocuments: ApiDocument[] = allClosedDocuments
+            .filter((document) => document.company?.id === response.data.id)
+            .map((document) => ({
+              ...document,
+              isActive: false,
+              status: "INACTIVE",
+              documentStatus: document.status,
+            }));
+
+          /*
+           * Aynı belge hem açık listede hem kapalı listede bulunuyorsa
+           * kapalı/iptal kaydı esas alınır.
+           */
+          const documentsByExternalId = new Map<number, ApiDocument>();
+
+          openDocuments.forEach((document) => {
+            documentsByExternalId.set(document.externalDocumentId, document);
+          });
+
+          companyClosedDocuments.forEach((document) => {
+            documentsByExternalId.set(document.externalDocumentId, document);
+          });
+
+          const mappedDocuments = Array.from(documentsByExternalId.values());
 
           setDocuments(mappedDocuments);
 
@@ -260,8 +318,10 @@ export function DocumentsScreen({
             ).length,
           });
 
+          setClosedDocumentCount(companyClosedDocuments.length);
           setTotalPages(1);
           setAuthorizationEndDate(response.data.authorizationEndDate);
+
           return;
         }
 
@@ -418,10 +478,13 @@ export function DocumentsScreen({
   function handleOpenDocument(
     documentId: string,
     documentNumber: string | null,
+    isClosed: boolean,
   ) {
+    const documentKey = `${isClosed ? "closed" : "open"}-${documentId}`;
+
     setOpenDocuments((current) => {
       const alreadyOpen = current.some(
-        (document) => document.id === documentId,
+        (document) => document.key === documentKey,
       );
 
       if (alreadyOpen) return current;
@@ -429,13 +492,15 @@ export function DocumentsScreen({
       return [
         ...current,
         {
+          key: documentKey,
           id: documentId,
           documentNumber,
+          isClosed,
         },
       ];
     });
 
-    setActiveDocumentId(documentId);
+    setActiveDocumentKey(documentKey);
 
     requestAnimationFrame(() => {
       documentTabsRef.current?.scrollIntoView({
@@ -444,20 +509,51 @@ export function DocumentsScreen({
       });
     });
   }
-
-  function handleCloseDocument(documentId: string) {
+  function handleCloseDocument(documentKey: string) {
     setOpenDocuments((current) => {
       const remaining = current.filter(
-        (document) => document.id !== documentId,
+        (document) => document.key !== documentKey,
       );
 
-      if (activeDocumentId === documentId) {
-        setActiveDocumentId(remaining.at(-1)?.id ?? null);
+      if (activeDocumentKey === documentKey) {
+        setActiveDocumentKey(remaining.at(-1)?.key ?? null);
       }
 
       return remaining;
     });
   }
+  const visibleDocuments = companyId
+    ? documents.filter((document) => {
+        // Süre Uzatma kartına basıldıysa
+        if (showCompanyExtensionEligible) {
+          if (
+            !document.documentEndDate ||
+            document.status === "INACTIVE" ||
+            document.status === "EXPIRED"
+          ) {
+            return false;
+          }
+
+          const today = new Date();
+          const documentEndDate = new Date(document.documentEndDate);
+          const applicationStartDate = new Date(document.documentEndDate);
+
+          today.setHours(0, 0, 0, 0);
+          documentEndDate.setHours(0, 0, 0, 0);
+          applicationStartDate.setHours(0, 0, 0, 0);
+
+          // Belge bitiş tarihinden 6 ay öncesi
+          applicationStartDate.setMonth(applicationStartDate.getMonth() - 6);
+
+          return today >= applicationStartDate && today <= documentEndDate;
+        }
+
+        // Diğer durum kartlarının filtresi
+        return companyStatusFilter
+          ? document.status === companyStatusFilter
+          : true;
+      })
+    : documents;
 
   return (
     <div className="space-y-5">
@@ -493,7 +589,14 @@ export function DocumentsScreen({
               label="Toplam Belge"
               value={String(summary.total)}
               icon={<FileText size={15} />}
-              onClick={() => router.push("/documents")}
+              onClick={() => {
+                if (companyId) {
+                  setCompanyStatusFilter(null);
+                  setShowCompanyExtensionEligible(false);
+                } else {
+                  router.push("/documents");
+                }
+              }}
             />
 
             <OperationStat
@@ -501,23 +604,42 @@ export function DocumentsScreen({
               value={String(extensionEligibleCount)}
               icon={<CalendarDays size={15} />}
               valueClass="text-red-600"
-              onClick={() => router.push("/documents?view=extension-eligible")}
+              onClick={() => {
+                if (companyId) {
+                  setCompanyStatusFilter(null);
+                  setShowCompanyExtensionEligible(true);
+                } else {
+                  router.push("/documents/extension-eligible");
+                }
+              }}
             />
-
             <OperationStat
               label="Süresi Yaklaşan"
               value={String(summary.expiring)}
               icon={<CalendarDays size={15} />}
               valueClass="text-amber-600"
-              onClick={() => router.push("/documents?status=EXPIRING")}
+              onClick={() => {
+                if (companyId) {
+                  setShowCompanyExtensionEligible(false);
+                  setCompanyStatusFilter("EXPIRING");
+                } else {
+                  router.push("/documents?status=EXPIRING");
+                }
+              }}
             />
-
             <OperationStat
               label="Süresi Dolmuş"
               value={String(summary.expired)}
               icon={<ShieldCheck size={15} />}
               valueClass="text-red-600"
-              onClick={() => router.push("/documents?status=EXPIRED")}
+              onClick={() => {
+                if (companyId) {
+                  setShowCompanyExtensionEligible(false);
+                  setCompanyStatusFilter("EXPIRED");
+                } else {
+                  router.push("/documents?status=EXPIRED");
+                }
+              }}
             />
 
             <OperationStat
@@ -525,7 +647,14 @@ export function DocumentsScreen({
               value={String(summary.active)}
               icon={<FileCheck2 size={15} />}
               valueClass="text-emerald-600"
-              onClick={() => router.push("/documents?status=ACTIVE")}
+              onClick={() => {
+                if (companyId) {
+                  setShowCompanyExtensionEligible(false);
+                  setCompanyStatusFilter("ACTIVE");
+                } else {
+                  router.push("/documents?status=ACTIVE");
+                }
+              }}
             />
 
             {variant === "admin" && (
@@ -534,7 +663,14 @@ export function DocumentsScreen({
                 value={String(closedDocumentCount)}
                 icon={<ShieldCheck size={15} />}
                 valueClass="text-slate-600"
-                onClick={() => router.push("/documents?status=INACTIVE")}
+                onClick={() => {
+                  if (companyId) {
+                    setShowCompanyExtensionEligible(false);
+                    setCompanyStatusFilter("INACTIVE");
+                  } else {
+                    router.push("/documents?status=INACTIVE");
+                  }
+                }}
               />
             )}
           </div>
@@ -602,7 +738,7 @@ export function DocumentsScreen({
                     <p className="mt-1 text-xs text-slate-500">{loadError}</p>
                   </td>
                 </tr>
-              ) : documents.length === 0 ? (
+              ) : visibleDocuments.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center">
                     <p className="text-sm font-medium text-slate-500">
@@ -611,12 +747,16 @@ export function DocumentsScreen({
                   </td>
                 </tr>
               ) : (
-                documents.map((doc) => {
-                  const isSelected = activeDocumentId === String(doc.id);
+                visibleDocuments.map((doc) => {
+                  const documentKey = `${
+                    doc.status === "INACTIVE" ? "closed" : "open"
+                  }-${doc.id}`;
+
+                  const isSelected = activeDocumentKey === documentKey;
 
                   return (
                     <tr
-                      key={doc.id}
+                      key={documentKey}
                       className={`transition-colors ${
                         isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
                       }`}
@@ -694,6 +834,7 @@ export function DocumentsScreen({
                               handleOpenDocument(
                                 String(doc.id),
                                 doc.documentNumber,
+                                doc.status === "INACTIVE",
                               )
                             }
                             className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
@@ -757,7 +898,7 @@ export function DocumentsScreen({
           {/* BELGE TABLARI */}
           <div className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-slate-50 px-5 pt-4">
             {openDocuments.map((document) => {
-              const isActive = activeDocumentId === document.id;
+              const isActive = activeDocumentKey === document.key;
 
               const label = document.documentNumber
                 ? `${document.documentNumber} No'lu Belge`
@@ -765,7 +906,7 @@ export function DocumentsScreen({
 
               return (
                 <div
-                  key={document.id}
+                  key={document.key}
                   className={`flex shrink-0 items-center rounded-t-xl border border-b-0 ${
                     isActive
                       ? "border-slate-200 bg-white font-semibold text-red-600"
@@ -774,7 +915,7 @@ export function DocumentsScreen({
                 >
                   <button
                     type="button"
-                    onClick={() => setActiveDocumentId(document.id)}
+                    onClick={() => setActiveDocumentKey(document.key)}
                     className="max-w-56 truncate px-4 py-3 text-xs"
                   >
                     {label}
@@ -782,7 +923,7 @@ export function DocumentsScreen({
 
                   <button
                     type="button"
-                    onClick={() => handleCloseDocument(document.id)}
+                    onClick={() => handleCloseDocument(document.key)}
                     className="mr-2 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
                   >
                     <X size={14} />
@@ -803,15 +944,16 @@ export function DocumentsScreen({
           <div className="p-6">
             {openDocuments.map((document) => (
               <div
-                key={document.id}
+                key={document.key}
                 className={
-                  document.id === activeDocumentId ? "block" : "hidden"
+                  document.key === activeDocumentKey ? "block" : "hidden"
                 }
               >
                 <DocumentDetailScreen
+                  key={document.key}
                   documentId={document.id}
                   variant={variant}
-                  isClosed={status === "INACTIVE"}
+                  isClosed={document.isClosed}
                 />
               </div>
             ))}
