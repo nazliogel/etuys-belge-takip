@@ -378,4 +378,160 @@ export class DocumentService {
       })),
     };
   }
+
+  async getDocumentSupports(id: number, userId: number, role: UserRole) {
+    const document = await this.documentRepository.findById(id);
+
+    if (!document) {
+      throw new AppError("Document not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "DOCUMENT_NOT_FOUND",
+      });
+    }
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      if (document.companyId !== company.id) {
+        throw new AppError(
+          "You do not have permission to access this document.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
+    }
+
+    const supports = document.detail?.supports ?? [];
+
+    return {
+      documentId: document.id,
+      externalDocumentId: document.externalDocumentId,
+      documentNumber: document.documentNumber,
+
+      items: supports.map((support) => ({
+        id: support.id,
+        supportType: support.supportType,
+        supportTypeCode: support.supportTypeCode,
+        supportRate: support.supportRate,
+        supportRateCode: support.supportRateCode,
+        supportDescription: support.supportDescription,
+      })),
+    };
+  }
+  async getDocumentFinancialInfo(id: number, userId: number, role: UserRole) {
+    const document = await this.documentRepository.findById(id);
+
+    if (!document) {
+      throw new AppError("Document not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "DOCUMENT_NOT_FOUND",
+      });
+    }
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      if (document.companyId !== company.id) {
+        throw new AppError(
+          "You do not have permission to access this document.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
+    }
+
+    const financialInfo = document.detail?.financialInfo ?? null;
+
+    return {
+      documentId: document.id,
+      externalDocumentId: document.externalDocumentId,
+      documentNumber: document.documentNumber,
+
+      financialInfo: financialInfo
+        ? {
+            id: financialInfo.id,
+            externalFinancialInfoId: financialInfo.externalFinancialInfoId,
+
+            totalInvestment: financialInfo.totalInvestment?.toString() ?? null,
+            totalFinancing: financialInfo.totalFinancing?.toString() ?? null,
+            equity: financialInfo.equity?.toString() ?? null,
+            equityRate: financialInfo.equityRate?.toString() ?? null,
+            foreignResources:
+              financialInfo.foreignResources?.toString() ?? null,
+            foreignResourcesRate:
+              financialInfo.foreignResourcesRate?.toString() ?? null,
+
+            tlLoan: financialInfo.tlLoan?.toString() ?? null,
+            foreignCurrencyLoan:
+              financialInfo.foreignCurrencyLoan?.toString() ?? null,
+            foreignCurrencyIndexedLoan:
+              financialInfo.foreignCurrencyIndexedLoan?.toString() ?? null,
+            domesticLoan: financialInfo.domesticLoan?.toString() ?? null,
+            foreignLoan: financialInfo.foreignLoan?.toString() ?? null,
+            otherLoans: financialInfo.otherLoans?.toString() ?? null,
+            financialLeasing:
+              financialInfo.financialLeasing?.toString() ?? null,
+
+            domesticMachinery:
+              financialInfo.domesticMachinery?.toString() ?? null,
+            importedMachinery:
+              financialInfo.importedMachinery?.toString() ?? null,
+            totalMachineryExpenses:
+              financialInfo.totalMachineryExpenses?.toString() ?? null,
+            newMachinery: financialInfo.newMachinery?.toString() ?? null,
+            usedMachinery: financialInfo.usedMachinery?.toString() ?? null,
+            importedMachineryUsd:
+              financialInfo.importedMachineryUsd?.toString() ?? null,
+
+            totalBuildingConstructionExpenses:
+              financialInfo.totalBuildingConstructionExpenses?.toString() ??
+              null,
+            mainBuilding: financialInfo.mainBuilding?.toString() ?? null,
+            auxiliaryEnterpriseEquipment:
+              financialInfo.auxiliaryEnterpriseEquipment?.toString() ?? null,
+            auxiliaryFacilities:
+              financialInfo.auxiliaryFacilities?.toString() ?? null,
+
+            otherInvestmentExpenses:
+              financialInfo.otherInvestmentExpenses?.toString() ?? null,
+            landCost: financialInfo.landCost?.toString() ?? null,
+            landArrangement: financialInfo.landArrangement?.toString() ?? null,
+            importCustoms: financialInfo.importCustoms?.toString() ?? null,
+            transportInsurance:
+              financialInfo.transportInsurance?.toString() ?? null,
+            assembly: financialInfo.assembly?.toString() ?? null,
+            studyProject: financialInfo.studyProject?.toString() ?? null,
+            otherExpenses: financialInfo.otherExpenses?.toString() ?? null,
+            generalExpenses: financialInfo.generalExpenses?.toString() ?? null,
+
+            fixedInvestmentUsd:
+              financialInfo.fixedInvestmentUsd?.toString() ?? null,
+            fixedInvestmentCpi:
+              financialInfo.fixedInvestmentCpi?.toString() ?? null,
+            fixedInvestmentUsdFirstCopy:
+              financialInfo.fixedInvestmentUsdFirstCopy?.toString() ?? null,
+            fixedInvestmentCpiFirstCopy:
+              financialInfo.fixedInvestmentCpiFirstCopy?.toString() ?? null,
+          }
+        : null,
+    };
+  }
 }

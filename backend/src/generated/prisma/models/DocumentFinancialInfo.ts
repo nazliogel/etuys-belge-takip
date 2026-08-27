@@ -32,7 +32,39 @@ export type DocumentFinancialInfoAvgAggregateOutputType = {
   totalInvestment: runtime.Decimal | null
   totalFinancing: runtime.Decimal | null
   equity: runtime.Decimal | null
+  equityRate: runtime.Decimal | null
   foreignResources: runtime.Decimal | null
+  foreignResourcesRate: runtime.Decimal | null
+  tlLoan: runtime.Decimal | null
+  foreignCurrencyLoan: runtime.Decimal | null
+  foreignCurrencyIndexedLoan: runtime.Decimal | null
+  domesticLoan: runtime.Decimal | null
+  foreignLoan: runtime.Decimal | null
+  otherLoans: runtime.Decimal | null
+  financialLeasing: runtime.Decimal | null
+  domesticMachinery: runtime.Decimal | null
+  importedMachinery: runtime.Decimal | null
+  totalMachineryExpenses: runtime.Decimal | null
+  newMachinery: runtime.Decimal | null
+  usedMachinery: runtime.Decimal | null
+  importedMachineryUsd: runtime.Decimal | null
+  totalBuildingConstructionExpenses: runtime.Decimal | null
+  mainBuilding: runtime.Decimal | null
+  auxiliaryEnterpriseEquipment: runtime.Decimal | null
+  auxiliaryFacilities: runtime.Decimal | null
+  otherInvestmentExpenses: runtime.Decimal | null
+  landCost: runtime.Decimal | null
+  landArrangement: runtime.Decimal | null
+  importCustoms: runtime.Decimal | null
+  transportInsurance: runtime.Decimal | null
+  assembly: runtime.Decimal | null
+  studyProject: runtime.Decimal | null
+  otherExpenses: runtime.Decimal | null
+  generalExpenses: runtime.Decimal | null
+  fixedInvestmentUsd: runtime.Decimal | null
+  fixedInvestmentCpi: runtime.Decimal | null
+  fixedInvestmentUsdFirstCopy: runtime.Decimal | null
+  fixedInvestmentCpiFirstCopy: runtime.Decimal | null
 }
 
 export type DocumentFinancialInfoSumAggregateOutputType = {
@@ -41,7 +73,39 @@ export type DocumentFinancialInfoSumAggregateOutputType = {
   totalInvestment: runtime.Decimal | null
   totalFinancing: runtime.Decimal | null
   equity: runtime.Decimal | null
+  equityRate: runtime.Decimal | null
   foreignResources: runtime.Decimal | null
+  foreignResourcesRate: runtime.Decimal | null
+  tlLoan: runtime.Decimal | null
+  foreignCurrencyLoan: runtime.Decimal | null
+  foreignCurrencyIndexedLoan: runtime.Decimal | null
+  domesticLoan: runtime.Decimal | null
+  foreignLoan: runtime.Decimal | null
+  otherLoans: runtime.Decimal | null
+  financialLeasing: runtime.Decimal | null
+  domesticMachinery: runtime.Decimal | null
+  importedMachinery: runtime.Decimal | null
+  totalMachineryExpenses: runtime.Decimal | null
+  newMachinery: runtime.Decimal | null
+  usedMachinery: runtime.Decimal | null
+  importedMachineryUsd: runtime.Decimal | null
+  totalBuildingConstructionExpenses: runtime.Decimal | null
+  mainBuilding: runtime.Decimal | null
+  auxiliaryEnterpriseEquipment: runtime.Decimal | null
+  auxiliaryFacilities: runtime.Decimal | null
+  otherInvestmentExpenses: runtime.Decimal | null
+  landCost: runtime.Decimal | null
+  landArrangement: runtime.Decimal | null
+  importCustoms: runtime.Decimal | null
+  transportInsurance: runtime.Decimal | null
+  assembly: runtime.Decimal | null
+  studyProject: runtime.Decimal | null
+  otherExpenses: runtime.Decimal | null
+  generalExpenses: runtime.Decimal | null
+  fixedInvestmentUsd: runtime.Decimal | null
+  fixedInvestmentCpi: runtime.Decimal | null
+  fixedInvestmentUsdFirstCopy: runtime.Decimal | null
+  fixedInvestmentCpiFirstCopy: runtime.Decimal | null
 }
 
 export type DocumentFinancialInfoMinAggregateOutputType = {
@@ -51,7 +115,39 @@ export type DocumentFinancialInfoMinAggregateOutputType = {
   totalInvestment: runtime.Decimal | null
   totalFinancing: runtime.Decimal | null
   equity: runtime.Decimal | null
+  equityRate: runtime.Decimal | null
   foreignResources: runtime.Decimal | null
+  foreignResourcesRate: runtime.Decimal | null
+  tlLoan: runtime.Decimal | null
+  foreignCurrencyLoan: runtime.Decimal | null
+  foreignCurrencyIndexedLoan: runtime.Decimal | null
+  domesticLoan: runtime.Decimal | null
+  foreignLoan: runtime.Decimal | null
+  otherLoans: runtime.Decimal | null
+  financialLeasing: runtime.Decimal | null
+  domesticMachinery: runtime.Decimal | null
+  importedMachinery: runtime.Decimal | null
+  totalMachineryExpenses: runtime.Decimal | null
+  newMachinery: runtime.Decimal | null
+  usedMachinery: runtime.Decimal | null
+  importedMachineryUsd: runtime.Decimal | null
+  totalBuildingConstructionExpenses: runtime.Decimal | null
+  mainBuilding: runtime.Decimal | null
+  auxiliaryEnterpriseEquipment: runtime.Decimal | null
+  auxiliaryFacilities: runtime.Decimal | null
+  otherInvestmentExpenses: runtime.Decimal | null
+  landCost: runtime.Decimal | null
+  landArrangement: runtime.Decimal | null
+  importCustoms: runtime.Decimal | null
+  transportInsurance: runtime.Decimal | null
+  assembly: runtime.Decimal | null
+  studyProject: runtime.Decimal | null
+  otherExpenses: runtime.Decimal | null
+  generalExpenses: runtime.Decimal | null
+  fixedInvestmentUsd: runtime.Decimal | null
+  fixedInvestmentCpi: runtime.Decimal | null
+  fixedInvestmentUsdFirstCopy: runtime.Decimal | null
+  fixedInvestmentCpiFirstCopy: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,7 +159,39 @@ export type DocumentFinancialInfoMaxAggregateOutputType = {
   totalInvestment: runtime.Decimal | null
   totalFinancing: runtime.Decimal | null
   equity: runtime.Decimal | null
+  equityRate: runtime.Decimal | null
   foreignResources: runtime.Decimal | null
+  foreignResourcesRate: runtime.Decimal | null
+  tlLoan: runtime.Decimal | null
+  foreignCurrencyLoan: runtime.Decimal | null
+  foreignCurrencyIndexedLoan: runtime.Decimal | null
+  domesticLoan: runtime.Decimal | null
+  foreignLoan: runtime.Decimal | null
+  otherLoans: runtime.Decimal | null
+  financialLeasing: runtime.Decimal | null
+  domesticMachinery: runtime.Decimal | null
+  importedMachinery: runtime.Decimal | null
+  totalMachineryExpenses: runtime.Decimal | null
+  newMachinery: runtime.Decimal | null
+  usedMachinery: runtime.Decimal | null
+  importedMachineryUsd: runtime.Decimal | null
+  totalBuildingConstructionExpenses: runtime.Decimal | null
+  mainBuilding: runtime.Decimal | null
+  auxiliaryEnterpriseEquipment: runtime.Decimal | null
+  auxiliaryFacilities: runtime.Decimal | null
+  otherInvestmentExpenses: runtime.Decimal | null
+  landCost: runtime.Decimal | null
+  landArrangement: runtime.Decimal | null
+  importCustoms: runtime.Decimal | null
+  transportInsurance: runtime.Decimal | null
+  assembly: runtime.Decimal | null
+  studyProject: runtime.Decimal | null
+  otherExpenses: runtime.Decimal | null
+  generalExpenses: runtime.Decimal | null
+  fixedInvestmentUsd: runtime.Decimal | null
+  fixedInvestmentCpi: runtime.Decimal | null
+  fixedInvestmentUsdFirstCopy: runtime.Decimal | null
+  fixedInvestmentCpiFirstCopy: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,7 +203,39 @@ export type DocumentFinancialInfoCountAggregateOutputType = {
   totalInvestment: number
   totalFinancing: number
   equity: number
+  equityRate: number
   foreignResources: number
+  foreignResourcesRate: number
+  tlLoan: number
+  foreignCurrencyLoan: number
+  foreignCurrencyIndexedLoan: number
+  domesticLoan: number
+  foreignLoan: number
+  otherLoans: number
+  financialLeasing: number
+  domesticMachinery: number
+  importedMachinery: number
+  totalMachineryExpenses: number
+  newMachinery: number
+  usedMachinery: number
+  importedMachineryUsd: number
+  totalBuildingConstructionExpenses: number
+  mainBuilding: number
+  auxiliaryEnterpriseEquipment: number
+  auxiliaryFacilities: number
+  otherInvestmentExpenses: number
+  landCost: number
+  landArrangement: number
+  importCustoms: number
+  transportInsurance: number
+  assembly: number
+  studyProject: number
+  otherExpenses: number
+  generalExpenses: number
+  fixedInvestmentUsd: number
+  fixedInvestmentCpi: number
+  fixedInvestmentUsdFirstCopy: number
+  fixedInvestmentCpiFirstCopy: number
   rawData: number
   createdAt: number
   updatedAt: number
@@ -89,7 +249,39 @@ export type DocumentFinancialInfoAvgAggregateInputType = {
   totalInvestment?: true
   totalFinancing?: true
   equity?: true
+  equityRate?: true
   foreignResources?: true
+  foreignResourcesRate?: true
+  tlLoan?: true
+  foreignCurrencyLoan?: true
+  foreignCurrencyIndexedLoan?: true
+  domesticLoan?: true
+  foreignLoan?: true
+  otherLoans?: true
+  financialLeasing?: true
+  domesticMachinery?: true
+  importedMachinery?: true
+  totalMachineryExpenses?: true
+  newMachinery?: true
+  usedMachinery?: true
+  importedMachineryUsd?: true
+  totalBuildingConstructionExpenses?: true
+  mainBuilding?: true
+  auxiliaryEnterpriseEquipment?: true
+  auxiliaryFacilities?: true
+  otherInvestmentExpenses?: true
+  landCost?: true
+  landArrangement?: true
+  importCustoms?: true
+  transportInsurance?: true
+  assembly?: true
+  studyProject?: true
+  otherExpenses?: true
+  generalExpenses?: true
+  fixedInvestmentUsd?: true
+  fixedInvestmentCpi?: true
+  fixedInvestmentUsdFirstCopy?: true
+  fixedInvestmentCpiFirstCopy?: true
 }
 
 export type DocumentFinancialInfoSumAggregateInputType = {
@@ -98,7 +290,39 @@ export type DocumentFinancialInfoSumAggregateInputType = {
   totalInvestment?: true
   totalFinancing?: true
   equity?: true
+  equityRate?: true
   foreignResources?: true
+  foreignResourcesRate?: true
+  tlLoan?: true
+  foreignCurrencyLoan?: true
+  foreignCurrencyIndexedLoan?: true
+  domesticLoan?: true
+  foreignLoan?: true
+  otherLoans?: true
+  financialLeasing?: true
+  domesticMachinery?: true
+  importedMachinery?: true
+  totalMachineryExpenses?: true
+  newMachinery?: true
+  usedMachinery?: true
+  importedMachineryUsd?: true
+  totalBuildingConstructionExpenses?: true
+  mainBuilding?: true
+  auxiliaryEnterpriseEquipment?: true
+  auxiliaryFacilities?: true
+  otherInvestmentExpenses?: true
+  landCost?: true
+  landArrangement?: true
+  importCustoms?: true
+  transportInsurance?: true
+  assembly?: true
+  studyProject?: true
+  otherExpenses?: true
+  generalExpenses?: true
+  fixedInvestmentUsd?: true
+  fixedInvestmentCpi?: true
+  fixedInvestmentUsdFirstCopy?: true
+  fixedInvestmentCpiFirstCopy?: true
 }
 
 export type DocumentFinancialInfoMinAggregateInputType = {
@@ -108,7 +332,39 @@ export type DocumentFinancialInfoMinAggregateInputType = {
   totalInvestment?: true
   totalFinancing?: true
   equity?: true
+  equityRate?: true
   foreignResources?: true
+  foreignResourcesRate?: true
+  tlLoan?: true
+  foreignCurrencyLoan?: true
+  foreignCurrencyIndexedLoan?: true
+  domesticLoan?: true
+  foreignLoan?: true
+  otherLoans?: true
+  financialLeasing?: true
+  domesticMachinery?: true
+  importedMachinery?: true
+  totalMachineryExpenses?: true
+  newMachinery?: true
+  usedMachinery?: true
+  importedMachineryUsd?: true
+  totalBuildingConstructionExpenses?: true
+  mainBuilding?: true
+  auxiliaryEnterpriseEquipment?: true
+  auxiliaryFacilities?: true
+  otherInvestmentExpenses?: true
+  landCost?: true
+  landArrangement?: true
+  importCustoms?: true
+  transportInsurance?: true
+  assembly?: true
+  studyProject?: true
+  otherExpenses?: true
+  generalExpenses?: true
+  fixedInvestmentUsd?: true
+  fixedInvestmentCpi?: true
+  fixedInvestmentUsdFirstCopy?: true
+  fixedInvestmentCpiFirstCopy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -120,7 +376,39 @@ export type DocumentFinancialInfoMaxAggregateInputType = {
   totalInvestment?: true
   totalFinancing?: true
   equity?: true
+  equityRate?: true
   foreignResources?: true
+  foreignResourcesRate?: true
+  tlLoan?: true
+  foreignCurrencyLoan?: true
+  foreignCurrencyIndexedLoan?: true
+  domesticLoan?: true
+  foreignLoan?: true
+  otherLoans?: true
+  financialLeasing?: true
+  domesticMachinery?: true
+  importedMachinery?: true
+  totalMachineryExpenses?: true
+  newMachinery?: true
+  usedMachinery?: true
+  importedMachineryUsd?: true
+  totalBuildingConstructionExpenses?: true
+  mainBuilding?: true
+  auxiliaryEnterpriseEquipment?: true
+  auxiliaryFacilities?: true
+  otherInvestmentExpenses?: true
+  landCost?: true
+  landArrangement?: true
+  importCustoms?: true
+  transportInsurance?: true
+  assembly?: true
+  studyProject?: true
+  otherExpenses?: true
+  generalExpenses?: true
+  fixedInvestmentUsd?: true
+  fixedInvestmentCpi?: true
+  fixedInvestmentUsdFirstCopy?: true
+  fixedInvestmentCpiFirstCopy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -132,7 +420,39 @@ export type DocumentFinancialInfoCountAggregateInputType = {
   totalInvestment?: true
   totalFinancing?: true
   equity?: true
+  equityRate?: true
   foreignResources?: true
+  foreignResourcesRate?: true
+  tlLoan?: true
+  foreignCurrencyLoan?: true
+  foreignCurrencyIndexedLoan?: true
+  domesticLoan?: true
+  foreignLoan?: true
+  otherLoans?: true
+  financialLeasing?: true
+  domesticMachinery?: true
+  importedMachinery?: true
+  totalMachineryExpenses?: true
+  newMachinery?: true
+  usedMachinery?: true
+  importedMachineryUsd?: true
+  totalBuildingConstructionExpenses?: true
+  mainBuilding?: true
+  auxiliaryEnterpriseEquipment?: true
+  auxiliaryFacilities?: true
+  otherInvestmentExpenses?: true
+  landCost?: true
+  landArrangement?: true
+  importCustoms?: true
+  transportInsurance?: true
+  assembly?: true
+  studyProject?: true
+  otherExpenses?: true
+  generalExpenses?: true
+  fixedInvestmentUsd?: true
+  fixedInvestmentCpi?: true
+  fixedInvestmentUsdFirstCopy?: true
+  fixedInvestmentCpiFirstCopy?: true
   rawData?: true
   createdAt?: true
   updatedAt?: true
@@ -232,7 +552,39 @@ export type DocumentFinancialInfoGroupByOutputType = {
   totalInvestment: runtime.Decimal | null
   totalFinancing: runtime.Decimal | null
   equity: runtime.Decimal | null
+  equityRate: runtime.Decimal | null
   foreignResources: runtime.Decimal | null
+  foreignResourcesRate: runtime.Decimal | null
+  tlLoan: runtime.Decimal | null
+  foreignCurrencyLoan: runtime.Decimal | null
+  foreignCurrencyIndexedLoan: runtime.Decimal | null
+  domesticLoan: runtime.Decimal | null
+  foreignLoan: runtime.Decimal | null
+  otherLoans: runtime.Decimal | null
+  financialLeasing: runtime.Decimal | null
+  domesticMachinery: runtime.Decimal | null
+  importedMachinery: runtime.Decimal | null
+  totalMachineryExpenses: runtime.Decimal | null
+  newMachinery: runtime.Decimal | null
+  usedMachinery: runtime.Decimal | null
+  importedMachineryUsd: runtime.Decimal | null
+  totalBuildingConstructionExpenses: runtime.Decimal | null
+  mainBuilding: runtime.Decimal | null
+  auxiliaryEnterpriseEquipment: runtime.Decimal | null
+  auxiliaryFacilities: runtime.Decimal | null
+  otherInvestmentExpenses: runtime.Decimal | null
+  landCost: runtime.Decimal | null
+  landArrangement: runtime.Decimal | null
+  importCustoms: runtime.Decimal | null
+  transportInsurance: runtime.Decimal | null
+  assembly: runtime.Decimal | null
+  studyProject: runtime.Decimal | null
+  otherExpenses: runtime.Decimal | null
+  generalExpenses: runtime.Decimal | null
+  fixedInvestmentUsd: runtime.Decimal | null
+  fixedInvestmentCpi: runtime.Decimal | null
+  fixedInvestmentUsdFirstCopy: runtime.Decimal | null
+  fixedInvestmentCpiFirstCopy: runtime.Decimal | null
   rawData: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
@@ -268,7 +620,39 @@ export type DocumentFinancialInfoWhereInput = {
   totalInvestment?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.JsonNullableFilter<"DocumentFinancialInfo">
   createdAt?: Prisma.DateTimeFilter<"DocumentFinancialInfo"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentFinancialInfo"> | Date | string
@@ -282,7 +666,39 @@ export type DocumentFinancialInfoOrderByWithRelationInput = {
   totalInvestment?: Prisma.SortOrderInput | Prisma.SortOrder
   totalFinancing?: Prisma.SortOrderInput | Prisma.SortOrder
   equity?: Prisma.SortOrderInput | Prisma.SortOrder
+  equityRate?: Prisma.SortOrderInput | Prisma.SortOrder
   foreignResources?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  otherLoans?: Prisma.SortOrderInput | Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrderInput | Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  newMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrderInput | Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrderInput | Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrderInput | Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  landCost?: Prisma.SortOrderInput | Prisma.SortOrder
+  landArrangement?: Prisma.SortOrderInput | Prisma.SortOrder
+  importCustoms?: Prisma.SortOrderInput | Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrderInput | Prisma.SortOrder
+  assembly?: Prisma.SortOrderInput | Prisma.SortOrder
+  studyProject?: Prisma.SortOrderInput | Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrderInput | Prisma.SortOrder
   rawData?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -299,7 +715,39 @@ export type DocumentFinancialInfoWhereUniqueInput = Prisma.AtLeast<{
   totalInvestment?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.DecimalNullableFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.JsonNullableFilter<"DocumentFinancialInfo">
   createdAt?: Prisma.DateTimeFilter<"DocumentFinancialInfo"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentFinancialInfo"> | Date | string
@@ -313,7 +761,39 @@ export type DocumentFinancialInfoOrderByWithAggregationInput = {
   totalInvestment?: Prisma.SortOrderInput | Prisma.SortOrder
   totalFinancing?: Prisma.SortOrderInput | Prisma.SortOrder
   equity?: Prisma.SortOrderInput | Prisma.SortOrder
+  equityRate?: Prisma.SortOrderInput | Prisma.SortOrder
   foreignResources?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrderInput | Prisma.SortOrder
+  otherLoans?: Prisma.SortOrderInput | Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrderInput | Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  newMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrderInput | Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrderInput | Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrderInput | Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrderInput | Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrderInput | Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  landCost?: Prisma.SortOrderInput | Prisma.SortOrder
+  landArrangement?: Prisma.SortOrderInput | Prisma.SortOrder
+  importCustoms?: Prisma.SortOrderInput | Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrderInput | Prisma.SortOrder
+  assembly?: Prisma.SortOrderInput | Prisma.SortOrder
+  studyProject?: Prisma.SortOrderInput | Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrderInput | Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrderInput | Prisma.SortOrder
   rawData?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -334,7 +814,39 @@ export type DocumentFinancialInfoScalarWhereWithAggregatesInput = {
   totalInvestment?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.DecimalNullableWithAggregatesFilter<"DocumentFinancialInfo"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.JsonNullableWithAggregatesFilter<"DocumentFinancialInfo">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentFinancialInfo"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentFinancialInfo"> | Date | string
@@ -345,7 +857,39 @@ export type DocumentFinancialInfoCreateInput = {
   totalInvestment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -359,7 +903,39 @@ export type DocumentFinancialInfoUncheckedCreateInput = {
   totalInvestment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -370,7 +946,39 @@ export type DocumentFinancialInfoUpdateInput = {
   totalInvestment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -384,7 +992,39 @@ export type DocumentFinancialInfoUncheckedUpdateInput = {
   totalInvestment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -397,7 +1037,39 @@ export type DocumentFinancialInfoCreateManyInput = {
   totalInvestment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -408,7 +1080,39 @@ export type DocumentFinancialInfoUpdateManyMutationInput = {
   totalInvestment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -421,7 +1125,39 @@ export type DocumentFinancialInfoUncheckedUpdateManyInput = {
   totalInvestment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -439,7 +1175,39 @@ export type DocumentFinancialInfoCountOrderByAggregateInput = {
   totalInvestment?: Prisma.SortOrder
   totalFinancing?: Prisma.SortOrder
   equity?: Prisma.SortOrder
+  equityRate?: Prisma.SortOrder
   foreignResources?: Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrder
+  tlLoan?: Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrder
+  otherLoans?: Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrder
+  newMachinery?: Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrder
+  landCost?: Prisma.SortOrder
+  landArrangement?: Prisma.SortOrder
+  importCustoms?: Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrder
+  assembly?: Prisma.SortOrder
+  studyProject?: Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrder
   rawData?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -451,7 +1219,39 @@ export type DocumentFinancialInfoAvgOrderByAggregateInput = {
   totalInvestment?: Prisma.SortOrder
   totalFinancing?: Prisma.SortOrder
   equity?: Prisma.SortOrder
+  equityRate?: Prisma.SortOrder
   foreignResources?: Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrder
+  tlLoan?: Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrder
+  otherLoans?: Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrder
+  newMachinery?: Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrder
+  landCost?: Prisma.SortOrder
+  landArrangement?: Prisma.SortOrder
+  importCustoms?: Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrder
+  assembly?: Prisma.SortOrder
+  studyProject?: Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrder
 }
 
 export type DocumentFinancialInfoMaxOrderByAggregateInput = {
@@ -461,7 +1261,39 @@ export type DocumentFinancialInfoMaxOrderByAggregateInput = {
   totalInvestment?: Prisma.SortOrder
   totalFinancing?: Prisma.SortOrder
   equity?: Prisma.SortOrder
+  equityRate?: Prisma.SortOrder
   foreignResources?: Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrder
+  tlLoan?: Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrder
+  otherLoans?: Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrder
+  newMachinery?: Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrder
+  landCost?: Prisma.SortOrder
+  landArrangement?: Prisma.SortOrder
+  importCustoms?: Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrder
+  assembly?: Prisma.SortOrder
+  studyProject?: Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -473,7 +1305,39 @@ export type DocumentFinancialInfoMinOrderByAggregateInput = {
   totalInvestment?: Prisma.SortOrder
   totalFinancing?: Prisma.SortOrder
   equity?: Prisma.SortOrder
+  equityRate?: Prisma.SortOrder
   foreignResources?: Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrder
+  tlLoan?: Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrder
+  otherLoans?: Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrder
+  newMachinery?: Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrder
+  landCost?: Prisma.SortOrder
+  landArrangement?: Prisma.SortOrder
+  importCustoms?: Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrder
+  assembly?: Prisma.SortOrder
+  studyProject?: Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -484,7 +1348,39 @@ export type DocumentFinancialInfoSumOrderByAggregateInput = {
   totalInvestment?: Prisma.SortOrder
   totalFinancing?: Prisma.SortOrder
   equity?: Prisma.SortOrder
+  equityRate?: Prisma.SortOrder
   foreignResources?: Prisma.SortOrder
+  foreignResourcesRate?: Prisma.SortOrder
+  tlLoan?: Prisma.SortOrder
+  foreignCurrencyLoan?: Prisma.SortOrder
+  foreignCurrencyIndexedLoan?: Prisma.SortOrder
+  domesticLoan?: Prisma.SortOrder
+  foreignLoan?: Prisma.SortOrder
+  otherLoans?: Prisma.SortOrder
+  financialLeasing?: Prisma.SortOrder
+  domesticMachinery?: Prisma.SortOrder
+  importedMachinery?: Prisma.SortOrder
+  totalMachineryExpenses?: Prisma.SortOrder
+  newMachinery?: Prisma.SortOrder
+  usedMachinery?: Prisma.SortOrder
+  importedMachineryUsd?: Prisma.SortOrder
+  totalBuildingConstructionExpenses?: Prisma.SortOrder
+  mainBuilding?: Prisma.SortOrder
+  auxiliaryEnterpriseEquipment?: Prisma.SortOrder
+  auxiliaryFacilities?: Prisma.SortOrder
+  otherInvestmentExpenses?: Prisma.SortOrder
+  landCost?: Prisma.SortOrder
+  landArrangement?: Prisma.SortOrder
+  importCustoms?: Prisma.SortOrder
+  transportInsurance?: Prisma.SortOrder
+  assembly?: Prisma.SortOrder
+  studyProject?: Prisma.SortOrder
+  otherExpenses?: Prisma.SortOrder
+  generalExpenses?: Prisma.SortOrder
+  fixedInvestmentUsd?: Prisma.SortOrder
+  fixedInvestmentCpi?: Prisma.SortOrder
+  fixedInvestmentUsdFirstCopy?: Prisma.SortOrder
+  fixedInvestmentCpiFirstCopy?: Prisma.SortOrder
 }
 
 export type DocumentFinancialInfoCreateNestedOneWithoutDetailInput = {
@@ -524,7 +1420,39 @@ export type DocumentFinancialInfoCreateWithoutDetailInput = {
   totalInvestment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -536,7 +1464,39 @@ export type DocumentFinancialInfoUncheckedCreateWithoutDetailInput = {
   totalInvestment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -563,7 +1523,39 @@ export type DocumentFinancialInfoUpdateWithoutDetailInput = {
   totalInvestment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -575,7 +1567,39 @@ export type DocumentFinancialInfoUncheckedUpdateWithoutDetailInput = {
   totalInvestment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   totalFinancing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   equity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  equityRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   foreignResources?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignResourcesRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  tlLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignCurrencyIndexedLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  foreignLoan?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherLoans?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasing?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  domesticMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalMachineryExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  newMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usedMachinery?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importedMachineryUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalBuildingConstructionExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  mainBuilding?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryEnterpriseEquipment?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  auxiliaryFacilities?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherInvestmentExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  landArrangement?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  importCustoms?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transportInsurance?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  assembly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  studyProject?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  otherExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  generalExpenses?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpi?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentUsdFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  fixedInvestmentCpiFirstCopy?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -590,7 +1614,39 @@ export type DocumentFinancialInfoSelect<ExtArgs extends runtime.Types.Extensions
   totalInvestment?: boolean
   totalFinancing?: boolean
   equity?: boolean
+  equityRate?: boolean
   foreignResources?: boolean
+  foreignResourcesRate?: boolean
+  tlLoan?: boolean
+  foreignCurrencyLoan?: boolean
+  foreignCurrencyIndexedLoan?: boolean
+  domesticLoan?: boolean
+  foreignLoan?: boolean
+  otherLoans?: boolean
+  financialLeasing?: boolean
+  domesticMachinery?: boolean
+  importedMachinery?: boolean
+  totalMachineryExpenses?: boolean
+  newMachinery?: boolean
+  usedMachinery?: boolean
+  importedMachineryUsd?: boolean
+  totalBuildingConstructionExpenses?: boolean
+  mainBuilding?: boolean
+  auxiliaryEnterpriseEquipment?: boolean
+  auxiliaryFacilities?: boolean
+  otherInvestmentExpenses?: boolean
+  landCost?: boolean
+  landArrangement?: boolean
+  importCustoms?: boolean
+  transportInsurance?: boolean
+  assembly?: boolean
+  studyProject?: boolean
+  otherExpenses?: boolean
+  generalExpenses?: boolean
+  fixedInvestmentUsd?: boolean
+  fixedInvestmentCpi?: boolean
+  fixedInvestmentUsdFirstCopy?: boolean
+  fixedInvestmentCpiFirstCopy?: boolean
   rawData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -604,7 +1660,39 @@ export type DocumentFinancialInfoSelectCreateManyAndReturn<ExtArgs extends runti
   totalInvestment?: boolean
   totalFinancing?: boolean
   equity?: boolean
+  equityRate?: boolean
   foreignResources?: boolean
+  foreignResourcesRate?: boolean
+  tlLoan?: boolean
+  foreignCurrencyLoan?: boolean
+  foreignCurrencyIndexedLoan?: boolean
+  domesticLoan?: boolean
+  foreignLoan?: boolean
+  otherLoans?: boolean
+  financialLeasing?: boolean
+  domesticMachinery?: boolean
+  importedMachinery?: boolean
+  totalMachineryExpenses?: boolean
+  newMachinery?: boolean
+  usedMachinery?: boolean
+  importedMachineryUsd?: boolean
+  totalBuildingConstructionExpenses?: boolean
+  mainBuilding?: boolean
+  auxiliaryEnterpriseEquipment?: boolean
+  auxiliaryFacilities?: boolean
+  otherInvestmentExpenses?: boolean
+  landCost?: boolean
+  landArrangement?: boolean
+  importCustoms?: boolean
+  transportInsurance?: boolean
+  assembly?: boolean
+  studyProject?: boolean
+  otherExpenses?: boolean
+  generalExpenses?: boolean
+  fixedInvestmentUsd?: boolean
+  fixedInvestmentCpi?: boolean
+  fixedInvestmentUsdFirstCopy?: boolean
+  fixedInvestmentCpiFirstCopy?: boolean
   rawData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -618,7 +1706,39 @@ export type DocumentFinancialInfoSelectUpdateManyAndReturn<ExtArgs extends runti
   totalInvestment?: boolean
   totalFinancing?: boolean
   equity?: boolean
+  equityRate?: boolean
   foreignResources?: boolean
+  foreignResourcesRate?: boolean
+  tlLoan?: boolean
+  foreignCurrencyLoan?: boolean
+  foreignCurrencyIndexedLoan?: boolean
+  domesticLoan?: boolean
+  foreignLoan?: boolean
+  otherLoans?: boolean
+  financialLeasing?: boolean
+  domesticMachinery?: boolean
+  importedMachinery?: boolean
+  totalMachineryExpenses?: boolean
+  newMachinery?: boolean
+  usedMachinery?: boolean
+  importedMachineryUsd?: boolean
+  totalBuildingConstructionExpenses?: boolean
+  mainBuilding?: boolean
+  auxiliaryEnterpriseEquipment?: boolean
+  auxiliaryFacilities?: boolean
+  otherInvestmentExpenses?: boolean
+  landCost?: boolean
+  landArrangement?: boolean
+  importCustoms?: boolean
+  transportInsurance?: boolean
+  assembly?: boolean
+  studyProject?: boolean
+  otherExpenses?: boolean
+  generalExpenses?: boolean
+  fixedInvestmentUsd?: boolean
+  fixedInvestmentCpi?: boolean
+  fixedInvestmentUsdFirstCopy?: boolean
+  fixedInvestmentCpiFirstCopy?: boolean
   rawData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -632,13 +1752,45 @@ export type DocumentFinancialInfoSelectScalar = {
   totalInvestment?: boolean
   totalFinancing?: boolean
   equity?: boolean
+  equityRate?: boolean
   foreignResources?: boolean
+  foreignResourcesRate?: boolean
+  tlLoan?: boolean
+  foreignCurrencyLoan?: boolean
+  foreignCurrencyIndexedLoan?: boolean
+  domesticLoan?: boolean
+  foreignLoan?: boolean
+  otherLoans?: boolean
+  financialLeasing?: boolean
+  domesticMachinery?: boolean
+  importedMachinery?: boolean
+  totalMachineryExpenses?: boolean
+  newMachinery?: boolean
+  usedMachinery?: boolean
+  importedMachineryUsd?: boolean
+  totalBuildingConstructionExpenses?: boolean
+  mainBuilding?: boolean
+  auxiliaryEnterpriseEquipment?: boolean
+  auxiliaryFacilities?: boolean
+  otherInvestmentExpenses?: boolean
+  landCost?: boolean
+  landArrangement?: boolean
+  importCustoms?: boolean
+  transportInsurance?: boolean
+  assembly?: boolean
+  studyProject?: boolean
+  otherExpenses?: boolean
+  generalExpenses?: boolean
+  fixedInvestmentUsd?: boolean
+  fixedInvestmentCpi?: boolean
+  fixedInvestmentUsdFirstCopy?: boolean
+  fixedInvestmentCpiFirstCopy?: boolean
   rawData?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DocumentFinancialInfoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "detailId" | "externalFinancialInfoId" | "totalInvestment" | "totalFinancing" | "equity" | "foreignResources" | "rawData" | "createdAt" | "updatedAt", ExtArgs["result"]["documentFinancialInfo"]>
+export type DocumentFinancialInfoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "detailId" | "externalFinancialInfoId" | "totalInvestment" | "totalFinancing" | "equity" | "equityRate" | "foreignResources" | "foreignResourcesRate" | "tlLoan" | "foreignCurrencyLoan" | "foreignCurrencyIndexedLoan" | "domesticLoan" | "foreignLoan" | "otherLoans" | "financialLeasing" | "domesticMachinery" | "importedMachinery" | "totalMachineryExpenses" | "newMachinery" | "usedMachinery" | "importedMachineryUsd" | "totalBuildingConstructionExpenses" | "mainBuilding" | "auxiliaryEnterpriseEquipment" | "auxiliaryFacilities" | "otherInvestmentExpenses" | "landCost" | "landArrangement" | "importCustoms" | "transportInsurance" | "assembly" | "studyProject" | "otherExpenses" | "generalExpenses" | "fixedInvestmentUsd" | "fixedInvestmentCpi" | "fixedInvestmentUsdFirstCopy" | "fixedInvestmentCpiFirstCopy" | "rawData" | "createdAt" | "updatedAt", ExtArgs["result"]["documentFinancialInfo"]>
 export type DocumentFinancialInfoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   detail?: boolean | Prisma.DocumentDetailDefaultArgs<ExtArgs>
 }
@@ -661,7 +1813,39 @@ export type $DocumentFinancialInfoPayload<ExtArgs extends runtime.Types.Extensio
     totalInvestment: runtime.Decimal | null
     totalFinancing: runtime.Decimal | null
     equity: runtime.Decimal | null
+    equityRate: runtime.Decimal | null
     foreignResources: runtime.Decimal | null
+    foreignResourcesRate: runtime.Decimal | null
+    tlLoan: runtime.Decimal | null
+    foreignCurrencyLoan: runtime.Decimal | null
+    foreignCurrencyIndexedLoan: runtime.Decimal | null
+    domesticLoan: runtime.Decimal | null
+    foreignLoan: runtime.Decimal | null
+    otherLoans: runtime.Decimal | null
+    financialLeasing: runtime.Decimal | null
+    domesticMachinery: runtime.Decimal | null
+    importedMachinery: runtime.Decimal | null
+    totalMachineryExpenses: runtime.Decimal | null
+    newMachinery: runtime.Decimal | null
+    usedMachinery: runtime.Decimal | null
+    importedMachineryUsd: runtime.Decimal | null
+    totalBuildingConstructionExpenses: runtime.Decimal | null
+    mainBuilding: runtime.Decimal | null
+    auxiliaryEnterpriseEquipment: runtime.Decimal | null
+    auxiliaryFacilities: runtime.Decimal | null
+    otherInvestmentExpenses: runtime.Decimal | null
+    landCost: runtime.Decimal | null
+    landArrangement: runtime.Decimal | null
+    importCustoms: runtime.Decimal | null
+    transportInsurance: runtime.Decimal | null
+    assembly: runtime.Decimal | null
+    studyProject: runtime.Decimal | null
+    otherExpenses: runtime.Decimal | null
+    generalExpenses: runtime.Decimal | null
+    fixedInvestmentUsd: runtime.Decimal | null
+    fixedInvestmentCpi: runtime.Decimal | null
+    fixedInvestmentUsdFirstCopy: runtime.Decimal | null
+    fixedInvestmentCpiFirstCopy: runtime.Decimal | null
     rawData: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -1095,7 +2279,39 @@ export interface DocumentFinancialInfoFieldRefs {
   readonly totalInvestment: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
   readonly totalFinancing: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
   readonly equity: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly equityRate: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
   readonly foreignResources: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly foreignResourcesRate: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly tlLoan: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly foreignCurrencyLoan: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly foreignCurrencyIndexedLoan: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly domesticLoan: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly foreignLoan: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly otherLoans: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly financialLeasing: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly domesticMachinery: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly importedMachinery: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly totalMachineryExpenses: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly newMachinery: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly usedMachinery: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly importedMachineryUsd: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly totalBuildingConstructionExpenses: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly mainBuilding: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly auxiliaryEnterpriseEquipment: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly auxiliaryFacilities: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly otherInvestmentExpenses: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly landCost: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly landArrangement: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly importCustoms: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly transportInsurance: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly assembly: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly studyProject: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly otherExpenses: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly generalExpenses: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly fixedInvestmentUsd: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly fixedInvestmentCpi: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly fixedInvestmentUsdFirstCopy: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
+  readonly fixedInvestmentCpiFirstCopy: Prisma.FieldRef<"DocumentFinancialInfo", 'Decimal'>
   readonly rawData: Prisma.FieldRef<"DocumentFinancialInfo", 'Json'>
   readonly createdAt: Prisma.FieldRef<"DocumentFinancialInfo", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DocumentFinancialInfo", 'DateTime'>

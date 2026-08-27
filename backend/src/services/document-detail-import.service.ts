@@ -294,7 +294,76 @@ export class DocumentDetailImportService {
 
                 equity: financialInfo.equity,
 
+                equityRate: financialInfo.equityRate,
+
                 foreignResources: financialInfo.foreignResources,
+
+                foreignResourcesRate: financialInfo.foreignResourcesRate,
+
+                tlLoan: financialInfo.tlLoan,
+
+                foreignCurrencyLoan: financialInfo.foreignCurrencyLoan,
+
+                foreignCurrencyIndexedLoan:
+                  financialInfo.foreignCurrencyIndexedLoan,
+
+                domesticLoan: financialInfo.domesticLoan,
+
+                foreignLoan: financialInfo.foreignLoan,
+
+                otherLoans: financialInfo.otherLoans,
+
+                financialLeasing: financialInfo.financialLeasing,
+
+                domesticMachinery: financialInfo.domesticMachinery,
+
+                importedMachinery: financialInfo.importedMachinery,
+
+                totalMachineryExpenses: financialInfo.totalMachineryExpenses,
+
+                newMachinery: financialInfo.newMachinery,
+
+                usedMachinery: financialInfo.usedMachinery,
+
+                importedMachineryUsd: financialInfo.importedMachineryUsd,
+
+                totalBuildingConstructionExpenses:
+                  financialInfo.totalBuildingConstructionExpenses,
+
+                mainBuilding: financialInfo.mainBuilding,
+
+                auxiliaryEnterpriseEquipment:
+                  financialInfo.auxiliaryEnterpriseEquipment,
+
+                auxiliaryFacilities: financialInfo.auxiliaryFacilities,
+
+                otherInvestmentExpenses: financialInfo.otherInvestmentExpenses,
+
+                landCost: financialInfo.landCost,
+
+                landArrangement: financialInfo.landArrangement,
+
+                importCustoms: financialInfo.importCustoms,
+
+                transportInsurance: financialInfo.transportInsurance,
+
+                assembly: financialInfo.assembly,
+
+                studyProject: financialInfo.studyProject,
+
+                otherExpenses: financialInfo.otherExpenses,
+
+                generalExpenses: financialInfo.generalExpenses,
+
+                fixedInvestmentUsd: financialInfo.fixedInvestmentUsd,
+
+                fixedInvestmentCpi: financialInfo.fixedInvestmentCpi,
+
+                fixedInvestmentUsdFirstCopy:
+                  financialInfo.fixedInvestmentUsdFirstCopy,
+
+                fixedInvestmentCpiFirstCopy:
+                  financialInfo.fixedInvestmentCpiFirstCopy,
 
                 rawData: toJson(financialInfo.rawData),
               },

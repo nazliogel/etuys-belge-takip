@@ -61,10 +61,49 @@ export type ParsedFinancialInfoRow = {
   documentNumber: string | null;
 
   externalFinancialInfoId: string | null;
+
   totalInvestment: number | null;
   totalFinancing: number | null;
   equity: number | null;
+  equityRate: number | null;
   foreignResources: number | null;
+  foreignResourcesRate: number | null;
+
+  tlLoan: number | null;
+  foreignCurrencyLoan: number | null;
+  foreignCurrencyIndexedLoan: number | null;
+  domesticLoan: number | null;
+  foreignLoan: number | null;
+  otherLoans: number | null;
+  financialLeasing: number | null;
+
+  domesticMachinery: number | null;
+  importedMachinery: number | null;
+  totalMachineryExpenses: number | null;
+
+  newMachinery: number | null;
+  usedMachinery: number | null;
+  importedMachineryUsd: number | null;
+
+  totalBuildingConstructionExpenses: number | null;
+  mainBuilding: number | null;
+  auxiliaryEnterpriseEquipment: number | null;
+  auxiliaryFacilities: number | null;
+
+  otherInvestmentExpenses: number | null;
+  landCost: number | null;
+  landArrangement: number | null;
+  importCustoms: number | null;
+  transportInsurance: number | null;
+  assembly: number | null;
+  studyProject: number | null;
+  otherExpenses: number | null;
+  generalExpenses: number | null;
+
+  fixedInvestmentUsd: number | null;
+  fixedInvestmentCpi: number | null;
+  fixedInvestmentUsdFirstCopy: number | null;
+  fixedInvestmentCpiFirstCopy: number | null;
 
   rawData: RawExcelData;
 };
@@ -751,6 +790,7 @@ export class DocumentDetailExcelParserService {
 
         externalFinancialInfoId: normalizeValue(
           getCellByAliases(row, headerMap, [
+            "Finansal Bilgiler ID",
             "Finansal Bilgi ID",
             "Finansal Bilgi Id",
             "Finansal ID",
@@ -762,17 +802,11 @@ export class DocumentDetailExcelParserService {
           getCellByAliases(row, headerMap, [
             "Toplam Yatırım",
             "Toplam Yatirim",
-            "Toplam Yatırım Tutarı",
-            "Toplam Yatirim Tutari",
           ]),
         ),
 
         totalFinancing: normalizeDecimal(
-          getCellByAliases(row, headerMap, [
-            "Toplam Finansman",
-            "Toplam Finansman Tutarı",
-            "Toplam Finansman Tutari",
-          ]),
+          getCellByAliases(row, headerMap, ["Toplam Finansman"]),
         ),
 
         equity: normalizeDecimal(
@@ -783,10 +817,205 @@ export class DocumentDetailExcelParserService {
           ]),
         ),
 
+        equityRate: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Öz Kaynak Oranı",
+            "Öz Kaynak Orani",
+            "Oz Kaynak Orani",
+          ]),
+        ),
+
         foreignResources: normalizeDecimal(
           getCellByAliases(row, headerMap, [
             "Yabancı Kaynaklar",
             "Yabanci Kaynaklar",
+          ]),
+        ),
+
+        foreignResourcesRate: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Yabancı Kaynak Oranı",
+            "Yabancı Kaynak Orani",
+            "Yabanci Kaynak Orani",
+          ]),
+        ),
+
+        tlLoan: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["TL Kredisi"]),
+        ),
+
+        foreignCurrencyLoan: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Döviz Kredisi", "Doviz Kredisi"]),
+        ),
+
+        foreignCurrencyIndexedLoan: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Dövize Endeksli Kredi",
+            "Dovize Endeksli Kredi",
+          ]),
+        ),
+
+        domesticLoan: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["İç Kredi", "Ic Kredi"]),
+        ),
+
+        foreignLoan: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Dış Kredi", "Dis Kredi"]),
+        ),
+
+        otherLoans: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Diğer Krediler",
+            "Diger Krediler",
+          ]),
+        ),
+
+        financialLeasing: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Finansal Kiralama"]),
+        ),
+
+        domesticMachinery: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Yerli Makine Teçhizat",
+            "Yerli Makine Techizat",
+          ]),
+        ),
+
+        importedMachinery: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "İthal Makine Teçhizat",
+            "Ithal Makine Techizat",
+          ]),
+        ),
+
+        totalMachineryExpenses: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Toplam Makine Teçhizat Giderleri",
+            "Toplam Makine Techizat Giderleri",
+          ]),
+        ),
+
+        newMachinery: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Yeni Makine"]),
+        ),
+
+        usedMachinery: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Kullanılmış Makine",
+            "Kullanilmis Makine",
+          ]),
+        ),
+
+        importedMachineryUsd: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "İthal Makine Dolar",
+            "Ithal Makine Dolar",
+          ]),
+        ),
+
+        totalBuildingConstructionExpenses: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Toplam Bina İnşaat Giderleri",
+            "Toplam Bina Insaat Giderleri",
+          ]),
+        ),
+
+        mainBuilding: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Ana Bina"]),
+        ),
+
+        auxiliaryEnterpriseEquipment: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Yardımcı İşletme Teçhizat",
+            "Yardimci Isletme Techizat",
+          ]),
+        ),
+
+        auxiliaryFacilities: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Yardımcı Tesisler",
+            "Yardimci Tesisler",
+          ]),
+        ),
+
+        otherInvestmentExpenses: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Diğer Yatırım Harcamaları",
+            "Diger Yatirim Harcamalari",
+          ]),
+        ),
+
+        landCost: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Arazi Bedeli"]),
+        ),
+
+        landArrangement: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Arazi Düzenlemesi",
+            "Arazi Duzenlemesi",
+          ]),
+        ),
+
+        importCustoms: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "İthalat / Gümrükleme",
+            "Ithalat / Gumrukleme",
+            "İthalat/Gümrükleme",
+          ]),
+        ),
+
+        transportInsurance: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Taşıma / Sigorta",
+            "Tasima / Sigorta",
+            "Taşıma/Sigorta",
+          ]),
+        ),
+
+        assembly: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Montaj"]),
+        ),
+
+        studyProject: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Etüt Proje", "Etut Proje"]),
+        ),
+
+        otherExpenses: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Diğer Giderler",
+            "Diger Giderler",
+          ]),
+        ),
+
+        generalExpenses: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["Genel Giderler"]),
+        ),
+
+        fixedInvestmentUsd: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Sabit Yatırım Tutarı Dolar",
+            "Sabit Yatirim Tutari Dolar",
+          ]),
+        ),
+
+        fixedInvestmentCpi: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Sabit Yatırım Tutarı TÜFE",
+            "Sabit Yatirim Tutari TUFE",
+          ]),
+        ),
+
+        fixedInvestmentUsdFirstCopy: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Sabit Yatırım Tutarı Dolar İlk Nüsha",
+            "Sabit Yatirim Tutari Dolar Ilk Nusha",
+          ]),
+        ),
+
+        fixedInvestmentCpiFirstCopy: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "Sabit Yatırım Tutarı TÜFE İlk Nüsha",
+            "Sabit Yatirim Tutari TUFE Ilk Nusha",
           ]),
         ),
       });

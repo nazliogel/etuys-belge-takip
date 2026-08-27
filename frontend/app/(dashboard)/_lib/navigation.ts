@@ -61,13 +61,13 @@ export const navigationItems = [
   },
   {
     label: "Destek Unsurları",
-    href: "/document-details/supports",
+    href: "/documents/supports",
     icon: Boxes,
     permission: "documents:view",
   },
   {
     label: "Finansal Bilgiler",
-    href: "/document-details/financial",
+    href: "/documents/financial",
     icon: CircleDollarSign,
     permission: "documents:view",
   },

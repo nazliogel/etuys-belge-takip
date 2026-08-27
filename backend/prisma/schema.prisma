@@ -455,12 +455,56 @@ model DocumentFinancialInfo {
   id       Int @id @default(autoincrement())
   detailId Int @unique
 
+  // Finansal Bilgiler ID
   externalFinancialInfoId String?
 
-  totalInvestment  Decimal?
-  totalFinancing   Decimal?
-  equity           Decimal?
-  foreignResources Decimal?
+  // Genel finansman
+  totalInvestment      Decimal?
+  totalFinancing       Decimal?
+  equity               Decimal?
+  equityRate           Decimal?
+  foreignResources     Decimal?
+  foreignResourcesRate Decimal?
+
+  // Krediler
+  tlLoan                     Decimal?
+  foreignCurrencyLoan        Decimal?
+  foreignCurrencyIndexedLoan Decimal?
+  domesticLoan               Decimal?
+  foreignLoan                Decimal?
+  otherLoans                 Decimal?
+  financialLeasing           Decimal?
+
+  // Makine / teçhizat
+  domesticMachinery      Decimal?
+  importedMachinery      Decimal?
+  totalMachineryExpenses Decimal?
+  newMachinery           Decimal?
+  usedMachinery          Decimal?
+  importedMachineryUsd   Decimal?
+
+  // Bina / inşaat
+  totalBuildingConstructionExpenses Decimal?
+  mainBuilding                      Decimal?
+  auxiliaryEnterpriseEquipment      Decimal?
+  auxiliaryFacilities               Decimal?
+
+  // Diğer yatırım harcamaları
+  otherInvestmentExpenses Decimal?
+  landCost                Decimal?
+  landArrangement         Decimal?
+  importCustoms           Decimal?
+  transportInsurance      Decimal?
+  assembly                Decimal?
+  studyProject            Decimal?
+  otherExpenses           Decimal?
+  generalExpenses         Decimal?
+
+  // Sabit yatırım değerleri
+  fixedInvestmentUsd          Decimal?
+  fixedInvestmentCpi          Decimal?
+  fixedInvestmentUsdFirstCopy Decimal?
+  fixedInvestmentCpiFirstCopy Decimal?
 
   rawData Json?
 
@@ -468,6 +512,8 @@ model DocumentFinancialInfo {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([detailId])
 }
 
 model DocumentDomesticMachine {

@@ -113,6 +113,8 @@ export class DocumentRepository {
         detail: {
           include: {
             products: true,
+            supports: true,
+            financialInfo: true,
           },
         },
       },
