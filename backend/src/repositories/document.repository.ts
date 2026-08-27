@@ -110,7 +110,11 @@ export class DocumentRepository {
             authorization: true,
           },
         },
-        detail: true,
+        detail: {
+          include: {
+            products: true,
+          },
+        },
       },
     });
   }

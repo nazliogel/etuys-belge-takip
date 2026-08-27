@@ -55,7 +55,7 @@ export const navigationItems = [
   },
   {
     label: "Ürün Bilgileri",
-    href: "/document-details/products",
+    href: "/documents/product-information",
     icon: PackageSearch,
     permission: "documents:view",
   },

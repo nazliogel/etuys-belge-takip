@@ -325,4 +325,57 @@ export class DocumentService {
       updatedAt: document.updatedAt.toISOString(),
     };
   }
+
+  async getDocumentProducts(id: number, userId: number, role: UserRole) {
+    const document = await this.documentRepository.findById(id);
+
+    if (!document) {
+      throw new AppError("Document not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "DOCUMENT_NOT_FOUND",
+      });
+    }
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      if (document.companyId !== company.id) {
+        throw new AppError(
+          "You do not have permission to access this document.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
+    }
+
+    const products = document.detail?.products ?? [];
+
+    return {
+      documentId: document.id,
+      externalDocumentId: document.externalDocumentId,
+      documentNumber: document.documentNumber,
+
+      items: products.map((product) => ({
+        id: product.id,
+        productName: product.productName,
+        us97Code: product.us97Code,
+        us97Description: product.us97Description,
+        naceCode: product.naceCode,
+        naceDescription: product.naceDescription,
+        unit: product.unit,
+        existingCapacity: product.existingCapacity?.toString() ?? null,
+        additionalCapacity: product.additionalCapacity?.toString() ?? null,
+        totalCapacity: product.totalCapacity?.toString() ?? null,
+      })),
+    };
+  }
 }
