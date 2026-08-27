@@ -19,7 +19,11 @@ documentRouter.get("/:id/financial-info", documentController.getFinancialInfo);
 
 documentRouter.get(
   "/:id/domestic-machines",
-  documentController.getDomesticMachines,   
+  documentController.getDomesticMachines,
 );
 
+documentRouter.get(
+  "/:id/imported-machines",
+  documentController.getImportedMachines,
+);
 documentRouter.get("/:id", documentController.getById);

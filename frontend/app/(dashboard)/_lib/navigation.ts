@@ -79,7 +79,7 @@ export const navigationItems = [
   },
   {
     label: "İthal Liste",
-    href: "/document-details/imported-machines",
+    href: "/documents/imported-machines",
     icon: Truck,
     permission: "documents:view",
   },

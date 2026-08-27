@@ -661,4 +661,139 @@ export class DocumentService {
       })),
     };
   }
+  async getDocumentImportedMachines(
+    id: number,
+    userId: number,
+    role: UserRole,
+  ) {
+    const document = await this.documentRepository.findById(id);
+
+    if (!document) {
+      throw new AppError("Document not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "DOCUMENT_NOT_FOUND",
+      });
+    }
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      if (document.companyId !== company.id) {
+        throw new AppError(
+          "You do not have permission to access this document.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
+    }
+
+    const importedMachines = document.detail?.importedMachines ?? [];
+
+    return {
+      documentId: document.id,
+      externalDocumentId: document.externalDocumentId,
+      documentNumber: document.documentNumber,
+
+      items: importedMachines.map((machine) => ({
+        id: machine.id,
+
+        externalMachineId: machine.externalMachineId,
+        sequenceNumber: machine.sequenceNumber,
+
+        name: machine.name,
+        quantity: machine.quantity?.toString() ?? null,
+        unit: machine.unit,
+        machineryEquipmentType: machine.machineryEquipmentType,
+
+        gtipCode: machine.gtipCode,
+        gtipDescription: machine.gtipDescription,
+
+        vatExemption: machine.vatExemption,
+        vatExemptionDescription: machine.vatExemptionDescription,
+
+        customsTaxExemption: machine.customsTaxExemption,
+        customsTaxExemptionDescription: machine.customsTaxExemptionDescription,
+
+        usedMachine: machine.usedMachine,
+        isVehicle: machine.isVehicle,
+        isCkd: machine.isCkd,
+
+        totalFobUsd: machine.totalFobUsd?.toString() ?? null,
+        totalFobTl: machine.totalFobTl?.toString() ?? null,
+        totalCifTl: machine.totalCifTl?.toString() ?? null,
+
+        originCurrencyFob: machine.originCurrencyFob,
+        originCurrencyFobAmount:
+          machine.originCurrencyFobAmount?.toString() ?? null,
+
+        customsRealizedValue: machine.customsRealizedValue?.toString() ?? null,
+        customsRealizedQuantity:
+          machine.customsRealizedQuantity?.toString() ?? null,
+        customsPermittedValue:
+          machine.customsPermittedValue?.toString() ?? null,
+        customsPermittedQuantity:
+          machine.customsPermittedQuantity?.toString() ?? null,
+
+        transferRealizedValue:
+          machine.transferRealizedValue?.toString() ?? null,
+        transferRealizedQuantity:
+          machine.transferRealizedQuantity?.toString() ?? null,
+        transferOutgoingValue:
+          machine.transferOutgoingValue?.toString() ?? null,
+        transferOutgoingQuantity:
+          machine.transferOutgoingQuantity?.toString() ?? null,
+
+        transferDocumentNumber: machine.transferDocumentNumber,
+        transferIncomingQuantity:
+          machine.transferIncomingQuantity?.toString() ?? null,
+        transferIncomingAmount:
+          machine.transferIncomingAmount?.toString() ?? null,
+
+        saleOutgoingValue: machine.saleOutgoingValue?.toString() ?? null,
+        saleOutgoingQuantity: machine.saleOutgoingQuantity?.toString() ?? null,
+        salePermittedValue: machine.salePermittedValue?.toString() ?? null,
+        salePermittedQuantity:
+          machine.salePermittedQuantity?.toString() ?? null,
+
+        leasingOutgoingValue: machine.leasingOutgoingValue?.toString() ?? null,
+        leasingOutgoingQuantity:
+          machine.leasingOutgoingQuantity?.toString() ?? null,
+        leasingPermittedValue:
+          machine.leasingPermittedValue?.toString() ?? null,
+        leasingPermittedQuantity:
+          machine.leasingPermittedQuantity?.toString() ?? null,
+
+        exportOutgoingValue: machine.exportOutgoingValue?.toString() ?? null,
+        exportOutgoingQuantity:
+          machine.exportOutgoingQuantity?.toString() ?? null,
+        exportPermittedValue: machine.exportPermittedValue?.toString() ?? null,
+        exportPermittedQuantity:
+          machine.exportPermittedQuantity?.toString() ?? null,
+
+        invoiceRealizedValue: machine.invoiceRealizedValue?.toString() ?? null,
+        invoiceRealizedQuantity:
+          machine.invoiceRealizedQuantity?.toString() ?? null,
+
+        financialLeasingRealizedValue:
+          machine.financialLeasingRealizedValue?.toString() ?? null,
+        financialLeasingRealizedQuantity:
+          machine.financialLeasingRealizedQuantity?.toString() ?? null,
+        financialLeasingPermittedValue:
+          machine.financialLeasingPermittedValue?.toString() ?? null,
+        financialLeasingPermittedQuantity:
+          machine.financialLeasingPermittedQuantity?.toString() ?? null,
+
+        financialLeasingCompanyName: machine.financialLeasingCompanyName,
+      })),
+    };
+  }
 }

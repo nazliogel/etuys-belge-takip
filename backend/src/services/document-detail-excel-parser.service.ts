@@ -189,19 +189,70 @@ export type ParsedImportedMachineRow = {
 
   externalMachineId: number | null;
   sequenceNumber: number | null;
+
   name: string | null;
   quantity: number | null;
   unit: string | null;
+  machineryEquipmentType: string | null;
 
   gtipCode: string | null;
   gtipDescription: string | null;
 
-  currency: string | null;
-  fobAmount: number | null;
-  fobAmountTl: number | null;
-  cifAmountTl: number | null;
+  vatExemption: string | null;
+  vatExemptionDescription: string | null;
+
+  customsTaxExemption: string | null;
+  customsTaxExemptionDescription: string | null;
 
   usedMachine: string | null;
+  isVehicle: string | null;
+  isCkd: string | null;
+
+  totalFobUsd: number | null;
+  totalFobTl: number | null;
+  totalCifTl: number | null;
+
+  originCurrencyFob: string | null;
+  originCurrencyFobAmount: number | null;
+
+  customsRealizedValue: number | null;
+  customsRealizedQuantity: number | null;
+  customsPermittedValue: number | null;
+  customsPermittedQuantity: number | null;
+
+  transferRealizedValue: number | null;
+  transferRealizedQuantity: number | null;
+  transferOutgoingValue: number | null;
+  transferOutgoingQuantity: number | null;
+
+  transferDocumentNumber: string | null;
+  transferIncomingQuantity: number | null;
+  transferIncomingAmount: number | null;
+
+  saleOutgoingValue: number | null;
+  saleOutgoingQuantity: number | null;
+  salePermittedValue: number | null;
+  salePermittedQuantity: number | null;
+
+  leasingOutgoingValue: number | null;
+  leasingOutgoingQuantity: number | null;
+  leasingPermittedValue: number | null;
+  leasingPermittedQuantity: number | null;
+
+  exportOutgoingValue: number | null;
+  exportOutgoingQuantity: number | null;
+  exportPermittedValue: number | null;
+  exportPermittedQuantity: number | null;
+
+  invoiceRealizedValue: number | null;
+  invoiceRealizedQuantity: number | null;
+
+  financialLeasingRealizedValue: number | null;
+  financialLeasingRealizedQuantity: number | null;
+  financialLeasingPermittedValue: number | null;
+  financialLeasingPermittedQuantity: number | null;
+
+  financialLeasingCompanyName: string | null;
 
   rawData: RawExcelData;
 };
@@ -1369,6 +1420,7 @@ export class DocumentDetailExcelParserService {
 
         externalMachineId: normalizeInteger(
           getCellByAliases(row, headerMap, [
+            "ithalMakineId",
             "Makine ID",
             "Makine Id",
             "Liste ID",
@@ -1378,36 +1430,39 @@ export class DocumentDetailExcelParserService {
         ),
 
         sequenceNumber: normalizeInteger(
-          getCellByAliases(row, headerMap, ["Sıra No", "Sira No", "Sıra"]),
+          getCellByAliases(row, headerMap, [
+            "siraNo",
+            "Sıra No",
+            "Sira No",
+            "Sıra",
+          ]),
         ),
 
         name: normalizeValue(
           getCellByAliases(row, headerMap, [
+            "adiOzelligi",
             "Makine Teçhizat Adı",
             "Makine Techizat Adi",
             "Makine Adı",
             "Makine Adi",
-            "Malzeme Adı",
-            "Malzeme Adi",
-            "Adı",
-            "Adi",
           ]),
         ),
 
         quantity: normalizeDecimal(
-          getCellByAliases(row, headerMap, ["Miktar", "Adet"]),
+          getCellByAliases(row, headerMap, ["miktari", "Miktar", "Adet"]),
         ),
 
         unit: normalizeValue(
-          getCellByAliases(row, headerMap, [
-            "Birim",
-            "Ölçü Birimi",
-            "Olcu Birimi",
-          ]),
+          getCellByAliases(row, headerMap, ["birimCSDETAY", "Birim"]),
+        ),
+
+        machineryEquipmentType: normalizeValue(
+          getCellByAliases(row, headerMap, ["makineTechizatTipi"]),
         ),
 
         gtipCode: normalizeValue(
           getCellByAliases(row, headerMap, [
+            "gtipNo",
             "GTİP Kodu",
             "GTIP Kodu",
             "GTİP",
@@ -1417,52 +1472,187 @@ export class DocumentDetailExcelParserService {
 
         gtipDescription: normalizeValue(
           getCellByAliases(row, headerMap, [
+            "gtipAciklama",
             "GTİP Açıklaması",
             "GTIP Açıklaması",
             "GTIP Aciklamasi",
           ]),
         ),
 
-        currency: normalizeValue(
-          getCellByAliases(row, headerMap, [
-            "Döviz Cinsi",
-            "Doviz Cinsi",
-            "Para Birimi",
-          ]),
+        vatExemption: normalizeValue(
+          getCellByAliases(row, headerMap, ["kdvIstisnasi"]),
         ),
 
-        fobAmount: normalizeDecimal(
-          getCellByAliases(row, headerMap, [
-            "FOB Tutarı",
-            "FOB Tutari",
-            "FOB Tutar",
-          ]),
+        vatExemptionDescription: normalizeValue(
+          getCellByAliases(row, headerMap, ["kdvIstisnasiCSDETAY"]),
         ),
 
-        fobAmountTl: normalizeDecimal(
-          getCellByAliases(row, headerMap, [
-            "FOB Tutarı TL",
-            "FOB Tutari TL",
-            "FOB TL",
-          ]),
+        customsTaxExemption: normalizeValue(
+          getCellByAliases(row, headerMap, ["gumrukVergisiIstisnasi"]),
         ),
 
-        cifAmountTl: normalizeDecimal(
-          getCellByAliases(row, headerMap, [
-            "CIF Tutarı TL",
-            "CIF Tutari TL",
-            "CİF Tutarı TL",
-            "CIF TL",
-          ]),
+        customsTaxExemptionDescription: normalizeValue(
+          getCellByAliases(row, headerMap, ["gumrukVergisiIstisnasiCSDETAY"]),
         ),
 
         usedMachine: normalizeValue(
           getCellByAliases(row, headerMap, [
+            "kullanilmisMakine",
             "Kullanılmış Makine",
             "Kullanilmis Makine",
-            "Kullanılmış",
-            "Kullanilmis",
           ]),
+        ),
+
+        isVehicle: normalizeValue(getCellByAliases(row, headerMap, ["aracMi"])),
+
+        isCkd: normalizeValue(getCellByAliases(row, headerMap, ["ckdMi"])),
+
+        totalFobUsd: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["toplamTutariFobDolar"]),
+        ),
+
+        totalFobTl: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["toplamTutariFobTl"]),
+        ),
+
+        totalCifTl: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["toplamTutariCifTl"]),
+        ),
+
+        originCurrencyFob: normalizeValue(
+          getCellByAliases(row, headerMap, ["menseiDovizCinsiFob"]),
+        ),
+
+        originCurrencyFobAmount: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["menseiDovizTutariFob"]),
+        ),
+
+        customsRealizedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["gumrukGerceklesenDeger"]),
+        ),
+
+        customsRealizedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["gumrukGerceklesenMiktar"]),
+        ),
+
+        customsPermittedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["gumrukIzinVerilenDeger"]),
+        ),
+
+        customsPermittedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["gumrukIzinVerilenMiktar"]),
+        ),
+
+        transferRealizedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["devirGerceklesenDeger"]),
+        ),
+
+        transferRealizedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["devirGerceklesenMiktar"]),
+        ),
+
+        transferOutgoingValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["devirGidenDeger"]),
+        ),
+
+        transferOutgoingQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["devirGidenMiktar"]),
+        ),
+
+        transferDocumentNumber: normalizeValue(
+          getCellByAliases(row, headerMap, ["devirBelgeNo"]),
+        ),
+
+        transferIncomingQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["devirGelenMiktar"]),
+        ),
+
+        transferIncomingAmount: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["devirGelenTutar"]),
+        ),
+
+        saleOutgoingValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["satisGidenDeger"]),
+        ),
+
+        saleOutgoingQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["satisGidenMiktar"]),
+        ),
+
+        salePermittedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["satisIzinVerilenDeger"]),
+        ),
+
+        salePermittedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["satisIzinVerilenMiktar"]),
+        ),
+
+        leasingOutgoingValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["kiralamaGidenDeger"]),
+        ),
+
+        leasingOutgoingQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["kiralamaGidenMiktar"]),
+        ),
+
+        leasingPermittedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["kiralamaIzinVerilenDeger"]),
+        ),
+
+        leasingPermittedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["kiralamaIzinVerilenMiktar"]),
+        ),
+
+        exportOutgoingValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["ihracGidenDeger"]),
+        ),
+
+        exportOutgoingQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["ihracGidenMiktar"]),
+        ),
+
+        exportPermittedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["ihracIzinVerilenDeger"]),
+        ),
+
+        exportPermittedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["ihracIzinVerilenMiktar"]),
+        ),
+
+        invoiceRealizedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["faturaGerceklesenDeger"]),
+        ),
+
+        invoiceRealizedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, ["faturaGerceklesenMiktar"]),
+        ),
+
+        financialLeasingRealizedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "finansalKiralamaGerceklesenDeger",
+          ]),
+        ),
+
+        financialLeasingRealizedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "finansalKiralamaGerceklesenMiktar",
+          ]),
+        ),
+
+        financialLeasingPermittedValue: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "finansalKiralamaIzinVerilenDeger",
+          ]),
+        ),
+
+        financialLeasingPermittedQuantity: normalizeDecimal(
+          getCellByAliases(row, headerMap, [
+            "finansalKiralamaIzinVerilenMiktar",
+          ]),
+        ),
+
+        financialLeasingCompanyName: normalizeValue(
+          getCellByAliases(row, headerMap, ["finansalKiralamaKurumuAdi"]),
         ),
       });
     }
