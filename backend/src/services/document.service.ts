@@ -305,6 +305,7 @@ export class DocumentService {
       extensionDate: document.extensionDate?.toISOString() ?? null,
       supportClass: document.supportClass,
       isActive: document.isActive,
+      investmentType: document.detail?.investmentType ?? null,
 
       // Detay endpoint'i de aynı durumu döndürür.
       status: calculateDocumentStatus(document),
