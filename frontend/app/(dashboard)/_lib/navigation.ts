@@ -1,10 +1,16 @@
 import {
   Archive,
   Bell,
+  Boxes,
   Building2,
+  CircleDollarSign,
   FileSpreadsheet,
   FileText,
   LayoutDashboard,
+  PackageSearch,
+  Settings2,
+  ShoppingCart,
+  Truck,
   Users,
 } from "lucide-react";
 
@@ -41,6 +47,49 @@ export const navigationItems = [
     icon: Archive,
     permission: "documents:view",
   },
+  {
+    label: "Yatırım Cinsi",
+    href: "/documents/investment-type",
+    icon: Settings2,
+    permission: "documents:view",
+  },
+  {
+    label: "Ürün Bilgileri",
+    href: "/documents/product-information",
+    icon: PackageSearch,
+    permission: "documents:view",
+  },
+  {
+    label: "Destek Unsurları",
+    href: "/documents/supports",
+    icon: Boxes,
+    permission: "documents:view",
+  },
+  {
+    label: "Finansal Bilgiler",
+    href: "/documents/financial",
+    icon: CircleDollarSign,
+    permission: "documents:view",
+  },
+  {
+    label: "Yerli Liste",
+    href: "/document-details/domestic-machines",
+    icon: ShoppingCart,
+    permission: "documents:view",
+  },
+  {
+    label: "İthal Liste",
+    href: "/document-details/imported-machines",
+    icon: Truck,
+    permission: "documents:view",
+  },
+  {
+    label: "Özel Şartlar",
+    href: "/document-details/special-conditions",
+    icon: FileText,
+    permission: "documents:view",
+  },
+
   {
     label: "Excel Yükleme",
     href: "/excel-import",

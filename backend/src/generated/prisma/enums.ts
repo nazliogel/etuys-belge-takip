@@ -31,7 +31,8 @@ export type ImportBatchStatus = (typeof ImportBatchStatus)[keyof typeof ImportBa
 export const ImportType = {
   OPEN: 'OPEN',
   CLOSED: 'CLOSED',
-  COMPANY_IDENTITY: 'COMPANY_IDENTITY'
+  COMPANY_IDENTITY: 'COMPANY_IDENTITY',
+  DOCUMENT_DETAIL: 'DOCUMENT_DETAIL'
 } as const
 
 export type ImportType = (typeof ImportType)[keyof typeof ImportType]

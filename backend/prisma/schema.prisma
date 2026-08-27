@@ -24,6 +24,7 @@ enum ImportType {
   OPEN
   CLOSED
   COMPANY_IDENTITY
+  DOCUMENT_DETAIL
 }
 
 enum ImportRowStatus {
@@ -207,6 +208,7 @@ model IncentiveDocument {
   importRows    ImportRow[]
   importChanges ImportChange[]
   changeHistory ChangeHistory[]
+  detail        DocumentDetail?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -266,6 +268,7 @@ model ImportBatch {
 model ImportRow {
   id                   Int             @id @default(autoincrement())
   importBatchId        Int
+  sheetName            String          @default("MAIN")
   rowNumber            Int
   status               ImportRowStatus
   externalCompanyId    Int?
@@ -292,7 +295,7 @@ model ImportRow {
 
   createdAt DateTime @default(now())
 
-  @@unique([importBatchId, rowNumber])
+  @@unique([importBatchId, sheetName, rowNumber])
   @@index([importBatchId, status])
   @@index([externalCompanyId])
   @@index([externalDocumentId])
@@ -384,4 +387,206 @@ model SystemSetting {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model DocumentDetail {
+  id         Int @id @default(autoincrement())
+  documentId Int @unique
+
+  investmentType String?
+
+  document IncentiveDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  products          DocumentProduct[]
+  supports          DocumentSupport[]
+  financialInfo     DocumentFinancialInfo?
+  domesticMachines  DocumentDomesticMachine[]
+  importedMachines  DocumentImportedMachine[]
+  specialConditions DocumentSpecialCondition[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([documentId])
+}
+
+model DocumentProduct {
+  id       Int @id @default(autoincrement())
+  detailId Int
+
+  productName     String?
+  us97Code        String?
+  us97Description String?
+  naceCode        String?
+  naceDescription String?
+  unit            String?
+
+  existingCapacity   Decimal?
+  additionalCapacity Decimal?
+  totalCapacity      Decimal?
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([detailId])
+}
+
+model DocumentSupport {
+  id       Int @id @default(autoincrement())
+  detailId Int
+
+  supportType        String?
+  supportTypeCode    String?
+  supportRate        String?
+  supportRateCode    String?
+  supportDescription String?
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([detailId])
+}
+
+model DocumentFinancialInfo {
+  id       Int @id @default(autoincrement())
+  detailId Int @unique
+
+  // Finansal Bilgiler ID
+  externalFinancialInfoId String?
+
+  // Genel finansman
+  totalInvestment      Decimal?
+  totalFinancing       Decimal?
+  equity               Decimal?
+  equityRate           Decimal?
+  foreignResources     Decimal?
+  foreignResourcesRate Decimal?
+
+  // Krediler
+  tlLoan                     Decimal?
+  foreignCurrencyLoan        Decimal?
+  foreignCurrencyIndexedLoan Decimal?
+  domesticLoan               Decimal?
+  foreignLoan                Decimal?
+  otherLoans                 Decimal?
+  financialLeasing           Decimal?
+
+  // Makine / teçhizat
+  domesticMachinery      Decimal?
+  importedMachinery      Decimal?
+  totalMachineryExpenses Decimal?
+  newMachinery           Decimal?
+  usedMachinery          Decimal?
+  importedMachineryUsd   Decimal?
+
+  // Bina / inşaat
+  totalBuildingConstructionExpenses Decimal?
+  mainBuilding                      Decimal?
+  auxiliaryEnterpriseEquipment      Decimal?
+  auxiliaryFacilities               Decimal?
+
+  // Diğer yatırım harcamaları
+  otherInvestmentExpenses Decimal?
+  landCost                Decimal?
+  landArrangement         Decimal?
+  importCustoms           Decimal?
+  transportInsurance      Decimal?
+  assembly                Decimal?
+  studyProject            Decimal?
+  otherExpenses           Decimal?
+  generalExpenses         Decimal?
+
+  // Sabit yatırım değerleri
+  fixedInvestmentUsd          Decimal?
+  fixedInvestmentCpi          Decimal?
+  fixedInvestmentUsdFirstCopy Decimal?
+  fixedInvestmentCpiFirstCopy Decimal?
+
+  rawData Json?
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([detailId])
+}
+
+model DocumentDomesticMachine {
+  id       Int @id @default(autoincrement())
+  detailId Int
+
+  externalMachineId Int?
+  sequenceNumber    Int?
+
+  name        String?
+  quantity    Decimal?
+  unit        String?
+  unitPriceTl Decimal?
+  totalTl     Decimal?
+
+  gtipCode        String?
+  gtipDescription String?
+
+  rawData Json?
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([detailId])
+  @@index([externalMachineId])
+}
+
+model DocumentImportedMachine {
+  id       Int @id @default(autoincrement())
+  detailId Int
+
+  externalMachineId Int?
+  sequenceNumber    Int?
+
+  name     String?
+  quantity Decimal?
+  unit     String?
+
+  gtipCode        String?
+  gtipDescription String?
+
+  currency    String?
+  fobAmount   Decimal?
+  fobAmountTl Decimal?
+  cifAmountTl Decimal?
+
+  usedMachine String?
+
+  rawData Json?
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([detailId])
+  @@index([externalMachineId])
+}
+
+model DocumentSpecialCondition {
+  id       Int @id @default(autoincrement())
+  detailId Int
+
+  conditionCode String?
+  conditionName String?
+  description   String? @db.Text
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([detailId])
 }

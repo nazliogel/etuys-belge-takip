@@ -110,6 +110,13 @@ export class DocumentRepository {
             authorization: true,
           },
         },
+        detail: {
+          include: {
+            products: true,
+            supports: true,
+            financialInfo: true,
+          },
+        },
       },
     });
   }

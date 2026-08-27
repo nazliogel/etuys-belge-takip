@@ -9,6 +9,7 @@ import companyIdentityRoutes from "./routes/company-identity.routes.js";
 import { documentRouter } from "./routes/document.routes.js";
 import { closedDocumentRouter } from "./routes/closed-document.routes.js";
 import { importRouter } from "./routes/import.routes.js";
+import documentDetailImportRoutes from "./routes/document-detail-import.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api/companies", companyIdentityRoutes);
 app.use("/api/documents", documentRouter);
 app.use("/api/closed-documents", closedDocumentRouter);
 app.use("/api/imports", importRouter);
+app.use("/api/document-detail-import", documentDetailImportRoutes);
 app.use("/api/users", userRouter);
 
 app.use(errorHandler);
