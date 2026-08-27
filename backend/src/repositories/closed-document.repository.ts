@@ -39,7 +39,10 @@ export class ClosedDocumentRepository {
       skip: params.skip,
       take: params.take,
       orderBy: {
-        createdAt: "desc",
+        documentEndDate: {
+          sort: "desc",
+          nulls: "last",
+        },
       },
       include: {
         company: {

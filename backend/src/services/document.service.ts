@@ -179,6 +179,26 @@ export class DocumentService {
       ? items.filter((item) => item.status === query.status)
       : items;
 
+    filteredItems.sort((a, b) => {
+      const aTime = a.documentEndDate
+        ? new Date(a.documentEndDate).getTime()
+        : Number.MAX_SAFE_INTEGER;
+
+      const bTime = b.documentEndDate
+        ? new Date(b.documentEndDate).getTime()
+        : Number.MAX_SAFE_INTEGER;
+
+      if (query.status === "EXPIRED") {
+        return bTime - aTime;
+      }
+
+      if (query.status === "ACTIVE" || query.status === "EXPIRING") {
+        return aTime - bTime;
+      }
+
+      return 0;
+    });
+
     const totalCount = filteredItems.length;
     const totalPages = Math.max(Math.ceil(totalCount / query.limit), 1);
     const safePage = Math.min(query.page, totalPages);
@@ -258,7 +278,18 @@ export class DocumentService {
           },
         };
       });
+    eligibleDocuments.sort((a, b) => {
+      if (!a.documentEndDate) return 1;
+      if (!b.documentEndDate) return -1;
 
+      const today = Date.now();
+
+      const aDistance = Math.abs(new Date(a.documentEndDate).getTime() - today);
+
+      const bDistance = Math.abs(new Date(b.documentEndDate).getTime() - today);
+
+      return aDistance - bDistance;
+    });
     return {
       items: eligibleDocuments,
       totalCount: eligibleDocuments.length,
