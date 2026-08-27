@@ -13,6 +13,7 @@ import {
 import { DocumentsScreen } from "@/app/(dashboard)/_components/screens/documents-screen";
 import { DocumentDetailScreen } from "@/app/(dashboard)/_components/screens/document-detail-screen";
 import { CompanyIdentitySection } from "@/app/(dashboard)/_components/screens/company-identity-section";
+import { CompanyRequestList } from "@/app/(dashboard)/_components/screens/company-request-list-screen";
 import { companyMockData } from "@/lib/company-mock-data";
 import { apiFetch } from "@/lib/api";
 
@@ -591,6 +592,7 @@ export function CompaniesScreen() {
           {/* Firma Künye + İletişim Bilgileri */}
           <CompanyIdentitySection companyId={activeFirma.id} />
 
+         
           {/* Belgeler */}
           <div className="space-y-4"></div>
 
