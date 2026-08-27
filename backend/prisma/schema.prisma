@@ -520,17 +520,77 @@ model DocumentDomesticMachine {
   id       Int @id @default(autoincrement())
   detailId Int
 
+  // Temel bilgiler
   externalMachineId Int?
   sequenceNumber    Int?
 
   name        String?
   quantity    Decimal?
-  unit        String?
   unitPriceTl Decimal?
   totalTl     Decimal?
+  unit        String?
 
+  // KDV
+  vatExemption            String?
+  vatExemptionDescription String?
+
+  // Devir
+  transferRealizedValue    Decimal?
+  transferRealizedQuantity Decimal?
+  transferOutgoingValue    Decimal?
+  transferOutgoingQuantity Decimal?
+
+  // Kiralama
+  leasingOutgoingValue     Decimal?
+  leasingOutgoingQuantity  Decimal?
+  leasingPermittedValue    Decimal?
+  leasingPermittedQuantity Decimal?
+
+  // Fatura gerçekleşen
+  invoiceRealizedValue    Decimal?
+  invoiceRealizedQuantity Decimal?
+
+  // Gümrük
+  customsRealizedValue     Decimal?
+  customsRealizedQuantity  Decimal?
+  customsPermittedValue    Decimal?
+  customsPermittedQuantity Decimal?
+
+  // İhraç
+  exportOutgoingValue     Decimal?
+  exportOutgoingQuantity  Decimal?
+  exportPermittedValue    Decimal?
+  exportPermittedQuantity Decimal?
+
+  // Finansal kiralama
+  financialLeasingRealizedValue     Decimal?
+  financialLeasingRealizedQuantity  Decimal?
+  financialLeasingPermittedValue    Decimal?
+  financialLeasingPermittedQuantity Decimal?
+
+  // Satış
+  saleOutgoingValue     Decimal?
+  saleOutgoingQuantity  Decimal?
+  salePermittedValue    Decimal?
+  salePermittedQuantity Decimal?
+  saleRealizedQuantity  Decimal?
+  saleRealizedValue     Decimal?
+
+  // GTIP
   gtipCode        String?
   gtipDescription String?
+
+  // Devir gelen
+  transferDocumentNumber   String?
+  transferIncomingQuantity Decimal?
+  transferIncomingAmount   Decimal?
+
+  // Diğer bilgiler
+  barcode                 String?
+  sellerTaxNumber         String?
+  sellerEmail             String?
+  financialLeasingCompany String?
+  machineryEquipmentType  String?
 
   rawData Json?
 

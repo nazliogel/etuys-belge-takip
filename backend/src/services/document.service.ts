@@ -534,4 +534,131 @@ export class DocumentService {
         : null,
     };
   }
+  async getDocumentDomesticMachines(
+    id: number,
+    userId: number,
+    role: UserRole,
+  ) {
+    const document = await this.documentRepository.findById(id);
+
+    if (!document) {
+      throw new AppError("Document not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "DOCUMENT_NOT_FOUND",
+      });
+    }
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      if (document.companyId !== company.id) {
+        throw new AppError(
+          "You do not have permission to access this document.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
+    }
+
+    const domesticMachines = document.detail?.domesticMachines ?? [];
+
+    return {
+      documentId: document.id,
+      externalDocumentId: document.externalDocumentId,
+      documentNumber: document.documentNumber,
+
+      items: domesticMachines.map((machine) => ({
+        id: machine.id,
+
+        externalMachineId: machine.externalMachineId,
+        sequenceNumber: machine.sequenceNumber,
+
+        name: machine.name,
+        quantity: machine.quantity?.toString() ?? null,
+        unitPriceTl: machine.unitPriceTl?.toString() ?? null,
+        totalTl: machine.totalTl?.toString() ?? null,
+        unit: machine.unit,
+
+        vatExemption: machine.vatExemption,
+        vatExemptionDescription: machine.vatExemptionDescription,
+
+        transferRealizedValue:
+          machine.transferRealizedValue?.toString() ?? null,
+        transferRealizedQuantity:
+          machine.transferRealizedQuantity?.toString() ?? null,
+        transferOutgoingValue:
+          machine.transferOutgoingValue?.toString() ?? null,
+        transferOutgoingQuantity:
+          machine.transferOutgoingQuantity?.toString() ?? null,
+
+        leasingOutgoingValue: machine.leasingOutgoingValue?.toString() ?? null,
+        leasingOutgoingQuantity:
+          machine.leasingOutgoingQuantity?.toString() ?? null,
+        leasingPermittedValue:
+          machine.leasingPermittedValue?.toString() ?? null,
+        leasingPermittedQuantity:
+          machine.leasingPermittedQuantity?.toString() ?? null,
+
+        invoiceRealizedValue: machine.invoiceRealizedValue?.toString() ?? null,
+        invoiceRealizedQuantity:
+          machine.invoiceRealizedQuantity?.toString() ?? null,
+
+        customsRealizedValue: machine.customsRealizedValue?.toString() ?? null,
+        customsRealizedQuantity:
+          machine.customsRealizedQuantity?.toString() ?? null,
+        customsPermittedValue:
+          machine.customsPermittedValue?.toString() ?? null,
+        customsPermittedQuantity:
+          machine.customsPermittedQuantity?.toString() ?? null,
+
+        exportOutgoingValue: machine.exportOutgoingValue?.toString() ?? null,
+        exportOutgoingQuantity:
+          machine.exportOutgoingQuantity?.toString() ?? null,
+        exportPermittedValue: machine.exportPermittedValue?.toString() ?? null,
+        exportPermittedQuantity:
+          machine.exportPermittedQuantity?.toString() ?? null,
+
+        financialLeasingRealizedValue:
+          machine.financialLeasingRealizedValue?.toString() ?? null,
+        financialLeasingRealizedQuantity:
+          machine.financialLeasingRealizedQuantity?.toString() ?? null,
+        financialLeasingPermittedValue:
+          machine.financialLeasingPermittedValue?.toString() ?? null,
+        financialLeasingPermittedQuantity:
+          machine.financialLeasingPermittedQuantity?.toString() ?? null,
+
+        saleOutgoingValue: machine.saleOutgoingValue?.toString() ?? null,
+        saleOutgoingQuantity: machine.saleOutgoingQuantity?.toString() ?? null,
+        salePermittedValue: machine.salePermittedValue?.toString() ?? null,
+        salePermittedQuantity:
+          machine.salePermittedQuantity?.toString() ?? null,
+        saleRealizedQuantity: machine.saleRealizedQuantity?.toString() ?? null,
+        saleRealizedValue: machine.saleRealizedValue?.toString() ?? null,
+
+        gtipCode: machine.gtipCode,
+        gtipDescription: machine.gtipDescription,
+
+        transferDocumentNumber: machine.transferDocumentNumber,
+        transferIncomingQuantity:
+          machine.transferIncomingQuantity?.toString() ?? null,
+        transferIncomingAmount:
+          machine.transferIncomingAmount?.toString() ?? null,
+
+        barcode: machine.barcode,
+        sellerTaxNumber: machine.sellerTaxNumber,
+        sellerEmail: machine.sellerEmail,
+        financialLeasingCompany: machine.financialLeasingCompany,
+        machineryEquipmentType: machine.machineryEquipmentType,
+      })),
+    };
+  }
 }

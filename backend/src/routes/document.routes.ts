@@ -17,4 +17,9 @@ documentRouter.get("/:id/supports", documentController.getSupports);
 
 documentRouter.get("/:id/financial-info", documentController.getFinancialInfo);
 
+documentRouter.get(
+  "/:id/domestic-machines",
+  documentController.getDomesticMachines,   
+);
+
 documentRouter.get("/:id", documentController.getById);

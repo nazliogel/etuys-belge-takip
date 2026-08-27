@@ -115,6 +115,7 @@ export class DocumentRepository {
             products: true,
             supports: true,
             financialInfo: true,
+            domesticMachines: true,
           },
         },
       },

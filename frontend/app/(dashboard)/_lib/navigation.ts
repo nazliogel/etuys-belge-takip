@@ -73,7 +73,7 @@ export const navigationItems = [
   },
   {
     label: "Yerli Liste",
-    href: "/document-details/domestic-machines",
+    href: "/documents/domestic-machines",
     icon: ShoppingCart,
     permission: "documents:view",
   },
