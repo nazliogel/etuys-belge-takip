@@ -5,21 +5,26 @@
 
 const CONSULTANT_CONTACTS: Record<string, ConsultantContact> = {
   "salih şahin": {
-    phone: "0532 111 22 33",
+    phone: "0553 350 72 30",
     email: "salihsahin@akkasgroup.com",
   },
   "beyza başaran": {
-    phone: "0533 222 33 44",
+    phone: "0549 252 26 27",
     email: "beyzabasaran@akkasgroup.com",
   },
-  "erkan akkaş": {
-    phone: "0534 333 44 55",
-    email: "erkanakkasgroup@gmail.com",
+  "ezgi temel": {
+    phone: "0554 915 24 28",
+    email: "ezgitemel.akkasgroup@gmail.com",
   },
   "emin kutay inangu": {
-    phone: "0534 333 99 95",
+    phone: "0552 703 70 36",
     email: "emin.akkasgroup@gmail.com",
   },
+   "murathan aracı": {
+    phone: "0553 313 61 66",
+    email: "murathanaraci@aya.com.tr",
+  },
+
 };
 
 function normalizeConsultantName(name: string): string {

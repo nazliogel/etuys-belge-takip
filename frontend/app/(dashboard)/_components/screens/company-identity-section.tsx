@@ -80,7 +80,8 @@ type CompanyNote = {
 
 type IdentityErrors = Partial<Record<keyof IdentityForm, string>>;
 
-const DANISMAN_OPTIONS = ["Beyza Başaran", "Emin Kutay İnangu", "Salih Şahin"];
+const DANISMAN_OPTIONS = ["Beyza Başaran", "Emin Kutay İnangu", "Salih Şahin","Ezgi Temel","Murathan Aracı"
+];
 
 const NAME_REGEX = /^[A-Za-zÇĞİÖŞÜçğıöşü\s'-]+$/;
 const EMAIL_REGEX =

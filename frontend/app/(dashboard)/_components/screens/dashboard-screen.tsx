@@ -317,7 +317,7 @@ type SummaryItem = {
  * component her mount olduğunda önce bu cache okunur (varsa) ve state
  * o veriyle başlatılır; API cevabı geldiğinde arka planda güncellenir.
  */
-const DASHBOARD_CACHE_KEY = "dashboard-overview-cache-v2";
+const DASHBOARD_CACHE_KEY = "dashboard-overview-cache-v3";
 
 type DashboardCache = {
   totalCompanies: number;
@@ -325,9 +325,11 @@ type DashboardCache = {
   activeDocumentItems: ApiDocument[];
   activeDocuments: number;
   expiredDocuments: number;
+  expiredDocumentItems: ApiDocument[];
   expiringDocuments: number;
   closedCancelledDocuments: number;
   extensionEligibleDocuments: number;
+  extensionEligibleItems: ExtensionEligibleDocument[];
   upcomingDeadlines: ApiDocument[];
   recentImports: ApiImportBatch[];
   recentChanges: RecentImportChange[];
@@ -370,6 +372,9 @@ export function DashboardScreen() {
   const [expiredDocuments, setExpiredDocuments] = useState<number | null>(
     () => readDashboardCache()?.expiredDocuments ?? null,
   );
+  const [expiredDocumentItems, setExpiredDocumentItems] = useState<
+    ApiDocument[]
+  >(() => readDashboardCache()?.expiredDocumentItems ?? []);
 
   const [expiringDocuments, setExpiringDocuments] = useState<number | null>(
     () => readDashboardCache()?.expiringDocuments ?? null,
@@ -380,6 +385,9 @@ export function DashboardScreen() {
   const [extensionEligibleDocuments, setExtensionEligibleDocuments] = useState<
     number | null
   >(() => readDashboardCache()?.extensionEligibleDocuments ?? null);
+  const [extensionEligibleItems, setExtensionEligibleItems] = useState<
+    ExtensionEligibleDocument[]
+  >(() => readDashboardCache()?.extensionEligibleItems ?? []);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<ApiDocument[]>(
     () => readDashboardCache()?.upcomingDeadlines ?? [],
   );
@@ -408,6 +416,7 @@ export function DashboardScreen() {
           activeDocumentResponse,
           documentResponse,
           expiringResponse,
+          expiredDocumentResponse,
           closedDocumentResponse,
           extensionEligibleResponse,
           importResponse,
@@ -421,6 +430,10 @@ export function DashboardScreen() {
           apiFetch<DocumentListResponse>("/documents"),
 
           apiFetch<DocumentListResponse>("/documents?status=EXPIRING&limit=20"),
+
+          apiFetch<DocumentListResponse>(
+            "/documents?status=EXPIRED&page=1&limit=20",
+          ),
 
           apiFetch<ClosedDocumentListResponse>(
             "/closed-documents?page=1&limit=1",
@@ -447,6 +460,34 @@ export function DashboardScreen() {
               new Date(b.documentEndDate).getTime()
             );
           },
+        );
+
+        const sortedExpiredItems = [...expiredDocumentResponse.data.items].sort(
+          (a, b) => {
+            if (!a.documentEndDate && !b.documentEndDate) {
+              return 0;
+            }
+            if (!a.documentEndDate) {
+              return 1;
+            }
+            if (!b.documentEndDate) {
+              return -1;
+            }
+
+            // En son süresi dolan en üstte gösterilsin.
+            return (
+              new Date(b.documentEndDate).getTime() -
+              new Date(a.documentEndDate).getTime()
+            );
+          },
+        );
+
+        const sortedExtensionEligibleItems = [
+          ...extensionEligibleResponse.data.items,
+        ].sort(
+          (a, b) =>
+            new Date(a.extensionApplicationStartDate).getTime() -
+            new Date(b.extensionApplicationStartDate).getTime(),
         );
 
         const lastThreeImports = importResponse.data.items.slice(0, 3);
@@ -477,9 +518,11 @@ export function DashboardScreen() {
           activeDocumentItems: activeDocumentResponse.data.items,
           activeDocuments: documentResponse.data.summary.active,
           expiredDocuments: documentResponse.data.summary.expired,
+          expiredDocumentItems: sortedExpiredItems,
           expiringDocuments: documentResponse.data.summary.expiring,
           closedCancelledDocuments: closedDocumentResponse.data.totalCount,
           extensionEligibleDocuments: extensionEligibleResponse.data.totalCount,
+          extensionEligibleItems: sortedExtensionEligibleItems,
           upcomingDeadlines: sortedExpiringItems,
           recentImports: lastThreeImports,
           recentChanges: changes,
@@ -490,9 +533,11 @@ export function DashboardScreen() {
         setActiveDocumentItems(cache.activeDocumentItems);
         setActiveDocuments(cache.activeDocuments);
         setExpiredDocuments(cache.expiredDocuments);
+        setExpiredDocumentItems(cache.expiredDocumentItems);
         setExpiringDocuments(cache.expiringDocuments);
         setClosedCancelledDocuments(cache.closedCancelledDocuments);
         setExtensionEligibleDocuments(cache.extensionEligibleDocuments);
+        setExtensionEligibleItems(cache.extensionEligibleItems);
         setUpcomingDeadlines(cache.upcomingDeadlines);
         setRecentImports(cache.recentImports);
         setRecentChanges(cache.recentChanges);
@@ -514,9 +559,11 @@ export function DashboardScreen() {
           setActiveDocumentItems([]);
           setActiveDocuments(0);
           setExpiredDocuments(0);
+          setExpiredDocumentItems([]);
           setExpiringDocuments(0);
           setClosedCancelledDocuments(0);
           setExtensionEligibleDocuments(0);
+          setExtensionEligibleItems([]);
           setUpcomingDeadlines([]);
           setRecentImports([]);
 
@@ -648,18 +695,7 @@ export function DashboardScreen() {
               <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">
                 Yönetim Paneli
               </span>
-
-              <span className="h-1 w-1 rounded-full bg-slate-300" />
-
-              <span className="text-[11px] font-medium text-slate-500">
-                Genel Bakış
-              </span>
             </div>
-
-            <h1 className="mt-1 text-xl font-extrabold tracking-tight text-slate-900">
-              Genel Bakış
-            </h1>
-
             <p className="mt-0.5 text-xs text-slate-500">
               Firma, belge ve yetki süreçlerinizin güncel durum özeti.
             </p>
@@ -732,7 +768,7 @@ export function DashboardScreen() {
         })}
       </section>
 
-      {/* YAKLAŞAN SÜRELER & SON İŞLEMLER GRID */}
+      {/* YAKLAŞAN SÜRELER & SÜRE UZATMA GRID */}
       <section
         className={`grid gap-6 ${isCompany ? "grid-cols-1" : "xl:grid-cols-2"}`}
       >
@@ -809,30 +845,39 @@ export function DashboardScreen() {
           </div>
         </div>
 
-        {/* SON İŞLEMLER */}
+        {/* SÜRE UZATMA */}
         {!isCompany && (
           <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                  <Clock3 size={16} />
+                  <CalendarClock size={16} />
                 </div>
 
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
-                    Son İşlemler
+                    Süre Uzatma
                   </h2>
                   <p className="mt-0.5 text-xs text-slate-500">
-                    Son {recentImports.length} Excel yüklemesinde yapılan
-                    değişiklikler.
+                    Süre uzatma başvurusu yapılabilecek belgeler.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                  {recentChanges.length} Değişiklik
+                  {extensionEligibleItems.length} Kayıt
                 </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push("/documents?view=extension-eligible")
+                  }
+                  className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
+                >
+                  Tümünü Gör
+                </button>
               </div>
             </div>
 
@@ -841,67 +886,53 @@ export function DashboardScreen() {
                 <p className="py-6 text-center text-xs text-slate-400">
                   Yükleniyor...
                 </p>
-              ) : recentChanges.length === 0 ? (
+              ) : extensionEligibleItems.length === 0 ? (
                 <p className="py-6 text-center text-xs text-slate-400">
-                  Son 3 Excel yüklemesinde değişiklik bulunmuyor.
+                  Süre uzatma başvurusu yapılabilecek belge bulunmuyor.
                 </p>
               ) : (
-                recentChanges.map((change) => (
+                extensionEligibleItems.map((document) => (
                   <div
-                    key={change.id}
-                    className="flex items-start gap-3.5 py-3 first:pt-3 last:pb-3"
+                    key={document.id}
+                    className="flex items-start justify-between gap-4 py-3 first:pt-3 last:pb-3"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                      <Pencil size={17} />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-                          {change.importBatch.fileName}
-                        </span>
-
-                        <span className="text-[10px] text-slate-400">
-                          {formatEventDate(change.importBatch.uploadedAt)}
-                        </span>
-
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            getBatchStatusBadge(change.importBatch.status)
-                              .className
-                          }`}
-                        >
-                          {getBatchStatusBadge(change.importBatch.status).label}
-                        </span>
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                      <div>
+                        <p className="font-semibold text-sm text-slate-900">
+                          {document.company.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Belge No:{" "}
+                          <strong className="text-slate-700">
+                            {document.documentNumber || "—"}
+                          </strong>{" "}
+                          · Uzatma tarihi:{" "}
+                          <strong className="text-blue-600">
+                            {new Date(
+                              document.extensionDate,
+                            ).toLocaleDateString("tr-TR")}
+                          </strong>
+                        </p>
                       </div>
-
-                      <p className="text-sm font-semibold text-slate-900">
-                        {change.company?.name ??
-                          change.document?.documentNumber ??
-                          "Kayıt"}
-                      </p>
-
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        {getChangeFieldLabel(change.fieldName)}:{" "}
-                        <span className="text-slate-400 line-through">
-                          {formatChangeValue(change.oldValue)}
-                        </span>{" "}
-                        →{" "}
-                        <span className="font-semibold text-emerald-600">
-                          {formatChangeValue(change.newValue)}
-                        </span>
-                      </p>
                     </div>
+
+                    <span className="shrink-0 rounded-lg bg-blue-50 border border-blue-200/60 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                      Uygun
+                    </span>
                   </div>
                 ))
               )}
             </div>
           </div>
         )}
+      </section>
 
-        {/* AKTİF BELGELER */}
-        {!isCompany && (
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm xl:col-span-2">
+      {/* AKTİF BELGELER & TAMAMLAMA VİZESİ YAPILACAKLAR GRID */}
+      {!isCompany && (
+        <section className="grid gap-6 xl:grid-cols-2">
+          {/* AKTİF BELGELER (küçültülmüş) */}
+          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
             <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-3 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
@@ -934,7 +965,7 @@ export function DashboardScreen() {
               </div>
             </div>
 
-            <div className="max-h-[360px] divide-y divide-slate-100 overflow-y-auto">
+            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
               {isInitialLoading ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Aktif belgeler yükleniyor...
@@ -947,11 +978,11 @@ export function DashboardScreen() {
                 activeDocumentItems.map((document) => (
                   <article
                     key={document.id}
-                    className="flex flex-col justify-between gap-3 p-4 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
+                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
                   >
-                    <div className="flex min-w-0 items-center gap-3.5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
-                        <FileCheck2 size={18} />
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
+                        <FileCheck2 size={16} />
                       </div>
 
                       <div className="min-w-0">
@@ -959,25 +990,16 @@ export function DashboardScreen() {
                           {document.company.name}
                         </h3>
 
-                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                          <span>
-                            Belge No:{" "}
-                            <strong className="text-slate-700">
-                              {document.documentNumber || "—"}
-                            </strong>
-                          </span>
-
-                          <span>
-                            Destek Sınıfı:{" "}
-                            <strong className="text-slate-700">
-                              {document.supportClass || "—"}
-                            </strong>
-                          </span>
-                        </div>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Belge No:{" "}
+                          <strong className="text-slate-700">
+                            {document.documentNumber || "—"}
+                          </strong>
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-2">
                       <span className="text-xs text-slate-500">
                         Bitiş:{" "}
                         {document.documentEndDate
@@ -996,8 +1018,96 @@ export function DashboardScreen() {
               )}
             </div>
           </section>
-        )}
-      </section>
+
+          {/* TAMAMLAMA VİZESİ YAPILACAKLAR */}
+          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-3 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                  <Clock3 size={16} />
+                </div>
+
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    Tamamlama Vizesi Yapılacaklar
+                  </h2>
+
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Süresi dolmuş, tamamlama vizesi işlemi bekleyen belgeler.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                  {expiredDocuments ?? 0} Belge
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => router.push("/documents?status=EXPIRED")}
+                  className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
+                >
+                  Tümünü Gör
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
+              {isInitialLoading ? (
+                <p className="py-8 text-center text-xs text-slate-400">
+                  Belgeler yükleniyor...
+                </p>
+              ) : expiredDocumentItems.length === 0 ? (
+                <p className="py-8 text-center text-xs text-slate-400">
+                  Tamamlama vizesi bekleyen belge bulunmuyor.
+                </p>
+              ) : (
+                expiredDocumentItems.map((document) => (
+                  <article
+                    key={document.id}
+                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600">
+                        <Clock3 size={16} />
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold text-slate-900">
+                          {document.company.name}
+                        </h3>
+
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Belge No:{" "}
+                          <strong className="text-slate-700">
+                            {document.documentNumber || "—"}
+                          </strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-xs text-slate-500">
+                        Bitiş:{" "}
+                        {document.documentEndDate
+                          ? new Date(
+                              document.documentEndDate,
+                            ).toLocaleDateString("tr-TR")
+                          : "—"}
+                      </span>
+
+                      <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">
+                        Vize Bekliyor
+                      </span>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        </section>
+      )}
     </div>
   );
 }

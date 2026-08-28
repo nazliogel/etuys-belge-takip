@@ -2,7 +2,6 @@
 
 import {
   CalendarDays,
-  Check,
   ChevronRight,
   FileCheck2,
   FileText,
@@ -232,6 +231,7 @@ export function DocumentsScreen({
   variant = "company",
 }: DocumentsScreenProps) {
   const router = useRouter();
+  const isCompanyView = variant === "company";
 
   const searchParams = useSearchParams();
 
@@ -281,6 +281,11 @@ export function DocumentsScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const documentTabsRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenDocuments([]);
+    setActiveDocumentKey(null);
+  }, [companyId]);
   useEffect(() => {
     async function loadCompanyAuthorization() {
       if (variant !== "company" || companyId) {
@@ -745,7 +750,11 @@ export function DocumentsScreen({
 
       {/* BELGE LİSTESİ */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50/40 p-2.5 lg:flex-row lg:items-center lg:justify-between">
+        <div
+          className={`flex flex-col border-b border-slate-100 bg-slate-50/40 lg:flex-row lg:items-center lg:justify-between ${
+            isCompanyView ? "gap-4 p-5" : "gap-2 p-2.5"
+          }`}
+        >
           <div>
             <h2 className="text-sm font-bold text-slate-900">Belge Listesi</h2>
 
@@ -754,7 +763,11 @@ export function DocumentsScreen({
             </p>
           </div>
 
-          <div className="relative w-full lg:w-64">
+          <div
+            className={`relative w-full ${
+              isCompanyView ? "lg:w-72" : "lg:w-64"
+            }`}
+          >
             <Search
               size={17}
               className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
@@ -765,7 +778,9 @@ export function DocumentsScreen({
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Belge numarası ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-1 pl-8 pr-2.5 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
+              className={`w-full rounded-xl border border-slate-200 bg-white text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 ${
+                isCompanyView ? "py-2 pl-10 pr-3" : "py-1 pl-8 pr-2.5"
+              }`}
             />
           </div>
         </div>
@@ -784,21 +799,37 @@ export function DocumentsScreen({
             </colgroup>
             <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
               <tr>
-                <th className="px-3 py-1.5 text-center">Belge No</th>
-                <th className="px-3 py-1.5 text-center">Firma</th>
-                <th className="px-3 py-1.5 text-center">Belge Başlangıç</th>
-                <th className="px-3 py-1.5 text-center">Belge Bitiş</th>
-                <th className="px-3 py-1.5 text-center">Süre Uzatım</th>
-                <th className="px-3 py-1.5 text-center">Destekleme Sınıfı</th>
-                <th className="px-3 py-1.5 text-center">Durum</th>
-                <th className="px-3 py-1.5 text-center">Detay</th>
+                {[
+                  "Belge No",
+                  "Firma",
+                  "Belge Başlangıç",
+                  "Belge Bitiş",
+                  "Süre Uzatım",
+                  "Destekleme Sınıfı",
+                  "Durum",
+                  "Detay",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className={`text-center ${
+                      isCompanyView ? "px-6 py-3.5" : "px-3 py-1.5"
+                    }`}
+                  >
+                    {heading}
+                  </th>
+                ))}
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center">
+                  <td
+                    colSpan={8}
+                    className={`px-4 text-center ${
+                      isCompanyView ? "py-12" : "py-8"
+                    }`}
+                  >
                     <p className="text-sm font-medium text-slate-500">
                       Belgeler yükleniyor...
                     </p>
@@ -806,7 +837,12 @@ export function DocumentsScreen({
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center">
+                  <td
+                    colSpan={8}
+                    className={`px-4 text-center ${
+                      isCompanyView ? "py-12" : "py-8"
+                    }`}
+                  >
                     <p className="text-sm font-semibold text-red-700">
                       Belgeler yüklenemedi
                     </p>
@@ -816,7 +852,12 @@ export function DocumentsScreen({
                 </tr>
               ) : visibleDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center">
+                  <td
+                    colSpan={8}
+                    className={`px-4 text-center ${
+                      isCompanyView ? "py-12" : "py-8"
+                    }`}
+                  >
                     {(companyId || variant === "company") &&
                     documents.length === 0 &&
                     !isAuthorizationLoading &&
@@ -878,7 +919,9 @@ export function DocumentsScreen({
                         isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
                       }`}
                     >
-                      <td className="px-3 py-1.5">
+                      <td
+                        className={isCompanyView ? "px-6 py-4" : "px-3 py-1.5"}
+                      >
                         <div className="flex items-center gap-1.5">
                           <div
                             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
@@ -901,7 +944,11 @@ export function DocumentsScreen({
                           </div>
                         </div>
                       </td>
-                      <td className="max-w-xs px-3 py-1.5">
+                      <td
+                        className={`max-w-xs ${
+                          isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
+                        }`}
+                      >
                         <p
                           title={
                             doc.company?.name ?? "Firma bilgisi bulunamadı"
@@ -915,25 +962,25 @@ export function DocumentsScreen({
                           VKN: {doc.company?.taxNumber ?? "-"}
                         </p>
                       </td>
-                      <td className="px-3 py-1.5 text-xs font-medium text-slate-600 text-center">
+                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}>
                         {formatDate(doc.documentStartDate)}
                       </td>
 
-                      <td className="px-3 py-1.5 text-xs font-medium text-slate-600 text-center">
+                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}>
                         {formatDate(doc.documentEndDate)}
                       </td>
 
-                      <td className="px-3 py-1.5 text-xs font-medium text-slate-600 text-center">
+                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}>
                         {formatDate(doc.extensionDate)}
                       </td>
 
-                      <td className="px-3 py-1.5 text-center">
+                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}>
                         <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
                           {doc.supportClass ?? "-"}
                         </span>
                       </td>
 
-                      <td className="px-3 py-1.5 text-center">
+                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}>
                         {isExtensionEligibleView ? (
                           <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -950,7 +997,7 @@ export function DocumentsScreen({
                         )}
                       </td>
 
-                      <td className="px-3 py-1.5 text-center">
+                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}>
                         <div className="flex items-center justify-end">
                           <button
                             type="button"
@@ -968,10 +1015,7 @@ export function DocumentsScreen({
                             }`}
                           >
                             {isSelected ? (
-                              <>
-                                <Check size={14} />
-                                Görüntüleniyor
-                              </>
+                              "Görüntüleniyor"
                             ) : (
                               <>
                                 Görüntüle
@@ -988,7 +1032,11 @@ export function DocumentsScreen({
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between border-t border-slate-200 px-3 py-1.5">
+        <div
+          className={`flex items-center justify-between border-t border-slate-200 ${
+            isCompanyView ? "bg-slate-50/30 p-4" : "px-3 py-1.5"
+          }`}
+        >
           <p className="text-xs font-medium text-slate-500">
             Sayfa {currentPage} / {totalPages}
           </p>

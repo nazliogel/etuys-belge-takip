@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Building2,
   Filter,
@@ -11,10 +12,8 @@ import {
 } from "lucide-react";
 
 import { DocumentsScreen } from "@/app/(dashboard)/_components/screens/documents-screen";
-import { DocumentDetailScreen } from "@/app/(dashboard)/_components/screens/document-detail-screen";
 import { CompanyIdentitySection } from "@/app/(dashboard)/_components/screens/company-identity-section";
 import { CompanyRequestList } from "@/app/(dashboard)/_components/screens/company-request-list-screen";
-import { companyMockData } from "@/lib/company-mock-data";
 import { apiFetch } from "@/lib/api";
 
 type Firma = {
@@ -48,6 +47,14 @@ type CompanyListResponse = {
   };
 };
 
+// Sekmelerde/etkin firma olarak açık olan ama o an listede (mevcut sayfada)
+// bulunmayan bir firmayı göstermemiz gerektiğinde tek kayıt çekmek için.
+type CompanyDetailResponse = {
+  success: boolean;
+  message: string;
+  data: CompanyApiItem;
+};
+
 const PAGE_SIZE = 20;
 
 type StatusFilter = "all" | "active" | "expiring" | "expired";
@@ -58,6 +65,27 @@ const statusOptions: { key: StatusFilter; label: string }[] = [
   { key: "expiring", label: "Süresi Yaklaşan" },
   { key: "expired", label: "Süresi Dolmuş" },
 ];
+
+// Açık firma/belge sekmelerini artık sadece component state'inde değil,
+// URL query string'inde tutuyoruz. Böylece:
+//  - Next.js'in client-side router cache'i bu sayfayı yeniden mount etmeden
+//    geri getirse bile, "hangi firma/belge açık" bilgisi URL'den taze
+//    okunur; kullanıcı sade bir linkle bu sayfaya dönerse (query'siz)
+//    liste temiz açılır.
+//  - Tarayıcı geri/ileri tuşları ve link paylaşımı da doğru çalışır.
+const QUERY_KEYS = {
+  activeFirma: "firma",
+  firmaTabs: "firmaSekme",
+} as const;
+
+type QueryUpdates = Partial<
+  Record<keyof typeof QUERY_KEYS, string | string[] | null>
+>;
+
+function parseIdList(value: string | null): string[] {
+  if (!value) return [];
+  return value.split(",").filter(Boolean);
+}
 
 function getFirmaStatus(
   dateStr: string | null,
@@ -87,21 +115,34 @@ function formatDate(dateStr: string | null): string {
 }
 
 export function CompaniesScreen() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [firmalar, setFirmalar] = useState<Firma[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [openFirmalar, setOpenFirmalar] = useState<Firma[]>([]);
-  const [activeFirmaId, setActiveFirmaId] = useState<string | null>(null);
 
-  const activeFirma =
-    openFirmalar.find((firma) => firma.id === activeFirmaId) ?? null;
+  // Şimdiye kadar görülmüş (listede gelmiş ya da tek tek çekilmiş) firmaların
+  // önbelleği. Sekme başlıklarını (firma adı vb.) göstermek için kullanılır.
+  const [firmaCache, setFirmaCache] = useState<Record<string, Firma>>({});
 
-  // Belge sekmeleri: firma sekmeleriyle aynı desen — birden fazla belge
-  // aynı anda açık kalabilir, aralarında geçiş yapılabilir, tek tek kapatılabilir.
-  const [openDocumentIds, setOpenDocumentIds] = useState<string[]>([]);
-  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+  // "Hangi firma/belge açık" artık URL'den okunuyor — component state değil.
+  const activeFirmaId = searchParams.get(QUERY_KEYS.activeFirma);
+  const openFirmaIds = useMemo(
+    () => parseIdList(searchParams.get(QUERY_KEYS.firmaTabs)),
+    [searchParams],
+  );
+  const activeFirma = activeFirmaId ? firmaCache[activeFirmaId] ?? null : null;
+  const openFirmalar = useMemo(
+    () =>
+      openFirmaIds
+        .map((id) => firmaCache[id])
+        .filter((firma): firma is Firma => Boolean(firma)),
+    [openFirmaIds, firmaCache],
+  );
 
   // Arama + filtre
   const [searchQuery, setSearchQuery] = useState("");
@@ -110,7 +151,34 @@ export function CompaniesScreen() {
   const filterRef = useRef<HTMLDivElement>(null);
 
   const detailRef = useRef<HTMLDivElement>(null);
-  const documentDetailRef = useRef<HTMLDivElement>(null);
+
+  // URL'deki firma/belge sekme parametrelerini güncelleyen tek merkezi
+  // fonksiyon. history'yi kirletmemek için push yerine replace kullanıyoruz.
+  function updateQuery(updates: QueryUpdates) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    (Object.keys(updates) as (keyof typeof QUERY_KEYS)[]).forEach((key) => {
+      const value = updates[key];
+      const paramKey = QUERY_KEYS[key];
+
+      if (
+        value === null ||
+        value === undefined ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        params.delete(paramKey);
+      } else if (Array.isArray(value)) {
+        params.set(paramKey, value.join(","));
+      } else {
+        params.set(paramKey, value);
+      }
+    });
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }
 
   useEffect(() => {
     async function loadCompanies() {
@@ -142,6 +210,16 @@ export function CompaniesScreen() {
 
         setFirmalar(mappedFirmalar);
         setTotalCount(response.data.totalCount);
+
+        // Listede gelen firmaları önbelleğe de yazalım ki sekme/detay
+        // başlıklarında kullanılabilsin.
+        setFirmaCache((prev) => {
+          const next = { ...prev };
+          for (const firma of mappedFirmalar) {
+            next[firma.id] = firma;
+          }
+          return next;
+        });
       } catch (error) {
         setLoadError(
           error instanceof Error ? error.message : "Firmalar yüklenemedi.",
@@ -156,8 +234,73 @@ export function CompaniesScreen() {
     return () => window.clearTimeout(timer);
   }, [page, searchQuery]);
 
+  // URL'de açık olduğu belirtilen (activeFirmaId / openFirmaIds) ama henüz
+  // önbellekte olmayan firmalar için tek tek detay çekiyoruz. Bu, örneğin
+  // sayfa yenilendiğinde ya da doğrudan bu URL'e gelindiğinde (firma o an
+  // yüklü listede olmasa bile) sekme başlığının boş kalmamasını sağlıyor.
   useEffect(() => {
-    if (activeFirma) {
+    const idsToLoad = Array.from(
+      new Set([...(activeFirmaId ? [activeFirmaId] : []), ...openFirmaIds]),
+    ).filter((id) => !firmaCache[id]);
+
+    if (idsToLoad.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadMissingFirmalar() {
+      const results = await Promise.all(
+        idsToLoad.map(async (id) => {
+          try {
+            const response = await apiFetch<CompanyDetailResponse>(
+              `/companies/${id}`,
+            );
+            const company = response.data;
+
+            const firma: Firma = {
+              id: String(company.id),
+              firmaAdi: company.name,
+              vergiNo: company.taxNumber,
+              yetkiBitisTarihi: company.authorizationEndDate,
+              isActive: company.isActive,
+              documentCount: company.documentCount,
+            };
+
+            return [id, firma] as const;
+          } catch (error) {
+            console.error(`Firma #${id} yüklenemedi:`, error);
+            return null;
+          }
+        }),
+      );
+
+      if (cancelled) return;
+
+      setFirmaCache((prev) => {
+        const next = { ...prev };
+        for (const result of results) {
+          if (result) {
+            next[result[0]] = result[1];
+          }
+        }
+        return next;
+      });
+    }
+
+    loadMissingFirmalar();
+
+    return () => {
+      cancelled = true;
+    };
+    // firmaCache'i dependency'e almıyoruz: her cache güncellemesinde bu
+    // effect'in tekrar tetiklenmesini istemiyoruz, sadece URL'deki
+    // id'ler değiştiğinde tetiklensin.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFirmaId, openFirmaIds.join(",")]);
+
+  useEffect(() => {
+    if (activeFirmaId) {
       setTimeout(() => {
         detailRef.current?.scrollIntoView({
           behavior: "smooth",
@@ -165,18 +308,7 @@ export function CompaniesScreen() {
         });
       }, 50);
     }
-  }, [activeFirma]);
-
-  useEffect(() => {
-    if (activeDocumentId) {
-      setTimeout(() => {
-        documentDetailRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 50);
-    }
-  }, [activeDocumentId]);
+  }, [activeFirmaId]);
 
   // Filtre dropdown'ı dışarı tıklanınca kapansın
   useEffect(() => {
@@ -205,56 +337,38 @@ export function CompaniesScreen() {
     });
   }, [firmalar, statusFilter]);
 
-  function resetDocumentTabs() {
-    setOpenDocumentIds([]);
-    setActiveDocumentId(null);
-  }
-
   function handleCloseTab(firmaId: string) {
-    // Güncel state üzerinden hesapla; setState updater'ı içinde başka bir
-    // setState tetiklemek (eski kod) React'ta öngörülemeyen sonuçlara yol
-    // açabiliyordu — sekme bazen silinmiş gibi görünüp geri geliyordu.
-    const remaining = openFirmalar.filter((firma) => firma.id !== firmaId);
-    setOpenFirmalar(remaining);
+    const remaining = openFirmaIds.filter((id) => id !== firmaId);
 
     if (activeFirmaId === firmaId) {
-      const nextFirma = remaining.at(-1) ?? null;
-      setActiveFirmaId(nextFirma?.id ?? null);
-      resetDocumentTabs();
+      // Aktif sekme kapatıldıysa, kalan son sekmeye geç (hiç kalmadıysa
+      // detay tamamen kapanır).
+      updateQuery({
+        firmaTabs: remaining,
+        activeFirma: remaining.at(-1) ?? null,
+      });
+    } else {
+      updateQuery({ firmaTabs: remaining });
     }
   }
 
   function handleSelect(firma: Firma) {
-    setOpenFirmalar((current) => {
-      const alreadyOpen = current.some((item) => item.id === firma.id);
-      return alreadyOpen ? current : [...current, firma];
-    });
+    setFirmaCache((prev) => ({ ...prev, [firma.id]: firma }));
 
-    setActiveFirmaId(firma.id);
-    resetDocumentTabs();
+    const nextTabs = openFirmaIds.includes(firma.id)
+      ? openFirmaIds
+      : [...openFirmaIds, firma.id];
+
+    updateQuery({
+      firmaTabs: nextTabs,
+      activeFirma: firma.id,
+    });
   }
 
   const handleClose = () => {
-    setActiveFirmaId(null);
-    resetDocumentTabs();
+    updateQuery({ activeFirma: null });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  function handleOpenDocument(docId: string) {
-    setOpenDocumentIds((current) =>
-      current.includes(docId) ? current : [...current, docId],
-    );
-    setActiveDocumentId(docId);
-  }
-
-  function handleCloseDocumentTab(docId: string) {
-    const remaining = openDocumentIds.filter((id) => id !== docId);
-    setOpenDocumentIds(remaining);
-
-    if (activeDocumentId === docId) {
-      setActiveDocumentId(remaining.at(-1) ?? null);
-    }
-  }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
@@ -378,8 +492,20 @@ export function CompaniesScreen() {
                 <th className="px-4 py-2 text-right">İşlemler</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
+            <tbody
+              className={`divide-y divide-slate-100 transition-opacity ${
+                isLoading && firmalar.length > 0 ? "opacity-50" : ""
+              }`}
+            >
+              {isLoading && firmalar.length === 0 ? (
+                // Sadece ilk yüklemede (elimizde hiç veri yokken) tüm
+                // tabloyu tek satırlık bir spinnera çeviriyoruz. Sayfalama
+                // sırasında (2., 3. sayfa vs.) bunu yapmıyoruz — aksi halde
+                // tablo anlık olarak tek satıra küçülüp sayfanın toplam
+                // yüksekliği aniden düşüyor; altta "Seçili Firma Detayı"
+                // açıksa bu, içeriğin sanki oraya "atılmış" gibi görünmesine
+                // yol açıyordu. Eski satırları loading sırasında da
+                // (soluklaştırarak) ekranda tutmak bu ani zıplamayı önlüyor.
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center">
                     <div className="flex flex-col items-center gap-3">
@@ -524,10 +650,7 @@ export function CompaniesScreen() {
               >
                 <button
                   type="button"
-                  onClick={() => {
-                    setActiveFirmaId(firma.id);
-                    resetDocumentTabs();
-                  }}
+                  onClick={() => updateQuery({ activeFirma: firma.id })}
                   className="max-w-56 truncate px-3 py-1.5 text-xs"
                 >
                   {firma.firmaAdi}
@@ -592,86 +715,13 @@ export function CompaniesScreen() {
 
           {/* Belgeler */}
           <div className="space-y-3">
-            <DocumentsScreen
-              companyId={activeFirma.id}
-              selectedDocumentId={activeDocumentId}
-              onSelectDocument={handleOpenDocument}
-              variant="admin"
-            />
-
-            {/* AÇIK BELGE SEKMELERİ */}
-            {openDocumentIds.length > 0 && (
-              <div className="flex gap-1.5 overflow-x-auto border-b border-slate-200 pt-1.5">
-                {openDocumentIds.map((docId) => {
-                  const isActive = docId === activeDocumentId;
-                  const doc = companyMockData.documents.find(
-                    (item) => String(item.id) === docId,
-                  );
-                  const label = doc
-                    ? `${doc.number} No'lu Belge`
-                    : `Belge #${docId}`;
-
-                  return (
-                    <div
-                      key={docId}
-                      className={`flex shrink-0 items-center rounded-t-xl border border-b-0 transition-all ${
-                        isActive
-                          ? "border-slate-200 bg-white text-red-600 font-semibold shadow-sm"
-                          : "border-transparent bg-slate-100/70 text-slate-500 hover:bg-slate-100"
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setActiveDocumentId(docId)}
-                        className="max-w-48 truncate px-3 py-1.5 text-xs"
-                      >
-                        {label}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleCloseDocumentTab(docId);
-                        }}
-                        className="mr-1.5 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
-                        aria-label={`${label} sekmesini kapat`}
-                      >
-                        <X size={13} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* AKTİF BELGE DETAYI */}
-            {activeDocumentId && (
-              <section
-                ref={documentDetailRef}
-                className="scroll-mt-6 space-y-3 border-t border-dashed border-slate-200 pt-5"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Seçili Belge Detayı
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => handleCloseDocumentTab(activeDocumentId)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
-                  >
-                    <X size={14} />
-                    Belgeyi Kapat
-                  </button>
-                </div>
-
-                <DocumentDetailScreen
-                  documentId={activeDocumentId}
-                  inline
-                  variant="admin"
-                />
-              </section>
-            )}
+            {/*
+              DocumentsScreen artık açık belge sekmelerini ve aktif belge
+              detayını tamamen kendi içinde yönetiyor (bkz. o dosyadaki
+              companyId-değişince-sıfırla düzeltmesi). Burada ayrıca bir
+              belge sekmesi/detay state'i tutmuyoruz.
+            */}
+            <DocumentsScreen companyId={activeFirma.id} variant="admin" />
           </div>
         </section>
       )}
