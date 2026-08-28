@@ -263,10 +263,10 @@ export function CompaniesScreen() {
   const lastRecord = Math.min(page * PAGE_SIZE, totalCount);
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-5 pb-5">
       {/* BAŞLIK */}
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3.5">
+      <section className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 shadow-sm">
             <Building2 size={20} />
           </div>
@@ -283,12 +283,12 @@ export function CompaniesScreen() {
       </section>
 
       {/* ARAMA + FİLTRE */}
-      <section className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200/80">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <section className="rounded-2xl bg-white p-3 shadow-sm border border-slate-200/80">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search
               size={18}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
               type="text"
@@ -298,7 +298,7 @@ export function CompaniesScreen() {
                 setPage(1);
               }}
               placeholder="Firma adı, TC veya vergi no ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
             />
             {searchQuery && (
               <button
@@ -319,7 +319,7 @@ export function CompaniesScreen() {
             <button
               type="button"
               onClick={() => setIsFilterOpen((current) => !current)}
-              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition sm:w-auto ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition sm:w-auto ${
                 statusFilter !== "all"
                   ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                   : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 active:bg-slate-200"
@@ -335,8 +335,8 @@ export function CompaniesScreen() {
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
-                <p className="px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="absolute right-0 z-20 mt-1.5 w-52 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Yetki Durumu
                 </p>
                 {statusOptions.map((option) => {
@@ -349,7 +349,7 @@ export function CompaniesScreen() {
                         setStatusFilter(option.key);
                         setIsFilterOpen(false);
                       }}
-                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-medium transition ${
+                      className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-medium transition ${
                         isActive
                           ? "bg-red-50 text-red-700"
                           : "text-slate-600 hover:bg-slate-50"
@@ -372,16 +372,16 @@ export function CompaniesScreen() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/60">
               <tr>
-                <th className="px-6 py-3.5">Firma Adı</th>
-                <th className="px-6 py-3.5">Vergi No</th>
-                <th className="px-6 py-3.5">Yetki Bitiş</th>
-                <th className="px-6 py-3.5 text-right">İşlemler</th>
+                <th className="px-4 py-2">Firma Adı</th>
+                <th className="px-4 py-2">Vergi No</th>
+                <th className="px-4 py-2">Yetki Bitiş</th>
+                <th className="px-4 py-2 text-right">İşlemler</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
+                  <td colSpan={4} className="px-4 py-8 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-red-600" />
                       <p className="text-sm font-medium text-slate-500">
@@ -392,7 +392,7 @@ export function CompaniesScreen() {
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
+                  <td colSpan={4} className="px-4 py-8 text-center">
                     <p className="text-sm font-semibold text-red-700">
                       Firmalar yüklenemedi
                     </p>
@@ -401,7 +401,7 @@ export function CompaniesScreen() {
                 </tr>
               ) : filteredFirmalar.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center">
+                  <td colSpan={4} className="px-4 py-6 text-center">
                     <p className="text-sm font-semibold text-slate-700">
                       Sonuç bulunamadı
                     </p>
@@ -421,26 +421,26 @@ export function CompaniesScreen() {
                         isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
                       }`}
                     >
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-slate-900 text-sm">
+                      <td className="px-4 py-2">
+                        <p className="text-xs font-semibold text-slate-900">
                           {firma.firmaAdi}
                         </p>
                       </td>
 
-                      <td className="px-6 py-4 font-mono text-xs font-medium text-slate-600">
+                      <td className="px-4 py-2 font-mono text-xs font-medium text-slate-600">
                         {firma.vergiNo}
                       </td>
 
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                      <td className="px-4 py-2 text-xs font-medium text-slate-600">
                         {formatDate(firma.yetkiBitisTarihi)}
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <div className="flex items-center justify-end">
                           <button
                             type="button"
                             onClick={() => handleSelect(firma)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
                               isSelected
                                 ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -469,8 +469,7 @@ export function CompaniesScreen() {
         </div>
 
         {/* SAYFALAMA */}
-        {/* SAYFALAMA */}
-        <div className="flex flex-col gap-3 border-t border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between bg-slate-50/30">
+        <div className="flex flex-col gap-2 border-t border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between bg-slate-50/30">
           <p className="text-xs text-slate-500 font-medium">
             <span className="font-bold text-slate-700">
               {firstRecord}-{lastRecord}
@@ -484,14 +483,14 @@ export function CompaniesScreen() {
               type="button"
               disabled={page <= 1 || isLoading}
               onClick={() => setPage((current) => current - 1)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Önceki
             </button>
 
             <button
               type="button"
-              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-red-600/20"
+              className="rounded-lg bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-600/20"
             >
               {page} / {totalPages}
             </button>
@@ -500,7 +499,7 @@ export function CompaniesScreen() {
               type="button"
               disabled={page >= totalPages || isLoading}
               onClick={() => setPage((current) => current + 1)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Sonraki
             </button>
@@ -510,7 +509,7 @@ export function CompaniesScreen() {
 
       {/* AÇIK FİRMA SEKMELERİ */}
       {openFirmalar.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto border-b border-slate-200/80 pt-2">
+        <div className="flex gap-1.5 overflow-x-auto border-b border-slate-200/80 pt-1.5">
           {openFirmalar.map((firma) => {
             const isActive = firma.id === activeFirmaId;
 
@@ -529,7 +528,7 @@ export function CompaniesScreen() {
                     setActiveFirmaId(firma.id);
                     resetDocumentTabs();
                   }}
-                  className="max-w-56 truncate px-4 py-2.5 text-xs"
+                  className="max-w-56 truncate px-3 py-1.5 text-xs"
                 >
                   {firma.firmaAdi}
                 </button>
@@ -540,7 +539,7 @@ export function CompaniesScreen() {
                     event.stopPropagation();
                     handleCloseTab(firma.id);
                   }}
-                  className="mr-2 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                  className="mr-1.5 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
                   aria-label={`${firma.firmaAdi} sekmesini kapat`}
                 >
                   <X size={13} />
@@ -553,11 +552,10 @@ export function CompaniesScreen() {
 
       {/* SEÇİLEN FİRMA DETAYI */}
       {activeFirma && (
-        <section ref={detailRef} className="scroll-mt-6 space-y-6">
-          {/* Detay Başlık Kartı */}
+        <section ref={detailRef} className="scroll-mt-6 space-y-4">
           {/* Detay Başlık Kartı — scroll'da üstte kalır, hangi firmada olduğunuzu unutmazsınız */}
-          <div className="sticky top-20 z-30 -mx-1 bg-[#F1F5F9] px-1 pb-2 pt-1">
-            <div className="flex items-center justify-between gap-4 rounded-xl bg-blue-800 px-4 py-3 text-white shadow-md ring-1 ring-blue-900/20">
+          <div className="sticky top-20 z-30 -mx-1 bg-[#F1F5F9] px-1 pb-1.5 pt-1">
+            <div className="flex items-center justify-between gap-3 rounded-xl bg-blue-800 px-3 py-2 text-white shadow-md ring-1 ring-blue-900/20">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm shadow-red-600/30">
                   <Building2 size={16} />
@@ -581,7 +579,7 @@ export function CompaniesScreen() {
               <button
                 type="button"
                 onClick={handleClose}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
               >
                 <X size={14} />
                 Kapat
@@ -592,12 +590,8 @@ export function CompaniesScreen() {
           {/* Firma Künye + İletişim Bilgileri */}
           <CompanyIdentitySection companyId={activeFirma.id} />
 
-         
           {/* Belgeler */}
-          <div className="space-y-4"></div>
-
-          {/* Belgeler */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <DocumentsScreen
               companyId={activeFirma.id}
               selectedDocumentId={activeDocumentId}
@@ -607,7 +601,7 @@ export function CompaniesScreen() {
 
             {/* AÇIK BELGE SEKMELERİ */}
             {openDocumentIds.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto border-b border-slate-200 pt-2">
+              <div className="flex gap-1.5 overflow-x-auto border-b border-slate-200 pt-1.5">
                 {openDocumentIds.map((docId) => {
                   const isActive = docId === activeDocumentId;
                   const doc = companyMockData.documents.find(
@@ -629,7 +623,7 @@ export function CompaniesScreen() {
                       <button
                         type="button"
                         onClick={() => setActiveDocumentId(docId)}
-                        className="max-w-48 truncate px-4 py-2.5 text-xs"
+                        className="max-w-48 truncate px-3 py-1.5 text-xs"
                       >
                         {label}
                       </button>
@@ -640,7 +634,7 @@ export function CompaniesScreen() {
                           event.stopPropagation();
                           handleCloseDocumentTab(docId);
                         }}
-                        className="mr-2 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                        className="mr-1.5 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
                         aria-label={`${label} sekmesini kapat`}
                       >
                         <X size={13} />
@@ -655,7 +649,7 @@ export function CompaniesScreen() {
             {activeDocumentId && (
               <section
                 ref={documentDetailRef}
-                className="scroll-mt-6 space-y-4 border-t border-dashed border-slate-200 pt-8"
+                className="scroll-mt-6 space-y-3 border-t border-dashed border-slate-200 pt-5"
               >
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -664,7 +658,7 @@ export function CompaniesScreen() {
                   <button
                     type="button"
                     onClick={() => handleCloseDocumentTab(activeDocumentId)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
                   >
                     <X size={14} />
                     Belgeyi Kapat
