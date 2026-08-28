@@ -57,6 +57,11 @@ export type Company = Prisma.CompanyModel
  */
 export type CompanyIdentity = Prisma.CompanyIdentityModel
 /**
+ * Model CompanyRequest
+ * 
+ */
+export type CompanyRequest = Prisma.CompanyRequestModel
+/**
  * Model CompanyContact
  * 
  */

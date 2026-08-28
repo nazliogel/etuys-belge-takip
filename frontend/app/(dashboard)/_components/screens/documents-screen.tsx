@@ -256,6 +256,8 @@ export function DocumentsScreen({
     useState(false);
   const [closedDocumentCount, setClosedDocumentCount] = useState(0);
   const [extensionEligibleCount, setExtensionEligibleCount] = useState(0);
+  const [companyExtensionEligibleIds, setCompanyExtensionEligibleIds] =
+    useState<Set<number>>(new Set());
   const [summary, setSummary] = useState({
     total: 0,
     active: 0,
@@ -321,11 +323,14 @@ export function DocumentsScreen({
 
       try {
         if (companyId) {
-          const [response, allClosedDocuments] = await Promise.all([
-            apiFetch<CompanyDetailResponse>(`/companies/${companyId}`),
-            fetchAllClosedDocuments(),
-          ]);
-
+          const [response, allClosedDocuments, extensionResponse] =
+            await Promise.all([
+              apiFetch<CompanyDetailResponse>(`/companies/${companyId}`),
+              fetchAllClosedDocuments(),
+              apiFetch<ExtensionEligibleResponse>(
+                "/documents/extension-eligible",
+              ),
+            ]);
           const openDocuments: ApiDocument[] = response.data.documents.map(
             (document) => ({
               ...document,
@@ -364,8 +369,17 @@ export function DocumentsScreen({
           });
 
           const mappedDocuments = Array.from(documentsByExternalId.values());
+          const companyExtensionEligibleDocuments =
+            extensionResponse.data.items.filter(
+              (document) => document.company?.id === response.data.id,
+            );
 
+          const eligibleDocumentIds = new Set(
+            companyExtensionEligibleDocuments.map((document) => document.id),
+          );
           setDocuments(mappedDocuments);
+          setExtensionEligibleCount(companyExtensionEligibleDocuments.length);
+          setCompanyExtensionEligibleIds(eligibleDocumentIds);
 
           setSummary({
             total: mappedDocuments.length,
@@ -600,28 +614,8 @@ export function DocumentsScreen({
 
   const visibleDocuments = companyId
     ? documents.filter((document) => {
-        // Süre Uzatma kartına basıldıysa
         if (showCompanyExtensionEligible) {
-          if (
-            !document.documentEndDate ||
-            document.status === "INACTIVE" ||
-            document.status === "EXPIRED"
-          ) {
-            return false;
-          }
-
-          const today = new Date();
-          const documentEndDate = new Date(document.documentEndDate);
-          const applicationStartDate = new Date(document.documentEndDate);
-
-          today.setHours(0, 0, 0, 0);
-          documentEndDate.setHours(0, 0, 0, 0);
-          applicationStartDate.setHours(0, 0, 0, 0);
-
-          // Belge bitiş tarihinden 6 ay öncesi
-          applicationStartDate.setMonth(applicationStartDate.getMonth() - 6);
-
-          return today >= applicationStartDate && today <= documentEndDate;
+          return companyExtensionEligibleIds.has(document.id);
         }
 
         // Diğer durum kartlarının filtresi
@@ -632,10 +626,10 @@ export function DocumentsScreen({
     : documents;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {/* BAŞLIK */}
-      <section className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-center gap-3.5">
+      <section className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <FileText size={17} />
           </div>
@@ -656,11 +650,7 @@ export function DocumentsScreen({
       {/* OPERASYON ÖZETİ */}
       {variant === "admin" && (
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div
-            className={`grid grid-cols-2 divide-x divide-y divide-slate-200 md:grid-cols-4 md:divide-y-0 ${
-              variant === "admin" ? "xl:grid-cols-6" : "xl:grid-cols-4"
-            }`}
-          >
+          <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
             <OperationStat
               label="Toplam Belge"
               value={String(summary.total)}
@@ -755,7 +745,7 @@ export function DocumentsScreen({
 
       {/* BELGE LİSTESİ */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/40 p-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50/40 p-2.5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-sm font-bold text-slate-900">Belge Listesi</h2>
 
@@ -764,10 +754,10 @@ export function DocumentsScreen({
             </p>
           </div>
 
-          <div className="relative w-full lg:w-72">
+          <div className="relative w-full lg:w-64">
             <Search
               size={17}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
             <input
@@ -775,30 +765,40 @@ export function DocumentsScreen({
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Belge numarası ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
+              className="w-full rounded-xl border border-slate-200 bg-white py-1 pl-8 pr-2.5 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200/60 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+        <div className="max-h-[480px] overflow-auto">
+          <table className="w-full table-fixed text-left text-sm">
+            <colgroup>
+              <col className="w-[10%]" />
+              <col className="w-[22%]" />
+              <col className="w-[11%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
+              <col className="w-[14%]" />
+              <col className="w-[15%]" />
+              <col className="w-[8%]" />
+            </colgroup>
+            <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
               <tr>
-                <th className="px-6 py-3.5">Belge No</th>
-                <th className="px-6 py-3.5">Firma</th>
-                <th className="px-6 py-3.5">Belge Başlangıç</th>
-                <th className="px-6 py-3.5">Belge Bitiş</th>
-                <th className="px-6 py-3.5">Süre Uzatım</th>
-                <th className="px-6 py-3.5">Destekleme Sınıfı</th>
-                <th className="px-6 py-3.5">Durum</th>
-                <th className="px-6 py-3.5 text-right">Detay</th>
+                <th className="px-3 py-1.5 text-center">Belge No</th>
+                <th className="px-3 py-1.5 text-center">Firma</th>
+                <th className="px-3 py-1.5 text-center">Belge Başlangıç</th>
+                <th className="px-3 py-1.5 text-center">Belge Bitiş</th>
+                <th className="px-3 py-1.5 text-center">Süre Uzatım</th>
+                <th className="px-3 py-1.5 text-center">Destekleme Sınıfı</th>
+                <th className="px-3 py-1.5 text-center">Durum</th>
+                <th className="px-3 py-1.5 text-center">Detay</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-8 text-center">
                     <p className="text-sm font-medium text-slate-500">
                       Belgeler yükleniyor...
                     </p>
@@ -806,7 +806,7 @@ export function DocumentsScreen({
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-8 text-center">
                     <p className="text-sm font-semibold text-red-700">
                       Belgeler yüklenemedi
                     </p>
@@ -816,14 +816,14 @@ export function DocumentsScreen({
                 </tr>
               ) : visibleDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-8 text-center">
                     {(companyId || variant === "company") &&
                     documents.length === 0 &&
                     !isAuthorizationLoading &&
                     !authorizationIsValid ? (
-                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-6 py-5 text-left">
-                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
-                          <div className="flex min-w-0 flex-1 items-start gap-4">
+                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left">
+                        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
+                          <div className="flex min-w-0 flex-1 items-start gap-2.5">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
                               <ShieldAlert size={21} strokeWidth={1.8} />
                             </div>
@@ -845,7 +845,7 @@ export function DocumentsScreen({
                           </div>
 
                           {variant === "company" && (
-                            <div className="border-t border-slate-200 pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
+                            <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
                               <p className="text-xs font-medium leading-5 text-slate-600">
                                 Yetkilendirme işlemi için lütfen danışmanınız
                                 ile iletişime geçiniz.
@@ -878,10 +878,10 @@ export function DocumentsScreen({
                         isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
                       }`}
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-3 py-1.5">
+                        <div className="flex items-center gap-1.5">
                           <div
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
                                 ? "border-red-600 bg-red-600 text-white"
                                 : "border-slate-200 bg-slate-50 text-slate-600"
@@ -901,7 +901,7 @@ export function DocumentsScreen({
                           </div>
                         </div>
                       </td>
-                      <td className="max-w-xs px-6 py-4">
+                      <td className="max-w-xs px-3 py-1.5">
                         <p
                           title={
                             doc.company?.name ?? "Firma bilgisi bulunamadı"
@@ -911,31 +911,31 @@ export function DocumentsScreen({
                           {doc.company?.name ?? "Firma bilgisi bulunamadı"}
                         </p>
 
-                        <p className="mt-1 text-[11px] text-slate-400">
+                        <p className="mt-1 text-[11px] text-slate-400 text-left">
                           VKN: {doc.company?.taxNumber ?? "-"}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                      <td className="px-3 py-1.5 text-xs font-medium text-slate-600 text-center">
                         {formatDate(doc.documentStartDate)}
                       </td>
 
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                      <td className="px-3 py-1.5 text-xs font-medium text-slate-600 text-center">
                         {formatDate(doc.documentEndDate)}
                       </td>
 
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                      <td className="px-3 py-1.5 text-xs font-medium text-slate-600 text-center">
                         {formatDate(doc.extensionDate)}
                       </td>
 
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                      <td className="px-3 py-1.5 text-center">
+                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
                           {doc.supportClass ?? "-"}
                         </span>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-1.5 text-center">
                         {isExtensionEligibleView ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                          <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             Müracaat Yapılabilir
                           </span>
@@ -950,7 +950,7 @@ export function DocumentsScreen({
                         )}
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-1.5 text-center">
                         <div className="flex items-center justify-end">
                           <button
                             type="button"
@@ -961,7 +961,7 @@ export function DocumentsScreen({
                                 doc.status === "INACTIVE",
                               )
                             }
-                            className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
                               isSelected
                                 ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -988,17 +988,17 @@ export function DocumentsScreen({
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
+        <div className="flex items-center justify-between border-t border-slate-200 px-3 py-1.5">
           <p className="text-xs font-medium text-slate-500">
             Sayfa {currentPage} / {totalPages}
           </p>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
             >
               Önceki
             </button>
@@ -1007,7 +1007,7 @@ export function DocumentsScreen({
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
             >
               Sonraki
             </button>
@@ -1020,7 +1020,7 @@ export function DocumentsScreen({
           className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
           {/* BELGE TABLARI */}
-          <div className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-slate-50 px-5 pt-4">
+          <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-2.5 pt-1.5">
             {openDocuments.map((document) => {
               const isActive = activeDocumentKey === document.key;
 
@@ -1040,7 +1040,7 @@ export function DocumentsScreen({
                   <button
                     type="button"
                     onClick={() => setActiveDocumentKey(document.key)}
-                    className="max-w-56 truncate px-4 py-3 text-xs"
+                    className="max-w-56 truncate px-2.5 py-1.5 text-xs"
                   >
                     {label}
                   </button>
@@ -1048,7 +1048,7 @@ export function DocumentsScreen({
                   <button
                     type="button"
                     onClick={() => handleCloseDocument(document.key)}
-                    className="mr-2 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                    className="mr-1 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
                   >
                     <X size={14} />
                   </button>
@@ -1065,7 +1065,7 @@ export function DocumentsScreen({
             (tekrar "yükleniyor" durumuna düşüp içeriğin anlık kaybolması /
             geri gelmesi - flicker - önlenmiş oluyor).
           */}
-          <div className="p-6">
+          <div className="p-3">
             {openDocuments.map((document) => (
               <div
                 key={document.key}
@@ -1109,9 +1109,9 @@ function OperationStat({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500/30"
+      className="flex h-full w-full items-center gap-2 px-2.5 py-2.5 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500/30"
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
         {icon}
       </div>
 
@@ -1195,7 +1195,7 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
+      className={`inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}

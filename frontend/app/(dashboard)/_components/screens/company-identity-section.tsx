@@ -10,7 +10,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
 
@@ -224,7 +224,9 @@ export function CompanyIdentitySection({
           mainActivity: data.mainActivity ?? "",
         });
 
+        // eslint-disable-next-line react-hooks/immutability
         setContacts(contactsResult.data);
+        // eslint-disable-next-line react-hooks/immutability
         setNotes(notesResult.data);
       } catch (error) {
         console.error("Firma bilgileri alınamadı:", error);
@@ -469,12 +471,12 @@ export function CompanyIdentitySection({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* FİRMA KÜNYE BİLGİLERİ */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600">
-            <Building2 size={17} />
+      <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="flex items-center gap-1.5 rounded-t-2xl border-b border-slate-100 bg-slate-50/50 px-3 py-1">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600">
+            <Building2 size={12} />
           </div>
 
           <div>
@@ -487,9 +489,9 @@ export function CompanyIdentitySection({
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="overflow-hidden rounded-lg border border-slate-200">
-            <div className="grid grid-cols-1 divide-y divide-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="rounded-b-2xl p-2">
+          <div className="rounded-lg border border-slate-200">
+            <div className="grid grid-cols-1 divide-y divide-slate-200 rounded-t-lg md:grid-cols-4 md:divide-x md:divide-y-0">
               <TableField
                 label="Yatırımcı Durumu"
                 value={identityForm.investorStatus}
@@ -507,15 +509,15 @@ export function CompanyIdentitySection({
                 value={identityForm.mersisNumber}
                 readOnly
               />
-            </div>
 
-            <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
               <TableField
                 label="Kimlik No"
                 value={identityForm.nationalId}
                 readOnly
               />
+            </div>
 
+            <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-4 md:divide-x md:divide-y-0">
               <TableField
                 label="Ticaret Sicil No"
                 value={identityForm.tradeRegistryNumber}
@@ -527,13 +529,13 @@ export function CompanyIdentitySection({
                 value={identityForm.registrationDate}
                 readOnly
               />
-            </div>
 
-            <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
               <TableField label="İl" value={identityForm.city} readOnly />
 
               <TableField label="İlçe" value={identityForm.district} readOnly />
+            </div>
 
+            <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-4 md:divide-x md:divide-y-0">
               <TableField
                 label="Danışman"
                 options={DANISMAN_OPTIONS}
@@ -543,9 +545,7 @@ export function CompanyIdentitySection({
                 }
                 error={identityErrors.consultant}
               />
-            </div>
 
-            <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
               <TableField
                 label="Yatırımcı Türü"
                 value={identityForm.investorType}
@@ -568,10 +568,10 @@ export function CompanyIdentitySection({
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-end gap-3">
+          <div className="mt-1.5 flex items-center justify-end gap-1.5">
             {identitySaved && (
               <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                <Check size={13} />
+                <Check size={12} />
                 Kaydedildi
               </span>
             )}
@@ -579,7 +579,7 @@ export function CompanyIdentitySection({
             <button
               type="button"
               onClick={handleSaveIdentity}
-              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-red-600 px-4 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700"
+              className="inline-flex h-5 items-center justify-center gap-1 rounded-md bg-red-600 px-3 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700"
             >
               Kaydet
             </button>
@@ -589,9 +589,9 @@ export function CompanyIdentitySection({
 
       {/* NOTLAR */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-600">
-            <Pencil size={17} />
+        <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50/50 px-3 py-1">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-600">
+            <Pencil size={12} />
           </div>
 
           <div>
@@ -603,8 +603,8 @@ export function CompanyIdentitySection({
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="flex items-center gap-2">
+        <div className="p-2">
+          <div className="flex items-center gap-1">
             <textarea
               value={noteText}
               onChange={(event) => {
@@ -615,7 +615,7 @@ export function CompanyIdentitySection({
               maxLength={1000}
               placeholder="Firma hakkında not yazın..."
               aria-invalid={Boolean(noteError)}
-              className={`min-h-[64px] flex-1 resize-none rounded-lg border bg-white px-3 py-2 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
+              className={`min-h-[38px] flex-1 resize-none rounded-lg border bg-white px-2 py-1 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
                 noteError
                   ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10"
                   : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -625,29 +625,29 @@ export function CompanyIdentitySection({
             <button
               type="button"
               onClick={handleAddNote}
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md bg-red-600 px-3 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700"
+              className="inline-flex h-5 shrink-0 items-center justify-center gap-1 rounded-md bg-red-600 px-2 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700"
             >
-              <Plus size={13} />
+              <Plus size={12} />
               Not Ekle
             </button>
           </div>
 
           {noteError && (
             <p className="mt-1 flex items-center gap-1 text-[10px] font-medium text-red-600">
-              <AlertCircle size={10} />
+              <AlertCircle size={9} />
               {noteError}
             </p>
           )}
 
           {notes.length > 0 && (
-            <div className="mt-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
+            <div className="mt-1.5 divide-y divide-slate-100 rounded-lg border border-slate-200">
               {notes.map((note, index) => {
                 const isEditing = editingNoteIndex === index;
 
                 return (
                   <div
                     key={note.id}
-                    className={`px-4 py-3 transition ${
+                    className={`px-2 py-1 transition ${
                       isEditing ? "bg-amber-50/40" : "hover:bg-slate-50/60"
                     }`}
                   >
@@ -662,7 +662,7 @@ export function CompanyIdentitySection({
                           rows={2}
                           maxLength={1000}
                           aria-invalid={Boolean(editingNoteError)}
-                          className={`w-full resize-none rounded-md border bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:ring-1 ${
+                          className={`w-full resize-none rounded-md border bg-white px-2 py-1 text-xs text-slate-900 outline-none focus:ring-1 ${
                             editingNoteError
                               ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10"
                               : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -671,34 +671,34 @@ export function CompanyIdentitySection({
 
                         {editingNoteError && (
                           <p className="mt-1 flex items-center gap-1 text-[10px] font-medium text-red-600">
-                            <AlertCircle size={10} />
+                            <AlertCircle size={9} />
                             {editingNoteError}
                           </p>
                         )}
 
-                        <div className="mt-2 flex justify-end gap-1.5">
+                        <div className="mt-1 flex justify-end gap-1">
                           <button
                             type="button"
                             onClick={handleSaveEditNote}
-                            className="inline-flex h-7 items-center gap-1 rounded-md bg-red-600 px-2.5 text-[10px] font-bold text-white hover:bg-red-700"
+                            className="inline-flex h-5 items-center gap-1 rounded-md bg-red-600 px-1.5 text-[10px] font-bold text-white hover:bg-red-700"
                           >
-                            <Check size={11} />
+                            <Check size={10} />
                             Kaydet
                           </button>
 
                           <button
                             type="button"
                             onClick={handleCancelEditNote}
-                            className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 text-[10px] font-semibold text-slate-500 hover:bg-slate-50"
+                            className="inline-flex h-5 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-500 hover:bg-slate-50"
                           >
-                            <X size={11} />
+                            <X size={10} />
                             Vazgeç
                           </button>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start justify-between gap-2">
                           <p className="flex-1 text-xs leading-5 text-slate-800">
                             {note.text}
                           </p>
@@ -707,13 +707,13 @@ export function CompanyIdentitySection({
                             type="button"
                             onClick={() => handleStartEditNote(index)}
                             title="Notu düzenle"
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-transparent text-slate-400 transition hover:border-slate-200 hover:bg-white hover:text-red-600"
+                            className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-transparent text-slate-400 transition hover:border-slate-200 hover:bg-white hover:text-red-600"
                           >
-                            <Pencil size={11} />
+                            <Pencil size={10} />
                           </button>
                         </div>
 
-                        <div className="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
+                        <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
                           <span className="font-semibold text-slate-500">
                             {note.author
                               ? `${note.author.firstName} ${note.author.lastName}`
@@ -744,9 +744,9 @@ export function CompanyIdentitySection({
 
       {/* İLETİŞİM BİLGİLERİ */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600">
-            <UserRound size={17} />
+        <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50/50 px-3 py-1">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600">
+            <UserRound size={12} />
           </div>
 
           <div>
@@ -759,10 +759,10 @@ export function CompanyIdentitySection({
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="grid items-start gap-2.5 lg:grid-cols-[1fr_1fr_1fr_auto]">
+        <div className="p-2">
+          <div className="grid items-start gap-1.5 lg:grid-cols-[1fr_1fr_1fr_auto]">
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+              <label className="mb-0.5 block text-[11px] font-semibold text-slate-600">
                 Ad Soyad
               </label>
               <input
@@ -774,7 +774,7 @@ export function CompanyIdentitySection({
                 placeholder="Ad Soyad"
                 maxLength={80}
                 aria-invalid={Boolean(contactErrors.fullName)}
-                className={`h-8 w-full rounded-md border bg-white px-2.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
+                className={`h-6 w-full rounded-md border bg-white px-1.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
                   contactErrors.fullName
                     ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10"
                     : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -788,7 +788,7 @@ export function CompanyIdentitySection({
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+              <label className="mb-0.5 block text-[11px] font-semibold text-slate-600">
                 E-posta
               </label>
               <input
@@ -800,7 +800,7 @@ export function CompanyIdentitySection({
                 placeholder="ornek@firma.com"
                 maxLength={254}
                 aria-invalid={Boolean(contactErrors.email)}
-                className={`h-8 w-full rounded-md border bg-white px-2.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
+                className={`h-6 w-full rounded-md border bg-white px-1.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
                   contactErrors.email
                     ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10"
                     : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -814,7 +814,7 @@ export function CompanyIdentitySection({
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+              <label className="mb-0.5 block text-[11px] font-semibold text-slate-600">
                 Telefon
               </label>
               <input
@@ -829,7 +829,7 @@ export function CompanyIdentitySection({
                 placeholder="05xx xxx xx xx"
                 maxLength={14}
                 aria-invalid={Boolean(contactErrors.phone)}
-                className={`h-8 w-full rounded-md border bg-white px-2.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
+                className={`h-6 w-full rounded-md border bg-white px-1.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
                   contactErrors.phone
                     ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10"
                     : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -845,24 +845,24 @@ export function CompanyIdentitySection({
             <div>
               <label
                 aria-hidden="true"
-                className="mb-1 hidden text-[11px] font-semibold text-transparent lg:block"
+                className="mb-0.5 hidden text-[11px] font-semibold text-transparent lg:block"
               >
                 Ekle
               </label>
               <button
                 type="button"
                 onClick={handleAddContact}
-                className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-red-600 px-3 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 lg:w-auto"
+                className="inline-flex h-6 w-full items-center justify-center gap-1 rounded-md bg-red-600 px-2 text-[11px] font-bold text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 lg:w-auto"
               >
-                <Plus size={13} />
+                <Plus size={12} />
                 Yetkili Ekle
               </button>
             </div>
           </div>
 
           {contacts.length > 0 && (
-            <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
-              <div className="grid grid-cols-[1fr_1fr_1fr_50px] border-b border-slate-200 bg-slate-50 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <div className="mt-1.5 overflow-hidden rounded-lg border border-slate-200">
+              <div className="grid grid-cols-[1fr_1fr_1fr_50px] border-b border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 <span>Ad Soyad</span>
                 <span>E-posta</span>
                 <span>Telefon</span>
@@ -876,11 +876,11 @@ export function CompanyIdentitySection({
                   return (
                     <div
                       key={item.id}
-                      className={`px-3 py-1.5 text-xs transition ${
+                      className={`px-2 py-1 text-xs transition ${
                         isEditing ? "bg-red-50/40" : "hover:bg-slate-50/60"
                       }`}
                     >
-                      <div className="grid grid-cols-[1fr_1fr_1fr_50px] items-center gap-2">
+                      <div className="grid grid-cols-[1fr_1fr_1fr_50px] items-center gap-1">
                         {isEditing ? (
                           <>
                             <input
@@ -893,7 +893,7 @@ export function CompanyIdentitySection({
                                 )
                               }
                               aria-invalid={Boolean(editErrors.fullName)}
-                              className={`h-7 w-full rounded border bg-white px-1.5 text-xs text-slate-900 outline-none focus:ring-1 ${
+                              className={`h-5 w-full rounded border bg-white px-1 text-xs text-slate-900 outline-none focus:ring-1 ${
                                 editErrors.fullName
                                   ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
                                   : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -906,7 +906,7 @@ export function CompanyIdentitySection({
                                 handleEditFieldChange("email", e.target.value)
                               }
                               aria-invalid={Boolean(editErrors.email)}
-                              className={`h-7 w-full rounded border bg-white px-1.5 text-xs text-slate-900 outline-none focus:ring-1 ${
+                              className={`h-5 w-full rounded border bg-white px-1 text-xs text-slate-900 outline-none focus:ring-1 ${
                                 editErrors.email
                                   ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
                                   : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -922,7 +922,7 @@ export function CompanyIdentitySection({
                                 )
                               }
                               aria-invalid={Boolean(editErrors.phone)}
-                              className={`h-7 w-full rounded border bg-white px-1.5 text-xs text-slate-900 outline-none focus:ring-1 ${
+                              className={`h-5 w-full rounded border bg-white px-1 text-xs text-slate-900 outline-none focus:ring-1 ${
                                 editErrors.phone
                                   ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
                                   : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
@@ -934,17 +934,17 @@ export function CompanyIdentitySection({
                                 type="button"
                                 onClick={handleSaveEdit}
                                 title="Kaydet"
-                                className="flex h-6 w-6 items-center justify-center rounded bg-red-600 text-white transition hover:bg-red-700"
+                                className="flex h-4 w-4 items-center justify-center rounded bg-red-600 text-white transition hover:bg-red-700"
                               >
-                                <Check size={12} />
+                                <Check size={11} />
                               </button>
                               <button
                                 type="button"
                                 onClick={handleCancelEdit}
                                 title="Vazgeç"
-                                className="flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                                className="flex h-4 w-4 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                               >
-                                <X size={12} />
+                                <X size={11} />
                               </button>
                             </div>
                           </>
@@ -965,9 +965,9 @@ export function CompanyIdentitySection({
                                 type="button"
                                 onClick={() => handleStartEdit(index)}
                                 title="Düzenle"
-                                className="flex h-6 w-6 items-center justify-center rounded border border-transparent text-slate-400 transition hover:border-slate-200 hover:bg-white hover:text-red-600"
+                                className="flex h-4 w-4 items-center justify-center rounded border border-transparent text-slate-400 transition hover:border-slate-200 hover:bg-white hover:text-red-600"
                               >
-                                <Pencil size={11} />
+                                <Pencil size={10} />
                               </button>
                             </div>
                           </>
@@ -976,7 +976,7 @@ export function CompanyIdentitySection({
 
                       {isEditing && Object.keys(editErrors).length > 0 && (
                         <p className="mt-1 flex items-center gap-1 text-[10px] font-medium text-red-600">
-                          <AlertCircle size={10} />
+                          <AlertCircle size={9} />
                           {Object.values(editErrors)
                             .filter(Boolean)
                             .join(" • ")}
@@ -1015,40 +1015,81 @@ function TableField({
   readOnly?: boolean;
   multiline?: boolean;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isOpen]);
+
   return (
     <div className="flex items-stretch">
-      <div className="flex w-[140px] shrink-0 items-center border-r border-slate-200 bg-slate-50/60 px-3 py-2">
+      <div className="flex w-[100px] shrink-0 items-center border-r border-slate-200 bg-slate-50/60 px-2 py-0.5">
         <span className="text-[11px] font-semibold text-slate-600">
           {label}
         </span>
       </div>
 
-      <div className="relative flex flex-1">
+      <div className="relative flex flex-1" ref={dropdownRef}>
         {options && !readOnly ? (
           <>
-            <select
-              value={value}
-              onChange={(event) => onChange?.(event.target.value)}
+            <button
+              type="button"
+              onClick={() => setIsOpen((current) => !current)}
               aria-invalid={Boolean(error)}
-              className={`h-9 w-full appearance-none border-0 bg-white pl-3 pr-8 text-xs text-slate-900 outline-none focus:bg-red-50/20 ${
-                error ? "bg-red-50/30" : ""
-              }`}
+              aria-expanded={isOpen}
+              className={`flex h-full min-h-6 w-full items-center justify-between gap-1 border-0 bg-white pl-2 pr-2 text-left text-xs outline-none transition hover:bg-red-50/10 focus:bg-red-50/20 ${
+                value ? "text-slate-900" : "text-slate-400"
+              } ${error ? "bg-red-50/30" : ""}`}
             >
-              <option value="" disabled>
-                Seçiniz
-              </option>
+              <span className="truncate">{value || "Seçiniz"}</span>
+              <ChevronDown
+                size={12}
+                className={`shrink-0 text-slate-400 transition-transform ${
+                  isOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-              {options.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+            {isOpen && (
+              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-52 overflow-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+                {options.map((opt) => {
+                  const isSelected = opt === value;
 
-            <ChevronDown
-              size={13}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-            />
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        onChange?.(opt);
+                        setIsOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-medium transition ${
+                        isSelected
+                          ? "bg-red-50 text-red-700"
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {opt}
+                      {isSelected && <Check size={13} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </>
         ) : multiline ? (
           <textarea
@@ -1058,7 +1099,7 @@ function TableField({
             readOnly={readOnly}
             aria-invalid={Boolean(error)}
             rows={2}
-            className={`h-full min-h-[56px] w-full resize-none border-0 px-3 py-2 text-xs leading-5 text-slate-900 outline-none ${
+            className={`h-full min-h-[40px] w-full resize-none border-0 px-2 py-0.5 text-xs leading-5 text-slate-900 outline-none ${
               readOnly
                 ? "cursor-not-allowed bg-slate-100 text-slate-500"
                 : "bg-white focus:bg-red-50/20"
@@ -1072,7 +1113,7 @@ function TableField({
             placeholder={placeholder}
             readOnly={readOnly}
             aria-invalid={Boolean(error)}
-            className={`h-full min-h-9 w-full border-0 px-3 text-xs text-slate-900 outline-none ${
+            className={`h-full min-h-6 w-full border-0 px-2 text-xs text-slate-900 outline-none ${
               readOnly
                 ? "cursor-not-allowed bg-slate-100 text-slate-500"
                 : "bg-white focus:bg-red-50/20"
@@ -1081,8 +1122,8 @@ function TableField({
         )}
 
         {error && (
-          <p className="flex items-center gap-1 bg-red-50/30 px-3 pb-1.5 text-[10px] font-medium text-red-600">
-            <AlertCircle size={10} />
+          <p className="flex items-center gap-1 bg-red-50/30 px-2 pb-1 text-[10px] font-medium text-red-600">
+            <AlertCircle size={9} />
             {error}
           </p>
         )}

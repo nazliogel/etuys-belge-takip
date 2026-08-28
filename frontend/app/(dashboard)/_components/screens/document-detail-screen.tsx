@@ -334,18 +334,18 @@ export function DocumentDetailScreen({
   // ============================================
   if (variant === "admin") {
     return (
-      <div className="space-y-5">
+      <div className="space-y-3">
         {/* ÜST ŞERİT */}
-        <section className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600">
-              <FileText size={18} />
+        <section className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600">
+              <FileText size={16} />
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Belge Detayı
               </p>
-              <h2 className="text-lg font-extrabold tracking-tight text-slate-900">
+              <h2 className="text-base font-extrabold tracking-tight text-slate-900">
                 {document.documentNumber ?? "-"}
                 <span className="ml-2 text-xs font-medium text-slate-400">
                   Numaralı Belge
@@ -355,7 +355,7 @@ export function DocumentDetailScreen({
           </div>
 
           <div
-            className={`inline-flex items-center gap-2 self-start rounded-full px-3 py-1.5 ${status.className}`}
+            className={`inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 ${status.className}`}
           >
             <span
               className={`h-1.5 w-1.5 shrink-0 rounded-full ${status.dot}`}
@@ -368,7 +368,7 @@ export function DocumentDetailScreen({
 
         {/* KPI ŞERİDİ */}
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2.5">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
 
@@ -796,19 +796,19 @@ function OperationRow({
 }) {
   return (
     <tr>
-      <th className="w-[16%] bg-slate-50/60 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <th className="w-[16%] bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
         {label1}
       </th>
 
-      <td className="w-[34%] px-4 py-3 text-sm font-semibold text-slate-900">
+      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-slate-900">
         {value1}
       </td>
 
-      <th className="w-[16%] border-l border-slate-100 bg-slate-50/60 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <th className="w-[16%] border-l border-slate-100 bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
         {label2}
       </th>
 
-      <td className="w-[34%] px-4 py-3 text-sm font-semibold text-slate-900">
+      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-slate-900">
         {value2}
       </td>
     </tr>

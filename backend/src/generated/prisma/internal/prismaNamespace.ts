@@ -400,6 +400,7 @@ export const ModelName = {
   User: 'User',
   Company: 'Company',
   CompanyIdentity: 'CompanyIdentity',
+  CompanyRequest: 'CompanyRequest',
   CompanyContact: 'CompanyContact',
   CompanyNote: 'CompanyNote',
   CompanyAuthorization: 'CompanyAuthorization',
@@ -433,7 +434,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -656,6 +657,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CompanyIdentityCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CompanyIdentityCountAggregateOutputType> | number
+        }
+      }
+    }
+    CompanyRequest: {
+      payload: Prisma.$CompanyRequestPayload<ExtArgs>
+      fields: Prisma.CompanyRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CompanyRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CompanyRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.CompanyRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CompanyRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>
+        }
+        findMany: {
+          args: Prisma.CompanyRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>[]
+        }
+        create: {
+          args: Prisma.CompanyRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>
+        }
+        createMany: {
+          args: Prisma.CompanyRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CompanyRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.CompanyRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>
+        }
+        update: {
+          args: Prisma.CompanyRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.CompanyRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CompanyRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CompanyRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.CompanyRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.CompanyRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCompanyRequest>
+        }
+        groupBy: {
+          args: Prisma.CompanyRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CompanyRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyRequestCountAggregateOutputType> | number
         }
       }
     }
@@ -2081,6 +2156,27 @@ export const CompanyIdentityScalarFieldEnum = {
 export type CompanyIdentityScalarFieldEnum = (typeof CompanyIdentityScalarFieldEnum)[keyof typeof CompanyIdentityScalarFieldEnum]
 
 
+export const CompanyRequestScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  requestNumber: 'requestNumber',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  note: 'note',
+  requestType: 'requestType',
+  requestStatus: 'requestStatus',
+  department: 'department',
+  assignedPersonnel: 'assignedPersonnel',
+  informationPerson: 'informationPerson',
+  applicationDate: 'applicationDate',
+  completionDate: 'completionDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyRequestScalarFieldEnum = (typeof CompanyRequestScalarFieldEnum)[keyof typeof CompanyRequestScalarFieldEnum]
+
+
 export const CompanyContactScalarFieldEnum = {
   id: 'id',
   companyId: 'companyId',
@@ -2929,6 +3025,7 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   company?: Prisma.CompanyOmit
   companyIdentity?: Prisma.CompanyIdentityOmit
+  companyRequest?: Prisma.CompanyRequestOmit
   companyContact?: Prisma.CompanyContactOmit
   companyNote?: Prisma.CompanyNoteOmit
   companyAuthorization?: Prisma.CompanyAuthorizationOmit

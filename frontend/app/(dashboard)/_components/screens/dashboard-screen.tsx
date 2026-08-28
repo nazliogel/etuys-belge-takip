@@ -559,7 +559,7 @@ export function DashboardScreen() {
       clickable: true,
     },
     {
-      title: "Süre Uzatma Müracaatı Yapılabilecekler",
+      title: "Süre Uzatma ",
       value:
         extensionEligibleDocuments === null
           ? "..."
