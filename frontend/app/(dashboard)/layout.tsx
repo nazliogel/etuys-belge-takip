@@ -10,6 +10,7 @@ import { DashboardShell } from "./_components/dashboard-shell";
 interface MyCompanyInfo {
   consultant: string | null;
   consultantPhone: string | null;
+  consultantEmail: string | null;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -46,6 +47,7 @@ async function fetchMyCompany(): Promise<MyCompanyInfo | null> {
     return {
       consultant: company.consultant ?? null,
       consultantPhone: company.consultantPhone ?? null,
+      consultantEmail: company.consultantEmail ?? null,
     };
   } catch {
     return null;
@@ -108,6 +110,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       companyName={user.companyName}
       consultantName={myCompany?.consultant}
       consultantPhone={myCompany?.consultantPhone}
+      consultantEmail={myCompany?.consultantEmail}
     >
       {children}
     </DashboardShell>

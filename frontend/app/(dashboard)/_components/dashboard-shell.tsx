@@ -10,6 +10,7 @@ interface DashboardShellProps {
   companyName?: string | null;
   consultantName?: string | null;
   consultantPhone?: string | null;
+  consultantEmail?: string | null;
   children: ReactNode;
 }
 
@@ -18,6 +19,7 @@ export function DashboardShell({
   userName,
   consultantName,
   consultantPhone,
+  consultantEmail,
   children,
 }: DashboardShellProps) {
   return (
@@ -30,6 +32,7 @@ export function DashboardShell({
           role={role}
           consultantName={consultantName}
           consultantPhone={consultantPhone}
+          consultantEmail={consultantEmail}
         />
         <main className="flex-1 p-6">{children}</main>
       </div>

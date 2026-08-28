@@ -19,6 +19,7 @@ export type CompanyListItem = {
   processStatus: string | null;
   consultant: string | null;
   consultantPhone: string | null;
+  consultantEmail: string | null;
   isActive: boolean;
   authorizationEndDate: string | null;
   documentCount: number;

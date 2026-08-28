@@ -1,5 +1,8 @@
 import { AppError } from "../errors/app-error.js";
-import { getConsultantPhone } from "../constants/consultant-phones.js";
+import {
+  getConsultantEmail,
+  getConsultantPhone,
+} from "../constants/consultant-phones.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
 import type {
   CompanyDetail,
@@ -39,6 +42,7 @@ export class CompanyService {
             processStatus: company.processStatus,
             consultant: company.consultant,
             consultantPhone: getConsultantPhone(company.consultant),
+            consultantEmail: getConsultantEmail(company.consultant),
             isActive: company.isActive,
             authorizationEndDate:
               company.authorization?.authorizationEndDate?.toISOString() ??
@@ -79,6 +83,7 @@ export class CompanyService {
           processStatus: company.processStatus,
           consultant: company.consultant,
           consultantPhone: getConsultantPhone(company.consultant),
+          consultantEmail: getConsultantEmail(company.consultant),
           isActive: company.isActive,
           authorizationEndDate:
             company.authorization?.authorizationEndDate?.toISOString() ?? null,
@@ -127,6 +132,7 @@ export class CompanyService {
       processStatus: company.processStatus,
       consultant: company.consultant,
       consultantPhone: getConsultantPhone(company.consultant),
+      consultantEmail: getConsultantEmail(company.consultant),
       isActive: company.isActive,
 
       authorizationEndDate:
@@ -182,6 +188,7 @@ export class CompanyService {
       processStatus: company.processStatus,
       consultant: company.consultant,
       consultantPhone: getConsultantPhone(company.consultant),
+      consultantEmail: getConsultantEmail(company.consultant),
       isActive: company.isActive,
 
       authorizationEndDate:
