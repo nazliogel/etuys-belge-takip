@@ -14,6 +14,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
+import { setSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DocumentDetailScreen } from "./document-detail-screen";
 type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
@@ -555,6 +556,10 @@ export function DocumentsScreen({
     isClosed: boolean,
   ) {
     const documentKey = `${isClosed ? "closed" : "open"}-${documentId}`;
+
+    if (!isClosed) {
+      setSelectedDocument(documentId, documentNumber);
+    }
 
     setOpenDocuments((current) => {
       const alreadyOpen = current.some(
