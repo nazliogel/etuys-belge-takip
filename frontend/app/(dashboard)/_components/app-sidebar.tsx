@@ -11,9 +11,11 @@ import { logoutMockUser } from "@/lib/mock-auth";
 
 import { navigationItems } from "../_lib/navigation";
 import {
+  clearSelectedDocument,
   getSelectedDocument,
   setSelectedDocument,
 } from "../_lib/selected-document";
+
 import { hasPermission, type UserRole } from "../_lib/permissions";
 
 type SidebarDocument = {
@@ -42,6 +44,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   const [documents, setDocuments] = useState<SidebarDocument[]>([]);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
   const [documentsLoading, setDocumentsLoading] = useState(true);
+  const [documentWarning, setDocumentWarning] = useState(false);
 
   const visibleItems = navigationItems.filter((item) =>
     hasPermission(role, item.permission),
@@ -75,9 +78,18 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
         const currentDocumentId = documentIdFromUrl ?? storedDocument?.id ?? "";
 
-        if (currentDocumentId) {
+        const selectedDocumentExists = items.some(
+          (item) => String(item.id) === currentDocumentId,
+        );
+
+        if (currentDocumentId && selectedDocumentExists) {
           setSelectedDocumentId(currentDocumentId);
           return;
+        }
+
+        if (currentDocumentId && !selectedDocumentExists) {
+          clearSelectedDocument();
+          setSelectedDocumentId("");
         }
 
         if (items.length === 1) {
@@ -97,6 +109,14 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
     void loadDocuments();
   }, [searchParams]);
+
+  const showDocumentWarning = () => {
+    setDocumentWarning(true);
+
+    window.setTimeout(() => {
+      setDocumentWarning(false);
+    }, 2500);
+  };
 
   const handleNavigation = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -130,7 +150,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     if (!document) return;
 
     setSelectedDocumentId(documentId);
-
+    setDocumentWarning(false);
     setSelectedDocument(documentId, document.documentNumber);
 
     if (documentContextPaths.has(pathname)) {
@@ -141,6 +161,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   };
 
   const handleLogout = () => {
+    clearSelectedDocument();
     logoutMockUser();
     router.replace("/login");
   };
@@ -215,18 +236,24 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       </option>
                     ))}
                   </select>
+                  {documentWarning && (
+                    <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                      Önce belge seçimi yapınız.
+                    </div>
+                  )}
                 </div>
               )}
 
               {isDocumentDetailItem && !selectedDocumentId ? (
-                <div
-                  className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-blue-300/50"
+                <button
+                  type="button"
+                  onClick={showDocumentWarning}
+                  className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30"
                   title="Önce bir belge seçiniz"
                 >
                   <Icon size={18} className="text-blue-300/40" />
-
                   <span>{item.label}</span>
-                </div>
+                </button>
               ) : (
                 <Link
                   href={item.href}
