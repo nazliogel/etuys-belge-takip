@@ -376,18 +376,68 @@ export class DocumentDetailImportService {
                 detailId: detail.id,
 
                 externalMachineId: row.externalMachineId,
-
                 sequenceNumber: row.sequenceNumber,
 
                 name: row.name,
                 quantity: row.quantity,
-                unit: row.unit,
-
                 unitPriceTl: row.unitPriceTl,
                 totalTl: row.totalTl,
+                unit: row.unit,
+
+                vatExemption: row.vatExemption,
+                vatExemptionDescription: row.vatExemptionDescription,
+
+                transferRealizedValue: row.transferRealizedValue,
+                transferRealizedQuantity: row.transferRealizedQuantity,
+                transferOutgoingValue: row.transferOutgoingValue,
+                transferOutgoingQuantity: row.transferOutgoingQuantity,
+
+                leasingOutgoingValue: row.leasingOutgoingValue,
+                leasingOutgoingQuantity: row.leasingOutgoingQuantity,
+                leasingPermittedValue: row.leasingPermittedValue,
+                leasingPermittedQuantity: row.leasingPermittedQuantity,
+
+                invoiceRealizedValue: row.invoiceRealizedValue,
+                invoiceRealizedQuantity: row.invoiceRealizedQuantity,
+
+                customsRealizedValue: row.customsRealizedValue,
+                customsRealizedQuantity: row.customsRealizedQuantity,
+                customsPermittedValue: row.customsPermittedValue,
+                customsPermittedQuantity: row.customsPermittedQuantity,
+
+                exportOutgoingValue: row.exportOutgoingValue,
+                exportOutgoingQuantity: row.exportOutgoingQuantity,
+                exportPermittedValue: row.exportPermittedValue,
+                exportPermittedQuantity: row.exportPermittedQuantity,
+
+                financialLeasingRealizedValue:
+                  row.financialLeasingRealizedValue,
+                financialLeasingRealizedQuantity:
+                  row.financialLeasingRealizedQuantity,
+                financialLeasingPermittedValue:
+                  row.financialLeasingPermittedValue,
+                financialLeasingPermittedQuantity:
+                  row.financialLeasingPermittedQuantity,
+
+                saleOutgoingValue: row.saleOutgoingValue,
+                saleOutgoingQuantity: row.saleOutgoingQuantity,
+                salePermittedValue: row.salePermittedValue,
+                salePermittedQuantity: row.salePermittedQuantity,
+                saleRealizedQuantity: row.saleRealizedQuantity,
+                saleRealizedValue: row.saleRealizedValue,
 
                 gtipCode: row.gtipCode,
                 gtipDescription: row.gtipDescription,
+
+                transferDocumentNumber: row.transferDocumentNumber,
+                transferIncomingQuantity: row.transferIncomingQuantity,
+                transferIncomingAmount: row.transferIncomingAmount,
+
+                barcode: row.barcode,
+                sellerTaxNumber: row.sellerTaxNumber,
+                sellerEmail: row.sellerEmail,
+                financialLeasingCompany: row.financialLeasingCompany,
+                machineryEquipmentType: row.machineryEquipmentType,
 
                 rawData: toJson(row.rawData),
               })),
@@ -400,23 +450,76 @@ export class DocumentDetailImportService {
                 detailId: detail.id,
 
                 externalMachineId: row.externalMachineId,
-
                 sequenceNumber: row.sequenceNumber,
 
                 name: row.name,
                 quantity: row.quantity,
                 unit: row.unit,
+                machineryEquipmentType: row.machineryEquipmentType,
 
                 gtipCode: row.gtipCode,
                 gtipDescription: row.gtipDescription,
 
-                currency: row.currency,
+                vatExemption: row.vatExemption,
+                vatExemptionDescription: row.vatExemptionDescription,
 
-                fobAmount: row.fobAmount,
-                fobAmountTl: row.fobAmountTl,
-                cifAmountTl: row.cifAmountTl,
+                customsTaxExemption: row.customsTaxExemption,
+                customsTaxExemptionDescription:
+                  row.customsTaxExemptionDescription,
 
                 usedMachine: row.usedMachine,
+                isVehicle: row.isVehicle,
+                isCkd: row.isCkd,
+
+                totalFobUsd: row.totalFobUsd,
+                totalFobTl: row.totalFobTl,
+                totalCifTl: row.totalCifTl,
+
+                originCurrencyFob: row.originCurrencyFob,
+                originCurrencyFobAmount: row.originCurrencyFobAmount,
+
+                customsRealizedValue: row.customsRealizedValue,
+                customsRealizedQuantity: row.customsRealizedQuantity,
+                customsPermittedValue: row.customsPermittedValue,
+                customsPermittedQuantity: row.customsPermittedQuantity,
+
+                transferRealizedValue: row.transferRealizedValue,
+                transferRealizedQuantity: row.transferRealizedQuantity,
+                transferOutgoingValue: row.transferOutgoingValue,
+                transferOutgoingQuantity: row.transferOutgoingQuantity,
+
+                transferDocumentNumber: row.transferDocumentNumber,
+                transferIncomingQuantity: row.transferIncomingQuantity,
+                transferIncomingAmount: row.transferIncomingAmount,
+
+                saleOutgoingValue: row.saleOutgoingValue,
+                saleOutgoingQuantity: row.saleOutgoingQuantity,
+                salePermittedValue: row.salePermittedValue,
+                salePermittedQuantity: row.salePermittedQuantity,
+
+                leasingOutgoingValue: row.leasingOutgoingValue,
+                leasingOutgoingQuantity: row.leasingOutgoingQuantity,
+                leasingPermittedValue: row.leasingPermittedValue,
+                leasingPermittedQuantity: row.leasingPermittedQuantity,
+
+                exportOutgoingValue: row.exportOutgoingValue,
+                exportOutgoingQuantity: row.exportOutgoingQuantity,
+                exportPermittedValue: row.exportPermittedValue,
+                exportPermittedQuantity: row.exportPermittedQuantity,
+
+                invoiceRealizedValue: row.invoiceRealizedValue,
+                invoiceRealizedQuantity: row.invoiceRealizedQuantity,
+
+                financialLeasingRealizedValue:
+                  row.financialLeasingRealizedValue,
+                financialLeasingRealizedQuantity:
+                  row.financialLeasingRealizedQuantity,
+                financialLeasingPermittedValue:
+                  row.financialLeasingPermittedValue,
+                financialLeasingPermittedQuantity:
+                  row.financialLeasingPermittedQuantity,
+
+                financialLeasingCompanyName: row.financialLeasingCompanyName,
 
                 rawData: toJson(row.rawData),
               })),

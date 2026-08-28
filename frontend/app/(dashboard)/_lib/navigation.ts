@@ -73,19 +73,19 @@ export const navigationItems = [
   },
   {
     label: "Yerli Liste",
-    href: "/document-details/domestic-machines",
+    href: "/documents/domestic-machines",
     icon: ShoppingCart,
     permission: "documents:view",
   },
   {
     label: "İthal Liste",
-    href: "/document-details/imported-machines",
+    href: "/documents/imported-machines",
     icon: Truck,
     permission: "documents:view",
   },
   {
     label: "Özel Şartlar",
-    href: "/document-details/special-conditions",
+    href: "/documents/special-conditions",
     icon: FileText,
     permission: "documents:view",
   },

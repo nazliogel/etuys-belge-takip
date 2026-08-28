@@ -520,17 +520,77 @@ model DocumentDomesticMachine {
   id       Int @id @default(autoincrement())
   detailId Int
 
+  // Temel bilgiler
   externalMachineId Int?
   sequenceNumber    Int?
 
   name        String?
   quantity    Decimal?
-  unit        String?
   unitPriceTl Decimal?
   totalTl     Decimal?
+  unit        String?
 
+  // KDV
+  vatExemption            String?
+  vatExemptionDescription String?
+
+  // Devir
+  transferRealizedValue    Decimal?
+  transferRealizedQuantity Decimal?
+  transferOutgoingValue    Decimal?
+  transferOutgoingQuantity Decimal?
+
+  // Kiralama
+  leasingOutgoingValue     Decimal?
+  leasingOutgoingQuantity  Decimal?
+  leasingPermittedValue    Decimal?
+  leasingPermittedQuantity Decimal?
+
+  // Fatura gerçekleşen
+  invoiceRealizedValue    Decimal?
+  invoiceRealizedQuantity Decimal?
+
+  // Gümrük
+  customsRealizedValue     Decimal?
+  customsRealizedQuantity  Decimal?
+  customsPermittedValue    Decimal?
+  customsPermittedQuantity Decimal?
+
+  // İhraç
+  exportOutgoingValue     Decimal?
+  exportOutgoingQuantity  Decimal?
+  exportPermittedValue    Decimal?
+  exportPermittedQuantity Decimal?
+
+  // Finansal kiralama
+  financialLeasingRealizedValue     Decimal?
+  financialLeasingRealizedQuantity  Decimal?
+  financialLeasingPermittedValue    Decimal?
+  financialLeasingPermittedQuantity Decimal?
+
+  // Satış
+  saleOutgoingValue     Decimal?
+  saleOutgoingQuantity  Decimal?
+  salePermittedValue    Decimal?
+  salePermittedQuantity Decimal?
+  saleRealizedQuantity  Decimal?
+  saleRealizedValue     Decimal?
+
+  // GTIP
   gtipCode        String?
   gtipDescription String?
+
+  // Devir gelen
+  transferDocumentNumber   String?
+  transferIncomingQuantity Decimal?
+  transferIncomingAmount   Decimal?
+
+  // Diğer bilgiler
+  barcode                 String?
+  sellerTaxNumber         String?
+  sellerEmail             String?
+  financialLeasingCompany String?
+  machineryEquipmentType  String?
 
   rawData Json?
 
@@ -547,6 +607,7 @@ model DocumentImportedMachine {
   id       Int @id @default(autoincrement())
   detailId Int
 
+  // Temel bilgiler
   externalMachineId Int?
   sequenceNumber    Int?
 
@@ -554,15 +615,75 @@ model DocumentImportedMachine {
   quantity Decimal?
   unit     String?
 
+  machineryEquipmentType String?
+
+  // GTIP
   gtipCode        String?
   gtipDescription String?
 
-  currency    String?
-  fobAmount   Decimal?
-  fobAmountTl Decimal?
-  cifAmountTl Decimal?
+  // KDV / Gümrük vergisi
+  vatExemption                   String?
+  vatExemptionDescription        String?
+  customsTaxExemption            String?
+  customsTaxExemptionDescription String?
 
+  // Kullanılmış / araç / CKD
   usedMachine String?
+  isVehicle   String?
+  isCkd       String?
+
+  // FOB / CIF
+  totalFobUsd Decimal?
+  totalFobTl  Decimal?
+  totalCifTl  Decimal?
+
+  originCurrencyFob       String?
+  originCurrencyFobAmount Decimal?
+
+  // Gümrük
+  customsRealizedValue     Decimal?
+  customsRealizedQuantity  Decimal?
+  customsPermittedValue    Decimal?
+  customsPermittedQuantity Decimal?
+
+  // Devir
+  transferRealizedValue    Decimal?
+  transferRealizedQuantity Decimal?
+  transferOutgoingValue    Decimal?
+  transferOutgoingQuantity Decimal?
+
+  transferDocumentNumber   String?
+  transferIncomingQuantity Decimal?
+  transferIncomingAmount   Decimal?
+
+  // Satış
+  saleOutgoingValue     Decimal?
+  saleOutgoingQuantity  Decimal?
+  salePermittedValue    Decimal?
+  salePermittedQuantity Decimal?
+
+  // Kiralama
+  leasingOutgoingValue     Decimal?
+  leasingOutgoingQuantity  Decimal?
+  leasingPermittedValue    Decimal?
+  leasingPermittedQuantity Decimal?
+
+  // İhracat
+  exportOutgoingValue     Decimal?
+  exportOutgoingQuantity  Decimal?
+  exportPermittedValue    Decimal?
+  exportPermittedQuantity Decimal?
+
+  // Fatura
+  invoiceRealizedValue    Decimal?
+  invoiceRealizedQuantity Decimal?
+
+  // Finansal kiralama
+  financialLeasingRealizedValue     Decimal?
+  financialLeasingRealizedQuantity  Decimal?
+  financialLeasingPermittedValue    Decimal?
+  financialLeasingPermittedQuantity Decimal?
+  financialLeasingCompanyName       String?
 
   rawData Json?
 
