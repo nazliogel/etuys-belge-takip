@@ -162,7 +162,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
       </div>
 
       {/* NAVİGASYON */}
-      <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 mt-2">
+      <nav className="mt-2 flex-1 space-y-1.5 overflow-y-auto p-3 [scrollbar-color:rgba(147,197,253,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-300/40 hover:[&::-webkit-scrollbar-thumb]:bg-blue-200/60">
         {visibleItems.map((item) => {
           const Icon = item.icon;
 
