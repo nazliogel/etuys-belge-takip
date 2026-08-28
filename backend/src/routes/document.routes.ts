@@ -26,4 +26,8 @@ documentRouter.get(
   "/:id/imported-machines",
   documentController.getImportedMachines,
 );
+documentRouter.get(
+  "/:id/special-conditions",
+  documentController.getSpecialConditions,
+);
 documentRouter.get("/:id", documentController.getById);

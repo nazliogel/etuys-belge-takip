@@ -85,7 +85,7 @@ export const navigationItems = [
   },
   {
     label: "Özel Şartlar",
-    href: "/document-details/special-conditions",
+    href: "/documents/special-conditions",
     icon: FileText,
     permission: "documents:view",
   },

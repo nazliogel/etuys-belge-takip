@@ -1685,7 +1685,12 @@ export class DocumentDetailExcelParserService {
         ...common,
 
         conditionCode: normalizeValue(
-          getCellByAliases(row, headerMap, ["Şart Kodu", "Sart Kodu"]),
+          getCellByAliases(row, headerMap, [
+            "Özel Şart Kodu",
+            "Ozel Sart Kodu",
+            "Şart Kodu",
+            "Sart Kodu",
+          ]),
         ),
 
         conditionName: normalizeValue(

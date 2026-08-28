@@ -796,4 +796,54 @@ export class DocumentService {
       })),
     };
   }
+  async getDocumentSpecialConditions(
+    id: number,
+    userId: number,
+    role: UserRole,
+  ) {
+    const document = await this.documentRepository.findById(id);
+
+    if (!document) {
+      throw new AppError("Document not found.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "DOCUMENT_NOT_FOUND",
+      });
+    }
+
+    if (role === "COMPANY") {
+      const company = await this.companyRepository.findByUserId(userId);
+
+      if (!company) {
+        throw new AppError("Company is not assigned to this user.", {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          code: "USER_COMPANY_NOT_FOUND",
+        });
+      }
+
+      if (document.companyId !== company.id) {
+        throw new AppError(
+          "You do not have permission to access this document.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
+      }
+    }
+
+    const specialConditions = document.detail?.specialConditions ?? [];
+
+    return {
+      documentId: document.id,
+      externalDocumentId: document.externalDocumentId,
+      documentNumber: document.documentNumber,
+
+      items: specialConditions.map((condition) => ({
+        id: condition.id,
+        conditionCode: condition.conditionCode,
+        conditionName: condition.conditionName,
+        description: condition.description,
+      })),
+    };
+  }
 }

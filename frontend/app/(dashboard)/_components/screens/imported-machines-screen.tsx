@@ -279,18 +279,14 @@ export function ImportedMachinesScreen() {
                     <th className="px-4 py-3">Birim</th>
                     <th className="px-4 py-3">GTİP No</th>
                     <th className="px-4 py-3">GTİP Açıklama</th>
-                    <th className="px-4 py-3">Makine Tipi</th>
                     <th className="px-4 py-3">Kullanılmış Makine</th>
                     <th className="px-4 py-3">Araç mı?</th>
                     <th className="px-4 py-3">CKD mi?</th>
-                    <th className="px-4 py-3">FOB Dolar</th>
-                    <th className="px-4 py-3">FOB TL</th>
-                    <th className="px-4 py-3">CIF TL</th>
-                    <th className="px-4 py-3">Menşei Döviz Cinsi</th>
+                    <th className="px-4 py-3">Toplam Tutarı(FOB Dolar $)</th>
+                    <th className="px-4 py-3">Toplam Tutar(FOB TL)</th>
                     <th className="px-4 py-3">Menşei Döviz Tutarı</th>
                     <th className="px-4 py-3">KDV İstisnası</th>
                     <th className="px-4 py-3">Gümrük Vergisi İstisnası</th>
-                    <th className="px-4 py-3">Finansal Kiralama Kurumu</th>
                   </tr>
                 </thead>
 
@@ -319,9 +315,6 @@ export function ImportedMachinesScreen() {
                         {displayValue(machine.gtipDescription)}
                       </td>
                       <td className="px-4 py-3">
-                        {displayValue(machine.machineryEquipmentType)}
-                      </td>
-                      <td className="px-4 py-3">
                         {displayValue(machine.usedMachine)}
                       </td>
                       <td className="px-4 py-3">
@@ -337,12 +330,6 @@ export function ImportedMachinesScreen() {
                         {displayValue(machine.totalFobTl)}
                       </td>
                       <td className="px-4 py-3">
-                        {displayValue(machine.totalCifTl)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.originCurrencyFob)}
-                      </td>
-                      <td className="px-4 py-3">
                         {displayValue(machine.originCurrencyFobAmount)}
                       </td>
                       <td className="px-4 py-3">
@@ -350,9 +337,6 @@ export function ImportedMachinesScreen() {
                       </td>
                       <td className="px-4 py-3">
                         {displayValue(machine.customsTaxExemptionDescription)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.financialLeasingCompanyName)}
                       </td>
                     </tr>
                   ))}
