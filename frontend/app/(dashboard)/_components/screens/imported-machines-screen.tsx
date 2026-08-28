@@ -1,22 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { FileText, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-
-type ApiDocument = {
-  id: number;
-  externalDocumentId: number;
-  documentNumber: string | null;
-  isActive: boolean;
-};
-
-type DocumentsResponse = {
-  success: boolean;
-  data: {
-    items: ApiDocument[];
-  };
-};
+import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
 
 type ImportedMachine = {
   id: number;
@@ -107,52 +96,71 @@ function displayValue(value: string | number | null | undefined) {
   return String(value);
 }
 
-export function ImportedMachinesScreen() {
-  const [documents, setDocuments] = useState<ApiDocument[]>([]);
-  const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(
-    null,
-  );
-  const [machines, setMachines] = useState<ImportedMachine[]>([]);
+function formatNumber(
+  value: string | number | null | undefined,
+): string | null {
+  if (value === null || value === undefined || value === "") return null;
 
-  const [loadingDocuments, setLoadingDocuments] = useState(true);
-  const [loadingMachines, setLoadingMachines] = useState(false);
+  const normalized = String(value).replace(",", ".").trim();
+  const num = Number(normalized);
+
+  if (!Number.isFinite(num)) return String(value);
+
+  return new Intl.NumberFormat("tr-TR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
+}
+
+function formatQuantity(
+  value: string | number | null | undefined,
+): string | null {
+  if (value === null || value === undefined || value === "") return null;
+
+  const normalized = String(value).replace(",", ".").trim();
+  const num = Number(normalized);
+
+  if (!Number.isFinite(num)) return String(value);
+
+  return new Intl.NumberFormat("tr-TR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 3,
+  }).format(num);
+}
+
+function isPositiveFlag(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const v = value.toString().trim().toLowerCase();
+  return ["evet", "yes", "true", "1", "e"].includes(v);
+}
+
+export function ImportedMachinesScreen() {
+  const searchParams = useSearchParams();
+
+  const [selectedDocumentId, setSelectedDocumentId] = useState("");
+  const [selectedDocumentNumber, setSelectedDocumentNumber] = useState<
+    string | null
+  >(null);
+
+  const [machines, setMachines] = useState<ImportedMachine[]>([]);
+  const [loadingMachines, setLoadingMachines] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadDocuments = async () => {
-      try {
-        setLoadingDocuments(true);
-        setError(null);
+    const documentIdFromUrl = searchParams.get("documentId");
+    const storedDocument = getSelectedDocument();
 
-        const response = await apiFetch<DocumentsResponse>(
-          "/documents?isActive=true",
-        );
+    const documentId = documentIdFromUrl ?? storedDocument?.id ?? "";
 
-        const items = response.data.items ?? [];
-
-        setDocuments(items);
-
-        if (items.length === 1) {
-          setSelectedDocumentId(items[0].id);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Belgeler alınırken bir hata oluştu.",
-        );
-      } finally {
-        setLoadingDocuments(false);
-      }
-    };
-
-    void loadDocuments();
-  }, []);
+    setSelectedDocumentId(documentId);
+    setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!selectedDocumentId) {
       setMachines([]);
+      setLoadingMachines(false);
       return;
     }
 
@@ -166,6 +174,10 @@ export function ImportedMachinesScreen() {
         );
 
         setMachines(response.data.items ?? []);
+
+        if (response.data.documentNumber) {
+          setSelectedDocumentNumber(response.data.documentNumber);
+        }
       } catch (err) {
         setMachines([]);
 
@@ -182,170 +194,369 @@ export function ImportedMachinesScreen() {
     void loadMachines();
   }, [selectedDocumentId]);
 
-  const selectedDocument = useMemo(
-    () => documents.find((item) => item.id === selectedDocumentId) ?? null,
-    [documents, selectedDocumentId],
-  );
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
+    <div className="space-y-8">
+      {/* SAYFA BAŞLIĞI */}
+      <header className="border-b border-slate-200 pb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          Belge Detayları
+        </p>
+        <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-slate-900">
           İthal Makine ve Teçhizat Listesi
         </h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Yatırım teşvik belgesine ait ithal makine ve teçhizat bilgilerini
-          görüntüleyebilirsiniz.
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+          Seçili yatırım teşvik belgesine ait ithal makine ve teçhizat
+          bilgilerini görüntüleyebilirsiniz.
         </p>
-      </div>
+      </header>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Belge
-        </label>
-
-        {loadingDocuments ? (
-          <div className="text-sm text-slate-500">Belgeler yükleniyor...</div>
-        ) : documents.length === 0 ? (
-          <div className="text-sm text-slate-500">
-            Aktif teşvik belgesi bulunamadı.
-          </div>
-        ) : (
-          <select
-            value={selectedDocumentId ?? ""}
-            onChange={(event) => {
-              const value = event.target.value;
-              setSelectedDocumentId(value ? Number(value) : null);
-            }}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-500"
-          >
-            {documents.length > 1 && <option value="">Belge seçiniz</option>}
-
-            {documents.map((document) => (
-              <option key={document.id} value={document.id}>
-                {document.documentNumber
-                  ? `Belge No: ${document.documentNumber}`
-                  : `Belge ID: ${document.externalDocumentId}`}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      {!selectedDocumentId && documents.length > 1 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-          İthal listeyi görüntülemek için belge seçiniz.
-        </div>
-      )}
-
+      {/* SEÇİLİ BELGE ŞERİDİ */}
       {selectedDocumentId && (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="font-semibold text-slate-900">İthal Liste</h2>
-
-            {selectedDocument && (
-              <p className="mt-1 text-sm text-slate-500">
-                {selectedDocument.documentNumber
-                  ? `Belge No: ${selectedDocument.documentNumber}`
-                  : `Belge ID: ${selectedDocument.externalDocumentId}`}
-              </p>
-            )}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-center gap-2.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <FileText className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+              Belge No
+            </span>
+            <span className="h-4 w-px bg-slate-200" />
+            <span className="text-sm font-semibold tracking-tight text-slate-900">
+              {selectedDocumentNumber ?? `#${selectedDocumentId}`}
+            </span>
           </div>
 
-          {loadingMachines ? (
-            <div className="p-6 text-sm text-slate-500">
-              İthal liste yükleniyor...
-            </div>
-          ) : machines.length === 0 ? (
-            <div className="p-6 text-sm text-slate-500">
-              Bu belgeye ait ithal makine kaydı bulunamadı.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-[1900px] w-full text-sm">
-                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  <tr>
-                    <th className="px-4 py-3">Sıra No</th>
-                    <th className="px-4 py-3">İthal Makine ID</th>
-                    <th className="px-4 py-3">Adı / Özelliği</th>
-                    <th className="px-4 py-3">Miktar</th>
-                    <th className="px-4 py-3">Birim</th>
-                    <th className="px-4 py-3">GTİP No</th>
-                    <th className="px-4 py-3">GTİP Açıklama</th>
-                    <th className="px-4 py-3">Kullanılmış Makine</th>
-                    <th className="px-4 py-3">Araç mı?</th>
-                    <th className="px-4 py-3">CKD mi?</th>
-                    <th className="px-4 py-3">Toplam Tutarı(FOB Dolar $)</th>
-                    <th className="px-4 py-3">Toplam Tutar(FOB TL)</th>
-                    <th className="px-4 py-3">Menşei Döviz Tutarı</th>
-                    <th className="px-4 py-3">KDV İstisnası</th>
-                    <th className="px-4 py-3">Gümrük Vergisi İstisnası</th>
-                  </tr>
-                </thead>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+            <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
+            Seçili
+          </span>
+        </div>
+      )}
 
-                <tbody className="divide-y divide-slate-100">
-                  {machines.map((machine) => (
-                    <tr key={machine.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3">
-                        {displayValue(machine.sequenceNumber)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.externalMachineId)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.name)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.quantity)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.unit)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.gtipCode)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.gtipDescription)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.usedMachine)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.isVehicle)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.isCkd)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.totalFobUsd)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.totalFobTl)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.originCurrencyFobAmount)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.vatExemptionDescription)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {displayValue(machine.customsTaxExemptionDescription)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* HATA */}
+      {error && (
+        <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+          <div className="flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-red-600">
+              Hata
+            </p>
+            <p className="mt-0.5 text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* İÇERİK KARTI */}
+      <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+        {/* Kart Alt Başlığı */}
+        <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="h-8 w-1 rounded-full bg-[#1e2a5e]" />
+            <div>
+              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-slate-800">
+                İthal Makine ve Teçhizat Kayıtları
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Belge kapsamında tanımlı ithal makineler, FOB tutarlar ve
+                muafiyet bilgileri.
+              </p>
             </div>
+          </div>
+          {!loadingMachines && selectedDocumentId && machines.length > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
+              {machines.length} Kayıt
+            </span>
           )}
         </div>
-      )}
+
+        {/* Tablo */}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1900px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b-2 border-[#1e2a5e]/15 bg-[#1e2a5e]/[0.04] text-left">
+                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Sıra
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Makine ID
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Adı / Özelliği
+                </th>
+                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Miktar
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Birim
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  GTİP No
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  GTİP Açıklama
+                </th>
+                <th className="px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Kullanılmış
+                </th>
+                <th className="px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Araç
+                </th>
+                <th className="px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  CKD
+                </th>
+                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  FOB (USD)
+                </th>
+                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  FOB (TL)
+                </th>
+                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Menşei Döviz Tutarı
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  KDV İstisnası
+                </th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Gümrük V. İstisnası
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-100">
+              {!selectedDocumentId ? (
+                <tr>
+                  <td colSpan={15} className="px-5 py-14 text-center">
+                    <p className="text-sm font-medium text-slate-700">
+                      Görüntülenecek belge seçilmedi
+                    </p>
+                    <p className="mt-1.5 text-xs text-slate-500">
+                      Lütfen sol menüden bir belge numarası seçin.
+                    </p>
+                  </td>
+                </tr>
+              ) : loadingMachines ? (
+                <tr>
+                  <td colSpan={15} className="px-5 py-14">
+                    <div className="flex items-center justify-center gap-2.5">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e]" />
+                      <span className="text-sm text-slate-500">Yükleniyor</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : machines.length === 0 ? (
+                <tr>
+                  <td colSpan={15} className="px-5 py-14 text-center">
+                    <p className="text-sm font-medium text-slate-700">
+                      Kayıt bulunamadı
+                    </p>
+                    <p className="mt-1.5 text-xs text-slate-500">
+                      Bu belgeye ait ithal makine kaydı mevcut değil.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                machines.map((machine, index) => (
+                  <tr
+                    key={machine.id}
+                    className={`group transition-colors hover:bg-[#1e2a5e]/[0.03] ${
+                      index % 2 === 1 ? "bg-slate-50/40" : "bg-white"
+                    }`}
+                  >
+                    {/* Sıra */}
+                    <td className="px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-slate-500">
+                      {machine.sequenceNumber ?? (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Makine ID */}
+                    <td className="px-4 py-2.5">
+                      {machine.externalMachineId ? (
+                        <span className="inline-flex rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-xs font-medium text-slate-700">
+                          {machine.externalMachineId}
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Ad */}
+                    <td className="px-4 py-2.5 text-sm font-semibold text-slate-900">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
+                        <span className="whitespace-normal">
+                          {machine.name ?? (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Miktar */}
+                    <td className="px-4 py-2.5 text-right font-mono text-sm tabular-nums text-slate-700">
+                      {formatQuantity(machine.quantity) ?? (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Birim */}
+                    <td className="px-4 py-2.5">
+                      {machine.unit ? (
+                        <span className="inline-flex rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                          {machine.unit}
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* GTİP Kodu */}
+                    <td className="px-4 py-2.5">
+                      {machine.gtipCode ? (
+                        <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-2 py-0.5 font-mono text-xs font-semibold text-[#1e2a5e]">
+                          {machine.gtipCode}
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* GTİP Açıklama */}
+                    <td className="px-4 py-2.5 text-sm text-slate-600">
+                      {machine.gtipDescription ?? (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Kullanılmış */}
+                    <td className="px-4 py-2.5 text-center">
+                      <FlagBadge
+                        value={machine.usedMachine}
+                        positiveTone="amber"
+                      />
+                    </td>
+
+                    {/* Araç */}
+                    <td className="px-4 py-2.5 text-center">
+                      <FlagBadge
+                        value={machine.isVehicle}
+                        positiveTone="slate"
+                      />
+                    </td>
+
+                    {/* CKD */}
+                    <td className="px-4 py-2.5 text-center">
+                      <FlagBadge value={machine.isCkd} positiveTone="slate" />
+                    </td>
+
+                    {/* FOB USD */}
+                    <td className="px-4 py-2.5 text-right">
+                      {formatNumber(machine.totalFobUsd) ? (
+                        <span className="font-mono text-sm font-bold tabular-nums text-[#1e2a5e]">
+                          {formatNumber(machine.totalFobUsd)}
+                          <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            USD
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* FOB TL */}
+                    <td className="px-4 py-2.5 text-right">
+                      {formatNumber(machine.totalFobTl) ? (
+                        <span className="font-mono text-sm tabular-nums text-slate-700">
+                          {formatNumber(machine.totalFobTl)}
+                          <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                            TL
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Menşei Döviz Tutarı */}
+                    <td className="px-4 py-2.5 text-right">
+                      {formatNumber(machine.originCurrencyFobAmount) ? (
+                        <span className="font-mono text-sm tabular-nums text-slate-700">
+                          {formatNumber(machine.originCurrencyFobAmount)}
+                          {machine.originCurrencyFob && (
+                            <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                              {machine.originCurrencyFob}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* KDV İstisnası */}
+                    <td className="px-4 py-2.5 text-sm text-slate-600">
+                      {machine.vatExemptionDescription ?? (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+
+                    {/* Gümrük Vergisi İstisnası */}
+                    <td className="px-4 py-2.5 text-sm text-slate-600">
+                      {machine.customsTaxExemptionDescription ?? (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
+  );
+}
+
+function FlagBadge({
+  value,
+  positiveTone = "emerald",
+}: {
+  value: string | null;
+  positiveTone?: "emerald" | "amber" | "slate";
+}) {
+  if (!value) {
+    return <span className="text-slate-300">—</span>;
+  }
+
+  const isPositive = isPositiveFlag(value);
+
+  if (!isPositive) {
+    return (
+      <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        {value}
+      </span>
+    );
+  }
+
+  const toneStyles = {
+    emerald: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    amber: "bg-amber-50 text-amber-700 ring-amber-200",
+    slate: "bg-slate-100 text-slate-700 ring-slate-200",
+  }[positiveTone];
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ring-1 ring-inset ${toneStyles}`}
+    >
+      <span
+        className={`h-1 w-1 rounded-full ${
+          positiveTone === "emerald"
+            ? "bg-emerald-500"
+            : positiveTone === "amber"
+              ? "bg-amber-500"
+              : "bg-slate-500"
+        }`}
+      />
+      {value}
+    </span>
   );
 }

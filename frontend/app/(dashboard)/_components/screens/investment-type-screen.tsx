@@ -1,70 +1,46 @@
 "use client";
 
-import { FileText } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { FileText, CheckCircle2, Loader2 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
-
-type ApiDocument = {
-  id: number;
-  externalDocumentId: number;
-  documentNumber: string | null;
-  documentStartDate: string | null;
-  documentEndDate: string | null;
-  isActive: boolean;
-};
-
-type DocumentsResponse = {
-  success: boolean;
-  data: {
-    items: ApiDocument[];
-  };
-};
+import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
 
 type DocumentDetailResponse = {
   success: boolean;
   data: {
     id: number;
+    documentNumber?: string | null;
     investmentType: string | null;
   };
 };
 
 export function InvestmentTypeScreen() {
-  const [documents, setDocuments] = useState<ApiDocument[]>([]);
+  const searchParams = useSearchParams();
+
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [selectedDocumentNumber, setSelectedDocumentNumber] = useState<
+    string | null
+  >(null);
 
   const [investmentType, setInvestmentType] = useState<string | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const response = await apiFetch<DocumentsResponse>(
-          "/documents?isActive=true",
-        );
+    const documentIdFromUrl = searchParams.get("documentId");
+    const storedDocument = getSelectedDocument();
 
-        const items = response.data.items;
+    const documentId = documentIdFromUrl ?? storedDocument?.id ?? "";
 
-        setDocuments(items);
-
-        // Tek aktif belge varsa otomatik seç.
-        if (items.length === 1) {
-          setSelectedDocumentId(String(items[0].id));
-        }
-      } catch (error) {
-        console.error("Aktif belgeler alınamadı:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchDocuments();
-  }, []);
+    setSelectedDocumentId(documentId);
+    setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!selectedDocumentId) {
       setInvestmentType(null);
+      setDetailLoading(false);
       return;
     }
 
@@ -77,6 +53,10 @@ export function InvestmentTypeScreen() {
         );
 
         setInvestmentType(response.data.investmentType);
+
+        if (response.data.documentNumber) {
+          setSelectedDocumentNumber(response.data.documentNumber);
+        }
       } catch (error) {
         console.error("Yatırım cinsi alınamadı:", error);
         setInvestmentType(null);
@@ -89,75 +69,75 @@ export function InvestmentTypeScreen() {
   }, [selectedDocumentId]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Yatırım Cinsi</h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Teşvik belgelerinize ait yatırım cinsi bilgilerini
+    <div className="space-y-8">
+      {/* SAYFA BAŞLIĞI */}
+      <header className="border-b border-slate-200 pb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          Belge Detayları
+        </p>
+        <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-slate-900">
+          Yatırım Cinsi
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+          Seçili teşvik belgesine ait yatırım cinsi bilgisini
           görüntüleyebilirsiniz.
         </p>
-      </div>
+      </header>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
-            <FileText className="h-5 w-5 text-slate-600" />
+      {/* SEÇİLİ BELGE ŞERİDİ */}
+      {selectedDocumentId && (
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-center gap-2.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <FileText className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+              Belge No
+            </span>
+            <span className="h-4 w-px bg-slate-200" />
+            <span className="text-sm font-semibold tracking-tight text-slate-900">
+              {selectedDocumentNumber ?? `#${selectedDocumentId}`}
+            </span>
           </div>
 
-          <div>
-            <h2 className="font-semibold text-slate-900">Belge Seçimi</h2>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+            <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
+            Seçili
+          </span>
+        </div>
+      )}
 
-            <p className="text-sm text-slate-500">
-              Görüntülemek istediğiniz açık belgeyi seçin.
+      {/* İÇERİK KARTI */}
+      <section className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+        {!selectedDocumentId ? (
+          <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <p className="text-sm font-medium text-slate-700">
+              Görüntülenecek belge seçilmedi
+            </p>
+            <p className="mt-1.5 text-xs text-slate-500">
+              Lütfen sol menüden bir belge numarası seçin.
             </p>
           </div>
-        </div>
-
-        <select
-          className="mt-5 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100"
-          value={selectedDocumentId}
-          onChange={(event) => setSelectedDocumentId(event.target.value)}
-          disabled={loading || documents.length === 0}
-        >
-          <option value="" disabled>
-            {loading
-              ? "Belgeler yükleniyor..."
-              : documents.length === 0
-                ? "Aktif belge bulunamadı"
-                : "Belge seçiniz"}
-          </option>
-
-          {documents.map((document) => (
-            <option key={document.id} value={document.id}>
-              {document.documentNumber ??
-                `Belge ${document.externalDocumentId}`}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">
-          Yatırım Cinsi Bilgisi
-        </h2>
-
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <div className="grid gap-2 sm:grid-cols-[180px_1fr]">
-            <span className="text-sm font-medium text-slate-500">
-              Yatırım Cinsi
-            </span>
-
-            <span className="text-sm font-medium text-slate-900">
-              {!selectedDocumentId
-                ? "Önce bir belge seçiniz."
-                : detailLoading
-                  ? "Yükleniyor..."
-                  : (investmentType ?? "Yatırım cinsi bilgisi bulunamadı.")}
-            </span>
+        ) : detailLoading ? (
+          <div className="flex items-center justify-center gap-2.5 px-6 py-16">
+            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            <span className="text-sm text-slate-500">Yükleniyor</span>
           </div>
-        </div>
-      </div>
+        ) : (
+          <dl className="divide-y divide-slate-100">
+            <div className="grid grid-cols-1 gap-2 px-6 py-5 sm:grid-cols-[220px_1fr] sm:gap-6 sm:py-4">
+              <dt className="text-sm font-medium text-slate-500">
+                Yatırım Cinsi
+              </dt>
+              <dd className="text-sm font-semibold text-slate-900">
+                {investmentType ?? (
+                  <span className="font-normal italic text-slate-400">
+                    Kayıt bulunamadı
+                  </span>
+                )}
+              </dd>
+            </div>
+          </dl>
+        )}
+      </section>
     </div>
   );
 }
