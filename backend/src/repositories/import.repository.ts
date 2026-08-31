@@ -1,4 +1,8 @@
-import type { ImportBatchStatus, Prisma } from "../generated/prisma/client.js";
+import type {
+  ImportBatchStatus,
+  ImportType,
+  Prisma,
+} from "../generated/prisma/client.js";
 
 import { prisma } from "../config/env.js";
 
@@ -8,7 +12,7 @@ export class ImportRepository {
     storedFileName: string;
     uploadedById: number;
     isFullSnapshot?: boolean;
-    importType?: "OPEN" | "CLOSED" | "COMPANY_IDENTITY";
+    importType?: ImportType;
   }) {
     return prisma.importBatch.create({
       data: {

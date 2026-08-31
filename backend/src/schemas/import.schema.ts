@@ -36,6 +36,6 @@ export const importBatchIdSchema = z.object({
 export const importBatchUploadSchema = z.object({
   body: z.object({
     isFullSnapshot: booleanFormDataSchema,
-    importType: z.enum(["OPEN", "CLOSED"]).optional(),
+    importType: z.enum(["OPEN", "CLOSED", "COMPANY_REQUEST"]).optional(),
   }),
 });

@@ -4,6 +4,7 @@ import { AppError } from "../errors/app-error.js";
 import type { ImportRepository } from "../repositories/import.repository.js";
 import type { ImportProcessService } from "./import-process.service.js";
 import type { CompareService } from "./compare.service.js";
+import type { CompanyRequestImportService } from "./company-request-import.service.js";
 import type { ApprovalService } from "./approval.service.js";
 import type {
   ImportBatchListQuery,
@@ -17,13 +18,14 @@ export class ImportService {
     private readonly importProcessService: ImportProcessService,
     private readonly compareService: CompareService,
     private readonly approvalService: ApprovalService,
+    private readonly companyRequestImportService: CompanyRequestImportService,
   ) {}
 
   async createImportBatch(input: {
     file: Express.Multer.File;
     uploadedById: number;
     isFullSnapshot?: boolean;
-    importType?: "OPEN" | "CLOSED" | "COMPANY_IDENTITY";
+    importType?: "OPEN" | "CLOSED" | "COMPANY_IDENTITY" | "COMPANY_REQUEST";
   }) {
     const {
       file,
@@ -31,6 +33,13 @@ export class ImportService {
       isFullSnapshot = true,
       importType = "OPEN",
     } = input;
+
+    if (importType === "COMPANY_REQUEST") {
+      return this.companyRequestImportService.import({
+        file,
+        uploadedById,
+      });
+    }
 
     let batch;
 

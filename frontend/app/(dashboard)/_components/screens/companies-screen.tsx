@@ -135,7 +135,9 @@ export function CompaniesScreen() {
     () => parseIdList(searchParams.get(QUERY_KEYS.firmaTabs)),
     [searchParams],
   );
-  const activeFirma = activeFirmaId ? firmaCache[activeFirmaId] ?? null : null;
+  const activeFirma = activeFirmaId
+    ? (firmaCache[activeFirmaId] ?? null)
+    : null;
   const openFirmalar = useMemo(
     () =>
       openFirmaIds
@@ -712,7 +714,8 @@ export function CompaniesScreen() {
 
           {/* Firma Künye + İletişim Bilgileri */}
           <CompanyIdentitySection companyId={activeFirma.id} />
-
+          {/* Gönderilmiş Talep Listesi */}
+          <CompanyRequestList companyId={String(activeFirma.id)} />
           {/* Belgeler */}
           <div className="space-y-3">
             {/*

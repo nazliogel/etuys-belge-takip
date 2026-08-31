@@ -9,7 +9,7 @@ import { HTTP_STATUS } from "../utils/http-status.js";
 
 interface UploadImportBody {
   isFullSnapshot?: boolean | string;
-  importType?: "OPEN" | "CLOSED";
+  importType?: "OPEN" | "CLOSED" | "COMPANY_REQUEST";
 }
 
 export class ImportController {
@@ -82,7 +82,11 @@ export class ImportController {
         : req.body.isFullSnapshot === true ||
           req.body.isFullSnapshot === "true";
 
-    const importType = req.body.importType === "CLOSED" ? "CLOSED" : "OPEN";
+    const importType =
+      req.body.importType === "CLOSED" ||
+      req.body.importType === "COMPANY_REQUEST"
+        ? req.body.importType
+        : "OPEN";
 
     const data = await this.service.createImportBatch({
       file: req.file,
@@ -125,12 +129,7 @@ export class ImportController {
     const data = await this.service.getImportRows(
       importBatchId,
       status as
-        | "NEW"
-        | "CHANGED"
-        | "UNCHANGED"
-        | "INVALID"
-        | "PENDING"
-        | undefined,
+        "NEW" | "CHANGED" | "UNCHANGED" | "INVALID" | "PENDING" | undefined,
     );
 
     return sendSuccessResponse(res, {
