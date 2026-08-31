@@ -74,7 +74,7 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-8 text-sm font-medium tracking-wide text-slate-400">
-            Yatırım Teşvik Belge ve Vize Takip Sistemi
+            Yatırım Teşvik Belge Sistemi
           </p>
         </div>
 

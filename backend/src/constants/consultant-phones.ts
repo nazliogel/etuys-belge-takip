@@ -13,7 +13,7 @@ const CONSULTANT_CONTACTS: Record<string, ConsultantContact> = {
     email: "beyzabasaran@akkasgroup.com",
   },
   "ezgi temel": {
-    phone: "0554 915 24 28",
+    phone: "0553 313 61 67",
     email: "ezgitemel.akkasgroup@gmail.com",
   },
   "emin kutay inangu": {

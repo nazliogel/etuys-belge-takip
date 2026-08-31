@@ -1,9 +1,9 @@
 import type { UserRole } from "../_lib/permissions";
+import { FaWhatsapp } from "react-icons/fa";
+import { Mail, Phone } from "lucide-react";
 
 function createWhatsAppUrl(phone: string): string {
-  const normalizedPhone = phone
-    .replace(/\D/g, "")
-    .replace(/^0/, "90");
+  const normalizedPhone = phone.replace(/\D/g, "").replace(/^0/, "90");
 
   return `https://wa.me/${normalizedPhone}`;
 }
@@ -43,65 +43,101 @@ export function AppHeader({
 
       <div className="flex items-center gap-3">
         {!isAdmin && (
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="hidden items-center gap-6 lg:flex">
             {/* DANIŞMAN BİLGİSİ */}
-            <div className="border-r border-blue-600 pr-5 text-right leading-tight">
-              <p className="text-[10px] font-medium uppercase leading-none tracking-wide text-blue-200">
-                Danışmanınız
-              </p>
-
-              <p className="mt-1 text-xs font-semibold leading-none text-white">
-                {displayedConsultantName}
-              </p>
-
-              {displayedConsultantPhone && consultantWhatsAppUrl ? (
-                <a
-                  href={consultantWhatsAppUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 block text-[11px] font-medium leading-none text-blue-100 transition hover:text-white hover:underline"
-                  title="WhatsApp üzerinden iletişime geç"
-                >
-                  {displayedConsultantPhone}
-                </a>
-              ) : (
-                <p className="mt-1 text-[11px] leading-none text-blue-300">
-                  Telefon bilgisi yok
+            <div className="flex min-w-[350px] items-center gap-6 border-r border-blue-600 pr-6">
+              {/* BAŞLIK VE İSİM */}
+              <div className="shrink-0 text-right">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
+                  Danışmanınız
                 </p>
-              )}
 
-              {displayedConsultantEmail ? (
-                <a
-                  href={`mailto:${displayedConsultantEmail}`}
-                  className="mt-1 block text-[11px] leading-none text-blue-200 transition hover:text-white hover:underline"
-                >
-                  {displayedConsultantEmail}
-                </a>
-              ) : (
-                <p className="mt-1 text-[11px] leading-none text-blue-300">
-                  E-posta bilgisi yok
+                <p className="mt-0.5 whitespace-nowrap text-sm font-semibold text-white">
+                  {displayedConsultantName}
                 </p>
-              )}
+              </div>
+
+              {/* TELEFON VE E-POSTA */}
+              <div className="border-l border-blue-600/70 pl-5">
+                {displayedConsultantPhone && consultantWhatsAppUrl ? (
+                  <a
+                    href={consultantWhatsAppUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-blue-100 transition hover:text-white hover:underline"
+                    title="WhatsApp üzerinden iletişime geç"
+                  >
+                    <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-green-400">
+                      <FaWhatsapp
+                        size={17}
+                        color="currentColor"
+                        aria-hidden="true"
+                      />
+                    </span>
+
+                    <span>{displayedConsultantPhone}</span>
+                  </a>
+                ) : (
+                  <p className="text-xs text-blue-300">Telefon bilgisi yok</p>
+                )}
+
+                {displayedConsultantEmail ? (
+                  <a
+                    href={`mailto:${displayedConsultantEmail}`}
+                    className="mt-0.5 flex items-center gap-2 whitespace-nowrap text-sm font-medium text-blue-100 transition hover:text-white hover:underline"
+                    title="E-posta gönder"
+                  >
+                    <Mail
+                      size={16}
+                      strokeWidth={2}
+                      className="shrink-0 text-blue-100"
+                      aria-hidden="true"
+                    />
+
+                    <span>{displayedConsultantEmail}</span>
+                  </a>
+                ) : (
+                  <p className="mt-0.5 text-xs text-blue-300">
+                    E-posta bilgisi yok
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* GENEL İLETİŞİM */}
-            <div className="text-right leading-tight">
-              <p className="text-[10px] font-medium uppercase leading-none tracking-wide text-blue-200">
+            <div className="min-w-[210px] text-left">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
                 Genel İletişim
               </p>
 
               <a
                 href="tel:+902164506007"
-                className="mt-1 block whitespace-nowrap text-xs font-medium leading-none text-white hover:underline"
+                className="mt-1 flex items-center justify-start gap-2 whitespace-nowrap text-[13px] font-medium text-white transition hover:underline"
+                title="Telefonla ara"
               >
-                +90 216 450 60 07 (Pbx)
+                <Phone
+                  size={16}
+                  strokeWidth={2}
+                  className="shrink-0 text-blue-100"
+                  aria-hidden="true"
+                />
+
+                <span>+90 216 450 60 07 (Pbx)</span>
               </a>
 
               <a
                 href="mailto:info@akkasgroup.com"
-                className="mt-1 block text-[11px] leading-none text-blue-200 hover:text-white hover:underline"
+                className="mt-1 flex items-center justify-start gap-2 whitespace-nowrap text-[13px] font-medium text-blue-100 transition hover:text-white hover:underline"
+                title="E-posta gönder"
               >
-                info@akkasgroup.com
+                <Mail
+                  size={16}
+                  strokeWidth={2}
+                  className="shrink-0 text-blue-100"
+                  aria-hidden="true"
+                />
+
+                <span>info@akkasgroup.com</span>
               </a>
             </div>
           </div>
