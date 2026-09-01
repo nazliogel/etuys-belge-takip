@@ -1,3 +1,5 @@
+import type { Prisma } from "../generated/prisma/client.js";
+
 import type { ImportRepository } from "../repositories/import.repository.js";
 import type { CompanyRequestExcelParserService } from "./company-request-excel-parser.service.js";
 import type { CompanyRequestService } from "./company-request.service.js";
@@ -38,25 +40,43 @@ export class CompanyRequestImportService {
       const errors: CompanyRequestImportError[] = [];
 
       for (const row of parsedResult.rows) {
+        const rawData = row.rawData as Prisma.InputJsonValue;
+
         if (
           row.errorMessage ||
-          row.externalDocumentId === null ||
+          row.externalCompanyId === null ||
           row.requestNumber === null
         ) {
+          const errorMessage =
+            row.errorMessage ?? "Firma ID veya Talep No bulunamadı.";
+
           failedCount += 1;
 
           errors.push({
             rowNumber: row.rowNumber,
             externalDocumentId: row.externalDocumentId,
             requestNumber: row.requestNumber,
-            message: row.errorMessage ?? "Belge Id veya Talep No bulunamadı.",
+            message: errorMessage,
+          });
+
+          await this.importRepository.createCompanyRequestRow({
+            importBatchId: batch.id,
+            rowNumber: row.rowNumber,
+            status: "INVALID",
+            externalCompanyId: row.externalCompanyId,
+            companyName: row.companyName,
+            externalDocumentId: row.externalDocumentId,
+            documentNumber: row.documentNumber,
+            rawData,
+            errorMessage,
           });
 
           continue;
         }
 
         try {
-          await this.companyRequestService.upsertFromExcel({
+          const result = await this.companyRequestService.upsertFromExcel({
+            externalCompanyId: row.externalCompanyId,
             requestNumber: row.requestNumber,
             externalDocumentId: row.externalDocumentId,
             documentNumber: row.documentNumber,
@@ -71,17 +91,45 @@ export class CompanyRequestImportService {
           });
 
           successCount += 1;
+
+          await this.importRepository.createCompanyRequestRow({
+            importBatchId: batch.id,
+            rowNumber: row.rowNumber,
+            status: "CHANGED",
+            externalCompanyId: result.company.externalCompanyId,
+            companyName: result.company.name,
+            externalDocumentId:
+              result.document?.externalDocumentId ?? row.externalDocumentId,
+            documentNumber:
+              result.document?.documentNumber ?? row.documentNumber,
+            rawData,
+            errorMessage: result.warning,
+          });
         } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Bilinmeyen gönderilmiş talep aktarım hatası.";
+
           failedCount += 1;
 
           errors.push({
             rowNumber: row.rowNumber,
             externalDocumentId: row.externalDocumentId,
             requestNumber: row.requestNumber,
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unknown company request import error.",
+            message: errorMessage,
+          });
+
+          await this.importRepository.createCompanyRequestRow({
+            importBatchId: batch.id,
+            rowNumber: row.rowNumber,
+            status: "INVALID",
+            externalCompanyId: row.externalCompanyId,
+            companyName: row.companyName,
+            externalDocumentId: row.externalDocumentId,
+            documentNumber: row.documentNumber,
+            rawData,
+            errorMessage,
           });
         }
       }

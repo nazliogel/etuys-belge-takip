@@ -198,7 +198,31 @@ export class ImportRepository {
       },
     });
   }
-
+  async createCompanyRequestRow(data: {
+    importBatchId: number;
+    rowNumber: number;
+    status: "CHANGED" | "INVALID";
+    externalCompanyId: number | null;
+    companyName: string | null;
+    externalDocumentId: number | null;
+    documentNumber: string | null;
+    rawData: Prisma.InputJsonValue;
+    errorMessage: string | null;
+  }) {
+    return prisma.importRow.create({
+      data: {
+        importBatchId: data.importBatchId,
+        rowNumber: data.rowNumber,
+        status: data.status,
+        externalCompanyId: data.externalCompanyId,
+        companyName: data.companyName,
+        externalDocumentId: data.externalDocumentId,
+        documentNumber: data.documentNumber,
+        rawData: data.rawData,
+        errorMessage: data.errorMessage,
+      },
+    });
+  }
   async findRowsByBatchId(
     importBatchId: number,
     status?: "NEW" | "CHANGED" | "UNCHANGED" | "INVALID" | "PENDING",
@@ -224,6 +248,8 @@ export class ImportRepository {
         documentStartDate: true,
         documentEndDate: true,
         extensionDate: true,
+        rawData: true,
+        errorMessage: true,
         supportClass: true,
         processStatus: true,
       },
