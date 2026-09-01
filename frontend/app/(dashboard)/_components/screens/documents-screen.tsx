@@ -664,7 +664,7 @@ export function DocumentsScreen({
           <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
             <OperationStat
               label="Toplam Belge"
-              value={String(summary.total)}
+              value={String(summary.total + closedDocumentCount)}
               icon={<FileText size={15} />}
               onClick={() => {
                 if (companyId) {
@@ -1000,7 +1000,7 @@ export function DocumentsScreen({
                         {isExtensionEligibleView ? (
                           <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            Müracaat Yapılabilir
+                            Aktif
                           </span>
                         ) : (
                           <StatusBadge
