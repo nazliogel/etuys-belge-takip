@@ -32,6 +32,11 @@ export class CompanyRequestRepository {
             id: true,
             externalCompanyId: true,
             name: true,
+            authorization: {
+              select: {
+                authorizationEndDate: true,
+              },
+            },
           },
         },
       },
@@ -53,7 +58,103 @@ export class CompanyRequestRepository {
       },
     });
   }
+  async findDocumentForCompanyRequest(params: {
+    externalDocumentId?: number | null;
+    documentNumber?: string | null;
+    companyId: number;
+  }) {
+    if (params.externalDocumentId) {
+      const openDocument = await prisma.incentiveDocument.findUnique({
+        where: {
+          externalDocumentId: params.externalDocumentId,
+        },
+        select: {
+          id: true,
+          companyId: true,
+          externalDocumentId: true,
+          documentNumber: true,
+        },
+      });
 
+      if (openDocument) {
+        return {
+          ...openDocument,
+          source: "OPEN" as const,
+        };
+      }
+
+      const closedDocument = await prisma.closedIncentiveDocument.findUnique({
+        where: {
+          externalDocumentId: params.externalDocumentId,
+        },
+        select: {
+          id: true,
+          companyId: true,
+          externalDocumentId: true,
+          documentNumber: true,
+        },
+      });
+
+      if (closedDocument) {
+        return {
+          ...closedDocument,
+          source: "CLOSED" as const,
+        };
+      }
+    }
+
+    const documentNumber = params.documentNumber?.trim();
+
+    if (!documentNumber) {
+      return null;
+    }
+
+    const openDocument = await prisma.incentiveDocument.findFirst({
+      where: {
+        companyId: params.companyId,
+        documentNumber: {
+          equals: documentNumber,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        companyId: true,
+        externalDocumentId: true,
+        documentNumber: true,
+      },
+    });
+
+    if (openDocument) {
+      return {
+        ...openDocument,
+        source: "OPEN" as const,
+      };
+    }
+
+    const closedDocument = await prisma.closedIncentiveDocument.findFirst({
+      where: {
+        companyId: params.companyId,
+        documentNumber: {
+          equals: documentNumber,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        companyId: true,
+        externalDocumentId: true,
+        documentNumber: true,
+      },
+    });
+
+    return closedDocument
+      ? {
+          ...closedDocument,
+          source: "CLOSED" as const,
+        }
+      : null;
+  }
   async upsert(params: {
     companyId: number;
     requestNumber: number;

@@ -11,8 +11,9 @@ export class CompanyRequestService {
   ) {}
 
   async upsertFromExcel(params: {
+    externalCompanyId: number;
     requestNumber: number;
-    externalDocumentId: number;
+    externalDocumentId?: number | null;
     documentNumber?: string | null;
     note?: string | null;
     requestType?: string | null;
@@ -23,25 +24,44 @@ export class CompanyRequestService {
     applicationDate?: Date | null;
     completionDate?: Date | null;
   }) {
-    const document = await this.repository.findDocumentByExternalDocumentId(
-      params.externalDocumentId,
+    const company = await this.repository.findCompanyByExternalCompanyId(
+      params.externalCompanyId,
     );
 
-    if (!document) {
+    if (!company) {
       throw new AppError(
-        `Document not found for Belge Id: ${params.externalDocumentId}`,
+        `Firma ID veritabanında bulunamadı: ${params.externalCompanyId}`,
         {
           statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "DOCUMENT_NOT_FOUND",
+          code: "COMPANY_NOT_FOUND",
         },
       );
     }
 
-    return this.repository.upsert({
-      companyId: document.companyId,
-      requestNumber: params.requestNumber,
+    const document = await this.repository.findDocumentForCompanyRequest({
+      companyId: company.id,
       externalDocumentId: params.externalDocumentId,
-      documentNumber: params.documentNumber ?? document.documentNumber,
+      documentNumber: params.documentNumber,
+    });
+
+    if (document && document.companyId !== company.id) {
+      throw new AppError(
+        `Belge başka bir firmaya ait. Firma: ${company.name}`,
+        {
+          statusCode: HTTP_STATUS.CONFLICT,
+          code: "DOCUMENT_COMPANY_MISMATCH",
+        },
+      );
+    }
+
+    const request = await this.repository.upsert({
+      companyId: company.id,
+      requestNumber: params.requestNumber,
+      externalDocumentId:
+        document?.externalDocumentId ?? params.externalDocumentId ?? undefined,
+
+      documentNumber:
+        document?.documentNumber ?? params.documentNumber ?? undefined,
       note: params.note,
       requestType: params.requestType,
       requestStatus: params.requestStatus,
@@ -51,6 +71,17 @@ export class CompanyRequestService {
       applicationDate: params.applicationDate,
       completionDate: params.completionDate,
     });
+
+    return {
+      request,
+      company,
+      document,
+      warning: document
+        ? null
+        : `Firma eşleşti (${company.name}) ancak belge bulunamadı. Belge ID: ${
+            params.externalDocumentId ?? "-"
+          }, Belge No: ${params.documentNumber ?? "-"}`,
+    };
   }
 
   async getRequests(

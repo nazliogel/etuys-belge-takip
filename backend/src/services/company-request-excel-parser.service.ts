@@ -35,11 +35,11 @@ const EXPECTED_HEADERS = {
   externalDocumentId: ["Belge ID", "Belge Id"],
   requestType: ["Talep Tipi"],
   requestStatus: ["Durum", "Talep Durumu"],
-  department: ["Daire"],
-  assignedPersonnel: ["İlgilenen Personel", "İlgili Uzman"],
-  informationPerson: ["Bilgi İçin", "Talebi Veren"],
+  department: ["Daire", "Birim"],
+  assignedPersonnel: ["İlgilenen Personel", "İlgili Uzman", "Atanan Personel"],
+  informationPerson: ["Bilgi İçin", "Talebi Veren", "Bilgilendirilecek Kişi"],
   applicationDate: ["Başvuru Tarihi", "Talep Zamanı"],
-  completionDate: ["Sonuçlandırma Tarihi"],
+  completionDate: ["Sonuçlandırma Tarihi", "Tamamlanma Tarihi"],
 } as const;
 
 type HeaderKey = keyof typeof EXPECTED_HEADERS;
@@ -74,6 +74,19 @@ export class CompanyRequestExcelParserService {
       }
 
       const parsedRow = this.parseRow(rowNumber, row, headerMap);
+
+      /*
+       * Talep bilgisi bulunmayan firma durum satırlarını atla.
+       * Örnek: "Yetki süresi dolmuş", "Yetkisi var, belgesi yok".
+       */
+      const isStatusOnlyRow =
+        parsedRow.requestNumber === null &&
+        parsedRow.externalDocumentId === null &&
+        !parsedRow.documentNumber;
+
+      if (isStatusOnlyRow) {
+        continue;
+      }
 
       if (parsedRow.errorMessage) {
         invalidRowCount += 1;
@@ -117,10 +130,7 @@ export class CompanyRequestExcelParserService {
   }
 
   private validateHeaders(headerMap: Partial<Record<HeaderKey, number>>): void {
-    const requiredHeaders: HeaderKey[] = [
-      "externalDocumentId",
-      "requestNumber",
-    ];
+    const requiredHeaders: HeaderKey[] = ["externalCompanyId", "requestNumber"];
 
     const missingHeaders = requiredHeaders
       .filter((key) => !headerMap[key])
@@ -128,7 +138,7 @@ export class CompanyRequestExcelParserService {
 
     if (missingHeaders.length > 0) {
       throw new Error(
-        `Excel dosyasında zorunlu başlıklar eksik: ${missingHeaders.join(", ")}`,
+        `Zorunlu Excel sütunları bulunamadı: ${missingHeaders.join(", ")}`,
       );
     }
   }
@@ -193,9 +203,10 @@ export class CompanyRequestExcelParserService {
 
     const errors: string[] = [];
 
-    if (!externalDocumentId) {
-      errors.push("Belge Id zorunludur.");
+    if (!externalCompanyId) {
+      errors.push("Firma ID zorunludur.");
     }
+
     if (!requestNumber) {
       errors.push("Talep No zorunludur.");
     }

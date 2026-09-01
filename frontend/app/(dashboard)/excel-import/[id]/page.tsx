@@ -6,6 +6,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -13,6 +14,7 @@ import {
   Loader2,
   Search,
   X,
+  XCircle,
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
@@ -47,12 +49,15 @@ type ImportRow = {
   extensionDate: string | null;
   supportClass: string | null;
   processStatus: string | null;
+  rawData: Record<string, unknown> | null;
+  errorMessage: string | null;
 };
 
 type ImportDetail = {
   id: number;
   fileName: string;
   status: string;
+  importType: "OPEN" | "CLOSED" | "COMPANY_IDENTITY" | "COMPANY_REQUEST";
   totalRowCount: number;
   validRowCount: number;
   invalidRowCount: number;
@@ -279,6 +284,15 @@ export default function ExcelImportDetailPage() {
     setCurrentPage(page);
     setExpandedRowId(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  if (detail.importType === "COMPANY_REQUEST") {
+    return (
+      <CompanyRequestErrorReport
+        detail={detail}
+        onBack={() => router.push("/excel-import")}
+      />
+    );
   }
 
   return (
@@ -1163,5 +1177,155 @@ function PageButton({
     >
       {page}
     </button>
+  );
+}
+
+function getRawValue(
+  rawData: Record<string, unknown> | null,
+  keys: string[],
+) {
+  if (!rawData) return "—";
+
+  for (const key of keys) {
+    const value = rawData[key];
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      return String(value);
+    }
+  }
+
+  return "—";
+}
+
+function CompanyRequestErrorReport({
+  detail,
+  onBack,
+}: {
+  detail: ImportDetail;
+  onBack: () => void;
+}) {
+  const invalidRows = detail.rows.filter((row) => row.status === "INVALID");
+
+  return (
+    <div className="bg-slate-50">
+      <div className="mx-auto max-w-[1400px] space-y-3 px-3 pb-6 pt-3 sm:px-4">
+        <header className="relative overflow-hidden rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+          <span className="absolute left-0 top-0 h-full w-1 bg-red-600" />
+          <div className="flex flex-col justify-between gap-3 pl-2 sm:flex-row sm:items-center">
+            <div>
+              <button
+                type="button"
+                onClick={onBack}
+                className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600"
+              >
+                <ArrowLeft size={13} />
+                Excel Karşılaştırma
+              </button>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                Gönderilmiş Talep Aktarım Raporu
+              </h1>
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                <FileSpreadsheet size={13} />
+                {detail.fileName}
+              </p>
+            </div>
+
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-rose-200">
+              <XCircle size={14} />
+              {invalidRows.length.toLocaleString("tr-TR")} hatalı kayıt
+            </span>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <KpiCard label="Toplam Satır" value={detail.totalRowCount} />
+          <KpiCard
+            label="Başarılı"
+            value={detail.validRowCount}
+            tone="emerald"
+          />
+          <KpiCard
+            label="Hatalı"
+            value={detail.invalidRowCount}
+            tone="rose"
+          />
+        </div>
+
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <h2 className="text-base font-bold text-slate-900">
+              Hatalı Firmalar
+            </h2>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Aktarılamayan satırlar ve hata nedenleri aşağıda listelenmektedir.
+            </p>
+          </div>
+
+          {invalidRows.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
+              <CheckCircle2 size={28} className="text-emerald-500" />
+              <p className="text-sm font-bold text-slate-800">
+                Hatalı kayıt bulunamadı
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1050px] border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    <th className="px-4 py-3 text-center">Excel Satırı</th>
+                    <th className="px-4 py-3">Firma</th>
+                    <th className="px-4 py-3">Belge No</th>
+                    <th className="px-4 py-3">Belge ID</th>
+                    <th className="px-4 py-3">Talep No</th>
+                    <th className="px-4 py-3">Durum / Hata Nedeni</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {invalidRows.map((row) => (
+                    <tr key={row.id} className="align-top hover:bg-slate-50/70">
+                      <td className="px-4 py-3 text-center font-mono font-bold text-slate-700">
+                        {row.rowNumber}
+                      </td>
+                      <td className="max-w-[300px] px-4 py-3 font-semibold text-slate-900">
+                        {row.companyName ??
+                          getRawValue(row.rawData, ["Firma Adı"])}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-700">
+                        {row.documentNumber ??
+                          getRawValue(row.rawData, [
+                            "Belge No",
+                            "Belge Numarası",
+                          ])}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-slate-700">
+                        {row.externalDocumentId ??
+                          getRawValue(row.rawData, ["Belge ID", "Belge Id"])}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-slate-700">
+                        {getRawValue(row.rawData, [
+                          "Talep No",
+                          "Talep Numarası",
+                        ])}
+                      </td>
+                      <td className="max-w-[430px] px-4 py-3">
+                        <div className="flex items-start gap-2 rounded-lg border border-rose-100 bg-rose-50/70 px-3 py-2 text-rose-800">
+                          <AlertCircle
+                            size={14}
+                            className="mt-0.5 shrink-0 text-rose-600"
+                          />
+                          <span className="leading-5">
+                            {row.errorMessage ?? "Hata nedeni bulunamadı."}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
   );
 }
