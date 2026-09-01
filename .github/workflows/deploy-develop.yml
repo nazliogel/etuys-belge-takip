@@ -1,0 +1,34 @@
+name: Develop Sunucuya Aktar
+
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: etuys-develop-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Develop ortamını güncelle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sunucuya bağlan ve uygulamayı güncelle
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            cd /home/debian/etuys-belge-takip-dev
+            git fetch origin develop
+            git checkout develop
+            git pull --ff-only origin develop
+            docker compose -f compose.dev.yml up -d --build
+            docker compose -f compose.dev.yml ps
+            docker image prune -f
