@@ -335,6 +335,33 @@ export function DocumentDetailScreen({
   if (variant === "admin") {
     return (
       <div className="space-y-3">
+        {/* ADMIN BELGE DETAY SEKMELERİ */}
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex w-full items-stretch">
+            {[
+              "Belge Künye Bilgileri",
+              "Yatırım Cinsi",
+              "Ürün Bilgileri",
+              "Yerli Liste",
+              "İthal Liste",
+              "Finansal Bilgiler",
+              "Özel Şartlar",
+              "Destek Unsurları",
+            ].map((item, index) => (
+              <button
+                key={item}
+                type="button"
+                className={`flex-1 whitespace-nowrap border-r border-slate-200 px-2 py-2.5 text-[11px] font-semibold transition last:border-r-0 ${
+                  index === 0
+                    ? "bg-red-50 text-red-700"
+                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
         {/* ÜST ŞERİT */}
         <section className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
           <div className="flex items-center gap-2">

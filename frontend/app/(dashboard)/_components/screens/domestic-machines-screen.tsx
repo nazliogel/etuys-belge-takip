@@ -19,7 +19,6 @@ type DomesticMachine = {
   unit: string | null;
 
   vatExemption: string | null;
-  vatExemptionDescription: string | null;
 
   transferRealizedValue: string | null;
   transferRealizedQuantity: string | null;
@@ -282,9 +281,7 @@ export function DomesticMachinesScreen() {
                 <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   KDV İstisnası
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
-                  İstisna Açıklaması
-                </th>
+
                 <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   GTİP No
                 </th>
@@ -309,7 +306,7 @@ export function DomesticMachinesScreen() {
             <tbody className="divide-y divide-slate-100">
               {!selectedDocumentId ? (
                 <tr>
-                  <td colSpan={15} className="px-5 py-14 text-center">
+                  <td colSpan={14} className="px-5 py-14 text-center">
                     <p className="text-sm font-medium text-slate-700">
                       Görüntülenecek belge seçilmedi
                     </p>
@@ -320,7 +317,7 @@ export function DomesticMachinesScreen() {
                 </tr>
               ) : loadingMachines ? (
                 <tr>
-                  <td colSpan={15} className="px-5 py-14">
+                  <td colSpan={14} className="px-5 py-14">
                     <div className="flex items-center justify-center gap-2.5">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e]" />
                       <span className="text-sm text-slate-500">Yükleniyor</span>
@@ -329,7 +326,7 @@ export function DomesticMachinesScreen() {
                 </tr>
               ) : machines.length === 0 ? (
                 <tr>
-                  <td colSpan={15} className="px-5 py-14 text-center">
+                  <td colSpan={14} className="px-5 py-14 text-center">
                     <p className="text-sm font-medium text-slate-700">
                       Kayıt bulunamadı
                     </p>
@@ -426,22 +423,18 @@ export function DomesticMachinesScreen() {
 
                     {/* KDV İstisnası */}
                     <td className="px-4 py-2.5">
-                      {machine.vatExemption ? (
+                      {machine.vatExemption === "1" ? (
                         <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
                           <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                          {machine.vatExemption}
+                          EVET
+                        </span>
+                      ) : machine.vatExemption === "0" ? (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-200">
+                          <span className="h-1 w-1 rounded-full bg-red-500" />
+                          HAYIR
                         </span>
                       ) : (
                         <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-
-                    {/* İstisna Açıklaması */}
-                    <td className="px-4 py-2.5 text-sm text-slate-600">
-                      {displayValue(machine.vatExemptionDescription) === "-" ? (
-                        <span className="text-slate-300">—</span>
-                      ) : (
-                        machine.vatExemptionDescription
                       )}
                     </td>
 
