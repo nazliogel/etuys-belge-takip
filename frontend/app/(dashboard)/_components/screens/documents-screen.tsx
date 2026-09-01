@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/api";
 import { setSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DocumentDetailScreen } from "./document-detail-screen";
+import { AdminDocumentDetailScreen } from "./admin-document-detail-screen";
 type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
 
 type StoredDocumentStatus = "OPEN" | "CLOSED" | "CANCELLED";
@@ -282,7 +283,7 @@ export function DocumentsScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const documentTabsRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
+  useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpenDocuments([]);
     setActiveDocumentKey(null);
@@ -967,25 +968,35 @@ export function DocumentsScreen({
                           VKN: {doc.company?.taxNumber ?? "-"}
                         </p>
                       </td>
-                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}>
+                      <td
+                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
+                      >
                         {formatDate(doc.documentStartDate)}
                       </td>
 
-                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}>
+                      <td
+                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
+                      >
                         {formatDate(doc.documentEndDate)}
                       </td>
 
-                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}>
+                      <td
+                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
+                      >
                         {formatDate(doc.extensionDate)}
                       </td>
 
-                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}>
+                      <td
+                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
+                      >
                         <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
                           {doc.supportClass ?? "-"}
                         </span>
                       </td>
 
-                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}>
+                      <td
+                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
+                      >
                         {isExtensionEligibleView ? (
                           <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1002,7 +1013,9 @@ export function DocumentsScreen({
                         )}
                       </td>
 
-                      <td className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}>
+                      <td
+                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
+                      >
                         <div className="flex items-center justify-end">
                           <button
                             type="button"
@@ -1126,12 +1139,15 @@ export function DocumentsScreen({
                   document.key === activeDocumentKey ? "block" : "hidden"
                 }
               >
-                <DocumentDetailScreen
-                  key={document.key}
-                  documentId={document.id}
-                  variant={variant}
-                  isClosed={document.isClosed}
-                />
+                {variant === "admin" && !document.isClosed ? (
+                  <AdminDocumentDetailScreen documentId={document.id} />
+                ) : (
+                  <DocumentDetailScreen
+                    documentId={document.id}
+                    variant={variant}
+                    isClosed={document.isClosed}
+                  />
+                )}
               </div>
             ))}
           </div>
