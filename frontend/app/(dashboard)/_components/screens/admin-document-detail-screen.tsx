@@ -6,6 +6,9 @@ import { AdminDocumentInvestmentType } from "./admin-document-investment-type";
 import { AdminDocumentProducts } from "./admin-document-products";
 import { AdminDocumentDomesticMachines } from "./admin-document-domestic-machines";
 import { AdminDocumentImportedMachines } from "./admin-document-imported-machines";
+import { AdminDocumentFinancialInfo } from "./admin-document-financial-info";
+import { AdminDocumentSpecialConditions } from "./admin-document-special-conditions";
+import { AdminDocumentSupportElements } from "./admin-document-support-elements";
 
 interface AdminDocumentDetailScreenProps {
   documentId: string;
@@ -74,21 +77,17 @@ export function AdminDocumentDetailScreen({
         <AdminDocumentImportedMachines documentId={documentId} />
       )}
 
-      {activeTab !== "identity" &&
-        activeTab !== "investment" &&
-        activeTab !== "products" &&
-        activeTab !== "domestic" &&
-        activeTab !== "imported" && (
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-semibold text-slate-900">
-              {tabs.find((tab) => tab.key === activeTab)?.label}
-            </p>
+      {activeTab === "financial" && (
+        <AdminDocumentFinancialInfo documentId={documentId} />
+      )}
 
-            <p className="mt-2 text-xs text-slate-500">
-              Bu bölüm daha sonra bağlanacak.
-            </p>
-          </section>
-        )}
+      {activeTab === "special" && (
+        <AdminDocumentSpecialConditions documentId={documentId} />
+      )}
+
+      {activeTab === "support" && (
+        <AdminDocumentSupportElements documentId={documentId} />
+      )}
     </div>
   );
 }

@@ -1,11 +1,9 @@
 "use client";
 
-import { CheckCircle2, FileText, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
 
 type FinancialInfo = {
   id: number;
@@ -77,60 +75,39 @@ type FinancialCard = {
   rows: FinancialRow[];
 };
 
-export function FinancialInfoScreen() {
-  const searchParams = useSearchParams();
+interface AdminDocumentFinancialInfoProps {
+  documentId: string;
+}
 
-  const [selectedDocumentId, setSelectedDocumentId] = useState("");
-  const [selectedDocumentNumber, setSelectedDocumentNumber] = useState<
-    string | null
-  >(null);
-
+export function AdminDocumentFinancialInfo({
+  documentId,
+}: AdminDocumentFinancialInfoProps) {
   const [financialInfo, setFinancialInfo] = useState<FinancialInfo | null>(
     null,
   );
 
-  const [financialInfoLoading, setFinancialInfoLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const documentIdFromUrl = searchParams.get("documentId");
-    const storedDocument = getSelectedDocument();
-
-    const documentId = documentIdFromUrl ?? storedDocument?.id ?? "";
-
-    setSelectedDocumentId(documentId);
-    setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!selectedDocumentId) {
-      setFinancialInfo(null);
-      setFinancialInfoLoading(false);
-      return;
-    }
-
-    const fetchFinancialInfo = async () => {
+    const loadFinancialInfo = async () => {
       try {
-        setFinancialInfoLoading(true);
+        setLoading(true);
 
         const response = await apiFetch<FinancialInfoResponse>(
-          `/documents/${selectedDocumentId}/financial-info`,
+          `/documents/${documentId}/financial-info`,
         );
 
         setFinancialInfo(response.data.financialInfo);
-
-        if (response.data.documentNumber) {
-          setSelectedDocumentNumber(response.data.documentNumber);
-        }
       } catch (error) {
         console.error("Finansal bilgiler alınamadı:", error);
         setFinancialInfo(null);
       } finally {
-        setFinancialInfoLoading(false);
+        setLoading(false);
       }
     };
 
-    void fetchFinancialInfo();
-  }, [selectedDocumentId]);
+    void loadFinancialInfo();
+  }, [documentId]);
 
   const leftCards: FinancialCard[] = financialInfo
     ? [
@@ -313,136 +290,93 @@ export function FinancialInfoScreen() {
       ]
     : [];
 
-  return (
-    <div className="space-y-6">
-      {/* SAYFA BAŞLIĞI */}
-      <header className="border-b border-slate-200 pb-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-          Belge Detayları
-        </p>
-
-        <h1 className="mt-1.5 text-[26px] font-semibold leading-tight tracking-tight text-slate-900">
-          Finansal Bilgiler
-        </h1>
-
-        <p className="mt-1.5 text-sm text-slate-500">
-          Seçili teşvik belgesine ait yatırım ve finansman bilgilerini
-          görüntüleyebilirsiniz.
-        </p>
-      </header>
-
-      {/* SEÇİLİ BELGE */}
-      {selectedDocumentId && (
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 shadow-sm">
-            <FileText className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
-
-            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
-              Belge No
-            </span>
-
-            <span className="h-4 w-px bg-slate-200" />
-
-            <span className="text-sm font-semibold text-slate-900">
-              {selectedDocumentNumber ?? `#${selectedDocumentId}`}
-            </span>
-          </div>
-
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Seçili
-          </span>
-        </div>
-      )}
-
-      {/* DURUM */}
-      {!selectedDocumentId ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-          <p className="text-sm font-medium text-slate-700">
-            Görüntülenecek belge seçilmedi
-          </p>
-
-          <p className="mt-1 text-xs text-slate-500">
-            Lütfen sol menüden bir belge numarası seçin.
-          </p>
-        </div>
-      ) : financialInfoLoading ? (
-        <div className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-12 shadow-sm">
+  if (loading) {
+    return (
+      <section className="flex items-center justify-center rounded-lg border border-slate-200 bg-white py-12 shadow-sm">
+        <div className="flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e]" />
 
-          <span className="text-sm text-slate-500">Yükleniyor</span>
+          <span className="text-sm text-slate-500">
+            Finansal bilgiler yükleniyor...
+          </span>
         </div>
-      ) : !financialInfo ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-          <p className="text-sm font-medium text-slate-700">Kayıt bulunamadı</p>
+      </section>
+    );
+  }
 
-          <p className="mt-1 text-xs text-slate-500">
-            Bu belgeye ait finansal bilgi mevcut değil.
+  if (!financialInfo) {
+    return (
+      <section className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
+        <p className="text-sm font-semibold text-slate-700">
+          Finansal bilgi bulunamadı
+        </p>
+
+        <p className="mt-1 text-xs text-slate-500">
+          Bu belgeye ait finansal bilgi kaydı bulunmuyor.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* ÜST BİLGİ */}
+      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+        <div>
+          <h2 className="text-[12px] font-bold uppercase tracking-wider text-slate-700">
+            Finansal Bilgi Cetveli
+          </h2>
+
+          <p className="mt-0.5 text-[11px] text-slate-400">
+            Yatırım, harcama ve finansman kalemleri
           </p>
         </div>
-      ) : (
-        <>
-          {/* ÜST BİLGİ */}
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
-            <div>
-              <h2 className="text-[12px] font-bold uppercase tracking-wider text-slate-700">
-                Finansal Bilgi Cetveli
-              </h2>
 
-              <p className="mt-0.5 text-[11px] text-slate-400">
-                Yatırım, harcama ve finansman kalemleri
-              </p>
-            </div>
+        {financialInfo.externalFinancialInfoId && (
+          <div className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+              Kayıt ID
+            </span>
 
-            {financialInfo.externalFinancialInfoId && (
-              <div className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
-                  Kayıt ID
-                </span>
-
-                <span className="ml-2 font-mono text-[11px] font-semibold text-slate-700">
-                  {financialInfo.externalFinancialInfoId}
-                </span>
-              </div>
-            )}
+            <span className="ml-2 font-mono text-[11px] font-semibold text-slate-700">
+              {financialInfo.externalFinancialInfoId}
+            </span>
           </div>
+        )}
+      </div>
 
-          {/* E-TUYS SIRALAMASINA GÖRE 2 KOLON */}
-          <div className="grid items-start gap-4 xl:grid-cols-2">
-            {/* SOL TARAF */}
-            <div className="space-y-4">
-              {leftCards.map((card) => (
-                <FinancialCardView key={card.title} card={card} />
-              ))}
-            </div>
+      {/* E-TUYS SIRALAMASINA GÖRE 2 KOLON */}
+      <div className="grid items-start gap-4 xl:grid-cols-2">
+        {/* SOL */}
+        <div className="space-y-4">
+          {leftCards.map((card) => (
+            <AdminFinancialCard key={card.title} card={card} />
+          ))}
+        </div>
 
-            {/* SAĞ TARAF */}
-            <div className="space-y-4">
-              {rightCards.map((card) => (
-                <FinancialCardView key={card.title} card={card} />
-              ))}
-            </div>
-          </div>
-        </>
-      )}
+        {/* SAĞ */}
+        <div className="space-y-4">
+          {rightCards.map((card) => (
+            <AdminFinancialCard key={card.title} card={card} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function FinancialCardView({ card }: { card: FinancialCard }) {
+function AdminFinancialCard({ card }: { card: FinancialCard }) {
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      {/* KART BAŞLIĞI */}
       <div className="border-b border-slate-200 bg-slate-100 px-3 py-2">
         <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e]">
           {card.title}
         </h3>
       </div>
 
-      {/* SATIRLAR */}
       <div>
         {card.rows.map((row) => (
-          <FinancialRowView
+          <AdminFinancialRow
             key={row.label}
             label={row.label}
             value={row.value}
@@ -455,7 +389,7 @@ function FinancialCardView({ card }: { card: FinancialCard }) {
   );
 }
 
-function FinancialRowView({
+function AdminFinancialRow({
   label,
   value,
   suffix,
@@ -469,7 +403,6 @@ function FinancialRowView({
         isTotal ? "bg-amber-50/50" : "bg-white"
       }`}
     >
-      {/* LABEL */}
       <div className="border-r border-slate-200 px-3 py-2">
         <span
           className={
@@ -482,7 +415,6 @@ function FinancialRowView({
         </span>
       </div>
 
-      {/* VALUE */}
       <div className="px-3 py-2 text-right">
         {formattedValue ? (
           <span

@@ -259,10 +259,6 @@ export function AdminDocumentImportedMachines({
                 <th className="border-r border-slate-200 px-2.5 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
                   Gümrük V. İstisnası
                 </th>
-
-                <th className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Makine Tipi
-                </th>
               </tr>
             </thead>
 
@@ -364,11 +360,6 @@ export function AdminDocumentImportedMachines({
                   {/* GÜMRÜK VERGİSİ İSTİSNASI */}
                   <td className="border-r border-slate-200 px-2.5 py-1.5 text-center">
                     <YesNoBadge value={machine.customsTaxExemption} />
-                  </td>
-
-                  {/* MAKİNE TİPİ */}
-                  <td className="px-2.5 py-1.5 text-[11px] text-slate-600">
-                    {machine.machineryEquipmentType ?? "-"}
                   </td>
                 </tr>
               ))}

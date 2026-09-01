@@ -253,63 +253,88 @@ export function DomesticMachinesScreen() {
         </div>
 
         {/* Tablo */}
+        {/* Tablo */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1600px] border-collapse text-sm">
+          <table className="w-full min-w-[1900px] border-collapse border border-slate-200 text-sm">
             <thead>
-              <tr className="border-b-2 border-[#1e2a5e]/15 bg-[#1e2a5e]/[0.04] text-left">
-                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+              <tr className="bg-[#1e2a5e]/[0.04] text-left">
+                <th className="border border-slate-200 px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Sıra
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Makine ID
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Adı / Özelliği
                 </th>
-                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Miktar
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Birim
                 </th>
-                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Birim Fiyat
                 </th>
-                <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Tutar (KDV Hariç)
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Fatura Gerçekleşen Miktar
+                </th>
+
+                <th className="border border-slate-200 px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                  Fatura Gerçekleşen Değer
+                </th>
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   KDV İstisnası
                 </th>
 
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   GTİP No
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   GTİP Açıklama
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Makine Tipi
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Satıcı VKN
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Satıcı E-Posta
                 </th>
-                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+
+                <th className="border border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e]">
                   Barkod
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {!selectedDocumentId ? (
                 <tr>
-                  <td colSpan={14} className="px-5 py-14 text-center">
+                  <td
+                    colSpan={16}
+                    className="border border-slate-200 px-5 py-14 text-center"
+                  >
                     <p className="text-sm font-medium text-slate-700">
                       Görüntülenecek belge seçilmedi
                     </p>
+
                     <p className="mt-1.5 text-xs text-slate-500">
                       Lütfen sol menüden bir belge numarası seçin.
                     </p>
@@ -317,7 +342,10 @@ export function DomesticMachinesScreen() {
                 </tr>
               ) : loadingMachines ? (
                 <tr>
-                  <td colSpan={14} className="px-5 py-14">
+                  <td
+                    colSpan={16}
+                    className="border border-slate-200 px-5 py-14"
+                  >
                     <div className="flex items-center justify-center gap-2.5">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e]" />
                       <span className="text-sm text-slate-500">Yükleniyor</span>
@@ -326,10 +354,14 @@ export function DomesticMachinesScreen() {
                 </tr>
               ) : machines.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="px-5 py-14 text-center">
+                  <td
+                    colSpan={16}
+                    className="border border-slate-200 px-5 py-14 text-center"
+                  >
                     <p className="text-sm font-medium text-slate-700">
                       Kayıt bulunamadı
                     </p>
+
                     <p className="mt-1.5 text-xs text-slate-500">
                       Bu belgeye ait yerli makine kaydı mevcut değil.
                     </p>
@@ -344,14 +376,14 @@ export function DomesticMachinesScreen() {
                     }`}
                   >
                     {/* Sıra */}
-                    <td className="px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-slate-500">
+                    <td className="border border-slate-200 px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-slate-500">
                       {machine.sequenceNumber ?? (
                         <span className="text-slate-300">—</span>
                       )}
                     </td>
 
                     {/* Makine ID */}
-                    <td className="px-4 py-2.5">
+                    <td className="border border-slate-200 px-4 py-2.5">
                       {machine.externalMachineId ? (
                         <span className="inline-flex rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-xs font-medium text-slate-700">
                           {machine.externalMachineId}
@@ -362,9 +394,10 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Ad */}
-                    <td className="px-4 py-2.5 text-sm font-semibold text-slate-900">
+                    <td className="border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
+
                         <span className="whitespace-normal">
                           {displayValue(machine.name) === "-" ? (
                             <span className="text-slate-300">—</span>
@@ -376,14 +409,14 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Miktar */}
-                    <td className="px-4 py-2.5 text-right font-mono text-sm tabular-nums text-slate-700">
+                    <td className="border border-slate-200 px-4 py-2.5 text-right font-mono text-sm tabular-nums text-slate-700">
                       {formatQuantity(machine.quantity) ?? (
                         <span className="text-slate-300">—</span>
                       )}
                     </td>
 
                     {/* Birim */}
-                    <td className="px-4 py-2.5 text-sm text-slate-600">
+                    <td className="border border-slate-200 px-4 py-2.5 text-sm text-slate-600">
                       {machine.unit ? (
                         <span className="inline-flex rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
                           {machine.unit}
@@ -394,10 +427,11 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Birim Fiyat */}
-                    <td className="px-4 py-2.5 text-right">
+                    <td className="border border-slate-200 px-4 py-2.5 text-right">
                       {formatNumber(machine.unitPriceTl) ? (
                         <span className="font-mono text-sm tabular-nums text-slate-700">
                           {formatNumber(machine.unitPriceTl)}
+
                           <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400">
                             TL
                           </span>
@@ -408,10 +442,11 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Tutar */}
-                    <td className="px-4 py-2.5 text-right">
+                    <td className="border border-slate-200 px-4 py-2.5 text-right">
                       {formatNumber(machine.totalTl) ? (
                         <span className="font-mono text-sm font-bold tabular-nums text-[#1e2a5e]">
                           {formatNumber(machine.totalTl)}
+
                           <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                             TL
                           </span>
@@ -421,25 +456,37 @@ export function DomesticMachinesScreen() {
                       )}
                     </td>
 
+                    {/* Fatura Gerçekleşen Miktar */}
+                    <td className="border border-slate-200 px-4 py-2.5 text-right font-mono text-sm tabular-nums text-slate-700">
+                      {machine.invoiceRealizedQuantity === null ||
+                      machine.invoiceRealizedQuantity === undefined ||
+                      machine.invoiceRealizedQuantity === ""
+                        ? "0"
+                        : Number(machine.invoiceRealizedQuantity)}
+                    </td>
+
+                    {/* Fatura Gerçekleşen Değer */}
+                    <td className="border border-slate-200 px-4 py-2.5 text-right font-mono text-sm tabular-nums text-slate-700">
+                      {machine.invoiceRealizedValue === null ||
+                      machine.invoiceRealizedValue === undefined ||
+                      machine.invoiceRealizedValue === ""
+                        ? "0"
+                        : Number(machine.invoiceRealizedValue)}
+                    </td>
+
                     {/* KDV İstisnası */}
-                    <td className="px-4 py-2.5">
+                    <td className="border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700">
                       {machine.vatExemption === "1" ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
-                          <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                          EVET
-                        </span>
+                        <span>EVET</span>
                       ) : machine.vatExemption === "0" ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-200">
-                          <span className="h-1 w-1 rounded-full bg-red-500" />
-                          HAYIR
-                        </span>
+                        <span>HAYIR</span>
                       ) : (
                         <span className="text-slate-300">—</span>
                       )}
                     </td>
 
                     {/* GTİP Kodu */}
-                    <td className="px-4 py-2.5">
+                    <td className="border border-slate-200 px-4 py-2.5">
                       {machine.gtipCode ? (
                         <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-2 py-0.5 font-mono text-xs font-semibold text-[#1e2a5e]">
                           {machine.gtipCode}
@@ -450,7 +497,7 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* GTİP Açıklama */}
-                    <td className="px-4 py-2.5 text-sm text-slate-600">
+                    <td className="border border-slate-200 px-4 py-2.5 text-sm text-slate-600">
                       {displayValue(machine.gtipDescription) === "-" ? (
                         <span className="text-slate-300">—</span>
                       ) : (
@@ -459,7 +506,7 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Makine Tipi */}
-                    <td className="px-4 py-2.5 text-sm text-slate-600">
+                    <td className="border border-slate-200 px-4 py-2.5 text-sm text-slate-600">
                       {displayValue(machine.machineryEquipmentType) === "-" ? (
                         <span className="text-slate-300">—</span>
                       ) : (
@@ -468,7 +515,7 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Satıcı VKN */}
-                    <td className="px-4 py-2.5">
+                    <td className="border border-slate-200 px-4 py-2.5">
                       {machine.sellerTaxNumber ? (
                         <span className="font-mono text-xs font-medium text-slate-700">
                           {machine.sellerTaxNumber}
@@ -479,7 +526,7 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Satıcı E-Posta */}
-                    <td className="px-4 py-2.5">
+                    <td className="border border-slate-200 px-4 py-2.5">
                       {machine.sellerEmail ? (
                         <a
                           href={`mailto:${machine.sellerEmail}`}
@@ -493,7 +540,7 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Barkod */}
-                    <td className="px-4 py-2.5">
+                    <td className="border border-slate-200 px-4 py-2.5">
                       {machine.barcode ? (
                         <span className="font-mono text-xs text-slate-500">
                           {machine.barcode}

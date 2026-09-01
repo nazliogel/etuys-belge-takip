@@ -22,6 +22,9 @@ type DomesticMachine = {
 
   vatExemption: string | null;
 
+  invoiceRealizedValue: string | null;
+  invoiceRealizedQuantity: string | null;
+
   gtipCode: string | null;
   gtipDescription: string | null;
 
@@ -135,6 +138,7 @@ export function AdminDocumentDomesticMachines({
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 px-4 py-8">
           <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
+
           <span className="text-xs text-slate-500">
             Yerli liste yükleniyor...
           </span>
@@ -146,13 +150,14 @@ export function AdminDocumentDomesticMachines({
       ) : machines.length === 0 ? (
         <div className="px-4 py-6 text-center">
           <p className="text-xs font-medium text-slate-600">Kayıt bulunamadı</p>
+
           <p className="mt-1 text-[10px] text-slate-400">
             Bu belgeye ait yerli makine kaydı mevcut değil.
           </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1500px] border-collapse text-left">
+          <table className="w-full min-w-[1800px] border-collapse border border-slate-200 text-left">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/70">
                 <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
@@ -181,6 +186,14 @@ export function AdminDocumentDomesticMachines({
 
                 <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
                   Tutar
+                </th>
+
+                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  Fatura Gerçekleşen Miktar
+                </th>
+
+                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  Fatura Gerçekleşen Değer
                 </th>
 
                 <th className="border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
@@ -213,15 +226,15 @@ export function AdminDocumentDomesticMachines({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {machines.map((machine, index) => (
                 <tr
                   key={machine.id}
-                  className={
+                  className={`border-b border-slate-200 ${
                     index % 2 === 1
                       ? "bg-slate-50/40 hover:bg-slate-50"
                       : "bg-white hover:bg-slate-50"
-                  }
+                  }`}
                 >
                   <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-semibold text-slate-600">
                     {machine.sequenceNumber ?? "-"}
@@ -251,11 +264,29 @@ export function AdminDocumentDomesticMachines({
                     {formatNumber(machine.totalTl)}
                   </td>
 
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold">
+                  {/* Fatura Gerçekleşen Miktar */}
+                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
+                    {machine.invoiceRealizedQuantity === null ||
+                    machine.invoiceRealizedQuantity === undefined ||
+                    machine.invoiceRealizedQuantity === ""
+                      ? "0"
+                      : formatQuantity(machine.invoiceRealizedQuantity)}
+                  </td>
+
+                  {/* Fatura Gerçekleşen Değer */}
+                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
+                    {machine.invoiceRealizedValue === null ||
+                    machine.invoiceRealizedValue === undefined ||
+                    machine.invoiceRealizedValue === ""
+                      ? "0"
+                      : Number(machine.invoiceRealizedValue)}
+                  </td>
+
+                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700">
                     {machine.vatExemption === "1" ? (
-                      <span className="text-emerald-700">EVET</span>
+                      <span>EVET</span>
                     ) : machine.vatExemption === "0" ? (
-                      <span className="text-red-700">HAYIR</span>
+                      <span>HAYIR</span>
                     ) : (
                       <span className="text-slate-400">-</span>
                     )}
