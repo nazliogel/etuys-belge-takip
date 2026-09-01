@@ -101,11 +101,10 @@ function canApplyForExtension(document: {
   const extensionDate = normalizeDate(document.extensionDate);
   const today = normalizeDate(new Date());
 
-  // Belge bitiş ve süre uzatım tarihleri aynıysa
-  // süre uzatma zaten yapılmış demektir.
-  if (documentEndDate.getTime() === extensionDate.getTime()) {
-    return false;
-  }
+  // Tarihler farklıysa süre uzatma listesine alma.
+if (documentEndDate.getTime() !== extensionDate.getTime()) {
+  return false;
+}
 
   // Süre uzatma müracatı belge bitişinden 6 ay önce başlar.
   const applicationStartDate = subtractMonths(documentEndDate, 6);
