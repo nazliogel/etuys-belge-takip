@@ -664,7 +664,9 @@ export function DocumentsScreen({
           <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
             <OperationStat
               label="Toplam Belge"
-              value={String(summary.total + closedDocumentCount)}
+              value={String(
+                companyId ? summary.total : summary.total + closedDocumentCount,
+              )}
               icon={<FileText size={15} />}
               onClick={() => {
                 if (companyId) {
