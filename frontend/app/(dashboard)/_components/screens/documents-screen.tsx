@@ -637,20 +637,20 @@ export function DocumentsScreen({
     : documents;
 
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-3">
       {/* BAŞLIK */}
       <section className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-start gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <FileText size={17} />
           </div>
 
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
               Belgelerim
             </h1>
 
-            <p className="mt-0.5 text-xs font-medium text-slate-500">
+            <p className="mt-0.5 text-[11px] font-medium leading-5 text-slate-500 sm:text-xs">
               Firmanıza ait tüm teşvik belgelerini ve güncel durumlarını
               görüntüleyin.
             </p>
@@ -661,7 +661,7 @@ export function DocumentsScreen({
       {/* OPERASYON ÖZETİ */}
       {variant === "admin" && (
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
+          <div className="grid grid-cols-1 divide-y divide-slate-200 min-[380px]:grid-cols-2 min-[380px]:divide-x sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
             <OperationStat
               label="Toplam Belge"
               value={String(
@@ -757,10 +757,10 @@ export function DocumentsScreen({
       )}
 
       {/* BELGE LİSTESİ */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+      <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
         <div
-          className={`flex flex-col border-b border-slate-100 bg-slate-50/40 lg:flex-row lg:items-center lg:justify-between ${
-            isCompanyView ? "gap-4 p-5" : "gap-2 p-2.5"
+          className={`flex flex-col border-b border-slate-100 bg-slate-50/40 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "gap-3 p-3 sm:p-5" : "gap-2 p-2.5"
           }`}
         >
           <div>
@@ -772,8 +772,8 @@ export function DocumentsScreen({
           </div>
 
           <div
-            className={`relative w-full ${
-              isCompanyView ? "lg:w-72" : "lg:w-64"
+            className={`relative w-full sm:shrink-0 ${
+              isCompanyView ? "sm:w-72" : "sm:w-64"
             }`}
           >
             <Search
@@ -793,8 +793,8 @@ export function DocumentsScreen({
           </div>
         </div>
 
-        <div className="max-h-[480px] overflow-auto">
-          <table className="w-full table-fixed text-left text-sm">
+        <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
+          <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
             <colgroup>
               <col className="w-[10%]" />
               <col className="w-[22%]" />
@@ -1053,20 +1053,20 @@ export function DocumentsScreen({
           </table>
         </div>
         <div
-          className={`flex items-center justify-between border-t border-slate-200 ${
-            isCompanyView ? "bg-slate-50/30 p-4" : "px-3 py-1.5"
+          className={`flex flex-col gap-2 border-t border-slate-200 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between ${
+            isCompanyView ? "bg-slate-50/30 p-3 sm:p-4" : "px-3 py-2"
           }`}
         >
           <p className="text-xs font-medium text-slate-500">
             Sayfa {currentPage} / {totalPages}
           </p>
 
-          <div className="flex gap-1.5">
+          <div className="flex w-full gap-1.5 min-[380px]:w-auto">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
             >
               Önceki
             </button>
@@ -1075,7 +1075,7 @@ export function DocumentsScreen({
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
             >
               Sonraki
             </button>
@@ -1133,7 +1133,7 @@ export function DocumentsScreen({
             (tekrar "yükleniyor" durumuna düşüp içeriğin anlık kaybolması /
             geri gelmesi - flicker - önlenmiş oluyor).
           */}
-          <div className="p-3">
+          <div className="min-w-0 p-2 sm:p-3">
             {openDocuments.map((document) => (
               <div
                 key={document.key}

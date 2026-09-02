@@ -34,7 +34,7 @@ export function DashboardShell({
           consultantPhone={consultantPhone}
           consultantEmail={consultantEmail}
         />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-3 sm:p-4 md:p-6">{children}</main>
       </div>
     </div>
   );
