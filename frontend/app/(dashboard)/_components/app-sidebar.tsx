@@ -22,6 +22,7 @@ type SidebarDocument = {
   id: number;
   externalDocumentId: number;
   documentNumber: string | null;
+  status?: "OPEN" | "CLOSED" | "CANCELLED";
 };
 
 type DocumentsResponse = {
@@ -65,11 +66,23 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
       try {
         setDocumentsLoading(true);
 
-        const response = await apiFetch<DocumentsResponse>(
-          "/documents?isActive=true&limit=100",
+        const [openResponse, closedResponse] = await Promise.all([
+          apiFetch<DocumentsResponse>("/documents?limit=100"),
+          apiFetch<DocumentsResponse>("/closed-documents?limit=100"),
+        ]);
+
+        const openItems = openResponse.data.items ?? [];
+        const closedItems = closedResponse.data.items ?? [];
+
+        const mergedItems = [...openItems, ...closedItems];
+
+        const uniqueItems = Array.from(
+          new Map(
+            mergedItems.map((item) => [item.externalDocumentId, item]),
+          ).values(),
         );
 
-        const items = response.data.items ?? [];
+        const items = uniqueItems;
 
         setDocuments(items);
 
@@ -221,7 +234,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       {documentsLoading
                         ? "Belgeler yükleniyor..."
                         : documents.length === 0
-                          ? "Açık belge bulunamadı"
+                          ? "Belge bulunamadı"
                           : "Belge seçiniz"}
                     </option>
 
@@ -233,6 +246,11 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       >
                         {document.documentNumber ??
                           `Belge ${document.externalDocumentId}`}
+                        {document.status === "CLOSED"
+                          ? " - Kapalı"
+                          : document.status === "CANCELLED"
+                            ? " - İptal"
+                            : ""}
                       </option>
                     ))}
                   </select>

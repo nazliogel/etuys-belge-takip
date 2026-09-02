@@ -33,13 +33,15 @@ type ExcelImportType =
   | "OPEN_DOCUMENTS"
   | "CLOSED_DOCUMENTS"
   | "COMPANY_IDENTITY"
-  | "COMPANY_REQUEST";
+  | "COMPANY_REQUEST"
+  | "DOCUMENT_DETAIL";
 
 type ImportBatchType =
   | "OPEN"
   | "CLOSED"
   | "COMPANY_IDENTITY"
-  | "COMPANY_REQUEST";
+  | "COMPANY_REQUEST"
+  | "DOCUMENT_DETAIL";
 
 type ImportRecord = {
   id: number;
@@ -262,6 +264,11 @@ export function ExcelImportScreen() {
           method: "POST",
           body: formData,
         });
+      } else if (importType === "DOCUMENT_DETAIL") {
+        await apiFetch("/document-detail-import/upload", {
+          method: "POST",
+          body: formData,
+        });
       } else {
         const backendImportType =
           importType === "COMPANY_REQUEST"
@@ -295,7 +302,9 @@ export function ExcelImportScreen() {
           ? error.message
           : importType === "COMPANY_IDENTITY"
             ? "Künye bilgileri aktarılırken beklenmeyen bir hata oluştu."
-            : "Excel dosyası işlenirken beklenmeyen bir hata oluştu.",
+            : importType === "DOCUMENT_DETAIL"
+              ? "Belge detayları aktarılırken beklenmeyen bir hata oluştu."
+              : "Excel dosyası işlenirken beklenmeyen bir hata oluştu.",
       );
     } finally {
       setIsUploading(false);
@@ -331,7 +340,7 @@ export function ExcelImportScreen() {
             sürükleyin.
           </p>
         </div>
-        <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <button
             type="button"
             disabled={isUploading}
@@ -492,8 +501,51 @@ export function ExcelImportScreen() {
                 </p>
 
                 <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Firmalara ait gönderilmiş talepleri Belge Id üzerinden
+                  Firmalara ait gönderilmiş talepleri Belge ID üzerinden
                   eşleştirerek sisteme aktarır.
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => {
+              setImportType("DOCUMENT_DETAIL");
+              clearSelectedFile();
+            }}
+            className={`group rounded-2xl border p-4 text-left transition-all ${
+              importType === "DOCUMENT_DETAIL"
+                ? "border-amber-300 bg-amber-50 shadow-sm"
+                : "border-slate-200 bg-white hover:border-amber-200 hover:bg-amber-50/40"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  importType === "DOCUMENT_DETAIL"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-slate-100 text-slate-500 group-hover:bg-amber-100 group-hover:text-amber-700"
+                }`}
+              >
+                <FileSpreadsheet size={20} />
+              </div>
+
+              <div>
+                <p
+                  className={`text-sm font-bold ${
+                    importType === "DOCUMENT_DETAIL"
+                      ? "text-amber-800"
+                      : "text-slate-800"
+                  }`}
+                >
+                  Belge Detayları
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Açık, kapalı ve iptal teşvik belgelerine ait detay bilgilerini
+                  sisteme aktarır.
                 </p>
               </div>
             </div>
@@ -593,7 +645,9 @@ export function ExcelImportScreen() {
                         ? "Künye Bilgileri Aktarılıyor..."
                         : importType === "COMPANY_REQUEST"
                           ? "Gönderilmiş Talepler Aktarılıyor..."
-                          : "Satırlar Analiz Ediliyor..."}
+                          : importType === "DOCUMENT_DETAIL"
+                            ? "Belge Detayları Aktarılıyor..."
+                            : "Satırlar Analiz Ediliyor..."}
                     </span>
                     <span className="font-bold text-slate-700">
                       {uploadProgress}%
@@ -653,12 +707,16 @@ export function ExcelImportScreen() {
                 ? "Künye Bilgileri Aktarılıyor..."
                 : importType === "COMPANY_REQUEST"
                   ? "Talepler Aktarılıyor..."
-                  : "Karşılaştırılıyor..."
+                  : importType === "DOCUMENT_DETAIL"
+                    ? "Belge Detayları Aktarılıyor..."
+                    : "Karşılaştırılıyor..."
               : importType === "COMPANY_IDENTITY"
                 ? "Künye Bilgilerini Yükle"
                 : importType === "COMPANY_REQUEST"
                   ? "Gönderilmiş Talepleri Yükle"
-                  : "Yükle ve Karşılaştır"}
+                  : importType === "DOCUMENT_DETAIL"
+                    ? "Belge Detaylarını Yükle"
+                    : "Yükle ve Karşılaştır"}
           </button>
         </div>
       </section>
@@ -728,9 +786,11 @@ export function ExcelImportScreen() {
                                 ? "Firma Künye Bilgileri"
                                 : item.importType === "COMPANY_REQUEST"
                                   ? "Gönderilmiş Talepler"
-                                  : item.importType === "CLOSED"
-                                    ? "Kapalı / İptal Belgeler"
-                                    : "Açık Belgeler"}
+                                  : item.importType === "DOCUMENT_DETAIL"
+                                    ? "Belge Detayları"
+                                    : item.importType === "CLOSED"
+                                      ? "Kapalı / İptal Belgeler"
+                                      : "Açık Belgeler"}
                             </span>
 
                             <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-400">
@@ -821,9 +881,11 @@ export function ExcelImportScreen() {
                             ? "Firma Künye Bilgileri"
                             : item.importType === "COMPANY_REQUEST"
                               ? "Gönderilmiş Talepler"
-                              : item.importType === "CLOSED"
-                                ? "Kapalı / İptal Belgeler"
-                                : "Açık Belgeler"}
+                              : item.importType === "DOCUMENT_DETAIL"
+                                ? "Belge Detayları"
+                                : item.importType === "CLOSED"
+                                  ? "Kapalı / İptal Belgeler"
+                                  : "Açık Belgeler"}
                         </span>
 
                         <p className="mt-1 text-[11px] text-slate-400">

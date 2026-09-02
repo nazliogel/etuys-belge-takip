@@ -116,6 +116,11 @@ function normalizeFlag(
   return "EMPTY";
 }
 
+// Sabit başlık için ortak class'lar — her <th>'ye uygulanacak.
+// sticky top-0 + bg-slate-100 zorunlu, aksi halde scroll'da hücre içerikleri sızar.
+const HEAD_BASE =
+  "sticky top-0 z-20 bg-slate-100 border-b-2 border-[#1e2a5e]/15 border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
+
 export function AdminDocumentImportedMachines({
   documentId,
 }: AdminDocumentImportedMachinesProps) {
@@ -192,77 +197,47 @@ export function AdminDocumentImportedMachines({
           </p>
         </div>
       ) : (
-        <div className="admin-table-scroll overflow-x-auto pb-1">
-          <table className="w-full min-w-[1800px] border-collapse text-left">
-            <thead className="sticky top-0 z-10">
-              <tr className="border-b border-slate-200 bg-slate-50/95">
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Sıra
-                </th>
+        <div className="admin-table-scroll max-h-[70vh] overflow-auto pb-1">
+          <table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left">
+            <thead>
+              <tr className="text-left">
+                <th className={`${HEAD_BASE} text-right`}>Sıra</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Makine ID
-                </th>
+                <th className={HEAD_BASE}>Makine ID</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Adı / Özelliği
-                </th>
+                <th className={HEAD_BASE}>Adı / Özelliği</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Miktar
-                </th>
+                <th className={`${HEAD_BASE} text-right`}>Miktar</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Birim
-                </th>
+                <th className={HEAD_BASE}>Birim</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  GTİP No
-                </th>
+                <th className={HEAD_BASE}>GTİP No</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  GTİP Açıklama
-                </th>
+                <th className={HEAD_BASE}>GTİP Açıklama</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Kullanılmış
-                </th>
+                <th className={`${HEAD_BASE} text-center`}>Kullanılmış</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Araç
-                </th>
+                <th className={`${HEAD_BASE} text-center`}>Araç</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  CKD
-                </th>
+                <th className={`${HEAD_BASE} text-center`}>CKD</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  FOB USD
-                </th>
+                <th className={`${HEAD_BASE} text-right`}>FOB USD</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  FOB TL
-                </th>
+                <th className={`${HEAD_BASE} text-right`}>FOB TL</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  CIF TL
-                </th>
+                <th className={`${HEAD_BASE} text-right`}>CIF TL</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  Menşei Döviz
-                </th>
+                <th className={`${HEAD_BASE} text-right`}>Menşei Döviz</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                  KDV İstisnası
-                </th>
+                <th className={`${HEAD_BASE} text-center`}>KDV İstisnası</th>
 
-                <th className="border-r border-slate-200 px-2.5 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                <th className={`${HEAD_BASE} border-r-0 text-center`}>
                   Gümrük V. İstisnası
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {machines.map((machine, index) => (
                 <tr
                   key={machine.id}
@@ -273,78 +248,78 @@ export function AdminDocumentImportedMachines({
                   }
                 >
                   {/* SIRA */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-semibold text-slate-600">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-semibold text-slate-600">
                     {machine.sequenceNumber ?? "-"}
                   </td>
 
                   {/* MAKİNE ID */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 font-mono text-[10px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-[10px] text-slate-700">
                     {machine.externalMachineId ?? "-"}
                   </td>
 
                   {/* AD */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-900">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-900">
                     {machine.name ?? "-"}
                   </td>
 
                   {/* MİKTAR */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
                     {formatQuantity(machine.quantity)}
                   </td>
 
                   {/* BİRİM */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-700">
                     {machine.unit ?? "-"}
                   </td>
 
                   {/* GTİP */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 font-mono text-[10px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-[10px] text-slate-700">
                     {machine.gtipCode ?? "-"}
                   </td>
 
                   {/* GTİP AÇIKLAMA */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-600">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-600">
                     {machine.gtipDescription ?? "-"}
                   </td>
 
                   {/* KULLANILMIŞ */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-center">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
                     <FlagBadge value={machine.usedMachine} />
                   </td>
 
                   {/* ARAÇ */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-center">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
                     <FlagBadge value={machine.isVehicle} />
                   </td>
 
                   {/* CKD */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-center">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
                     <FlagBadge value={machine.isCkd} />
                   </td>
 
                   {/* FOB USD */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-bold text-slate-900">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-bold text-slate-900">
                     {machine.totalFobUsd
                       ? `${formatNumber(machine.totalFobUsd)} USD`
                       : "-"}
                   </td>
 
                   {/* FOB TL */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
                     {machine.totalFobTl
                       ? `${formatNumber(machine.totalFobTl)} TL`
                       : "-"}
                   </td>
 
                   {/* CIF TL */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
                     {machine.totalCifTl
                       ? `${formatNumber(machine.totalCifTl)} TL`
                       : "-"}
                   </td>
 
                   {/* MENŞEİ DÖVİZ */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
                     {machine.originCurrencyFobAmount
                       ? `${formatNumber(machine.originCurrencyFobAmount)} ${
                           machine.originCurrencyFob ?? ""
@@ -353,12 +328,12 @@ export function AdminDocumentImportedMachines({
                   </td>
 
                   {/* KDV İSTİSNASI */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-center">
+                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
                     <YesNoBadge value={machine.vatExemption} />
                   </td>
 
                   {/* GÜMRÜK VERGİSİ İSTİSNASI */}
-                  <td className="border-r border-slate-200 px-2.5 py-1.5 text-center">
+                  <td className="border-b border-slate-200 px-2.5 py-1.5 text-center">
                     <YesNoBadge value={machine.customsTaxExemption} />
                   </td>
                 </tr>
