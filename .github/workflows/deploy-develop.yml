@@ -25,9 +25,17 @@ jobs:
           script: |
             set -e
             cd /home/debian/etuys-belge-takip-dev
+
             git fetch origin develop
             git checkout develop
             git pull --ff-only origin develop
-            docker compose -f compose.dev.yml up -d --build
+
+            docker compose -f compose.dev.yml build
+            docker compose -f compose.dev.yml up -d --wait database
+
+            docker compose -f compose.dev.yml run --rm backend \
+              npx prisma migrate deploy
+
+            docker compose -f compose.dev.yml up -d backend frontend
             docker compose -f compose.dev.yml ps
             docker image prune -f
