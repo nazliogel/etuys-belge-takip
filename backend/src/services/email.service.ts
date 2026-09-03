@@ -2,11 +2,17 @@ import nodemailer from "nodemailer";
 
 import { env } from "../config/env.js";
 
+export interface EmailAttachment {
+  filename: string;
+  path: string;
+}
+
 interface SendEmailParams {
   to: string;
   subject: string;
   text: string;
   html?: string;
+  attachments?: EmailAttachment[];
 }
 
 function getSmtpConfig() {
@@ -71,6 +77,7 @@ export class EmailService {
       subject: params.subject,
       text: params.text,
       html: params.html,
+      attachments: params.attachments,
     });
 
     return {
