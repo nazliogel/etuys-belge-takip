@@ -77,10 +77,12 @@ type FinancialCard = {
 
 interface AdminDocumentFinancialInfoProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 export function AdminDocumentFinancialInfo({
   documentId,
+  isClosed = false,
 }: AdminDocumentFinancialInfoProps) {
   const [financialInfo, setFinancialInfo] = useState<FinancialInfo | null>(
     null,
@@ -93,9 +95,11 @@ export function AdminDocumentFinancialInfo({
       try {
         setLoading(true);
 
-        const response = await apiFetch<FinancialInfoResponse>(
-          `/documents/${documentId}/financial-info`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}/financial-info`
+          : `/documents/${documentId}/financial-info`;
+
+        const response = await apiFetch<FinancialInfoResponse>(endpoint);
 
         setFinancialInfo(response.data.financialInfo);
       } catch (error) {
@@ -107,7 +111,7 @@ export function AdminDocumentFinancialInfo({
     };
 
     void loadFinancialInfo();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   const leftCards: FinancialCard[] = financialInfo
     ? [

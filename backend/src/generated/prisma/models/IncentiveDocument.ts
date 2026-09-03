@@ -557,11 +557,6 @@ export type IncentiveDocumentNullableScalarRelationFilter = {
   isNot?: Prisma.IncentiveDocumentWhereInput | null
 }
 
-export type IncentiveDocumentScalarRelationFilter = {
-  is?: Prisma.IncentiveDocumentWhereInput
-  isNot?: Prisma.IncentiveDocumentWhereInput
-}
-
 export type IncentiveDocumentCreateNestedManyWithoutCompanyInput = {
   create?: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutCompanyInput, Prisma.IncentiveDocumentUncheckedCreateWithoutCompanyInput> | Prisma.IncentiveDocumentCreateWithoutCompanyInput[] | Prisma.IncentiveDocumentUncheckedCreateWithoutCompanyInput[]
   connectOrCreate?: Prisma.IncentiveDocumentCreateOrConnectWithoutCompanyInput | Prisma.IncentiveDocumentCreateOrConnectWithoutCompanyInput[]
@@ -662,10 +657,12 @@ export type IncentiveDocumentCreateNestedOneWithoutDetailInput = {
   connect?: Prisma.IncentiveDocumentWhereUniqueInput
 }
 
-export type IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput = {
+export type IncentiveDocumentUpdateOneWithoutDetailNestedInput = {
   create?: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutDetailInput, Prisma.IncentiveDocumentUncheckedCreateWithoutDetailInput>
   connectOrCreate?: Prisma.IncentiveDocumentCreateOrConnectWithoutDetailInput
   upsert?: Prisma.IncentiveDocumentUpsertWithoutDetailInput
+  disconnect?: Prisma.IncentiveDocumentWhereInput | boolean
+  delete?: Prisma.IncentiveDocumentWhereInput | boolean
   connect?: Prisma.IncentiveDocumentWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.IncentiveDocumentUpdateToOneWithWhereWithoutDetailInput, Prisma.IncentiveDocumentUpdateWithoutDetailInput>, Prisma.IncentiveDocumentUncheckedUpdateWithoutDetailInput>
 }

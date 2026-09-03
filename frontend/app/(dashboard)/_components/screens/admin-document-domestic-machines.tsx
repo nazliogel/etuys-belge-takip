@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 
 interface AdminDocumentDomesticMachinesProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 type DomesticMachine = {
@@ -87,6 +88,7 @@ const HEAD_BASE =
 
 export function AdminDocumentDomesticMachines({
   documentId,
+  isClosed = false,
 }: AdminDocumentDomesticMachinesProps) {
   const [machines, setMachines] = useState<DomesticMachine[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,9 +100,11 @@ export function AdminDocumentDomesticMachines({
       setLoadError("");
 
       try {
-        const response = await apiFetch<DomesticMachinesResponse>(
-          `/documents/${documentId}/domestic-machines`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}/domestic-machines`
+          : `/documents/${documentId}/domestic-machines`;
+
+        const response = await apiFetch<DomesticMachinesResponse>(endpoint);
 
         setMachines(response.data.items ?? []);
       } catch (error) {
@@ -117,7 +121,7 @@ export function AdminDocumentDomesticMachines({
     }
 
     void loadMachines();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">

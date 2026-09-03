@@ -14,6 +14,14 @@ type DocumentDetailImportInput = {
   uploadedById: number;
 };
 
+type DocumentDetailImportError = {
+  sheetName: string;
+  rowNumber: number;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  message: string;
+};
+
 type DocumentDetailImportResult = {
   batchId: number;
   totalRowCount: number;
@@ -22,6 +30,7 @@ type DocumentDetailImportResult = {
   newRowCount: number;
   changedRowCount: number;
   unchangedRowCount: number;
+  errors: DocumentDetailImportError[];
 };
 
 type ParsedRow =
@@ -75,50 +84,97 @@ export class DocumentDetailImportService {
         ...new Set(allRows.map((row) => row.externalDocumentId)),
       ];
 
-      const existingDocuments = await prisma.incentiveDocument.findMany({
-        where: {
-          externalDocumentId: {
-            in: externalDocumentIds,
-          },
-        },
-        select: {
-          id: true,
-          companyId: true,
-          externalDocumentId: true,
-          detail: {
-            select: {
-              id: true,
+      const [existingDocuments, existingClosedDocuments] = await Promise.all([
+        prisma.incentiveDocument.findMany({
+          where: {
+            externalDocumentId: {
+              in: externalDocumentIds,
             },
           },
-        },
-      });
+          select: {
+            id: true,
+            companyId: true,
+            externalDocumentId: true,
+            detail: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        }),
 
-      const documentMap = new Map(
+        prisma.closedIncentiveDocument.findMany({
+          where: {
+            externalDocumentId: {
+              in: externalDocumentIds,
+            },
+          },
+          select: {
+            id: true,
+            companyId: true,
+            externalDocumentId: true,
+            detail: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        }),
+      ]);
+
+      const openDocumentMap = new Map(
         existingDocuments.map((document) => [
           document.externalDocumentId,
           document,
         ]),
       );
 
+      const closedDocumentMap = new Map(
+        existingClosedDocuments.map((document) => [
+          document.externalDocumentId,
+          document,
+        ]),
+      );
+
+      function hasDocument(externalDocumentId: number) {
+        return (
+          openDocumentMap.has(externalDocumentId) ||
+          closedDocumentMap.has(externalDocumentId)
+        );
+      }
+
       const validRows = allRows.filter((row) =>
-        documentMap.has(row.externalDocumentId),
+        hasDocument(row.externalDocumentId),
       );
 
       const invalidRows = allRows.filter(
-        (row) => !documentMap.has(row.externalDocumentId),
+        (row) => !hasDocument(row.externalDocumentId),
       );
+
+      const errors: DocumentDetailImportError[] = invalidRows.map((row) => ({
+        sheetName: row.sheetName,
+        rowNumber: row.rowNumber,
+        externalDocumentId: row.externalDocumentId,
+        documentNumber: row.documentNumber ?? null,
+        message: `Belge ID ${row.externalDocumentId} sistemde bulunamadı.`,
+      }));
 
       if (allRows.length > 0) {
         await prisma.importRow.createMany({
           data: allRows.map((row) => {
-            const document = documentMap.get(row.externalDocumentId);
+            const openDocument = openDocumentMap.get(row.externalDocumentId);
+            const closedDocument = closedDocumentMap.get(
+              row.externalDocumentId,
+            );
+
+            const foundDocument = openDocument ?? closedDocument;
 
             return {
               importBatchId: batch.id,
               sheetName: row.sheetName,
               rowNumber: row.rowNumber,
 
-              status: document ? "PENDING" : "INVALID",
+              status: foundDocument ? "PENDING" : "INVALID",
 
               externalCompanyId: row.externalCompanyId ?? null,
 
@@ -128,13 +184,15 @@ export class DocumentDetailImportService {
 
               documentNumber: row.documentNumber ?? null,
 
-              companyId: document?.companyId ?? null,
+              companyId: foundDocument?.companyId ?? null,
 
-              documentId: document?.id ?? null,
+              // ImportRow modeli şu an sadece IncentiveDocument'a bağlı.
+              // Bu yüzden kapalı belgede documentId null kalacak.
+              documentId: openDocument?.id ?? null,
 
               rawData: toJson(row.rawData),
 
-              errorMessage: document
+              errorMessage: foundDocument
                 ? null
                 : `Belge ID ${row.externalDocumentId} sistemde bulunamadı.`,
             };
@@ -150,7 +208,14 @@ export class DocumentDetailImportService {
       let changedRowCount = 0;
 
       for (const externalDocumentId of documentIdsToProcess) {
-        const document = documentMap.get(externalDocumentId);
+        const openDocument = openDocumentMap.get(externalDocumentId);
+        const closedDocument = closedDocumentMap.get(externalDocumentId);
+
+        if (!openDocument && !closedDocument) {
+          continue;
+        }
+
+        const document = openDocument ?? closedDocument;
 
         if (!document) {
           continue;
@@ -187,20 +252,37 @@ export class DocumentDetailImportService {
         const isNew = !document.detail;
 
         await prisma.$transaction(async (tx) => {
-          const detail = await tx.documentDetail.upsert({
-            where: {
-              documentId: document.id,
-            },
+          const detail = openDocument
+            ? await tx.documentDetail.upsert({
+                where: {
+                  documentId: openDocument.id,
+                },
 
-            create: {
-              documentId: document.id,
-              investmentType: documentRow?.investmentType ?? null,
-            },
+                create: {
+                  documentId: openDocument.id,
+                  closedDocumentId: null,
+                  investmentType: documentRow?.investmentType ?? null,
+                },
 
-            update: {
-              investmentType: documentRow?.investmentType ?? null,
-            },
-          });
+                update: {
+                  investmentType: documentRow?.investmentType ?? null,
+                },
+              })
+            : await tx.documentDetail.upsert({
+                where: {
+                  closedDocumentId: closedDocument!.id,
+                },
+
+                create: {
+                  documentId: null,
+                  closedDocumentId: closedDocument!.id,
+                  investmentType: documentRow?.investmentType ?? null,
+                },
+
+                update: {
+                  investmentType: documentRow?.investmentType ?? null,
+                },
+              });
 
           await Promise.all([
             tx.documentProduct.deleteMany({
@@ -590,18 +672,13 @@ export class DocumentDetailImportService {
 
       return {
         batchId: result.id,
-
         totalRowCount: result.totalRowCount,
-
         validRowCount: result.validRowCount,
-
         invalidRowCount: result.invalidRowCount,
-
         newRowCount: result.newRowCount,
-
         changedRowCount: result.changedRowCount,
-
         unchangedRowCount: result.unchangedRowCount,
+        errors,
       };
     } catch (error) {
       await prisma.importBatch.update({

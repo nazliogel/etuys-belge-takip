@@ -262,6 +262,8 @@ model ClosedIncentiveDocument {
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  detail DocumentDetail?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -422,12 +424,14 @@ model SystemSetting {
 }
 
 model DocumentDetail {
-  id         Int @id @default(autoincrement())
-  documentId Int @unique
+  id               Int  @id @default(autoincrement())
+  documentId       Int? @unique
+  closedDocumentId Int? @unique
 
   investmentType String?
 
-  document IncentiveDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document       IncentiveDocument?       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  closedDocument ClosedIncentiveDocument? @relation(fields: [closedDocumentId], references: [id], onDelete: Cascade)
 
   products          DocumentProduct[]
   supports          DocumentSupport[]
@@ -440,6 +444,7 @@ model DocumentDetail {
   updatedAt DateTime @updatedAt
 
   @@index([documentId])
+  @@index([closedDocumentId])
 }
 
 model DocumentProduct {

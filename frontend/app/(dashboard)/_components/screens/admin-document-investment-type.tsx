@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 
 interface AdminDocumentInvestmentTypeProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 type DocumentDetailResponse = {
@@ -20,6 +21,7 @@ type DocumentDetailResponse = {
 
 export function AdminDocumentInvestmentType({
   documentId,
+  isClosed = false,
 }: AdminDocumentInvestmentTypeProps) {
   const [investmentType, setInvestmentType] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,9 +33,11 @@ export function AdminDocumentInvestmentType({
       setLoadError("");
 
       try {
-        const response = await apiFetch<DocumentDetailResponse>(
-          `/documents/${documentId}`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}`
+          : `/documents/${documentId}`;
+
+        const response = await apiFetch<DocumentDetailResponse>(endpoint);
 
         setInvestmentType(response.data.investmentType);
       } catch (error) {
@@ -48,7 +52,7 @@ export function AdminDocumentInvestmentType({
     }
 
     void loadInvestmentType();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

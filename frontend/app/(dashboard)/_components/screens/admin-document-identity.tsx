@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 
 interface AdminDocumentIdentityProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 type ApiDocumentDetail = {
@@ -87,6 +88,7 @@ function getStatus(document: ApiDocumentDetail): string {
 
 export function AdminDocumentIdentity({
   documentId,
+  isClosed = false,
 }: AdminDocumentIdentityProps) {
   const [document, setDocument] = useState<ApiDocumentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,11 +100,19 @@ export function AdminDocumentIdentity({
       setLoadError("");
 
       try {
-        const response = await apiFetch<DocumentDetailResponse>(
-          `/documents/${documentId}`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}`
+          : `/documents/${documentId}`;
 
-        setDocument(response.data);
+        const response = await apiFetch<DocumentDetailResponse>(endpoint);
+
+        setDocument({
+          ...response.data,
+          isActive: isClosed ? false : response.data.isActive,
+          status: isClosed
+            ? (response.data.status ?? "CLOSED")
+            : response.data.status,
+        });
       } catch (error) {
         setLoadError(
           error instanceof Error
@@ -115,7 +125,7 @@ export function AdminDocumentIdentity({
     }
 
     void loadDocument();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   if (isLoading) {
     return (

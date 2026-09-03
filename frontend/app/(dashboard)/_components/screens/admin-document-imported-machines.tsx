@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 
 interface AdminDocumentImportedMachinesProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 type ImportedMachine = {
@@ -123,6 +124,7 @@ const HEAD_BASE =
 
 export function AdminDocumentImportedMachines({
   documentId,
+  isClosed = false,
 }: AdminDocumentImportedMachinesProps) {
   const [machines, setMachines] = useState<ImportedMachine[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -134,9 +136,11 @@ export function AdminDocumentImportedMachines({
       setLoadError("");
 
       try {
-        const response = await apiFetch<ImportedMachinesResponse>(
-          `/documents/${documentId}/imported-machines`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}/imported-machines`
+          : `/documents/${documentId}/imported-machines`;
+
+        const response = await apiFetch<ImportedMachinesResponse>(endpoint);
 
         setMachines(response.data.items ?? []);
       } catch (error) {

@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 
 interface AdminDocumentProductsProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 type ProductItem = {
@@ -34,6 +35,7 @@ type ProductsResponse = {
 
 export function AdminDocumentProducts({
   documentId,
+  isClosed = false,
 }: AdminDocumentProductsProps) {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,9 +47,11 @@ export function AdminDocumentProducts({
       setLoadError("");
 
       try {
-        const response = await apiFetch<ProductsResponse>(
-          `/documents/${documentId}/products`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}/products`
+          : `/documents/${documentId}/products`;
+
+        const response = await apiFetch<ProductsResponse>(endpoint);
 
         setProducts(response.data.items ?? []);
       } catch (error) {
@@ -62,7 +66,7 @@ export function AdminDocumentProducts({
     }
 
     void loadProducts();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">

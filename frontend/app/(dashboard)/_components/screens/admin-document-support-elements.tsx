@@ -26,6 +26,7 @@ type SupportElementsResponse = {
 
 interface AdminDocumentSupportElementsProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 function displayValue(value: string | null | undefined) {
@@ -38,6 +39,7 @@ function displayValue(value: string | null | undefined) {
 
 export function AdminDocumentSupportElements({
   documentId,
+  isClosed = false,
 }: AdminDocumentSupportElementsProps) {
   const [supports, setSupports] = useState<SupportElement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,9 +51,11 @@ export function AdminDocumentSupportElements({
         setLoading(true);
         setError(null);
 
-        const response = await apiFetch<SupportElementsResponse>(
-          `/documents/${documentId}/supports`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}/supports`
+          : `/documents/${documentId}/supports`;
+
+        const response = await apiFetch<SupportElementsResponse>(endpoint);
 
         setSupports(response.data.items ?? []);
       } catch (err) {
@@ -70,7 +74,7 @@ export function AdminDocumentSupportElements({
     };
 
     void loadSupports();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   if (loading) {
     return (

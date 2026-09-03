@@ -12,6 +12,7 @@ import { AdminDocumentSupportElements } from "./admin-document-support-elements"
 
 interface AdminDocumentDetailScreenProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 const tabs = [
@@ -29,6 +30,7 @@ type TabKey = (typeof tabs)[number]["key"];
 
 export function AdminDocumentDetailScreen({
   documentId,
+  isClosed = false,
 }: AdminDocumentDetailScreenProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("identity");
 
@@ -41,10 +43,7 @@ export function AdminDocumentDetailScreen({
             <button
               key={tab.key}
               type="button"
-              onClick={() => {
-                console.log("Sekme değişti:", tab.key);
-                setActiveTab(tab.key);
-              }}
+              onClick={() => setActiveTab(tab.key)}
               className={`relative z-20 flex-1 cursor-pointer whitespace-nowrap border-r border-slate-300 px-2 py-2.5 text-[11px] font-semibold transition last:border-r-0 ${
                 activeTab === tab.key
                   ? "bg-red-50 text-red-700"
@@ -58,35 +57,53 @@ export function AdminDocumentDetailScreen({
       </div>
 
       {activeTab === "identity" && (
-        <AdminDocumentIdentity documentId={documentId} />
+        <AdminDocumentIdentity documentId={documentId} isClosed={isClosed} />
       )}
 
       {activeTab === "investment" && (
-        <AdminDocumentInvestmentType documentId={documentId} />
+        <AdminDocumentInvestmentType
+          documentId={documentId}
+          isClosed={isClosed}
+        />
       )}
 
       {activeTab === "products" && (
-        <AdminDocumentProducts documentId={documentId} />
+        <AdminDocumentProducts documentId={documentId} isClosed={isClosed} />
       )}
 
       {activeTab === "domestic" && (
-        <AdminDocumentDomesticMachines documentId={documentId} />
+        <AdminDocumentDomesticMachines
+          documentId={documentId}
+          isClosed={isClosed}
+        />
       )}
 
       {activeTab === "imported" && (
-        <AdminDocumentImportedMachines documentId={documentId} />
+        <AdminDocumentImportedMachines
+          documentId={documentId}
+          isClosed={isClosed}
+        />
       )}
 
       {activeTab === "financial" && (
-        <AdminDocumentFinancialInfo documentId={documentId} />
+        <AdminDocumentFinancialInfo
+          documentId={documentId}
+          isClosed={isClosed}
+        />
       )}
 
       {activeTab === "special" && (
-        <AdminDocumentSpecialConditions documentId={documentId} />
+        <AdminDocumentSpecialConditions
+          documentId={documentId}
+          isClosed={isClosed}
+        />
       )}
 
       {activeTab === "support" && (
-        <AdminDocumentSupportElements documentId={documentId} />
+        <AdminDocumentSupportElements
+          documentId={documentId}
+          isClosed={isClosed}
+        />
       )}
     </div>
   );

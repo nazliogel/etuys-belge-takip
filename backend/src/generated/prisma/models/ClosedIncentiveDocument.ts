@@ -273,6 +273,7 @@ export type ClosedIncentiveDocumentWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
+  detail?: Prisma.XOR<Prisma.DocumentDetailNullableScalarRelationFilter, Prisma.DocumentDetailWhereInput> | null
 }
 
 export type ClosedIncentiveDocumentOrderByWithRelationInput = {
@@ -288,6 +289,7 @@ export type ClosedIncentiveDocumentOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   company?: Prisma.CompanyOrderByWithRelationInput
+  detail?: Prisma.DocumentDetailOrderByWithRelationInput
 }
 
 export type ClosedIncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
@@ -306,6 +308,7 @@ export type ClosedIncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
+  detail?: Prisma.XOR<Prisma.DocumentDetailNullableScalarRelationFilter, Prisma.DocumentDetailWhereInput> | null
 }, "id" | "externalDocumentId">
 
 export type ClosedIncentiveDocumentOrderByWithAggregationInput = {
@@ -355,6 +358,7 @@ export type ClosedIncentiveDocumentCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutClosedDocumentsInput
+  detail?: Prisma.DocumentDetailCreateNestedOneWithoutClosedDocumentInput
 }
 
 export type ClosedIncentiveDocumentUncheckedCreateInput = {
@@ -369,6 +373,7 @@ export type ClosedIncentiveDocumentUncheckedCreateInput = {
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  detail?: Prisma.DocumentDetailUncheckedCreateNestedOneWithoutClosedDocumentInput
 }
 
 export type ClosedIncentiveDocumentUpdateInput = {
@@ -382,6 +387,7 @@ export type ClosedIncentiveDocumentUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutClosedDocumentsNestedInput
+  detail?: Prisma.DocumentDetailUpdateOneWithoutClosedDocumentNestedInput
 }
 
 export type ClosedIncentiveDocumentUncheckedUpdateInput = {
@@ -396,6 +402,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateInput = {
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  detail?: Prisma.DocumentDetailUncheckedUpdateOneWithoutClosedDocumentNestedInput
 }
 
 export type ClosedIncentiveDocumentCreateManyInput = {
@@ -502,6 +509,11 @@ export type ClosedIncentiveDocumentSumOrderByAggregateInput = {
   externalDocumentId?: Prisma.SortOrder
 }
 
+export type ClosedIncentiveDocumentNullableScalarRelationFilter = {
+  is?: Prisma.ClosedIncentiveDocumentWhereInput | null
+  isNot?: Prisma.ClosedIncentiveDocumentWhereInput | null
+}
+
 export type ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput = {
   create?: Prisma.XOR<Prisma.ClosedIncentiveDocumentCreateWithoutCompanyInput, Prisma.ClosedIncentiveDocumentUncheckedCreateWithoutCompanyInput> | Prisma.ClosedIncentiveDocumentCreateWithoutCompanyInput[] | Prisma.ClosedIncentiveDocumentUncheckedCreateWithoutCompanyInput[]
   connectOrCreate?: Prisma.ClosedIncentiveDocumentCreateOrConnectWithoutCompanyInput | Prisma.ClosedIncentiveDocumentCreateOrConnectWithoutCompanyInput[]
@@ -544,6 +556,22 @@ export type ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput 
   deleteMany?: Prisma.ClosedIncentiveDocumentScalarWhereInput | Prisma.ClosedIncentiveDocumentScalarWhereInput[]
 }
 
+export type ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput = {
+  create?: Prisma.XOR<Prisma.ClosedIncentiveDocumentCreateWithoutDetailInput, Prisma.ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput>
+  connectOrCreate?: Prisma.ClosedIncentiveDocumentCreateOrConnectWithoutDetailInput
+  connect?: Prisma.ClosedIncentiveDocumentWhereUniqueInput
+}
+
+export type ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput = {
+  create?: Prisma.XOR<Prisma.ClosedIncentiveDocumentCreateWithoutDetailInput, Prisma.ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput>
+  connectOrCreate?: Prisma.ClosedIncentiveDocumentCreateOrConnectWithoutDetailInput
+  upsert?: Prisma.ClosedIncentiveDocumentUpsertWithoutDetailInput
+  disconnect?: Prisma.ClosedIncentiveDocumentWhereInput | boolean
+  delete?: Prisma.ClosedIncentiveDocumentWhereInput | boolean
+  connect?: Prisma.ClosedIncentiveDocumentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClosedIncentiveDocumentUpdateToOneWithWhereWithoutDetailInput, Prisma.ClosedIncentiveDocumentUpdateWithoutDetailInput>, Prisma.ClosedIncentiveDocumentUncheckedUpdateWithoutDetailInput>
+}
+
 export type ClosedIncentiveDocumentCreateWithoutCompanyInput = {
   externalDocumentId: number
   documentNumber?: string | null
@@ -554,6 +582,7 @@ export type ClosedIncentiveDocumentCreateWithoutCompanyInput = {
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  detail?: Prisma.DocumentDetailCreateNestedOneWithoutClosedDocumentInput
 }
 
 export type ClosedIncentiveDocumentUncheckedCreateWithoutCompanyInput = {
@@ -567,6 +596,7 @@ export type ClosedIncentiveDocumentUncheckedCreateWithoutCompanyInput = {
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  detail?: Prisma.DocumentDetailUncheckedCreateNestedOneWithoutClosedDocumentInput
 }
 
 export type ClosedIncentiveDocumentCreateOrConnectWithoutCompanyInput = {
@@ -612,6 +642,76 @@ export type ClosedIncentiveDocumentScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
 }
 
+export type ClosedIncentiveDocumentCreateWithoutDetailInput = {
+  externalDocumentId: number
+  documentNumber?: string | null
+  documentStartDate?: Date | string | null
+  documentEndDate?: Date | string | null
+  extensionDate?: Date | string | null
+  supportClass?: string | null
+  status: $Enums.DocumentStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  company: Prisma.CompanyCreateNestedOneWithoutClosedDocumentsInput
+}
+
+export type ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput = {
+  id?: number
+  companyId: number
+  externalDocumentId: number
+  documentNumber?: string | null
+  documentStartDate?: Date | string | null
+  documentEndDate?: Date | string | null
+  extensionDate?: Date | string | null
+  supportClass?: string | null
+  status: $Enums.DocumentStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ClosedIncentiveDocumentCreateOrConnectWithoutDetailInput = {
+  where: Prisma.ClosedIncentiveDocumentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClosedIncentiveDocumentCreateWithoutDetailInput, Prisma.ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput>
+}
+
+export type ClosedIncentiveDocumentUpsertWithoutDetailInput = {
+  update: Prisma.XOR<Prisma.ClosedIncentiveDocumentUpdateWithoutDetailInput, Prisma.ClosedIncentiveDocumentUncheckedUpdateWithoutDetailInput>
+  create: Prisma.XOR<Prisma.ClosedIncentiveDocumentCreateWithoutDetailInput, Prisma.ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput>
+  where?: Prisma.ClosedIncentiveDocumentWhereInput
+}
+
+export type ClosedIncentiveDocumentUpdateToOneWithWhereWithoutDetailInput = {
+  where?: Prisma.ClosedIncentiveDocumentWhereInput
+  data: Prisma.XOR<Prisma.ClosedIncentiveDocumentUpdateWithoutDetailInput, Prisma.ClosedIncentiveDocumentUncheckedUpdateWithoutDetailInput>
+}
+
+export type ClosedIncentiveDocumentUpdateWithoutDetailInput = {
+  externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  company?: Prisma.CompanyUpdateOneRequiredWithoutClosedDocumentsNestedInput
+}
+
+export type ClosedIncentiveDocumentUncheckedUpdateWithoutDetailInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  companyId?: Prisma.IntFieldUpdateOperationsInput | number
+  externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type ClosedIncentiveDocumentCreateManyCompanyInput = {
   id?: number
   externalDocumentId: number
@@ -635,6 +735,7 @@ export type ClosedIncentiveDocumentUpdateWithoutCompanyInput = {
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  detail?: Prisma.DocumentDetailUpdateOneWithoutClosedDocumentNestedInput
 }
 
 export type ClosedIncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
@@ -648,6 +749,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  detail?: Prisma.DocumentDetailUncheckedUpdateOneWithoutClosedDocumentNestedInput
 }
 
 export type ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyInput = {
@@ -678,6 +780,7 @@ export type ClosedIncentiveDocumentSelect<ExtArgs extends runtime.Types.Extensio
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
+  detail?: boolean | Prisma.ClosedIncentiveDocument$detailArgs<ExtArgs>
 }, ExtArgs["result"]["closedIncentiveDocument"]>
 
 export type ClosedIncentiveDocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -727,6 +830,7 @@ export type ClosedIncentiveDocumentSelectScalar = {
 export type ClosedIncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["closedIncentiveDocument"]>
 export type ClosedIncentiveDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
+  detail?: boolean | Prisma.ClosedIncentiveDocument$detailArgs<ExtArgs>
 }
 export type ClosedIncentiveDocumentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -739,6 +843,7 @@ export type $ClosedIncentiveDocumentPayload<ExtArgs extends runtime.Types.Extens
   name: "ClosedIncentiveDocument"
   objects: {
     company: Prisma.$CompanyPayload<ExtArgs>
+    detail: Prisma.$DocumentDetailPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1147,6 +1252,7 @@ readonly fields: ClosedIncentiveDocumentFieldRefs;
 export interface Prisma__ClosedIncentiveDocumentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   company<T extends Prisma.CompanyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyDefaultArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  detail<T extends Prisma.ClosedIncentiveDocument$detailArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClosedIncentiveDocument$detailArgs<ExtArgs>>): Prisma.Prisma__DocumentDetailClient<runtime.Types.Result.GetResult<Prisma.$DocumentDetailPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1585,6 +1691,25 @@ export type ClosedIncentiveDocumentDeleteManyArgs<ExtArgs extends runtime.Types.
    * Limit how many ClosedIncentiveDocuments to delete.
    */
   limit?: number
+}
+
+/**
+ * ClosedIncentiveDocument.detail
+ */
+export type ClosedIncentiveDocument$detailArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentDetail
+   */
+  select?: Prisma.DocumentDetailSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentDetail
+   */
+  omit?: Prisma.DocumentDetailOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentDetailInclude<ExtArgs> | null
+  where?: Prisma.DocumentDetailWhereInput
 }
 
 /**
