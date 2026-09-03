@@ -418,7 +418,8 @@ export const ModelName = {
   DocumentFinancialInfo: 'DocumentFinancialInfo',
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
-  DocumentSpecialCondition: 'DocumentSpecialCondition'
+  DocumentSpecialCondition: 'DocumentSpecialCondition',
+  DocumentReminder: 'DocumentReminder'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -434,7 +435,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2066,6 +2067,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DocumentReminder: {
+      payload: Prisma.$DocumentReminderPayload<ExtArgs>
+      fields: Prisma.DocumentReminderFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentReminderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentReminderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentReminderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentReminderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentReminderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentReminderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentReminderCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentReminderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentReminderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>
+        }
+        update: {
+          args: Prisma.DocumentReminderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentReminderDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentReminderUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentReminderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentReminderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentReminderPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentReminderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentReminder>
+        }
+        groupBy: {
+          args: Prisma.DocumentReminderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentReminderGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentReminderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentReminderCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2588,6 +2663,30 @@ export const DocumentSpecialConditionScalarFieldEnum = {
 export type DocumentSpecialConditionScalarFieldEnum = (typeof DocumentSpecialConditionScalarFieldEnum)[keyof typeof DocumentSpecialConditionScalarFieldEnum]
 
 
+export const DocumentReminderScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  companyId: 'companyId',
+  contactId: 'contactId',
+  type: 'type',
+  channel: 'channel',
+  status: 'status',
+  reminderMonth: 'reminderMonth',
+  targetDate: 'targetDate',
+  recipient: 'recipient',
+  subject: 'subject',
+  message: 'message',
+  providerId: 'providerId',
+  errorMessage: 'errorMessage',
+  attemptedAt: 'attemptedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentReminderScalarFieldEnum = (typeof DocumentReminderScalarFieldEnum)[keyof typeof DocumentReminderScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2860,6 +2959,48 @@ export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMo
 
 
 /**
+ * Reference to a field of type 'DocumentReminderType'
+ */
+export type EnumDocumentReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderType'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentReminderType[]'
+ */
+export type ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentReminderChannel'
+ */
+export type EnumDocumentReminderChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderChannel'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentReminderChannel[]'
+ */
+export type ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderChannel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentReminderStatus'
+ */
+export type EnumDocumentReminderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DocumentReminderStatus[]'
+ */
+export type ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3045,6 +3186,7 @@ export type GlobalOmitConfig = {
   documentDomesticMachine?: Prisma.DocumentDomesticMachineOmit
   documentImportedMachine?: Prisma.DocumentImportedMachineOmit
   documentSpecialCondition?: Prisma.DocumentSpecialConditionOmit
+  documentReminder?: Prisma.DocumentReminderOmit
 }
 
 /* Types for Logging */

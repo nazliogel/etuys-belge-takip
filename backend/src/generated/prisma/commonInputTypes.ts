@@ -518,6 +518,57 @@ export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
 }
 
+export type EnumDocumentReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel> | $Enums.DocumentReminderType
+}
+
+export type EnumDocumentReminderChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+}
+
+export type EnumDocumentReminderStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+}
+
+export type EnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+}
+
+export type EnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+}
+
+export type EnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -979,6 +1030,57 @@ export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumDocumentReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel> | $Enums.DocumentReminderType
+}
+
+export type NestedEnumDocumentReminderChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+}
+
+export type NestedEnumDocumentReminderStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+}
+
+export type NestedEnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+}
+
+export type NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
 }
 
 

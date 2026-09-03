@@ -78,6 +78,24 @@ enum NotificationType {
   SYSTEM
 }
 
+enum DocumentReminderType {
+  EXTENSION_APPLICATION
+  CLOSURE_APPLICATION
+}
+
+enum DocumentReminderChannel {
+  EMAIL
+  WHATSAPP
+  CONSULTANT_IN_APP
+}
+
+enum DocumentReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   firstName    String
@@ -109,18 +127,19 @@ model Company {
   consultant        String?
   isActive          Boolean @default(true)
 
-  users           User[]
-  authorization   CompanyAuthorization?
-  identity        CompanyIdentity?
-  documents       IncentiveDocument[]
-  importRows      ImportRow[]
-  closedDocuments ClosedIncentiveDocument[]
-  importChanges   ImportChange[]
-  changeHistory   ChangeHistory[]
-  notifications   Notification[]
-  contacts        CompanyContact[]
-  notes           CompanyNote[]
-  companyRequests CompanyRequest[]
+  users             User[]
+  authorization     CompanyAuthorization?
+  identity          CompanyIdentity?
+  documentReminders DocumentReminder[]
+  documents         IncentiveDocument[]
+  importRows        ImportRow[]
+  closedDocuments   ClosedIncentiveDocument[]
+  importChanges     ImportChange[]
+  changeHistory     ChangeHistory[]
+  notifications     Notification[]
+  contacts          CompanyContact[]
+  notes             CompanyNote[]
+  companyRequests   CompanyRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,11 +202,12 @@ model CompanyRequest {
 }
 
 model CompanyContact {
-  id        Int    @id @default(autoincrement())
-  companyId Int
-  fullName  String
-  email     String
-  phone     String
+  id                Int                @id @default(autoincrement())
+  companyId         Int
+  documentReminders DocumentReminder[]
+  fullName          String
+  email             String
+  phone             String
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -225,16 +245,17 @@ model CompanyAuthorization {
 }
 
 model IncentiveDocument {
-  id                 Int            @id @default(autoincrement())
+  id                 Int                @id @default(autoincrement())
   companyId          Int
-  externalDocumentId Int            @unique
+  externalDocumentId Int                @unique
   documentNumber     String?
-  documentStartDate  DateTime?      @db.Date
-  documentEndDate    DateTime?      @db.Date
-  extensionDate      DateTime?      @db.Date
+  documentStartDate  DateTime?          @db.Date
+  documentReminders  DocumentReminder[]
+  documentEndDate    DateTime?          @db.Date
+  extensionDate      DateTime?          @db.Date
   supportClass       String?
-  status             DocumentStatus @default(OPEN)
-  isActive           Boolean        @default(true)
+  status             DocumentStatus     @default(OPEN)
+  isActive           Boolean            @default(true)
 
   company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   importRows    ImportRow[]
@@ -747,4 +768,36 @@ model DocumentSpecialCondition {
   updatedAt DateTime @updatedAt
 
   @@index([detailId])
+}
+
+model DocumentReminder {
+  id            Int                     @id @default(autoincrement())
+  documentId    Int
+  companyId     Int
+  contactId     Int?
+  type          DocumentReminderType
+  channel       DocumentReminderChannel
+  status        DocumentReminderStatus  @default(PENDING)
+  reminderMonth Int
+  targetDate    DateTime                @db.Date
+  recipient     String
+  subject       String?
+  message       String
+  providerId    String?
+  errorMessage  String?
+  attemptedAt   DateTime?
+  sentAt        DateTime?
+
+  document IncentiveDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  company  Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact  CompanyContact?   @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([documentId, type, targetDate, reminderMonth, channel])
+  @@index([companyId])
+  @@index([contactId])
+  @@index([status])
+  @@index([targetDate])
 }

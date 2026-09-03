@@ -108,3 +108,30 @@ export const NotificationType = {
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const DocumentReminderType = {
+  EXTENSION_APPLICATION: 'EXTENSION_APPLICATION',
+  CLOSURE_APPLICATION: 'CLOSURE_APPLICATION'
+} as const
+
+export type DocumentReminderType = (typeof DocumentReminderType)[keyof typeof DocumentReminderType]
+
+
+export const DocumentReminderChannel = {
+  EMAIL: 'EMAIL',
+  WHATSAPP: 'WHATSAPP',
+  CONSULTANT_IN_APP: 'CONSULTANT_IN_APP'
+} as const
+
+export type DocumentReminderChannel = (typeof DocumentReminderChannel)[keyof typeof DocumentReminderChannel]
+
+
+export const DocumentReminderStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type DocumentReminderStatus = (typeof DocumentReminderStatus)[keyof typeof DocumentReminderStatus]
