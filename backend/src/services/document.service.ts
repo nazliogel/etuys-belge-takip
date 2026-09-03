@@ -102,9 +102,9 @@ function canApplyForExtension(document: {
   const today = normalizeDate(new Date());
 
   // Tarihler farklıysa süre uzatma listesine alma.
-if (documentEndDate.getTime() !== extensionDate.getTime()) {
-  return false;
-}
+  if (documentEndDate.getTime() !== extensionDate.getTime()) {
+    return false;
+  }
 
   // Süre uzatma müracatı belge bitişinden 6 ay önce başlar.
   const applicationStartDate = subtractMonths(documentEndDate, 6);
@@ -144,9 +144,12 @@ export class DocumentService {
       companyId = company.id;
     }
 
+    const requestedIsActive =
+      query.isActive ?? (query.status === "INACTIVE" ? false : true);
+
     const documents = await this.documentRepository.findMany({
       search: query.search,
-      isActive: query.isActive,
+      isActive: requestedIsActive,
       companyId,
     });
 
