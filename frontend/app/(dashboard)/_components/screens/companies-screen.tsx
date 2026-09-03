@@ -301,17 +301,6 @@ export function CompaniesScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFirmaId, openFirmaIds.join(",")]);
 
-  useEffect(() => {
-    if (activeFirmaId) {
-      setTimeout(() => {
-        detailRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 50);
-    }
-  }, [activeFirmaId]);
-
   // Filtre dropdown'ı dışarı tıklanınca kapansın
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
@@ -340,14 +329,18 @@ export function CompaniesScreen() {
   }, [firmalar, statusFilter]);
 
   function handleCloseTab(firmaId: string) {
+    const closedTabIndex = openFirmaIds.indexOf(firmaId);
     const remaining = openFirmaIds.filter((id) => id !== firmaId);
 
     if (activeFirmaId === firmaId) {
-      // Aktif sekme kapatıldıysa, kalan son sekmeye geç (hiç kalmadıysa
-      // detay tamamen kapanır).
+      const nextActiveFirmaId =
+        openFirmaIds[closedTabIndex - 1] ??
+        openFirmaIds[closedTabIndex + 1] ??
+        null;
+
       updateQuery({
         firmaTabs: remaining,
-        activeFirma: remaining.at(-1) ?? null,
+        activeFirma: nextActiveFirmaId,
       });
     } else {
       updateQuery({ firmaTabs: remaining });
@@ -368,8 +361,9 @@ export function CompaniesScreen() {
   }
 
   const handleClose = () => {
-    updateQuery({ activeFirma: null });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (activeFirmaId) {
+      handleCloseTab(activeFirmaId);
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -637,14 +631,14 @@ export function CompaniesScreen() {
 
       {/* AÇIK FİRMA SEKMELERİ */}
       {openFirmalar.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto border-b border-slate-200/80 pt-1.5">
+        <div className="grid grid-cols-2 gap-1.5 border-b border-slate-200/80 pt-1.5 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-7">
           {openFirmalar.map((firma) => {
             const isActive = firma.id === activeFirmaId;
 
             return (
               <div
                 key={firma.id}
-                className={`flex shrink-0 items-center rounded-t-xl border border-b-0 transition-all ${
+                className={`flex min-w-0 items-center rounded-t-xl border border-b-0 transition-all ${
                   isActive
                     ? "border-slate-200 bg-white text-red-600 font-semibold shadow-sm"
                     : "border-transparent bg-slate-100/70 text-slate-500 hover:bg-slate-100"
@@ -653,11 +647,10 @@ export function CompaniesScreen() {
                 <button
                   type="button"
                   onClick={() => updateQuery({ activeFirma: firma.id })}
-                  className="max-w-56 truncate px-3 py-1.5 text-xs"
+                  className="min-w-0 flex-1 truncate px-3 py-1.5 text-left text-xs"
                 >
                   {firma.firmaAdi}
                 </button>
-
                 <button
                   type="button"
                   onClick={(event) => {

@@ -501,7 +501,7 @@ export function ExcelImportScreen() {
                 </p>
 
                 <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Firmalara ait gönderilmiş talepleri Belge ID üzerinden
+                  Firmalara ait gönderilmiş talepleri Firma ID üzerinden
                   eşleştirerek sisteme aktarır.
                 </p>
               </div>
