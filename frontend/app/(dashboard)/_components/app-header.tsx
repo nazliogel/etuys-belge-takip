@@ -126,7 +126,7 @@ export function AppHeader({
               </a>
 
               <a
-                href="mailto:info@akkasgroup.com"
+                href="mailto:yatirimtesvik@akkasgroup.com"
                 className="mt-1 flex items-center justify-start gap-2 whitespace-nowrap text-[13px] font-medium text-blue-100 transition hover:text-white hover:underline"
                 title="E-posta gönder"
               >
@@ -137,7 +137,7 @@ export function AppHeader({
                   aria-hidden="true"
                 />
 
-                <span>info@akkasgroup.com</span>
+                <span>yatirimtesvik@akkasgroup.com</span>
               </a>
             </div>
           </div>
