@@ -110,7 +110,11 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
           setSelectedDocumentId(String(document.id));
 
-          setSelectedDocument(String(document.id), document.documentNumber);
+          setSelectedDocument(
+            String(document.id),
+            document.documentNumber,
+            document.status ?? "OPEN",
+          );
         }
       } catch (error) {
         console.error("Sidebar belgeleri alınamadı:", error);
@@ -164,7 +168,11 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
     setSelectedDocumentId(documentId);
     setDocumentWarning(false);
-    setSelectedDocument(documentId, document.documentNumber);
+    setSelectedDocument(
+      documentId,
+      document.documentNumber,
+      document.status ?? "OPEN",
+    );
 
     if (documentContextPaths.has(pathname)) {
       router.replace(
