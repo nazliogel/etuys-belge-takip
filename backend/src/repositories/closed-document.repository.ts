@@ -102,6 +102,16 @@ export class ClosedDocumentRepository {
             authorization: true,
           },
         },
+        detail: {
+          include: {
+            products: true,
+            supports: true,
+            financialInfo: true,
+            domesticMachines: true,
+            importedMachines: true,
+            specialConditions: true,
+          },
+        },
       },
     });
   }

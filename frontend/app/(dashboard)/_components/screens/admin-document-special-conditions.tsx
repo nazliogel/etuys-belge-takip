@@ -23,6 +23,7 @@ type SpecialConditionsResponse = {
 
 interface AdminDocumentSpecialConditionsProps {
   documentId: string;
+  isClosed?: boolean;
 }
 
 function displayValue(value: string | number | null | undefined) {
@@ -35,6 +36,7 @@ function displayValue(value: string | number | null | undefined) {
 
 export function AdminDocumentSpecialConditions({
   documentId,
+  isClosed = false,
 }: AdminDocumentSpecialConditionsProps) {
   const [conditions, setConditions] = useState<SpecialCondition[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,9 +48,11 @@ export function AdminDocumentSpecialConditions({
         setLoading(true);
         setError(null);
 
-        const response = await apiFetch<SpecialConditionsResponse>(
-          `/documents/${documentId}/special-conditions`,
-        );
+        const endpoint = isClosed
+          ? `/closed-documents/${documentId}/special-conditions`
+          : `/documents/${documentId}/special-conditions`;
+
+        const response = await apiFetch<SpecialConditionsResponse>(endpoint);
 
         setConditions(response.data.items ?? []);
       } catch (err) {
@@ -67,7 +71,7 @@ export function AdminDocumentSpecialConditions({
     };
 
     void loadConditions();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   if (loading) {
     return (

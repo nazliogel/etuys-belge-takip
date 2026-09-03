@@ -69,6 +69,23 @@ type ImportBatchApi = {
   uploadedAt: string;
 };
 
+type InvalidImportRow = {
+  id: number;
+  sheetName: string;
+  rowNumber: number;
+  externalCompanyId: number | null;
+  companyName: string | null;
+  externalDocumentId: number | null;
+  documentNumber: string | null;
+  errorMessage: string | null;
+};
+
+type InvalidRowsResponse = {
+  success: boolean;
+  message: string;
+  data: InvalidImportRow[];
+};
+
 type ImportListResponse = {
   success: boolean;
   message: string;
@@ -137,6 +154,9 @@ export function ExcelImportScreen() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [recentImports, setRecentImports] = useState<ImportRecord[]>([]);
+  const [invalidRows, setInvalidRows] = useState<InvalidImportRow[]>([]);
+  const [invalidRowsOpen, setInvalidRowsOpen] = useState(false);
+  const [invalidRowsLoading, setInvalidRowsLoading] = useState(false);
   const [importType, setImportType] =
     useState<ExcelImportType>("OPEN_DOCUMENTS");
   async function loadImports() {
@@ -243,6 +263,25 @@ export function ExcelImportScreen() {
 
   function handleViewReport(importId: number) {
     router.push(`/excel-import/${importId}`);
+  }
+  async function handleViewInvalidRows(importId: number) {
+    try {
+      setInvalidRowsLoading(true);
+      setFileError("");
+
+      const response = await apiFetch<InvalidRowsResponse>(
+        `/imports/${importId}/rows?status=INVALID`,
+      );
+
+      setInvalidRows(response.data ?? []);
+      setInvalidRowsOpen(true);
+    } catch (error) {
+      setFileError(
+        error instanceof Error ? error.message : "Hatalı kayıtlar alınamadı.",
+      );
+    } finally {
+      setInvalidRowsLoading(false);
+    }
   }
 
   async function handleUpload() {
@@ -823,9 +862,15 @@ export function ExcelImportScreen() {
 
                       <td className="px-3 py-4 text-center">
                         {item.invalidRows > 0 ? (
-                          <span className="inline-flex rounded-md bg-rose-50 px-2 py-0.5 font-bold text-rose-700">
+                          <button
+                            type="button"
+                            onClick={() => handleViewInvalidRows(item.id)}
+                            disabled={invalidRowsLoading}
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
+                          >
+                            <AlertCircle size={12} />
                             {item.invalidRows}
-                          </span>
+                          </button>
                         ) : (
                           <span className="font-medium text-slate-400">0</span>
                         )}
@@ -915,12 +960,17 @@ export function ExcelImportScreen() {
                         {item.changedRows}
                       </p>
                     </div>
-                    <div className="rounded-xl bg-rose-50/60 p-2">
+                    <button
+                      type="button"
+                      disabled={item.invalidRows === 0 || invalidRowsLoading}
+                      onClick={() => handleViewInvalidRows(item.id)}
+                      className="rounded-xl bg-rose-50/60 p-2 disabled:cursor-default"
+                    >
                       <p className="text-[10px] text-rose-600">Hatalı</p>
                       <p className="font-bold text-rose-700">
                         {item.invalidRows}
                       </p>
-                    </div>
+                    </button>
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-1">
@@ -955,6 +1005,82 @@ export function ExcelImportScreen() {
           değişiklikler otomatik olarak veritabanına uygulanır.
         </p>
       </div>
+      {invalidRowsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  Hatalı Kayıtlar
+                </h2>
+
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Excel aktarımı sırasında işlenemeyen satırlar
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setInvalidRowsOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="overflow-auto">
+              {invalidRows.length === 0 ? (
+                <div className="p-8 text-center text-sm text-slate-500">
+                  Hatalı kayıt bulunamadı.
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs">
+                  <thead className="sticky top-0 bg-slate-50">
+                    <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      <th className="px-4 py-3">Sayfa</th>
+                      <th className="px-4 py-3">Satır</th>
+                      <th className="px-4 py-3">Firma</th>
+                      <th className="px-4 py-3">Belge ID</th>
+                      <th className="px-4 py-3">Belge No</th>
+                      <th className="px-4 py-3">Hata</th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-slate-100">
+                    {invalidRows.map((row) => (
+                      <tr key={row.id} className="align-top hover:bg-slate-50">
+                        <td className="px-4 py-3 font-semibold text-slate-700">
+                          {row.sheetName || "—"}
+                        </td>
+
+                        <td className="px-4 py-3 font-mono font-bold text-rose-600">
+                          {row.rowNumber}
+                        </td>
+
+                        <td className="px-4 py-3 text-slate-600">
+                          {row.companyName || "—"}
+                        </td>
+
+                        <td className="px-4 py-3 font-mono text-slate-700">
+                          {row.externalDocumentId ?? "—"}
+                        </td>
+
+                        <td className="px-4 py-3 font-mono text-slate-700">
+                          {row.documentNumber ?? "—"}
+                        </td>
+
+                        <td className="px-4 py-3 font-medium text-rose-700">
+                          {row.errorMessage || "Hata açıklaması bulunamadı."}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

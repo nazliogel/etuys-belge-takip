@@ -29,16 +29,19 @@ export type AggregateDocumentDetail = {
 export type DocumentDetailAvgAggregateOutputType = {
   id: number | null
   documentId: number | null
+  closedDocumentId: number | null
 }
 
 export type DocumentDetailSumAggregateOutputType = {
   id: number | null
   documentId: number | null
+  closedDocumentId: number | null
 }
 
 export type DocumentDetailMinAggregateOutputType = {
   id: number | null
   documentId: number | null
+  closedDocumentId: number | null
   investmentType: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -47,6 +50,7 @@ export type DocumentDetailMinAggregateOutputType = {
 export type DocumentDetailMaxAggregateOutputType = {
   id: number | null
   documentId: number | null
+  closedDocumentId: number | null
   investmentType: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -55,6 +59,7 @@ export type DocumentDetailMaxAggregateOutputType = {
 export type DocumentDetailCountAggregateOutputType = {
   id: number
   documentId: number
+  closedDocumentId: number
   investmentType: number
   createdAt: number
   updatedAt: number
@@ -65,16 +70,19 @@ export type DocumentDetailCountAggregateOutputType = {
 export type DocumentDetailAvgAggregateInputType = {
   id?: true
   documentId?: true
+  closedDocumentId?: true
 }
 
 export type DocumentDetailSumAggregateInputType = {
   id?: true
   documentId?: true
+  closedDocumentId?: true
 }
 
 export type DocumentDetailMinAggregateInputType = {
   id?: true
   documentId?: true
+  closedDocumentId?: true
   investmentType?: true
   createdAt?: true
   updatedAt?: true
@@ -83,6 +91,7 @@ export type DocumentDetailMinAggregateInputType = {
 export type DocumentDetailMaxAggregateInputType = {
   id?: true
   documentId?: true
+  closedDocumentId?: true
   investmentType?: true
   createdAt?: true
   updatedAt?: true
@@ -91,6 +100,7 @@ export type DocumentDetailMaxAggregateInputType = {
 export type DocumentDetailCountAggregateInputType = {
   id?: true
   documentId?: true
+  closedDocumentId?: true
   investmentType?: true
   createdAt?: true
   updatedAt?: true
@@ -185,7 +195,8 @@ export type DocumentDetailGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 
 export type DocumentDetailGroupByOutputType = {
   id: number
-  documentId: number
+  documentId: number | null
+  closedDocumentId: number | null
   investmentType: string | null
   createdAt: Date
   updatedAt: Date
@@ -216,11 +227,13 @@ export type DocumentDetailWhereInput = {
   OR?: Prisma.DocumentDetailWhereInput[]
   NOT?: Prisma.DocumentDetailWhereInput | Prisma.DocumentDetailWhereInput[]
   id?: Prisma.IntFilter<"DocumentDetail"> | number
-  documentId?: Prisma.IntFilter<"DocumentDetail"> | number
+  documentId?: Prisma.IntNullableFilter<"DocumentDetail"> | number | null
+  closedDocumentId?: Prisma.IntNullableFilter<"DocumentDetail"> | number | null
   investmentType?: Prisma.StringNullableFilter<"DocumentDetail"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentDetail"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentDetail"> | Date | string
-  document?: Prisma.XOR<Prisma.IncentiveDocumentScalarRelationFilter, Prisma.IncentiveDocumentWhereInput>
+  document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
+  closedDocument?: Prisma.XOR<Prisma.ClosedIncentiveDocumentNullableScalarRelationFilter, Prisma.ClosedIncentiveDocumentWhereInput> | null
   products?: Prisma.DocumentProductListRelationFilter
   supports?: Prisma.DocumentSupportListRelationFilter
   financialInfo?: Prisma.XOR<Prisma.DocumentFinancialInfoNullableScalarRelationFilter, Prisma.DocumentFinancialInfoWhereInput> | null
@@ -231,11 +244,13 @@ export type DocumentDetailWhereInput = {
 
 export type DocumentDetailOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  documentId?: Prisma.SortOrder
+  documentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   investmentType?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   document?: Prisma.IncentiveDocumentOrderByWithRelationInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentOrderByWithRelationInput
   products?: Prisma.DocumentProductOrderByRelationAggregateInput
   supports?: Prisma.DocumentSupportOrderByRelationAggregateInput
   financialInfo?: Prisma.DocumentFinancialInfoOrderByWithRelationInput
@@ -247,24 +262,27 @@ export type DocumentDetailOrderByWithRelationInput = {
 export type DocumentDetailWhereUniqueInput = Prisma.AtLeast<{
   id?: number
   documentId?: number
+  closedDocumentId?: number
   AND?: Prisma.DocumentDetailWhereInput | Prisma.DocumentDetailWhereInput[]
   OR?: Prisma.DocumentDetailWhereInput[]
   NOT?: Prisma.DocumentDetailWhereInput | Prisma.DocumentDetailWhereInput[]
   investmentType?: Prisma.StringNullableFilter<"DocumentDetail"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentDetail"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentDetail"> | Date | string
-  document?: Prisma.XOR<Prisma.IncentiveDocumentScalarRelationFilter, Prisma.IncentiveDocumentWhereInput>
+  document?: Prisma.XOR<Prisma.IncentiveDocumentNullableScalarRelationFilter, Prisma.IncentiveDocumentWhereInput> | null
+  closedDocument?: Prisma.XOR<Prisma.ClosedIncentiveDocumentNullableScalarRelationFilter, Prisma.ClosedIncentiveDocumentWhereInput> | null
   products?: Prisma.DocumentProductListRelationFilter
   supports?: Prisma.DocumentSupportListRelationFilter
   financialInfo?: Prisma.XOR<Prisma.DocumentFinancialInfoNullableScalarRelationFilter, Prisma.DocumentFinancialInfoWhereInput> | null
   domesticMachines?: Prisma.DocumentDomesticMachineListRelationFilter
   importedMachines?: Prisma.DocumentImportedMachineListRelationFilter
   specialConditions?: Prisma.DocumentSpecialConditionListRelationFilter
-}, "id" | "documentId">
+}, "id" | "documentId" | "closedDocumentId">
 
 export type DocumentDetailOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  documentId?: Prisma.SortOrder
+  documentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   investmentType?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -280,7 +298,8 @@ export type DocumentDetailScalarWhereWithAggregatesInput = {
   OR?: Prisma.DocumentDetailScalarWhereWithAggregatesInput[]
   NOT?: Prisma.DocumentDetailScalarWhereWithAggregatesInput | Prisma.DocumentDetailScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"DocumentDetail"> | number
-  documentId?: Prisma.IntWithAggregatesFilter<"DocumentDetail"> | number
+  documentId?: Prisma.IntNullableWithAggregatesFilter<"DocumentDetail"> | number | null
+  closedDocumentId?: Prisma.IntNullableWithAggregatesFilter<"DocumentDetail"> | number | null
   investmentType?: Prisma.StringNullableWithAggregatesFilter<"DocumentDetail"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentDetail"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentDetail"> | Date | string
@@ -290,7 +309,8 @@ export type DocumentDetailCreateInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
@@ -301,7 +321,8 @@ export type DocumentDetailCreateInput = {
 
 export type DocumentDetailUncheckedCreateInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -317,7 +338,8 @@ export type DocumentDetailUpdateInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
@@ -328,7 +350,8 @@ export type DocumentDetailUpdateInput = {
 
 export type DocumentDetailUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -342,7 +365,8 @@ export type DocumentDetailUncheckedUpdateInput = {
 
 export type DocumentDetailCreateManyInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -356,7 +380,8 @@ export type DocumentDetailUpdateManyMutationInput = {
 
 export type DocumentDetailUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -370,6 +395,7 @@ export type DocumentDetailNullableScalarRelationFilter = {
 export type DocumentDetailCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrder
   investmentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -378,11 +404,13 @@ export type DocumentDetailCountOrderByAggregateInput = {
 export type DocumentDetailAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrder
 }
 
 export type DocumentDetailMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrder
   investmentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -391,6 +419,7 @@ export type DocumentDetailMaxOrderByAggregateInput = {
 export type DocumentDetailMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrder
   investmentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -399,6 +428,7 @@ export type DocumentDetailMinOrderByAggregateInput = {
 export type DocumentDetailSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
+  closedDocumentId?: Prisma.SortOrder
 }
 
 export type DocumentDetailScalarRelationFilter = {
@@ -436,6 +466,38 @@ export type DocumentDetailUncheckedUpdateOneWithoutDocumentNestedInput = {
   delete?: Prisma.DocumentDetailWhereInput | boolean
   connect?: Prisma.DocumentDetailWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentDetailUpdateToOneWithWhereWithoutDocumentInput, Prisma.DocumentDetailUpdateWithoutDocumentInput>, Prisma.DocumentDetailUncheckedUpdateWithoutDocumentInput>
+}
+
+export type DocumentDetailCreateNestedOneWithoutClosedDocumentInput = {
+  create?: Prisma.XOR<Prisma.DocumentDetailCreateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedCreateWithoutClosedDocumentInput>
+  connectOrCreate?: Prisma.DocumentDetailCreateOrConnectWithoutClosedDocumentInput
+  connect?: Prisma.DocumentDetailWhereUniqueInput
+}
+
+export type DocumentDetailUncheckedCreateNestedOneWithoutClosedDocumentInput = {
+  create?: Prisma.XOR<Prisma.DocumentDetailCreateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedCreateWithoutClosedDocumentInput>
+  connectOrCreate?: Prisma.DocumentDetailCreateOrConnectWithoutClosedDocumentInput
+  connect?: Prisma.DocumentDetailWhereUniqueInput
+}
+
+export type DocumentDetailUpdateOneWithoutClosedDocumentNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentDetailCreateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedCreateWithoutClosedDocumentInput>
+  connectOrCreate?: Prisma.DocumentDetailCreateOrConnectWithoutClosedDocumentInput
+  upsert?: Prisma.DocumentDetailUpsertWithoutClosedDocumentInput
+  disconnect?: Prisma.DocumentDetailWhereInput | boolean
+  delete?: Prisma.DocumentDetailWhereInput | boolean
+  connect?: Prisma.DocumentDetailWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentDetailUpdateToOneWithWhereWithoutClosedDocumentInput, Prisma.DocumentDetailUpdateWithoutClosedDocumentInput>, Prisma.DocumentDetailUncheckedUpdateWithoutClosedDocumentInput>
+}
+
+export type DocumentDetailUncheckedUpdateOneWithoutClosedDocumentNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentDetailCreateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedCreateWithoutClosedDocumentInput>
+  connectOrCreate?: Prisma.DocumentDetailCreateOrConnectWithoutClosedDocumentInput
+  upsert?: Prisma.DocumentDetailUpsertWithoutClosedDocumentInput
+  disconnect?: Prisma.DocumentDetailWhereInput | boolean
+  delete?: Prisma.DocumentDetailWhereInput | boolean
+  connect?: Prisma.DocumentDetailWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentDetailUpdateToOneWithWhereWithoutClosedDocumentInput, Prisma.DocumentDetailUpdateWithoutClosedDocumentInput>, Prisma.DocumentDetailUncheckedUpdateWithoutClosedDocumentInput>
 }
 
 export type DocumentDetailCreateNestedOneWithoutProductsInput = {
@@ -526,6 +588,7 @@ export type DocumentDetailCreateWithoutDocumentInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
@@ -536,6 +599,7 @@ export type DocumentDetailCreateWithoutDocumentInput = {
 
 export type DocumentDetailUncheckedCreateWithoutDocumentInput = {
   id?: number
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -567,6 +631,7 @@ export type DocumentDetailUpdateWithoutDocumentInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
@@ -577,6 +642,77 @@ export type DocumentDetailUpdateWithoutDocumentInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutDocumentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
+  supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
+  financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
+  importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
+  specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
+}
+
+export type DocumentDetailCreateWithoutClosedDocumentInput = {
+  investmentType?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
+  supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
+  financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
+  importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
+  specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
+}
+
+export type DocumentDetailUncheckedCreateWithoutClosedDocumentInput = {
+  id?: number
+  documentId?: number | null
+  investmentType?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
+  supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
+  financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
+  importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
+  specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
+}
+
+export type DocumentDetailCreateOrConnectWithoutClosedDocumentInput = {
+  where: Prisma.DocumentDetailWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentDetailCreateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedCreateWithoutClosedDocumentInput>
+}
+
+export type DocumentDetailUpsertWithoutClosedDocumentInput = {
+  update: Prisma.XOR<Prisma.DocumentDetailUpdateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedUpdateWithoutClosedDocumentInput>
+  create: Prisma.XOR<Prisma.DocumentDetailCreateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedCreateWithoutClosedDocumentInput>
+  where?: Prisma.DocumentDetailWhereInput
+}
+
+export type DocumentDetailUpdateToOneWithWhereWithoutClosedDocumentInput = {
+  where?: Prisma.DocumentDetailWhereInput
+  data: Prisma.XOR<Prisma.DocumentDetailUpdateWithoutClosedDocumentInput, Prisma.DocumentDetailUncheckedUpdateWithoutClosedDocumentInput>
+}
+
+export type DocumentDetailUpdateWithoutClosedDocumentInput = {
+  investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
+  supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
+  financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
+  importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
+  specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
+}
+
+export type DocumentDetailUncheckedUpdateWithoutClosedDocumentInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -592,7 +728,8 @@ export type DocumentDetailCreateWithoutProductsInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
@@ -602,7 +739,8 @@ export type DocumentDetailCreateWithoutProductsInput = {
 
 export type DocumentDetailUncheckedCreateWithoutProductsInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -633,7 +771,8 @@ export type DocumentDetailUpdateWithoutProductsInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
@@ -643,7 +782,8 @@ export type DocumentDetailUpdateWithoutProductsInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutProductsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -658,7 +798,8 @@ export type DocumentDetailCreateWithoutSupportsInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
@@ -668,7 +809,8 @@ export type DocumentDetailCreateWithoutSupportsInput = {
 
 export type DocumentDetailUncheckedCreateWithoutSupportsInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -699,7 +841,8 @@ export type DocumentDetailUpdateWithoutSupportsInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
@@ -709,7 +852,8 @@ export type DocumentDetailUpdateWithoutSupportsInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutSupportsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -724,7 +868,8 @@ export type DocumentDetailCreateWithoutFinancialInfoInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
@@ -734,7 +879,8 @@ export type DocumentDetailCreateWithoutFinancialInfoInput = {
 
 export type DocumentDetailUncheckedCreateWithoutFinancialInfoInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -765,7 +911,8 @@ export type DocumentDetailUpdateWithoutFinancialInfoInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
@@ -775,7 +922,8 @@ export type DocumentDetailUpdateWithoutFinancialInfoInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutFinancialInfoInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -790,7 +938,8 @@ export type DocumentDetailCreateWithoutDomesticMachinesInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
@@ -800,7 +949,8 @@ export type DocumentDetailCreateWithoutDomesticMachinesInput = {
 
 export type DocumentDetailUncheckedCreateWithoutDomesticMachinesInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -831,7 +981,8 @@ export type DocumentDetailUpdateWithoutDomesticMachinesInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
@@ -841,7 +992,8 @@ export type DocumentDetailUpdateWithoutDomesticMachinesInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutDomesticMachinesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -856,7 +1008,8 @@ export type DocumentDetailCreateWithoutImportedMachinesInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
@@ -866,7 +1019,8 @@ export type DocumentDetailCreateWithoutImportedMachinesInput = {
 
 export type DocumentDetailUncheckedCreateWithoutImportedMachinesInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -897,7 +1051,8 @@ export type DocumentDetailUpdateWithoutImportedMachinesInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
@@ -907,7 +1062,8 @@ export type DocumentDetailUpdateWithoutImportedMachinesInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutImportedMachinesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -922,7 +1078,8 @@ export type DocumentDetailCreateWithoutSpecialConditionsInput = {
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  document: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
@@ -932,7 +1089,8 @@ export type DocumentDetailCreateWithoutSpecialConditionsInput = {
 
 export type DocumentDetailUncheckedCreateWithoutSpecialConditionsInput = {
   id?: number
-  documentId: number
+  documentId?: number | null
+  closedDocumentId?: number | null
   investmentType?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -963,7 +1121,8 @@ export type DocumentDetailUpdateWithoutSpecialConditionsInput = {
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  document?: Prisma.IncentiveDocumentUpdateOneRequiredWithoutDetailNestedInput
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
@@ -973,7 +1132,8 @@ export type DocumentDetailUpdateWithoutSpecialConditionsInput = {
 
 export type DocumentDetailUncheckedUpdateWithoutSpecialConditionsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  documentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1054,10 +1214,12 @@ export type DocumentDetailCountOutputTypeCountSpecialConditionsArgs<ExtArgs exte
 export type DocumentDetailSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   documentId?: boolean
+  closedDocumentId?: boolean
   investmentType?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  document?: boolean | Prisma.IncentiveDocumentDefaultArgs<ExtArgs>
+  document?: boolean | Prisma.DocumentDetail$documentArgs<ExtArgs>
+  closedDocument?: boolean | Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>
   products?: boolean | Prisma.DocumentDetail$productsArgs<ExtArgs>
   supports?: boolean | Prisma.DocumentDetail$supportsArgs<ExtArgs>
   financialInfo?: boolean | Prisma.DocumentDetail$financialInfoArgs<ExtArgs>
@@ -1070,32 +1232,38 @@ export type DocumentDetailSelect<ExtArgs extends runtime.Types.Extensions.Intern
 export type DocumentDetailSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   documentId?: boolean
+  closedDocumentId?: boolean
   investmentType?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  document?: boolean | Prisma.IncentiveDocumentDefaultArgs<ExtArgs>
+  document?: boolean | Prisma.DocumentDetail$documentArgs<ExtArgs>
+  closedDocument?: boolean | Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>
 }, ExtArgs["result"]["documentDetail"]>
 
 export type DocumentDetailSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   documentId?: boolean
+  closedDocumentId?: boolean
   investmentType?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  document?: boolean | Prisma.IncentiveDocumentDefaultArgs<ExtArgs>
+  document?: boolean | Prisma.DocumentDetail$documentArgs<ExtArgs>
+  closedDocument?: boolean | Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>
 }, ExtArgs["result"]["documentDetail"]>
 
 export type DocumentDetailSelectScalar = {
   id?: boolean
   documentId?: boolean
+  closedDocumentId?: boolean
   investmentType?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DocumentDetailOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "documentId" | "investmentType" | "createdAt" | "updatedAt", ExtArgs["result"]["documentDetail"]>
+export type DocumentDetailOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "documentId" | "closedDocumentId" | "investmentType" | "createdAt" | "updatedAt", ExtArgs["result"]["documentDetail"]>
 export type DocumentDetailInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  document?: boolean | Prisma.IncentiveDocumentDefaultArgs<ExtArgs>
+  document?: boolean | Prisma.DocumentDetail$documentArgs<ExtArgs>
+  closedDocument?: boolean | Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>
   products?: boolean | Prisma.DocumentDetail$productsArgs<ExtArgs>
   supports?: boolean | Prisma.DocumentDetail$supportsArgs<ExtArgs>
   financialInfo?: boolean | Prisma.DocumentDetail$financialInfoArgs<ExtArgs>
@@ -1105,16 +1273,19 @@ export type DocumentDetailInclude<ExtArgs extends runtime.Types.Extensions.Inter
   _count?: boolean | Prisma.DocumentDetailCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DocumentDetailIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  document?: boolean | Prisma.IncentiveDocumentDefaultArgs<ExtArgs>
+  document?: boolean | Prisma.DocumentDetail$documentArgs<ExtArgs>
+  closedDocument?: boolean | Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>
 }
 export type DocumentDetailIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  document?: boolean | Prisma.IncentiveDocumentDefaultArgs<ExtArgs>
+  document?: boolean | Prisma.DocumentDetail$documentArgs<ExtArgs>
+  closedDocument?: boolean | Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>
 }
 
 export type $DocumentDetailPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DocumentDetail"
   objects: {
-    document: Prisma.$IncentiveDocumentPayload<ExtArgs>
+    document: Prisma.$IncentiveDocumentPayload<ExtArgs> | null
+    closedDocument: Prisma.$ClosedIncentiveDocumentPayload<ExtArgs> | null
     products: Prisma.$DocumentProductPayload<ExtArgs>[]
     supports: Prisma.$DocumentSupportPayload<ExtArgs>[]
     financialInfo: Prisma.$DocumentFinancialInfoPayload<ExtArgs> | null
@@ -1124,7 +1295,8 @@ export type $DocumentDetailPayload<ExtArgs extends runtime.Types.Extensions.Inte
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    documentId: number
+    documentId: number | null
+    closedDocumentId: number | null
     investmentType: string | null
     createdAt: Date
     updatedAt: Date
@@ -1522,7 +1694,8 @@ readonly fields: DocumentDetailFieldRefs;
  */
 export interface Prisma__DocumentDetailClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  document<T extends Prisma.IncentiveDocumentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IncentiveDocumentDefaultArgs<ExtArgs>>): Prisma.Prisma__IncentiveDocumentClient<runtime.Types.Result.GetResult<Prisma.$IncentiveDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  document<T extends Prisma.DocumentDetail$documentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$documentArgs<ExtArgs>>): Prisma.Prisma__IncentiveDocumentClient<runtime.Types.Result.GetResult<Prisma.$IncentiveDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  closedDocument<T extends Prisma.DocumentDetail$closedDocumentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$closedDocumentArgs<ExtArgs>>): Prisma.Prisma__ClosedIncentiveDocumentClient<runtime.Types.Result.GetResult<Prisma.$ClosedIncentiveDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   products<T extends Prisma.DocumentDetail$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   supports<T extends Prisma.DocumentDetail$supportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$supportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentSupportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   financialInfo<T extends Prisma.DocumentDetail$financialInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$financialInfoArgs<ExtArgs>>): Prisma.Prisma__DocumentFinancialInfoClient<runtime.Types.Result.GetResult<Prisma.$DocumentFinancialInfoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -1560,6 +1733,7 @@ export interface Prisma__DocumentDetailClient<T, Null = never, ExtArgs extends r
 export interface DocumentDetailFieldRefs {
   readonly id: Prisma.FieldRef<"DocumentDetail", 'Int'>
   readonly documentId: Prisma.FieldRef<"DocumentDetail", 'Int'>
+  readonly closedDocumentId: Prisma.FieldRef<"DocumentDetail", 'Int'>
   readonly investmentType: Prisma.FieldRef<"DocumentDetail", 'String'>
   readonly createdAt: Prisma.FieldRef<"DocumentDetail", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DocumentDetail", 'DateTime'>
@@ -1961,6 +2135,44 @@ export type DocumentDetailDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many DocumentDetails to delete.
    */
   limit?: number
+}
+
+/**
+ * DocumentDetail.document
+ */
+export type DocumentDetail$documentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the IncentiveDocument
+   */
+  select?: Prisma.IncentiveDocumentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the IncentiveDocument
+   */
+  omit?: Prisma.IncentiveDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.IncentiveDocumentInclude<ExtArgs> | null
+  where?: Prisma.IncentiveDocumentWhereInput
+}
+
+/**
+ * DocumentDetail.closedDocument
+ */
+export type DocumentDetail$closedDocumentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClosedIncentiveDocument
+   */
+  select?: Prisma.ClosedIncentiveDocumentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClosedIncentiveDocument
+   */
+  omit?: Prisma.ClosedIncentiveDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClosedIncentiveDocumentInclude<ExtArgs> | null
+  where?: Prisma.ClosedIncentiveDocumentWhereInput
 }
 
 /**

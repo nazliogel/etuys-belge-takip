@@ -2365,6 +2365,7 @@ export type SystemSettingScalarFieldEnum = (typeof SystemSettingScalarFieldEnum)
 export const DocumentDetailScalarFieldEnum = {
   id: 'id',
   documentId: 'documentId',
+  closedDocumentId: 'closedDocumentId',
   investmentType: 'investmentType',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -1025,7 +1025,8 @@ export function DocumentsScreen({
                               handleOpenDocument(
                                 String(doc.id),
                                 doc.documentNumber,
-                                doc.status === "INACTIVE",
+                                doc.documentStatus === "CLOSED" ||
+                                  doc.documentStatus === "CANCELLED",
                               )
                             }
                             className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
@@ -1141,8 +1142,11 @@ export function DocumentsScreen({
                   document.key === activeDocumentKey ? "block" : "hidden"
                 }
               >
-                {variant === "admin" && !document.isClosed ? (
-                  <AdminDocumentDetailScreen documentId={document.id} />
+                {variant === "admin" ? (
+                  <AdminDocumentDetailScreen
+                    documentId={document.id}
+                    isClosed={document.isClosed}
+                  />
                 ) : (
                   <DocumentDetailScreen
                     documentId={document.id}
