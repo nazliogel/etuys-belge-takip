@@ -170,7 +170,7 @@ function validateIdentityForm(form: IdentityForm): IdentityErrors {
   const errors: IdentityErrors = {};
 
   if (!form.consultant) {
-    errors.consultant = "Danışman seçimi zorunludur.";
+    errors.consultant = "Uzman seçimi zorunludur.";
   }
 
   return errors;
@@ -282,7 +282,7 @@ export function CompanyIdentitySection({
         setIdentitySaved(false);
       }, 2000);
     } catch (error) {
-      console.error("Danışman kaydedilemedi:", error);
+      console.error("Uzman kaydedilemedi:", error);
       setIdentitySaved(false);
     }
   }
@@ -538,7 +538,7 @@ export function CompanyIdentitySection({
 
             <div className="grid grid-cols-1 divide-y divide-slate-200 border-t border-slate-200 md:grid-cols-4 md:divide-x md:divide-y-0">
               <TableField
-                label="Danışman"
+                label="Uzman"
                 options={DANISMAN_OPTIONS}
                 value={identityForm.consultant}
                 onChange={(value) =>

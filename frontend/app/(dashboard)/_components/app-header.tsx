@@ -49,7 +49,7 @@ export function AppHeader({
               {/* BAŞLIK VE İSİM */}
               <div className="shrink-0 text-right">
                 <p className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
-                  Danışmanınız
+                  Uzmanınız
                 </p>
 
                 <p className="mt-0.5 whitespace-nowrap text-sm font-semibold text-white">

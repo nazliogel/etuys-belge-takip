@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
+import {
+  getSelectedDocument,
+  type SelectedDocumentStatus,
+} from "@/app/(dashboard)/_lib/selected-document";
 
 type ProductItem = {
   id: number;
@@ -40,6 +43,8 @@ export function ProductInformationScreen() {
 
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [selectedDocumentStatus, setSelectedDocumentStatus] =
+    useState<SelectedDocumentStatus>("OPEN");
 
   useEffect(() => {
     const documentIdFromUrl = searchParams.get("documentId");
@@ -49,6 +54,7 @@ export function ProductInformationScreen() {
 
     setSelectedDocumentId(documentId);
     setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+    setSelectedDocumentStatus(storedDocument?.status ?? "OPEN");
   }, [searchParams]);
 
   useEffect(() => {
@@ -62,9 +68,15 @@ export function ProductInformationScreen() {
       try {
         setProductsLoading(true);
 
-        const response = await apiFetch<ProductsResponse>(
-          `/documents/${selectedDocumentId}/products`,
-        );
+        const isClosed =
+          selectedDocumentStatus === "CLOSED" ||
+          selectedDocumentStatus === "CANCELLED";
+
+        const endpoint = isClosed
+          ? `/closed-documents/${selectedDocumentId}/products`
+          : `/documents/${selectedDocumentId}/products`;
+
+        const response = await apiFetch<ProductsResponse>(endpoint);
 
         setProducts(response.data.items);
 
@@ -80,7 +92,7 @@ export function ProductInformationScreen() {
     };
 
     void fetchProducts();
-  }, [selectedDocumentId]);
+  }, [selectedDocumentId, selectedDocumentStatus]);
 
   return (
     <div className="space-y-8">
