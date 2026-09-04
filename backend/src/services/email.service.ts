@@ -6,14 +6,15 @@ export interface EmailAttachment {
   filename: string;
   path: string;
 }
-
 interface SendEmailParams {
   to: string;
+  cc?: string[];
   subject: string;
   text: string;
   html?: string;
   attachments?: EmailAttachment[];
 }
+
 
 function getSmtpConfig() {
   const missingFields: string[] = [];
@@ -74,6 +75,7 @@ export class EmailService {
     const result = await transporter.sendMail({
       from,
       to: params.to,
+      cc: params.cc,
       subject: params.subject,
       text: params.text,
       html: params.html,
