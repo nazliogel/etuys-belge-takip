@@ -29,7 +29,13 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
+function getShortCompanyName(companyName: string): string {
+  return companyName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .join(" ");
+}
 export function createClosureEmailTemplate(
   params: ClosureEmailTemplateParams,
 ) {
@@ -40,8 +46,8 @@ export function createClosureEmailTemplate(
     params.investorAddress?.trim() ||
     "Adres bilgisi sistemde bulunmamaktadır.";
 
-  const subject =
-    `${companyName} Yatırım Teşvik Belgesi Kapatma İşlemleri Hk.`;
+ const subject =
+  `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Kapatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 
@@ -192,7 +198,7 @@ export function createExtensionEmailTemplate(
   const targetDate = formatDate(params.targetDate);
 
   const subject =
-    `${companyName} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
+  `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 

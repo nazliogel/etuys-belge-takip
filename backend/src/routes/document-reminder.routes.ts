@@ -21,3 +21,13 @@ documentReminderRouter.get(
   "/candidates",
   documentReminderController.listCandidates,
 );
+
+documentReminderRouter.post(
+  "/test-send/extension",
+  documentReminderController.sendExtensionTest,
+);
+
+documentReminderRouter.post(
+  "/test-send/closure",
+  documentReminderController.sendClosureTest,
+);
