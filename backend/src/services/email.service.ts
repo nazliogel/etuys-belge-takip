@@ -15,7 +15,6 @@ interface SendEmailParams {
   attachments?: EmailAttachment[];
 }
 
-
 function getSmtpConfig() {
   const missingFields: string[] = [];
 
@@ -25,9 +24,7 @@ function getSmtpConfig() {
   if (!env.smtpPassword) missingFields.push("SMTP_PASSWORD");
 
   if (missingFields.length > 0) {
-    throw new Error(
-      `SMTP ayarlari eksik: ${missingFields.join(", ")}`,
-    );
+    throw new Error(`SMTP ayarlari eksik: ${missingFields.join(", ")}`);
   }
 
   return {
@@ -69,8 +66,10 @@ export class EmailService {
   }
 
   async send(params: SendEmailParams) {
-    const { transporter, from } =
-      this.createTransporter();
+    if (!env.emailSendingEnabled) {
+      throw new Error("E-posta gönderimi güvenlik nedeniyle devre dışı.");
+    }
+    const { transporter, from } = this.createTransporter();
 
     const result = await transporter.sendMail({
       from,
