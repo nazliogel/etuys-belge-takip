@@ -1,19 +1,10 @@
 import { prisma } from "../config/env.js";
 
-type ReminderType =
-  | "EXTENSION_APPLICATION"
-  | "CLOSURE_APPLICATION";
+type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
-type ReminderChannel =
-  | "EMAIL"
-  | "WHATSAPP"
-  | "CONSULTANT_IN_APP";
+type ReminderChannel = "EMAIL" | "WHATSAPP" | "CONSULTANT_IN_APP";
 
-type ReminderStatus =
-  | "PENDING"
-  | "SENT"
-  | "FAILED"
-  | "SKIPPED";
+type ReminderStatus = "PENDING" | "SENT" | "FAILED" | "SKIPPED";
 
 export class DocumentReminderRepository {
   async findActiveCandidates() {
@@ -31,6 +22,7 @@ export class DocumentReminderRepository {
       include: {
         company: {
           include: {
+            identity: true,
             contacts: {
               orderBy: [
                 {
