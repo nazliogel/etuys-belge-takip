@@ -1,6 +1,6 @@
 import type { UserRole } from "../generated/prisma/client.js";
 
-export const USER_ROLE_VALUES = ["ADMIN", "COMPANY"] as const;
+export const USER_ROLE_VALUES = ["ADMIN", "OPERATION", "COMPANY"] as const;
 
 export type UserRoleValue = (typeof USER_ROLE_VALUES)[number];
 

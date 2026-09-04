@@ -161,13 +161,18 @@ export class CompanyRepository {
     });
   }
 
-  async updateConsultant(companyId: number, consultant: string) {
+  async updateConsultant(
+    companyId: number,
+    consultant: string,
+    consultantUserId?: number | null,
+  ) {
     return prisma.company.update({
       where: {
         id: companyId,
       },
       data: {
         consultant,
+        consultantUserId: consultantUserId ?? null,
       },
     });
   }

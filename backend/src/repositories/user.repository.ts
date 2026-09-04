@@ -19,6 +19,26 @@ export class UserRepository {
     });
   }
 
+  async findOperationByFullName(
+    firstName: string,
+    lastName: string,
+  ): Promise<User | null> {
+    return prisma.user.findFirst({
+      where: {
+        firstName: {
+          equals: firstName,
+          mode: "insensitive",
+        },
+        lastName: {
+          equals: lastName,
+          mode: "insensitive",
+        },
+        role: "OPERATION",
+        isActive: true,
+      },
+    });
+  }
+
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return prisma.user.create({
       data,
