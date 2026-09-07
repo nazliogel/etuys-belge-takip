@@ -57,7 +57,38 @@ export class DocumentReminderRepository {
       },
     });
   }
+  async enqueue(params: {
+    documentId: number;
+    companyId: number;
+    contactId?: number;
+    type: ReminderType;
+    reminderMonth: number;
+    targetDate: Date;
+    recipient: string;
+    subject?: string;
+    message: string;
+  }): Promise<boolean> {
+    const result = await prisma.documentReminder.createMany({
+      data: [
+        {
+          documentId: params.documentId,
+          companyId: params.companyId,
+          contactId: params.contactId,
+          type: params.type,
+          channel: "EMAIL",
+          status: "PENDING",
+          reminderMonth: params.reminderMonth,
+          targetDate: params.targetDate,
+          recipient: params.recipient,
+          subject: params.subject,
+          message: params.message,
+        },
+      ],
+      skipDuplicates: true,
+    });
 
+    return result.count === 1;
+  }
   async create(params: {
     documentId: number;
     companyId: number;
