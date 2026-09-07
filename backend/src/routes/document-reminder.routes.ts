@@ -31,3 +31,8 @@ documentReminderRouter.post(
   "/test-send/closure",
   documentReminderController.sendClosureTest,
 );
+
+documentReminderRouter.post(
+  "/queue",
+  documentReminderController.enqueueCandidates,
+);

@@ -6,17 +6,15 @@ import { EmailService } from "../services/email.service.js";
 import type { ApiResponse } from "../types/api-response.js";
 import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
+import { DocumentReminderQueueService } from "../services/document-reminder-queue.service.js";
 
-type ReminderType =
-  | "EXTENSION_APPLICATION"
-  | "CLOSURE_APPLICATION";
+type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
 export class DocumentReminderController {
   constructor(
-    private readonly previewService =
-      new DocumentReminderPreviewService(),
-    private readonly emailService =
-      new EmailService(),
+    private readonly previewService = new DocumentReminderPreviewService(),
+    private readonly emailService = new EmailService(),
+    private readonly queueService = new DocumentReminderQueueService(),
   ) {}
 
   private checkAdmin(req: Request) {
@@ -28,13 +26,10 @@ export class DocumentReminderController {
     }
 
     if (req.user.role !== "ADMIN") {
-      throw new AppError(
-        "Bu işlem için yönetici yetkisi gereklidir.",
-        {
-          statusCode: HTTP_STATUS.FORBIDDEN,
-          code: "ADMIN_REQUIRED",
-        },
-      );
+      throw new AppError("Bu işlem için yönetici yetkisi gereklidir.", {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        code: "ADMIN_REQUIRED",
+      });
     }
   }
 
@@ -42,27 +37,21 @@ export class DocumentReminderController {
     res: Response<ApiResponse<unknown>>,
     type?: ReminderType,
   ) {
-    const previews =
-      await this.previewService.createPreviews();
+    const previews = await this.previewService.createPreviews();
 
     const candidates = type
-      ? previews.filter(
-          (preview) => preview.type === type,
-        )
+      ? previews.filter((preview) => preview.type === type)
       : previews;
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
-      message:
-        "Bildirim adayları ön izleme amacıyla listelendi.",
+      message: "Bildirim adayları ön izleme amacıyla listelendi.",
       data: {
         total: candidates.length,
-        sendableCount: candidates.filter(
-          (candidate) => candidate.canSend,
-        ).length,
+        sendableCount: candidates.filter((candidate) => candidate.canSend)
+          .length,
         warningCount: candidates.filter(
-          (candidate) =>
-            candidate.warnings.length > 0,
+          (candidate) => candidate.warnings.length > 0,
         ).length,
         emailSendingEnabled: false,
         candidates,
@@ -79,26 +68,17 @@ export class DocumentReminderController {
 
     const documentId = Number(req.body?.documentId);
 
-    if (
-      !Number.isInteger(documentId) ||
-      documentId <= 0
-    ) {
-      throw new AppError(
-        "Geçerli bir documentId gönderilmelidir.",
-        {
-          statusCode: HTTP_STATUS.BAD_REQUEST,
-          code: "INVALID_DOCUMENT_ID",
-        },
-      );
+    if (!Number.isInteger(documentId) || documentId <= 0) {
+      throw new AppError("Geçerli bir documentId gönderilmelidir.", {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        code: "INVALID_DOCUMENT_ID",
+      });
     }
 
-    const previews =
-      await this.previewService.createPreviews();
+    const previews = await this.previewService.createPreviews();
 
     const preview = previews.find(
-      (item) =>
-        item.documentId === documentId &&
-        item.type === expectedType,
+      (item) => item.documentId === documentId && item.type === expectedType,
     );
 
     if (!preview) {
@@ -134,8 +114,7 @@ export class DocumentReminderController {
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
-      message:
-        "Test e-postası yalnızca tanımlı test alıcısına gönderildi.",
+      message: "Test e-postası yalnızca tanımlı test alıcısına gönderildi.",
       data: {
         documentId: preview.documentId,
         companyName: preview.companyName,
@@ -149,6 +128,25 @@ export class DocumentReminderController {
     });
   }
 
+  enqueueCandidates = async (
+    req: Request,
+    res: Response<ApiResponse<unknown>>,
+  ) => {
+    this.checkAdmin(req);
+
+    const result = await this.queueService.enqueueDueReminders();
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Uygun bildirimler gönderilmeden PENDING kuyruğuna kaydedildi.",
+      data: {
+        ...result,
+        emailSent: false,
+      },
+    });
+  };
+
+  
   listCandidates = async (
     req: Request,
     res: Response<ApiResponse<unknown>>,
@@ -164,10 +162,7 @@ export class DocumentReminderController {
   ) => {
     this.checkAdmin(req);
 
-    return this.createCandidateResponse(
-      res,
-      "EXTENSION_APPLICATION",
-    );
+    return this.createCandidateResponse(res, "EXTENSION_APPLICATION");
   };
 
   listClosureCandidates = async (
@@ -176,34 +171,22 @@ export class DocumentReminderController {
   ) => {
     this.checkAdmin(req);
 
-    return this.createCandidateResponse(
-      res,
-      "CLOSURE_APPLICATION",
-    );
+    return this.createCandidateResponse(res, "CLOSURE_APPLICATION");
   };
 
   sendExtensionTest = async (
     req: Request,
     res: Response<ApiResponse<unknown>>,
   ) => {
-    return this.sendTestEmail(
-      req,
-      res,
-      "EXTENSION_APPLICATION",
-    );
+    return this.sendTestEmail(req, res, "EXTENSION_APPLICATION");
   };
 
   sendClosureTest = async (
     req: Request,
     res: Response<ApiResponse<unknown>>,
   ) => {
-    return this.sendTestEmail(
-      req,
-      res,
-      "CLOSURE_APPLICATION",
-    );
+    return this.sendTestEmail(req, res, "CLOSURE_APPLICATION");
   };
 }
 
-export const documentReminderController =
-  new DocumentReminderController();
+export const documentReminderController = new DocumentReminderController();
