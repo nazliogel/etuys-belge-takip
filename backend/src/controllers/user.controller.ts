@@ -19,7 +19,11 @@ export class UserController {
         });
       }
 
-      const user = await this.userService.createUser(req.body, req.user.role);
+      const user = await this.userService.createUser(
+        req.body,
+        req.user.role,
+        req.user.id,
+      );
 
       return res.status(HTTP_STATUS.CREATED).json({
         success: true,

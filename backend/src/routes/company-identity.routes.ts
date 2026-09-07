@@ -7,6 +7,7 @@ import { CompanyNoteController } from "../controllers/company-note.controller.js
 import { authenticate } from "../middlewares/auth.js";
 import { CompanyIdentityRepository } from "../repositories/company-identity.repository.js";
 import { CompanyRepository } from "../repositories/company.repository.js";
+import { UserRepository } from "../repositories/user.repository.js";
 import { CompanyContactRepository } from "../repositories/company-contact.repository.js";
 import { CompanyNoteRepository } from "../repositories/company-note.repository.js";
 import { CompanyIdentityExcelParserService } from "../services/company-identity-excel-parser.service.js";
@@ -20,6 +21,7 @@ const router = Router();
 
 const companyIdentityRepository = new CompanyIdentityRepository();
 const companyRepository = new CompanyRepository();
+const userRepository = new UserRepository();
 const companyContactRepository = new CompanyContactRepository();
 
 const companyNoteRepository = new CompanyNoteRepository();
@@ -28,6 +30,7 @@ const importRepository = new ImportRepository();
 const companyIdentityService = new CompanyIdentityService(
   companyIdentityRepository,
   companyRepository,
+  userRepository,
 );
 const companyContactService = new CompanyContactService(
   companyContactRepository,

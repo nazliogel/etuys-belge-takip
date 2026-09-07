@@ -18,6 +18,17 @@ export const importRouter = Router();
 
 importRouter.use(authenticate);
 
+importRouter.use((req, res, next) => {
+  if (!req.user || req.user.role !== "ADMIN") {
+    return res.status(403).json({
+      success: false,
+      message: "Bu işlem için yetkiniz bulunmuyor.",
+    });
+  }
+
+  return next();
+});
+
 importRouter.get("/", validate(importBatchListSchema), importController.list);
 
 importRouter.post(
