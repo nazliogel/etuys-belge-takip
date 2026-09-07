@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
+import {
+  getSelectedDocument,
+  type SelectedDocumentStatus,
+} from "@/app/(dashboard)/_lib/selected-document";
 
 type SupportItem = {
   id: number;
@@ -36,6 +39,8 @@ export function SupportsScreen() {
 
   const [supports, setSupports] = useState<SupportItem[]>([]);
   const [supportsLoading, setSupportsLoading] = useState(true);
+  const [selectedDocumentStatus, setSelectedDocumentStatus] =
+    useState<SelectedDocumentStatus>("OPEN");
 
   useEffect(() => {
     const documentIdFromUrl = searchParams.get("documentId");
@@ -45,6 +50,7 @@ export function SupportsScreen() {
 
     setSelectedDocumentId(documentId);
     setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+    setSelectedDocumentStatus(storedDocument?.status ?? "OPEN");
   }, [searchParams]);
 
   useEffect(() => {
@@ -58,9 +64,15 @@ export function SupportsScreen() {
       try {
         setSupportsLoading(true);
 
-        const response = await apiFetch<SupportsResponse>(
-          `/documents/${selectedDocumentId}/supports`,
-        );
+        const isClosed =
+          selectedDocumentStatus === "CLOSED" ||
+          selectedDocumentStatus === "CANCELLED";
+
+        const endpoint = isClosed
+          ? `/closed-documents/${selectedDocumentId}/supports`
+          : `/documents/${selectedDocumentId}/supports`;
+
+        const response = await apiFetch<SupportsResponse>(endpoint);
 
         setSupports(response.data.items);
 
@@ -76,7 +88,7 @@ export function SupportsScreen() {
     };
 
     void fetchSupports();
-  }, [selectedDocumentId]);
+  }, [selectedDocumentId, selectedDocumentStatus]);
 
   return (
     <div className="space-y-6">

@@ -393,13 +393,41 @@ export class CompareService {
 
     this.compareCompany(row, company, changes, importType);
     this.compareAuthorization(row, company, changes);
+    const normalizedProcessStatus = row.processStatus
+      ?.trim()
+      .toLocaleLowerCase("tr-TR");
 
-    const openDocument =
-      importType === "OPEN" && row.externalDocumentId !== null
+    const isAuthorizationExpired =
+      importType === "OPEN" &&
+      row.externalDocumentId === null &&
+      normalizedProcessStatus === "yetki süresi dolmuş";
+
+    if (isAuthorizationExpired) {
+      for (const document of company.documents) {
+        if (!document.isActive) {
+          continue;
+        }
+
+        changes.push({
+          entityType: "INCENTIVE_DOCUMENT",
+          changeType: "UPDATED",
+          fieldName: "isActive",
+          oldValue: "true",
+          newValue: "false",
+          companyId: company.id,
+          documentId: document.id,
+        });
+      }
+    }
+    const matchingOpenDocument =
+      row.externalDocumentId !== null
         ? company.documents.find(
             (item) => item.externalDocumentId === row.externalDocumentId,
           )
         : undefined;
+
+    const openDocument =
+      importType === "OPEN" ? matchingOpenDocument : undefined;
 
     const closedDocument =
       importType === "CLOSED" && row.externalDocumentId !== null
@@ -436,6 +464,18 @@ export class CompareService {
           });
         } else {
           this.compareClosedDocument(row, company.id, closedDocument, changes);
+        }
+
+        if (matchingOpenDocument?.isActive) {
+          changes.push({
+            entityType: "INCENTIVE_DOCUMENT",
+            changeType: "UPDATED",
+            fieldName: "isActive",
+            oldValue: "true",
+            newValue: "false",
+            companyId: company.id,
+            documentId: matchingOpenDocument.id,
+          });
         }
       }
     }

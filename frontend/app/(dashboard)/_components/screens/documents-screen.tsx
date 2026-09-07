@@ -573,13 +573,14 @@ export function DocumentsScreen({
   function handleOpenDocument(
     documentId: string,
     documentNumber: string | null,
-    isClosed: boolean,
+    documentStatus: StoredDocumentStatus,
   ) {
+    const isClosed =
+      documentStatus === "CLOSED" || documentStatus === "CANCELLED";
+
     const documentKey = `${isClosed ? "closed" : "open"}-${documentId}`;
 
-    if (!isClosed) {
-      setSelectedDocument(documentId, documentNumber);
-    }
+    setSelectedDocument(documentId, documentNumber, documentStatus);
 
     setOpenDocuments((current) => {
       const alreadyOpen = current.some(
@@ -896,7 +897,7 @@ export function DocumentsScreen({
                           {variant === "company" && (
                             <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
                               <p className="text-xs font-medium leading-5 text-slate-600">
-                                Yetkilendirme işlemi için lütfen danışmanınız
+                                Yetkilendirme işlemi için lütfen uzmanınız
                                 ile iletişime geçiniz.
                               </p>
                             </div>
@@ -1025,8 +1026,7 @@ export function DocumentsScreen({
                               handleOpenDocument(
                                 String(doc.id),
                                 doc.documentNumber,
-                                doc.documentStatus === "CLOSED" ||
-                                  doc.documentStatus === "CANCELLED",
+                                doc.documentStatus ?? "OPEN",
                               )
                             }
                             className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${

@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
+import {
+  getSelectedDocument,
+  type SelectedDocumentStatus,
+} from "@/app/(dashboard)/_lib/selected-document";
 
 type SpecialCondition = {
   id: number;
@@ -41,6 +44,8 @@ export function SpecialConditionsScreen() {
 
   const [conditions, setConditions] = useState<SpecialCondition[]>([]);
   const [loadingConditions, setLoadingConditions] = useState(true);
+  const [selectedDocumentStatus, setSelectedDocumentStatus] =
+    useState<SelectedDocumentStatus>("OPEN");
 
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +57,7 @@ export function SpecialConditionsScreen() {
 
     setSelectedDocumentId(documentId);
     setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+    setSelectedDocumentStatus(storedDocument?.status ?? "OPEN");
   }, [searchParams]);
 
   useEffect(() => {
@@ -66,9 +72,15 @@ export function SpecialConditionsScreen() {
         setLoadingConditions(true);
         setError(null);
 
-        const response = await apiFetch<SpecialConditionsResponse>(
-          `/documents/${selectedDocumentId}/special-conditions`,
-        );
+        const isClosed =
+          selectedDocumentStatus === "CLOSED" ||
+          selectedDocumentStatus === "CANCELLED";
+
+        const endpoint = isClosed
+          ? `/closed-documents/${selectedDocumentId}/special-conditions`
+          : `/documents/${selectedDocumentId}/special-conditions`;
+
+        const response = await apiFetch<SpecialConditionsResponse>(endpoint);
 
         setConditions(response.data.items ?? []);
 
@@ -89,7 +101,7 @@ export function SpecialConditionsScreen() {
     };
 
     void loadConditions();
-  }, [selectedDocumentId]);
+  }, [selectedDocumentId, selectedDocumentStatus]);
 
   return (
     <div className="space-y-7">
