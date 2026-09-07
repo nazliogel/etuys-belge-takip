@@ -7,7 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { login } from "@/lib/mock-auth";
 
-
 export default function LoginPage() {
   const router = useRouter();
 
@@ -26,7 +25,7 @@ export default function LoginPage() {
     try {
       const user = await login(email, password);
 
-      if (user.role === "ADMIN") {
+      if (user.role === "ADMIN" || user.role === "OPERATION") {
         router.push("/dashboard");
         return;
       }
@@ -183,7 +182,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-             className="group mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl border-b border-blue-900 bg-blue-800 text-sm font-semibold text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+              className="group mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl border-b border-blue-900 bg-blue-800 text-sm font-semibold text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? (
                 "Giriş yapılıyor..."

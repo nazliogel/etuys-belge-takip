@@ -23,7 +23,21 @@ export function AppHeader({
   consultantPhone,
   consultantEmail,
 }: AppHeaderProps) {
-  const isAdmin = role === "ADMIN";
+  const roleLabel =
+    role === "ADMIN"
+      ? "Yönetici"
+      : role === "OPERATION"
+        ? "Uzman"
+        : "Firma Temsilcisi";
+
+  const panelTitle =
+    role === "ADMIN"
+      ? "Yönetim Paneli"
+      : role === "OPERATION"
+        ? "Operasyon Paneli"
+        : "Firma Paneli";
+
+  const showConsultantInfo = role === "COMPANY";
 
   const displayedConsultantName = consultantName?.trim() || "—";
   const displayedConsultantPhone = consultantPhone?.trim() || null;
@@ -37,19 +51,19 @@ export function AppHeader({
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-blue-900 bg-blue-800 px-6 text-blue-100 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <h1 className="text-sm font-bold tracking-tight text-white">
-          {isAdmin ? "Yönetim Paneli" : "Firma Paneli"}
+          {panelTitle}
         </h1>
       </div>
 
       <div className="flex items-center gap-3">
-        {!isAdmin && (
+        {showConsultantInfo && (
           <div className="hidden items-center gap-6 lg:flex">
             {/* DANIŞMAN BİLGİSİ */}
             <div className="flex min-w-[350px] items-center gap-6 border-r border-blue-600 pr-6">
               {/* BAŞLIK VE İSİM */}
               <div className="shrink-0 text-right">
                 <p className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
-                  Danışmanınız
+                  Uzmanınız
                 </p>
 
                 <p className="mt-0.5 whitespace-nowrap text-sm font-semibold text-white">
@@ -151,7 +165,7 @@ export function AppHeader({
             </p>
 
             <span className="inline-block text-sm font-medium text-blue-200">
-              {isAdmin ? "Sistem Yöneticisi" : "Firma Temsilcisi"}
+              {roleLabel}
             </span>
           </div>
 

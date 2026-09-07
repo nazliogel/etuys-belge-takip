@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { getSessionUser } from "@/lib/mock-auth";
 
 const menuItems = [
   {
@@ -64,6 +65,15 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const user = getSessionUser();
+
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (user?.role === "OPERATION" && item.href === "/imports") {
+      return false;
+    }
+
+    return true;
+  });
 
   return (
     <aside className="hidden min-h-screen w-[230px] shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
@@ -79,7 +89,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1.5 px-3 py-5">
-        {menuItems.map((item) => {
+        {visibleMenuItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             pathname === item.href ||

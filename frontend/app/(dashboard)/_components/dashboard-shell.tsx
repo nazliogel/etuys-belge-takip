@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { UserRole } from "../_lib/permissions";
+import type { UserRole } from "@/lib/mock-auth";
 import { AppHeader } from "./app-header";
 import { AppSidebar } from "./app-sidebar";
 
@@ -34,6 +34,7 @@ export function DashboardShell({
           consultantPhone={consultantPhone}
           consultantEmail={consultantEmail}
         />
+
         <main className="flex-1 p-3 sm:p-4 md:p-6">{children}</main>
       </div>
     </div>

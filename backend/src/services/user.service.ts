@@ -21,9 +21,20 @@ export class UserService {
     private readonly companyRepository: CompanyRepository,
   ) {}
 
-  async createUser(payload: CreateUserInput, requesterRole: UserRole) {
-    if (requesterRole !== "ADMIN") {
-      throw new AppError("Only admins can create users.", {
+  async createUser(
+    payload: CreateUserInput,
+    requesterRole: UserRole,
+    requesterUserId: number,
+  ) {
+    if (requesterRole !== "ADMIN" && requesterRole !== "OPERATION") {
+      throw new AppError("You do not have permission to create users.", {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        code: "FORBIDDEN",
+      });
+    }
+
+    if (requesterRole === "OPERATION" && payload.role !== "COMPANY") {
+      throw new AppError("Operation users can only create company users.", {
         statusCode: HTTP_STATUS.FORBIDDEN,
         code: "FORBIDDEN",
       });
@@ -74,6 +85,19 @@ export class UserService {
           statusCode: HTTP_STATUS.NOT_FOUND,
           code: "COMPANY_NOT_FOUND",
         });
+      }
+
+      if (
+        requesterRole === "OPERATION" &&
+        company.consultantUserId !== requesterUserId
+      ) {
+        throw new AppError(
+          "You do not have permission to create a user for this company.",
+          {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            code: "FORBIDDEN",
+          },
+        );
       }
 
       companyId = company.id;

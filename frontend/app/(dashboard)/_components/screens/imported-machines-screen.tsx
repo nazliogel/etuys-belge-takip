@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
+import {
+  getSelectedDocument,
+  type SelectedDocumentStatus,
+} from "@/app/(dashboard)/_lib/selected-document";
 
 type ImportedMachine = {
   id: number;
@@ -149,6 +152,8 @@ export function ImportedMachinesScreen() {
 
   const [machines, setMachines] = useState<ImportedMachine[]>([]);
   const [loadingMachines, setLoadingMachines] = useState(true);
+  const [selectedDocumentStatus, setSelectedDocumentStatus] =
+    useState<SelectedDocumentStatus>("OPEN");
 
   const [error, setError] = useState<string | null>(null);
 
@@ -160,6 +165,7 @@ export function ImportedMachinesScreen() {
 
     setSelectedDocumentId(documentId);
     setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+    setSelectedDocumentStatus(storedDocument?.status ?? "OPEN");
   }, [searchParams]);
 
   useEffect(() => {
@@ -174,9 +180,15 @@ export function ImportedMachinesScreen() {
         setLoadingMachines(true);
         setError(null);
 
-        const response = await apiFetch<ImportedMachinesResponse>(
-          `/documents/${selectedDocumentId}/imported-machines`,
-        );
+        const isClosed =
+          selectedDocumentStatus === "CLOSED" ||
+          selectedDocumentStatus === "CANCELLED";
+
+        const endpoint = isClosed
+          ? `/closed-documents/${selectedDocumentId}/imported-machines`
+          : `/documents/${selectedDocumentId}/imported-machines`;
+
+        const response = await apiFetch<ImportedMachinesResponse>(endpoint);
 
         setMachines(response.data.items ?? []);
 
@@ -197,7 +209,7 @@ export function ImportedMachinesScreen() {
     };
 
     void loadMachines();
-  }, [selectedDocumentId]);
+  }, [selectedDocumentId, selectedDocumentStatus]);
 
   return (
     <div className="space-y-8">

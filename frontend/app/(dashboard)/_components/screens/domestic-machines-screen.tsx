@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
+import {
+  getSelectedDocument,
+  type SelectedDocumentStatus,
+} from "@/app/(dashboard)/_lib/selected-document";
 
 type DomesticMachine = {
   id: number;
@@ -135,6 +138,8 @@ export function DomesticMachinesScreen() {
   const [machines, setMachines] = useState<DomesticMachine[]>([]);
   const [loadingMachines, setLoadingMachines] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDocumentStatus, setSelectedDocumentStatus] =
+    useState<SelectedDocumentStatus>("OPEN");
 
   useEffect(() => {
     const documentIdFromUrl = searchParams.get("documentId");
@@ -144,6 +149,7 @@ export function DomesticMachinesScreen() {
 
     setSelectedDocumentId(documentId);
     setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+    setSelectedDocumentStatus(storedDocument?.status ?? "OPEN");
   }, [searchParams]);
 
   useEffect(() => {
@@ -158,9 +164,15 @@ export function DomesticMachinesScreen() {
         setLoadingMachines(true);
         setError(null);
 
-        const response = await apiFetch<DomesticMachinesResponse>(
-          `/documents/${selectedDocumentId}/domestic-machines`,
-        );
+        const isClosed =
+          selectedDocumentStatus === "CLOSED" ||
+          selectedDocumentStatus === "CANCELLED";
+
+        const endpoint = isClosed
+          ? `/closed-documents/${selectedDocumentId}/domestic-machines`
+          : `/documents/${selectedDocumentId}/domestic-machines`;
+
+        const response = await apiFetch<DomesticMachinesResponse>(endpoint);
 
         setMachines(response.data.items ?? []);
 
@@ -181,7 +193,7 @@ export function DomesticMachinesScreen() {
     };
 
     void loadMachines();
-  }, [selectedDocumentId]);
+  }, [selectedDocumentId, selectedDocumentStatus]);
 
   return (
     <div className="space-y-8">

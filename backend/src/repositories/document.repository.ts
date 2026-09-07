@@ -7,6 +7,7 @@ export class DocumentRepository {
     search?: string;
     isActive?: boolean;
     companyId?: number;
+    consultantUserId?: number;
     status?: "OPEN" | "CLOSED" | "CANCELLED";
   }) {
     const where: Prisma.IncentiveDocumentWhereInput = {};
@@ -38,6 +39,12 @@ export class DocumentRepository {
       where.companyId = params.companyId;
     }
 
+    if (params.consultantUserId !== undefined) {
+      where.company = {
+        consultantUserId: params.consultantUserId,
+      };
+    }
+
     if (params.status) {
       where.status = params.status;
     }
@@ -64,6 +71,7 @@ export class DocumentRepository {
     search?: string;
     isActive?: boolean;
     companyId?: number;
+    consultantUserId?: number;
   }): Promise<number> {
     const where: Prisma.IncentiveDocumentWhereInput = {};
 
@@ -92,6 +100,12 @@ export class DocumentRepository {
 
     if (params.companyId !== undefined) {
       where.companyId = params.companyId;
+    }
+
+    if (params.consultantUserId !== undefined) {
+      where.company = {
+        consultantUserId: params.consultantUserId,
+      };
     }
 
     return prisma.incentiveDocument.count({

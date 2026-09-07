@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
-import { getSelectedDocument } from "@/app/(dashboard)/_lib/selected-document";
+import {
+  getSelectedDocument,
+  type SelectedDocumentStatus,
+} from "@/app/(dashboard)/_lib/selected-document";
 
 type FinancialInfo = {
   id: number;
@@ -90,6 +93,8 @@ export function FinancialInfoScreen() {
   );
 
   const [financialInfoLoading, setFinancialInfoLoading] = useState(true);
+  const [selectedDocumentStatus, setSelectedDocumentStatus] =
+    useState<SelectedDocumentStatus>("OPEN");
 
   useEffect(() => {
     const documentIdFromUrl = searchParams.get("documentId");
@@ -99,6 +104,7 @@ export function FinancialInfoScreen() {
 
     setSelectedDocumentId(documentId);
     setSelectedDocumentNumber(storedDocument?.documentNumber ?? null);
+    setSelectedDocumentStatus(storedDocument?.status ?? "OPEN");
   }, [searchParams]);
 
   useEffect(() => {
@@ -112,9 +118,15 @@ export function FinancialInfoScreen() {
       try {
         setFinancialInfoLoading(true);
 
-        const response = await apiFetch<FinancialInfoResponse>(
-          `/documents/${selectedDocumentId}/financial-info`,
-        );
+        const isClosed =
+          selectedDocumentStatus === "CLOSED" ||
+          selectedDocumentStatus === "CANCELLED";
+
+        const endpoint = isClosed
+          ? `/closed-documents/${selectedDocumentId}/financial-info`
+          : `/documents/${selectedDocumentId}/financial-info`;
+
+        const response = await apiFetch<FinancialInfoResponse>(endpoint);
 
         setFinancialInfo(response.data.financialInfo);
 
@@ -130,7 +142,7 @@ export function FinancialInfoScreen() {
     };
 
     void fetchFinancialInfo();
-  }, [selectedDocumentId]);
+  }, [selectedDocumentId, selectedDocumentStatus]);
 
   const leftCards: FinancialCard[] = financialInfo
     ? [

@@ -131,6 +131,8 @@ export class DocumentService {
   async getDocuments(query: DocumentListQuery, userId: number, role: UserRole) {
     let companyId: number | undefined;
 
+    const consultantUserId = role === "OPERATION" ? userId : undefined;
+
     if (role === "COMPANY") {
       const company = await this.companyRepository.findByUserId(userId);
 
@@ -151,6 +153,7 @@ export class DocumentService {
       search: query.search,
       isActive: requestedIsActive,
       companyId,
+      consultantUserId,
     });
 
     const items = documents.map((document) => ({
@@ -230,6 +233,8 @@ export class DocumentService {
   async getExtensionEligibleDocuments(userId: number, role: UserRole) {
     let companyId: number | undefined;
 
+    const consultantUserId = role === "OPERATION" ? userId : undefined;
+
     if (role === "COMPANY") {
       const company = await this.companyRepository.findByUserId(userId);
 
@@ -247,6 +252,7 @@ export class DocumentService {
       isActive: true,
       status: "OPEN",
       companyId,
+      consultantUserId,
     });
 
     const eligibleDocuments = documents
@@ -329,6 +335,16 @@ export class DocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     return {
       id: document.id,
       externalDocumentId: document.externalDocumentId,
@@ -390,6 +406,16 @@ export class DocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     const products = document.detail?.products ?? [];
 
     return {
@@ -443,6 +469,16 @@ export class DocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     const supports = document.detail?.supports ?? [];
 
     return {
@@ -489,6 +525,16 @@ export class DocumentService {
           },
         );
       }
+    }
+
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const financialInfo = document.detail?.financialInfo ?? null;
@@ -600,6 +646,16 @@ export class DocumentService {
           },
         );
       }
+    }
+
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const domesticMachines = document.detail?.domesticMachines ?? [];
@@ -727,6 +783,16 @@ export class DocumentService {
           },
         );
       }
+    }
+
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const importedMachines = document.detail?.importedMachines ?? [];
@@ -862,6 +928,16 @@ export class DocumentService {
           },
         );
       }
+    }
+
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const specialConditions = document.detail?.specialConditions ?? [];

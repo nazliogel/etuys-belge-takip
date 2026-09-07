@@ -1,12 +1,14 @@
 import { AppError } from "../errors/app-error.js";
 import type { CompanyIdentityRepository } from "../repositories/company-identity.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
+import type { UserRepository } from "../repositories/user.repository.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
 export class CompanyIdentityService {
   constructor(
     private readonly identityRepository: CompanyIdentityRepository,
     private readonly companyRepository: CompanyRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async getByCompanyId(companyId: number) {
@@ -24,12 +26,8 @@ export class CompanyIdentityService {
     return {
       companyId: company.id,
       externalCompanyId: company.externalCompanyId,
-
       investorStatus: identity?.investorStatus ?? null,
-
-      // Vergi numarası Company tablosundan geliyor.
       taxNumber: company.taxNumber,
-
       mersisNumber: identity?.mersisNumber ?? null,
       investorType: identity?.investorType ?? null,
       investorAddress: identity?.investorAddress ?? null,
@@ -39,8 +37,6 @@ export class CompanyIdentityService {
       city: identity?.city ?? null,
       district: identity?.district ?? null,
       mainActivity: identity?.mainActivity ?? null,
-
-      // Kullanıcının değiştirebildiği tek künye alanı
       consultant: company.consultant ?? null,
     };
   }
@@ -55,7 +51,31 @@ export class CompanyIdentityService {
       });
     }
 
-    return this.companyRepository.updateConsultant(companyId, consultant);
+    const normalizedConsultant = consultant.trim();
+
+    let consultantUserId: number | null = null;
+
+    if (normalizedConsultant) {
+      const parts = normalizedConsultant.split(/\s+/);
+
+      const firstName = parts[0] ?? "";
+      const lastName = parts.slice(1).join(" ");
+
+      if (firstName && lastName) {
+        const operationUser = await this.userRepository.findOperationByFullName(
+          firstName,
+          lastName,
+        );
+
+        consultantUserId = operationUser?.id ?? null;
+      }
+    }
+
+    return this.companyRepository.updateConsultant(
+      companyId,
+      normalizedConsultant,
+      consultantUserId,
+    );
   }
 
   async upsertFromExcel(params: {
@@ -85,6 +105,7 @@ export class CompanyIdentityService {
         },
       );
     }
+
     if (params.taxNumber) {
       await this.companyRepository.updateTaxNumber(
         company.id,

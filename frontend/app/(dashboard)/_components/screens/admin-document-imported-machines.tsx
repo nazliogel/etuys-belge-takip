@@ -117,10 +117,8 @@ function normalizeFlag(
   return "EMPTY";
 }
 
-// Sabit başlık için ortak class'lar — her <th>'ye uygulanacak.
-// sticky top-0 + bg-slate-100 zorunlu, aksi halde scroll'da hücre içerikleri sızar.
 const HEAD_BASE =
-  "sticky top-0 z-20 bg-slate-100 border-b-2 border-[#1e2a5e]/15 border-r border-slate-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
+  "sticky top-0 z-20 bg-slate-100 border-b-2 border-[#1e2a5e]/15 border-r border-slate-200 px-1 py-1.5 text-[9px] font-bold uppercase tracking-normal text-slate-500 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
 
 export function AdminDocumentImportedMachines({
   documentId,
@@ -157,7 +155,7 @@ export function AdminDocumentImportedMachines({
     }
 
     void loadMachines();
-  }, [documentId]);
+  }, [documentId, isClosed]);
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -202,146 +200,321 @@ export function AdminDocumentImportedMachines({
         </div>
       ) : (
         <div className="admin-table-scroll max-h-[70vh] overflow-auto pb-1">
-          <table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left">
+          <table className="w-max min-w-full border-separate border-spacing-0 text-left">
             <thead>
               <tr className="text-left">
-                <th className={`${HEAD_BASE} text-right`}>Sıra</th>
+                {/* 1 - SIRA */}
+                <th
+                  className={`${HEAD_BASE} left-0 z-40 w-[42px] min-w-[42px] max-w-[42px] text-right`}
+                >
+                  Sıra
+                </th>
 
-                <th className={HEAD_BASE}>Makine ID</th>
+                {/* 2 - GTİP NO */}
+                <th
+                  className={`${HEAD_BASE} left-[42px] z-40 w-[80px] min-w-[80px] max-w-[80px]`}
+                >
+                  GTİP No
+                </th>
 
-                <th className={HEAD_BASE}>Adı / Özelliği</th>
+                {/* 3 - ADI VE ÖZELLİĞİ */}
+                <th
+                  className={`${HEAD_BASE} left-[122px] z-40 w-[180px] min-w-[180px] max-w-[180px]`}
+                >
+                  Adı ve Özelliği
+                </th>
 
-                <th className={`${HEAD_BASE} text-right`}>Miktar</th>
+                {/* 4 - MİKTARI */}
+                <th
+                  className={`${HEAD_BASE} w-[52px] min-w-[52px] max-w-[52px] text-right`}
+                >
+                  Miktarı
+                </th>
 
-                <th className={HEAD_BASE}>Birim</th>
+                {/* 5 - BİRİM */}
+                <th
+                  className={`${HEAD_BASE} w-[70px] min-w-[70px] max-w-[70px]`}
+                >
+                  Birim
+                </th>
 
-                <th className={HEAD_BASE}>GTİP No</th>
+                {/* MENŞEİ ÜLKE DÖVİZ BİRİM FİYAT FOB */}
+                <th
+                  className={`${HEAD_BASE} w-[105px] min-w-[105px] max-w-[105px] whitespace-normal text-right text-[8px] leading-[1.15]`}
+                >
+                  Menşei Ülke Döviz
+                  <br />
+                  Birim Fiyat (FOB)
+                </th>
 
-                <th className={HEAD_BASE}>GTİP Açıklama</th>
+                {/* TOPLAM TUTAR FOB $ */}
+                <th
+                  className={`${HEAD_BASE} w-[90px] min-w-[90px] max-w-[90px] whitespace-normal text-right text-[8px] leading-[1.15]`}
+                >
+                  Toplam Tutar
+                  <br />
+                  (FOB $)
+                </th>
 
-                <th className={`${HEAD_BASE} text-center`}>Kullanılmış</th>
+                {/* GÜMRÜK VERGİSİ İSTİSNASI */}
+                <th
+                  className={`${HEAD_BASE} w-[92px] min-w-[92px] max-w-[92px] whitespace-normal text-center text-[8px] leading-[1.15]`}
+                >
+                  Gümrük Vergisi
+                  <br />
+                  İstisnası
+                </th>
 
-                <th className={`${HEAD_BASE} text-center`}>Araç</th>
+                {/* KDV İSTİSNASI */}
+                <th
+                  className={`${HEAD_BASE} w-[62px] min-w-[62px] max-w-[62px] whitespace-normal text-center text-[8px] leading-[1.15]`}
+                >
+                  KDV
+                  <br />
+                  İstisnası
+                </th>
 
-                <th className={`${HEAD_BASE} text-center`}>CKD</th>
+                {/* 10 - KULLANILMIŞ MAKİNE */}
+                <th
+                  className={`${HEAD_BASE} w-[90px] min-w-[90px] max-w-[90px] whitespace-normal text-center leading-tight`}
+                >
+                  Kullanılmış
+                  <br />
+                  Makine
+                </th>
 
-                <th className={`${HEAD_BASE} text-right`}>FOB USD</th>
+                {/* BUNDAN SONRASI BİZİM EK ALANLAR */}
+                <th
+                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px] text-right`}
+                >
+                  FOB
+                  <br />
+                  TL
+                </th>
 
-                <th className={`${HEAD_BASE} text-right`}>FOB TL</th>
+                <th
+                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px] text-right`}
+                >
+                  CIF
+                  <br />
+                  TL
+                </th>
 
-                <th className={`${HEAD_BASE} text-right`}>CIF TL</th>
+                <th
+                  className={`${HEAD_BASE} w-[105px] min-w-[105px] max-w-[105px]`}
+                >
+                  GTİP Açıklama
+                </th>
 
-                <th className={`${HEAD_BASE} text-right`}>Menşei Döviz</th>
+                <th
+                  className={`${HEAD_BASE} w-[65px] min-w-[65px] max-w-[65px]`}
+                >
+                  Makine ID
+                </th>
 
-                <th className={`${HEAD_BASE} text-center`}>KDV İstisnası</th>
+                <th
+                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px]`}
+                >
+                  Makine Tipi
+                </th>
 
-                <th className={`${HEAD_BASE} border-r-0 text-center`}>
-                  Gümrük V. İstisnası
+                <th
+                  className={`${HEAD_BASE} w-[46px] min-w-[46px] max-w-[46px] text-center`}
+                >
+                  Araç
+                </th>
+
+                <th
+                  className={`${HEAD_BASE} w-[42px] min-w-[42px] max-w-[42px] border-r-0 text-center`}
+                >
+                  CKD
                 </th>
               </tr>
             </thead>
 
             <tbody>
-              {machines.map((machine, index) => (
-                <tr
-                  key={machine.id}
-                  className={
-                    index % 2 === 1
-                      ? "bg-slate-50/40 hover:bg-slate-50"
-                      : "bg-white hover:bg-slate-50"
-                  }
-                >
-                  {/* SIRA */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-semibold text-slate-600">
-                    {machine.sequenceNumber ?? "-"}
-                  </td>
+              {machines.map((machine, index) => {
+                const rowBackground =
+                  index % 2 === 1 ? "bg-slate-50" : "bg-white";
 
-                  {/* MAKİNE ID */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-[10px] text-slate-700">
-                    {machine.externalMachineId ?? "-"}
-                  </td>
+                const quantity = formatQuantity(machine.quantity);
 
-                  {/* AD */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-900">
-                    {machine.name ?? "-"}
-                  </td>
+                const fobUsd = machine.totalFobUsd
+                  ? `${formatNumber(machine.totalFobUsd)} USD`
+                  : "-";
 
-                  {/* MİKTAR */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
-                    {formatQuantity(machine.quantity)}
-                  </td>
+                const fobTl = machine.totalFobTl
+                  ? `${formatNumber(machine.totalFobTl)} TL`
+                  : "-";
 
-                  {/* BİRİM */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-700">
-                    {machine.unit ?? "-"}
-                  </td>
+                const cifTl = machine.totalCifTl
+                  ? `${formatNumber(machine.totalCifTl)} TL`
+                  : "-";
 
-                  {/* GTİP */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-[10px] text-slate-700">
-                    {machine.gtipCode ?? "-"}
-                  </td>
+                const originCurrency = machine.originCurrencyFobAmount
+                  ? `${formatNumber(machine.originCurrencyFobAmount)} ${
+                      machine.originCurrencyFob ?? ""
+                    }`
+                  : "-";
 
-                  {/* GTİP AÇIKLAMA */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-600">
-                    {machine.gtipDescription ?? "-"}
-                  </td>
+                return (
+                  <tr
+                    key={machine.id}
+                    className={
+                      index % 2 === 1
+                        ? "bg-slate-50/40 hover:bg-slate-50"
+                        : "bg-white hover:bg-slate-50"
+                    }
+                  >
+                    {/* SIRA */}
+                    <td
+                      title={String(machine.sequenceNumber ?? "-")}
+                      className={`sticky left-0 z-10 w-[42px] min-w-[42px] max-w-[42px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-semibold text-slate-600 ${rowBackground}`}
+                    >
+                      {machine.sequenceNumber ?? "-"}
+                    </td>
 
-                  {/* KULLANILMIŞ */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
-                    <FlagBadge value={machine.usedMachine} />
-                  </td>
+                    {/* GTİP NO */}
+                    <td
+                      title={machine.gtipCode ?? "-"}
+                      className={`sticky left-[42px] z-10 w-[80px] min-w-[80px] max-w-[80px] border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700 ${rowBackground}`}
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.gtipCode ?? "-"}
+                      </div>
+                    </td>
 
-                  {/* ARAÇ */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
-                    <FlagBadge value={machine.isVehicle} />
-                  </td>
+                    {/* ADI / ÖZELLİĞİ */}
+                    <td
+                      title={machine.name ?? "-"}
+                      className={`sticky left-[122px] z-10 w-[180px] min-w-[180px] max-w-[180px] border-b border-r border-slate-200 px-1.5 py-1.5 text-[11px] font-semibold text-slate-900 ${rowBackground}`}
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.name ?? "-"}
+                      </div>
+                    </td>
 
-                  {/* CKD */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
-                    <FlagBadge value={machine.isCkd} />
-                  </td>
+                    {/* MİKTARI */}
+                    <td
+                      title={quantity}
+                      className="w-[52px] min-w-[52px] max-w-[52px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {quantity}
+                      </div>
+                    </td>
 
-                  {/* FOB USD */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] font-bold text-slate-900">
-                    {machine.totalFobUsd
-                      ? `${formatNumber(machine.totalFobUsd)} USD`
-                      : "-"}
-                  </td>
+                    {/* BİRİM */}
+                    <td
+                      title={machine.unit ?? "-"}
+                      className="w-[70px] min-w-[70px] max-w-[70px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.unit ?? "-"}
+                      </div>
+                    </td>
 
-                  {/* FOB TL */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
-                    {machine.totalFobTl
-                      ? `${formatNumber(machine.totalFobTl)} TL`
-                      : "-"}
-                  </td>
+                    {/* MENŞEİ ÜLKE DÖVİZ BİRİM FİYAT FOB */}
+                    <td
+                      title={originCurrency}
+                      className="w-[105px] min-w-[105px] max-w-[105px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {originCurrency}
+                      </div>
+                    </td>
 
-                  {/* CIF TL */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
-                    {machine.totalCifTl
-                      ? `${formatNumber(machine.totalCifTl)} TL`
-                      : "-"}
-                  </td>
+                    {/* TOPLAM TUTAR FOB $ */}
+                    <td
+                      title={fobUsd}
+                      className="w-[90px] min-w-[90px] max-w-[90px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-bold text-slate-900"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {fobUsd}
+                      </div>
+                    </td>
 
-                  {/* MENŞEİ DÖVİZ */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-right font-mono text-[11px] text-slate-700">
-                    {machine.originCurrencyFobAmount
-                      ? `${formatNumber(machine.originCurrencyFobAmount)} ${
-                          machine.originCurrencyFob ?? ""
-                        }`
-                      : "-"}
-                  </td>
+                    {/* GÜMRÜK VERGİSİ İSTİSNASI */}
+                    <td className="w-[92px] min-w-[92px] max-w-[92px] border-b border-r border-slate-200 px-1 py-1.5 text-center">
+                      <CompactFlag value={machine.customsTaxExemption} />
+                    </td>
 
-                  {/* KDV İSTİSNASI */}
-                  <td className="border-b border-r border-slate-200 px-2.5 py-1.5 text-center">
-                    <YesNoBadge value={machine.vatExemption} />
-                  </td>
+                    {/* KDV İSTİSNASI */}
+                    <td className="w-[62px] min-w-[62px] max-w-[62px] border-b border-r border-slate-200 px-1 py-1.5 text-center">
+                      <CompactFlag value={machine.vatExemption} />
+                    </td>
+                    {/* KULLANILMIŞ MAKİNE */}
+                    <td
+                      title={machine.usedMachine ?? "-"}
+                      className="w-[90px] min-w-[90px] max-w-[90px] border-b border-r border-slate-200 px-1 py-1.5 text-center text-[10px] font-semibold text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.usedMachine ?? "-"}
+                      </div>
+                    </td>
 
-                  {/* GÜMRÜK VERGİSİ İSTİSNASI */}
-                  <td className="border-b border-slate-200 px-2.5 py-1.5 text-center">
-                    <YesNoBadge value={machine.customsTaxExemption} />
-                  </td>
-                </tr>
-              ))}
+                    {/* FOB TL */}
+                    <td
+                      title={fobTl}
+                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {fobTl}
+                      </div>
+                    </td>
+
+                    {/* CIF TL */}
+                    <td
+                      title={cifTl}
+                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {cifTl}
+                      </div>
+                    </td>
+
+                    {/* GTİP AÇIKLAMA */}
+                    <td
+                      title={machine.gtipDescription ?? "-"}
+                      className="w-[105px] min-w-[105px] max-w-[105px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.gtipDescription ?? "-"}
+                      </div>
+                    </td>
+
+                    {/* MAKİNE ID */}
+                    <td
+                      title={String(machine.externalMachineId ?? "-")}
+                      className="w-[65px] min-w-[65px] max-w-[65px] border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.externalMachineId ?? "-"}
+                      </div>
+                    </td>
+
+                    {/* MAKİNE TİPİ */}
+                    <td
+                      title={machine.machineryEquipmentType ?? "-"}
+                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
+                    >
+                      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {machine.machineryEquipmentType ?? "-"}
+                      </div>
+                    </td>
+
+                    {/* ARAÇ */}
+                    <td className="w-[46px] min-w-[46px] max-w-[46px] border-b border-r border-slate-200 px-1 py-1.5 text-center">
+                      <CompactFlag value={machine.isVehicle} />
+                    </td>
+
+                    {/* CKD */}
+                    <td className="w-[42px] min-w-[42px] max-w-[42px] border-b border-slate-200 px-1 py-1.5 text-center">
+                      <CompactFlag value={machine.isCkd} />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -350,13 +523,12 @@ export function AdminDocumentImportedMachines({
   );
 }
 
-function YesNoBadge({ value }: { value: string | null | undefined }) {
+function CompactFlag({ value }: { value: string | null | undefined }) {
   const normalized = normalizeFlag(value);
 
   if (normalized === "YES") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
-        <span className="h-1 w-1 rounded-full bg-emerald-500" />
+      <span title="EVET" className="text-[9px] font-semibold text-slate-700">
         EVET
       </span>
     );
@@ -364,30 +536,7 @@ function YesNoBadge({ value }: { value: string | null | undefined }) {
 
   if (normalized === "NO") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 ring-1 ring-inset ring-red-200">
-        <span className="h-1 w-1 rounded-full bg-red-500" />
-        HAYIR
-      </span>
-    );
-  }
-
-  return <span className="text-slate-300">-</span>;
-}
-
-function FlagBadge({ value }: { value: string | null | undefined }) {
-  const normalized = normalizeFlag(value);
-
-  if (normalized === "YES") {
-    return (
-      <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-        EVET
-      </span>
-    );
-  }
-
-  if (normalized === "NO") {
-    return (
-      <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+      <span title="HAYIR" className="text-[9px] font-medium text-slate-500">
         HAYIR
       </span>
     );
