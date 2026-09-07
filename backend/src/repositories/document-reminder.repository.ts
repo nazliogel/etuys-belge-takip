@@ -120,6 +120,63 @@ export class DocumentReminderRepository {
       },
     });
   }
+  async findPending(limit = 20) {
+    return prisma.documentReminder.findMany({
+      where: {
+        status: "PENDING",
+        channel: "EMAIL",
+      },
+      include: {
+        document: true,
+        company: {
+          include: {
+            identity: true,
+          },
+        },
+        contact: true,
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: limit,
+    });
+  }
+  async countPending(): Promise<number> {
+    return prisma.documentReminder.count({
+      where: {
+        status: "PENDING",
+        channel: "EMAIL",
+      },
+    });
+  }
+  async countSentSince(date: Date): Promise<number> {
+    return prisma.documentReminder.count({
+      where: {
+        status: "SENT",
+        channel: "EMAIL",
+        sentAt: {
+          gte: date,
+        },
+      },
+    });
+  }
+
+  async findLatestAttemptedEmail() {
+    return prisma.documentReminder.findFirst({
+      where: {
+        channel: "EMAIL",
+        attemptedAt: {
+          not: null,
+        },
+      },
+      orderBy: {
+        attemptedAt: "desc",
+      },
+      select: {
+        attemptedAt: true,
+      },
+    });
+  }
 
   async markSent(id: number, providerId?: string) {
     return prisma.documentReminder.update({

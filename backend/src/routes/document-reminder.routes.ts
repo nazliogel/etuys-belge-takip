@@ -36,3 +36,8 @@ documentReminderRouter.post(
   "/queue",
   documentReminderController.enqueueCandidates,
 );
+
+documentReminderRouter.post(
+  "/worker/process",
+  documentReminderController.processPendingReminders,
+);

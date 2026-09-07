@@ -9,15 +9,25 @@ interface BlockedReminder {
 
 export class DocumentReminderQueueService {
   constructor(
-    private readonly repository =
-      new DocumentReminderRepository(),
-    private readonly previewService =
-      new DocumentReminderPreviewService(),
+    private readonly repository = new DocumentReminderRepository(),
+    private readonly previewService = new DocumentReminderPreviewService(),
   ) {}
 
+  async listPendingReminders(limit = 20) {
+    const [totalCount, reminders] = await Promise.all([
+      this.repository.countPending(),
+      this.repository.findPending(limit),
+    ]);
+
+    return {
+      totalCount,
+      listedCount: reminders.length,
+      reminders,
+    };
+  }
+
   async enqueueDueReminders(today: Date = new Date()) {
-    const previews =
-      await this.previewService.createPreviews(today);
+    const previews = await this.previewService.createPreviews(today);
 
     let queuedCount = 0;
     let duplicateCount = 0;

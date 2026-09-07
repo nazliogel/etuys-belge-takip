@@ -7,6 +7,7 @@ import type { ApiResponse } from "../types/api-response.js";
 import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 import { DocumentReminderQueueService } from "../services/document-reminder-queue.service.js";
+import { DocumentReminderWorkerService } from "../services/document-reminder-worker.service.js";
 
 type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
@@ -15,6 +16,7 @@ export class DocumentReminderController {
     private readonly previewService = new DocumentReminderPreviewService(),
     private readonly emailService = new EmailService(),
     private readonly queueService = new DocumentReminderQueueService(),
+    private readonly workerService = new DocumentReminderWorkerService(),
   ) {}
 
   private checkAdmin(req: Request) {
@@ -146,7 +148,22 @@ export class DocumentReminderController {
     });
   };
 
-  
+  processPendingReminders = async (
+    req: Request,
+    res: Response<ApiResponse<unknown>>,
+  ) => {
+    this.checkAdmin(req);
+
+    const result = await this.workerService.processPendingReminders();
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.processed
+        ? "PENDING bildirimler işlendi."
+        : "E-posta gönderimi kapalı olduğu için kuyruk işlenmedi.",
+      data: result,
+    });
+  };
   listCandidates = async (
     req: Request,
     res: Response<ApiResponse<unknown>>,
