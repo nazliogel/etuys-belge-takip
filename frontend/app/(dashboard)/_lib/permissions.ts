@@ -1,4 +1,4 @@
-export type UserRole = "ADMIN" | "COMPANY";
+export type UserRole = "ADMIN" | "OPERATION" | "COMPANY";
 
 export type Permission =
   | "dashboard:view"
@@ -6,6 +6,8 @@ export type Permission =
   | "documents:view"
   | "documents:view-all"
   | "documents:update"
+  | "company-documents:view"
+  | "document-details:view"
   | "imports:manage"
   | "notifications:view"
   | "users:manage"
@@ -23,7 +25,23 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     "settings:manage",
   ],
 
-  COMPANY: ["documents:view", "notifications:view"],
+  OPERATION: [
+    "dashboard:view",
+    "companies:view",
+    "documents:view",
+    "documents:view-all",
+    "documents:update",
+    "imports:manage",
+    "notifications:view",
+    "users:manage",
+  ],
+
+  COMPANY: [
+    "documents:view",
+    "company-documents:view",
+    "document-details:view",
+    "notifications:view",
+  ],
 };
 
 export function hasPermission(role: UserRole, permission: Permission): boolean {

@@ -9,6 +9,7 @@ datasource db {
 
 enum UserRole {
   ADMIN
+  OPERATION
   COMPANY
 }
 
@@ -89,6 +90,8 @@ model User {
   companyId    Int?
   company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
+  consultantCompanies Company[] @relation("ConsultantCompanies")
+
   uploadedImports ImportBatch[]   @relation("ImportUploadedBy")
   changeHistory   ChangeHistory[]
   notifications   Notification[]
@@ -106,8 +109,12 @@ model Company {
   name              String
   taxNumber         String
   processStatus     String?
-  consultant        String?
-  isActive          Boolean @default(true)
+
+  consultant       String?
+  consultantUserId Int?
+  consultantUser   User?   @relation("ConsultantCompanies", fields: [consultantUserId], references: [id], onDelete: SetNull)
+
+  isActive Boolean @default(true)
 
   users           User[]
   authorization   CompanyAuthorization?
@@ -127,6 +134,7 @@ model Company {
 
   @@index([taxNumber])
   @@index([name])
+  @@index([consultantUserId])
 }
 
 model CompanyIdentity {
@@ -250,15 +258,16 @@ model IncentiveDocument {
 }
 
 model ClosedIncentiveDocument {
-  id                 Int            @id @default(autoincrement())
+  id                 Int       @id @default(autoincrement())
   companyId          Int
-  externalDocumentId Int            @unique
+  externalDocumentId Int       @unique
   documentNumber     String?
-  documentStartDate  DateTime?      @db.Date
-  documentEndDate    DateTime?      @db.Date
-  extensionDate      DateTime?      @db.Date
-  supportClass       String?
-  status             DocumentStatus
+  documentStartDate  DateTime? @db.Date
+  documentEndDate    DateTime? @db.Date
+
+  extensionDate DateTime?      @db.Date
+  supportClass  String?
+  status        DocumentStatus
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 

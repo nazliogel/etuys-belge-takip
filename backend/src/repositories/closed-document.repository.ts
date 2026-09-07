@@ -8,6 +8,7 @@ export class ClosedDocumentRepository {
     take: number;
     search?: string;
     companyId?: number;
+    consultantUserId?: number;
   }) {
     const where: Prisma.ClosedIncentiveDocumentWhereInput = {};
 
@@ -32,6 +33,12 @@ export class ClosedDocumentRepository {
 
     if (params.companyId !== undefined) {
       where.companyId = params.companyId;
+    }
+
+    if (params.consultantUserId !== undefined) {
+      where.company = {
+        consultantUserId: params.consultantUserId,
+      };
     }
 
     return prisma.closedIncentiveDocument.findMany({
@@ -60,6 +67,7 @@ export class ClosedDocumentRepository {
   async count(params: {
     search?: string;
     companyId?: number;
+    consultantUserId?: number;
   }): Promise<number> {
     const where: Prisma.ClosedIncentiveDocumentWhereInput = {};
 
@@ -84,6 +92,12 @@ export class ClosedDocumentRepository {
 
     if (params.companyId !== undefined) {
       where.companyId = params.companyId;
+    }
+
+    if (params.consultantUserId !== undefined) {
+      where.company = {
+        consultantUserId: params.consultantUserId,
+      };
     }
 
     return prisma.closedIncentiveDocument.count({

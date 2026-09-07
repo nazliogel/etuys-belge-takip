@@ -8,6 +8,7 @@ export class CompanyRepository {
     take: number;
     search?: string;
     isActive?: boolean;
+    consultantUserId?: number;
   }) {
     const where: Prisma.CompanyWhereInput = {};
 
@@ -36,6 +37,10 @@ export class CompanyRepository {
       where.isActive = params.isActive;
     }
 
+    if (params.consultantUserId !== undefined) {
+      where.consultantUserId = params.consultantUserId;
+    }
+
     return prisma.company.findMany({
       where,
       skip: params.skip,
@@ -57,6 +62,7 @@ export class CompanyRepository {
   async count(params: {
     search?: string;
     isActive?: boolean;
+    consultantUserId?: number;
   }): Promise<number> {
     const where: Prisma.CompanyWhereInput = {};
 
@@ -83,6 +89,10 @@ export class CompanyRepository {
 
     if (typeof params.isActive === "boolean") {
       where.isActive = params.isActive;
+    }
+
+    if (params.consultantUserId !== undefined) {
+      where.consultantUserId = params.consultantUserId;
     }
 
     return prisma.company.count({
@@ -161,13 +171,18 @@ export class CompanyRepository {
     });
   }
 
-  async updateConsultant(companyId: number, consultant: string) {
+  async updateConsultant(
+    companyId: number,
+    consultant: string,
+    consultantUserId?: number | null,
+  ) {
     return prisma.company.update({
       where: {
         id: companyId,
       },
       data: {
         consultant,
+        ...(consultantUserId !== undefined ? { consultantUserId } : {}),
       },
     });
   }

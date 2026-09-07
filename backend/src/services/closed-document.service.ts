@@ -27,6 +27,8 @@ export class ClosedDocumentService {
 
     let companyId: number | undefined;
 
+    const consultantUserId = role === "OPERATION" ? userId : undefined;
+
     if (role === "COMPANY") {
       const company = await this.companyRepository.findByUserId(userId);
 
@@ -46,10 +48,12 @@ export class ClosedDocumentService {
         take: limit,
         search: query.search,
         companyId,
+        consultantUserId,
       }),
       this.closedDocumentRepository.count({
         search: query.search,
         companyId,
+        consultantUserId,
       }),
     ]);
 
@@ -109,6 +113,16 @@ export class ClosedDocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     return {
       id: document.id,
       externalDocumentId: document.externalDocumentId,
@@ -166,6 +180,16 @@ export class ClosedDocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     const products = document.detail?.products ?? [];
 
     return {
@@ -219,6 +243,16 @@ export class ClosedDocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     const supports = document.detail?.supports ?? [];
 
     return {
@@ -266,6 +300,15 @@ export class ClosedDocumentService {
           },
         );
       }
+    }
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const financialInfo = document.detail?.financialInfo ?? null;
@@ -381,6 +424,16 @@ export class ClosedDocumentService {
       }
     }
 
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
+
     const domesticMachines = document.detail?.domesticMachines ?? [];
 
     return {
@@ -449,6 +502,16 @@ export class ClosedDocumentService {
           },
         );
       }
+    }
+
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const importedMachines = document.detail?.importedMachines ?? [];
@@ -522,6 +585,16 @@ export class ClosedDocumentService {
           },
         );
       }
+    }
+
+    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
+      throw new AppError(
+        "You do not have permission to access this document.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
     }
 
     const specialConditions = document.detail?.specialConditions ?? [];
