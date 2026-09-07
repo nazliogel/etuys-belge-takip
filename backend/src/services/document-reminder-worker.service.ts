@@ -150,6 +150,36 @@ export class DocumentReminderWorkerService {
 
       for (const reminder of reminders) {
         try {
+          const validationErrors: string[] = [];
+
+          if (!reminder.contact) {
+            validationErrors.push("Firma iletişim kaydı bulunamadı.");
+          } else if (!reminder.recipient.trim()) {
+            validationErrors.push("Firma iletişim e-posta adresi boş.");
+          }
+
+          if (
+            reminder.type === "CLOSURE_APPLICATION" &&
+            !reminder.document.documentNumber?.trim()
+          ) {
+            validationErrors.push("Belge numarası bulunamadı.");
+          }
+
+          if (
+            reminder.type === "CLOSURE_APPLICATION" &&
+            !reminder.company.identity?.investorAddress?.trim()
+          ) {
+            validationErrors.push("Firma adresi bulunamadı.");
+          }
+
+          if (validationErrors.length > 0) {
+            throw new Error(
+              `Gönderim öncesi bilgi kontrolü başarısız: ${validationErrors.join(
+                ", ",
+              )}`,
+            );
+          }
+
           const template =
             reminder.type === "CLOSURE_APPLICATION"
               ? createClosureEmailTemplate({
@@ -174,6 +204,30 @@ export class DocumentReminderWorkerService {
             attachments: template.attachments,
           });
 
+          const normalizedRecipient = reminder.recipient.trim().toLowerCase();
+
+          const primaryRecipientAccepted = result.accepted.some(
+            (address) =>
+              String(address).trim().toLowerCase() === normalizedRecipient,
+          );
+
+          if (!primaryRecipientAccepted) {
+            const rejectedRecipients = result.rejected.map((address) =>
+              String(address),
+            );
+
+            throw new Error(
+              [
+                "Firma e-posta adresi SMTP sunucusu tarafından kabul edilmedi.",
+                `Alıcı: ${reminder.recipient}.`,
+                rejectedRecipients.length > 0
+                  ? `Reddedilenler: ${rejectedRecipients.join(", ")}`
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" "),
+            );
+          }
           await this.repository.markSent(reminder.id, result.messageId);
 
           sentCount += 1;
@@ -191,12 +245,49 @@ export class DocumentReminderWorkerService {
 
           await this.repository.markFailed(reminder.id, errorMessage);
 
+          let consultantNotificationCreated = false;
+          let consultantNotificationError: string | undefined;
+
+          const consultant = reminder.company.consultantUser;
+
+          if (
+            consultant &&
+            consultant.isActive &&
+            consultant.role === "OPERATION"
+          ) {
+            try {
+              consultantNotificationCreated =
+                await this.repository.createConsultantNotification({
+                  documentId: reminder.documentId,
+                  companyId: reminder.companyId,
+                  contactId: reminder.contactId ?? undefined,
+                  consultantUserId: consultant.id,
+                  type: reminder.type,
+                  reminderMonth: reminder.reminderMonth,
+                  targetDate: reminder.targetDate,
+                  title: "Firma e-postası gönderilemedi",
+                  description: [
+                    `${reminder.company.name} firmasına ait belge bildirimi gönderilemedi.`,
+                    `Alıcı: ${reminder.recipient}.`,
+                    `Hata: ${errorMessage}`,
+                  ].join(" "),
+                });
+            } catch (notificationError) {
+              consultantNotificationError =
+                notificationError instanceof Error
+                  ? notificationError.message
+                  : "Danışman bildirimi oluşturulamadı.";
+            }
+          }
+
           failedCount += 1;
 
           results.push({
             id: reminder.id,
             status: "FAILED",
             errorMessage,
+            consultantNotificationCreated,
+            consultantNotificationError,
           });
         }
       }

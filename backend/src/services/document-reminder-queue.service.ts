@@ -31,7 +31,9 @@ export class DocumentReminderQueueService {
 
     let queuedCount = 0;
     let duplicateCount = 0;
-
+    let consultantNotificationCount = 0;
+    let duplicateConsultantNotificationCount = 0;
+    let missingConsultantCount = 0;
     const blocked: BlockedReminder[] = [];
 
     for (const preview of previews) {
@@ -41,6 +43,36 @@ export class DocumentReminderQueueService {
           companyName: preview.companyName,
           warnings: preview.warnings,
         });
+
+        if (
+          preview.consultantUserId &&
+          preview.consultantIsActive &&
+          preview.consultantRole === "OPERATION"
+        ) {
+          const notificationCreated =
+            await this.repository.createConsultantNotification({
+              documentId: preview.documentId,
+              companyId: preview.companyId,
+              contactId: preview.contactId,
+              consultantUserId: preview.consultantUserId,
+              type: preview.type,
+              reminderMonth: preview.reminderMonth,
+              targetDate: preview.targetDate,
+              title: "Belge bildirimi gönderilemedi",
+              description: [
+                `${preview.companyName} firmasına ait bildirim eksik bilgiler nedeniyle gönderilemedi.`,
+                `Eksik bilgiler: ${preview.warnings.join(", ")}`,
+              ].join(" "),
+            });
+
+          if (notificationCreated) {
+            consultantNotificationCount += 1;
+          } else {
+            duplicateConsultantNotificationCount += 1;
+          }
+        } else {
+          missingConsultantCount += 1;
+        }
 
         continue;
       }
@@ -70,6 +102,9 @@ export class DocumentReminderQueueService {
       duplicateCount,
       blockedCount: blocked.length,
       blocked,
+      consultantNotificationCount,
+      duplicateConsultantNotificationCount,
+      missingConsultantCount,
     };
   }
 }

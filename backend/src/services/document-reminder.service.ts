@@ -1,8 +1,6 @@
 import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
 
-type ReminderType =
-  | "EXTENSION_APPLICATION"
-  | "CLOSURE_APPLICATION";
+type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
 interface ReminderDecision {
   type: ReminderType;
@@ -12,11 +10,7 @@ interface ReminderDecision {
 
 function normalizeDate(date: Date): Date {
   return new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-    ),
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   );
 }
 
@@ -28,11 +22,7 @@ function subtractMonthsClamped(date: Date, months: number): Date {
   const normalized = normalizeDate(date);
 
   const firstDayOfTargetMonth = new Date(
-    Date.UTC(
-      normalized.getUTCFullYear(),
-      normalized.getUTCMonth() - months,
-      1,
-    ),
+    Date.UTC(normalized.getUTCFullYear(), normalized.getUTCMonth() - months, 1),
   );
 
   const lastDayOfTargetMonth = new Date(
@@ -52,10 +42,7 @@ function subtractMonthsClamped(date: Date, months: number): Date {
   );
 }
 
-function resolveReminderMonth(
-  targetDate: Date,
-  today: Date,
-): number | null {
+function resolveReminderMonth(targetDate: Date, today: Date): number | null {
   const normalizedTarget = normalizeDate(targetDate);
   const normalizedToday = normalizeDate(today);
 
@@ -64,20 +51,11 @@ function resolveReminderMonth(
   }
 
   for (let month = 6; month >= 1; month -= 1) {
-    const periodStart = subtractMonthsClamped(
-      normalizedTarget,
-      month,
-    );
+    const periodStart = subtractMonthsClamped(normalizedTarget, month);
 
-    const periodEnd = subtractMonthsClamped(
-      normalizedTarget,
-      month - 1,
-    );
+    const periodEnd = subtractMonthsClamped(normalizedTarget, month - 1);
 
-    if (
-      normalizedToday >= periodStart &&
-      normalizedToday < periodEnd
-    ) {
+    if (normalizedToday >= periodStart && normalizedToday < periodEnd) {
       return month;
     }
   }
@@ -90,10 +68,7 @@ export function resolveReminderDecision(
   extensionDate: Date,
   today: Date = new Date(),
 ): ReminderDecision | null {
-  const type: ReminderType = isSameDate(
-    documentEndDate,
-    extensionDate,
-  )
+  const type: ReminderType = isSameDate(documentEndDate, extensionDate)
     ? "EXTENSION_APPLICATION"
     : "CLOSURE_APPLICATION";
 
@@ -102,10 +77,7 @@ export function resolveReminderDecision(
       ? normalizeDate(documentEndDate)
       : normalizeDate(extensionDate);
 
-  const reminderMonth = resolveReminderMonth(
-    targetDate,
-    today,
-  );
+  const reminderMonth = resolveReminderMonth(targetDate, today);
 
   if (reminderMonth === null) {
     return null;
@@ -119,20 +91,13 @@ export function resolveReminderDecision(
 }
 
 export class DocumentReminderService {
-  constructor(
-    private readonly repository =
-      new DocumentReminderRepository(),
-  ) {}
+  constructor(private readonly repository = new DocumentReminderRepository()) {}
 
   async findDueCandidates(today: Date = new Date()) {
-    const documents =
-      await this.repository.findActiveCandidates();
+    const documents = await this.repository.findActiveCandidates();
 
     return documents.flatMap((document) => {
-      if (
-        !document.documentEndDate ||
-        !document.extensionDate
-      ) {
+      if (!document.documentEndDate || !document.extensionDate) {
         return [];
       }
 
@@ -147,10 +112,6 @@ export class DocumentReminderService {
       }
 
       const contact = document.company.contacts[0];
-
-      if (!contact) {
-        return [];
-      }
 
       return [
         {

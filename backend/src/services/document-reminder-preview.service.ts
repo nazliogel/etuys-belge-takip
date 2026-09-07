@@ -41,7 +41,9 @@ export class DocumentReminderPreviewService {
 
       const warnings: string[] = [];
 
-      if (!contact.email.trim()) {
+      if (!contact) {
+        warnings.push("Firma iletişim kaydı bulunamadı.");
+      } else if (!contact.email.trim()) {
         warnings.push("Firmanın iletişim e-posta adresi boş.");
       }
 
@@ -60,9 +62,15 @@ export class DocumentReminderPreviewService {
         documentId: document.id,
         companyId: company.id,
         companyName: company.name,
-        contactId: contact.id,
-        contactName: contact.fullName,
-        recipient: contact.email,
+        consultantUserId: company.consultantUser?.id,
+        consultantName: company.consultantUser
+          ? `${company.consultantUser.firstName} ${company.consultantUser.lastName}`.trim()
+          : "",
+        consultantIsActive: company.consultantUser?.isActive ?? false,
+        consultantRole: company.consultantUser?.role,
+        contactId: contact?.id,
+        contactName: contact?.fullName ?? "",
+        recipient: contact?.email.trim() ?? "",
         cc: [...DEFAULT_CC_RECIPIENTS],
         type: decision.type,
         reminderMonth: decision.reminderMonth,

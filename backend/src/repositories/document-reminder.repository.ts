@@ -23,6 +23,16 @@ export class DocumentReminderRepository {
         company: {
           include: {
             identity: true,
+            consultantUser: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: true,
+                isActive: true,
+              },
+            },
             contacts: {
               orderBy: [
                 {
@@ -89,6 +99,60 @@ export class DocumentReminderRepository {
 
     return result.count === 1;
   }
+
+  async createConsultantNotification(params: {
+    documentId: number;
+    companyId: number;
+    contactId?: number;
+    consultantUserId: number;
+    type: ReminderType;
+    reminderMonth: number;
+    targetDate: Date;
+    title: string;
+    description: string;
+  }): Promise<boolean> {
+    return prisma.$transaction(async (transaction) => {
+      const now = new Date();
+
+      const reminderResult = await transaction.documentReminder.createMany({
+        data: [
+          {
+            documentId: params.documentId,
+            companyId: params.companyId,
+            contactId: params.contactId,
+            type: params.type,
+            channel: "CONSULTANT_IN_APP",
+            status: "SENT",
+            reminderMonth: params.reminderMonth,
+            targetDate: params.targetDate,
+            recipient: String(params.consultantUserId),
+            subject: params.title,
+            message: params.description,
+            attemptedAt: now,
+            sentAt: now,
+          },
+        ],
+        skipDuplicates: true,
+      });
+
+      if (reminderResult.count === 0) {
+        return false;
+      }
+
+      await transaction.notification.create({
+        data: {
+          userId: params.consultantUserId,
+          companyId: params.companyId,
+          title: params.title,
+          description: params.description,
+          type: "SYSTEM",
+        },
+      });
+
+      return true;
+    });
+  }
+
   async create(params: {
     documentId: number;
     companyId: number;
@@ -131,6 +195,15 @@ export class DocumentReminderRepository {
         company: {
           include: {
             identity: true,
+            consultantUser: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                isActive: true,
+              },
+            },
           },
         },
         contact: true,
