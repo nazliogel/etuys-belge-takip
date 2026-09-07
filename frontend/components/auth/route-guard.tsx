@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSessionUser, type UserRole } from "@/lib/mock-auth";
-import { roleToRoutePrefix } from "@/lib/role-route";
 
 interface RouteGuardProps {
   children: ReactNode;
@@ -25,11 +24,20 @@ export default function RouteGuard({ children, allowedRole }: RouteGuardProps) {
     }
 
     if (allowedRole) {
-      const allowedRoles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
+      const allowedRoles = Array.isArray(allowedRole)
+        ? allowedRole
+        : [allowedRole];
 
       if (!allowedRoles.includes(user.role)) {
-        router.replace(`/${roleToRoutePrefix(user.role)}/dashboard`);
-        return;
+        if (user.role === "ADMIN" || user.role === "OPERATION") {
+          router.replace("/dashboard");
+          return;
+        }
+
+        if (user.role === "COMPANY") {
+          router.replace("/documents");
+          return;
+        }
       }
     }
 

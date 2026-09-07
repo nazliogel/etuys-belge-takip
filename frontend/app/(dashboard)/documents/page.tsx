@@ -8,8 +8,8 @@ import { DocumentsScreen } from "../_components/screens/documents-screen";
 export default function DocumentsPage() {
   const user = getSessionUser();
 
-  const variant = user?.role === "ADMIN" ? "admin" : "company";
-
+  const variant =
+    user?.role === "ADMIN" || user?.role === "OPERATION" ? "admin" : "company";
   return (
     <RouteGuard>
       <DocumentsScreen variant={variant} />

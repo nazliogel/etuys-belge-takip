@@ -219,7 +219,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
             item.href === "/documents/investment-type";
 
           return (
-            <div key={item.href}>
+            <div key={`${item.label}-${item.href}`}>
               {showDocumentSection && (
                 <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4">
                   <div className="px-1">

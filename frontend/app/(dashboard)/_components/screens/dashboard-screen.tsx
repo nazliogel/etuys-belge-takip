@@ -317,7 +317,15 @@ type SummaryItem = {
  * component her mount olduğunda önce bu cache okunur (varsa) ve state
  * o veriyle başlatılır; API cevabı geldiğinde arka planda güncellenir.
  */
-const DASHBOARD_CACHE_KEY = "dashboard-overview-cache-v3";
+function getDashboardCacheKey() {
+  const user = getSessionUser();
+
+  if (!user) {
+    return "dashboard-overview-cache-v3-guest";
+  }
+
+  return `dashboard-overview-cache-v3-${user.role}-${user.id}`;
+}
 
 type DashboardCache = {
   totalCompanies: number;
@@ -341,7 +349,7 @@ function readDashboardCache(): DashboardCache | null {
   }
 
   try {
-    const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
+    const raw = localStorage.getItem(getDashboardCacheKey());
     return raw ? (JSON.parse(raw) as DashboardCache) : null;
   } catch (error) {
     console.error("Dashboard önbelleği okunamadı:", error);
@@ -411,6 +419,8 @@ export function DashboardScreen() {
 
     async function loadDashboardData() {
       try {
+        const currentUser = getSessionUser();
+        const isOperation = currentUser?.role === "OPERATION";
         const [
           companyResponse,
           activeDocumentResponse,
@@ -440,7 +450,17 @@ export function DashboardScreen() {
           ),
 
           apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
-          apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=3"),
+
+          isOperation
+            ? Promise.resolve<ImportBatchListApiResponse>({
+                success: true,
+                message: "",
+                data: {
+                  items: [],
+                  totalCount: 0,
+                },
+              })
+            : apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=3"),
         ]);
 
         const sortedExpiringItems = [...expiringResponse.data.items].sort(
@@ -543,7 +563,7 @@ export function DashboardScreen() {
         setRecentChanges(cache.recentChanges);
 
         try {
-          localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(cache));
+          localStorage.setItem(getDashboardCacheKey(), JSON.stringify(cache));
         } catch (error) {
           console.error("Dashboard önbelleği yazılamadı:", error);
         }

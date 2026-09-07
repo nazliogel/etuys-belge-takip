@@ -3,7 +3,7 @@ import { CompaniesScreen } from "../_components/screens/companies-screen";
 
 export default function CompaniesPage() {
   return (
-    <RouteGuard allowedRole={["ADMIN", "COMPANY"]}>
+    <RouteGuard allowedRole={["ADMIN", "OPERATION", "COMPANY"]}>
       <CompaniesScreen />
     </RouteGuard>
   );
