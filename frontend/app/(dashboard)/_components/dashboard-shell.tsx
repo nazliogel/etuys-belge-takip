@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { UserRole } from "@/lib/mock-auth";
 import { AppHeader } from "./app-header";
 import { AppSidebar } from "./app-sidebar";
+import { WhatsAppFloatButton } from "./whatsapp-float-button";
 
 interface DashboardShellProps {
   role: UserRole;
@@ -37,6 +38,13 @@ export function DashboardShell({
 
         <main className="flex-1 p-3 sm:p-4 md:p-6">{children}</main>
       </div>
+
+      {role === "COMPANY" && (
+        <WhatsAppFloatButton
+          consultantName={consultantName}
+          consultantPhone={consultantPhone}
+        />
+      )}
     </div>
   );
 }

@@ -38,6 +38,7 @@ type ApiDocument = {
     externalCompanyId: number;
     name: string;
     taxNumber: string;
+    consultant: string | null;
   };
 };
 type CompanyApiDocument = Omit<
@@ -69,6 +70,7 @@ type CompanyDetailResponse = {
     externalCompanyId: number;
     name: string;
     taxNumber: string;
+    consultant: string | null;
     authorizationEndDate: string | null;
     documents: CompanyApiDocument[];
   };
@@ -348,6 +350,7 @@ export function DocumentsScreen({
                 externalCompanyId: response.data.externalCompanyId,
                 name: response.data.name,
                 taxNumber: response.data.taxNumber,
+                consultant: response.data.consultant,
               },
             }),
           );
@@ -797,20 +800,22 @@ export function DocumentsScreen({
         <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
           <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
             <colgroup>
+              <col className="w-[9%]" />
+              <col className="w-[18%]" />
+              <col className="w-[12%]" />
               <col className="w-[10%]" />
-              <col className="w-[22%]" />
-              <col className="w-[11%]" />
               <col className="w-[10%]" />
               <col className="w-[10%]" />
-              <col className="w-[14%]" />
-              <col className="w-[15%]" />
-              <col className="w-[8%]" />
+              <col className="w-[12%]" />
+              <col className="w-[12%]" />
+              <col className="w-[10%]" />
             </colgroup>
             <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
               <tr>
                 {[
                   "Belge No",
                   "Firma",
+                  "Uzman",
                   "Belge Başlangıç",
                   "Belge Bitiş",
                   "Süre Uzatım",
@@ -834,7 +839,7 @@ export function DocumentsScreen({
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className={`px-4 text-center ${
                       isCompanyView ? "py-12" : "py-8"
                     }`}
@@ -847,7 +852,7 @@ export function DocumentsScreen({
               ) : loadError ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className={`px-4 text-center ${
                       isCompanyView ? "py-12" : "py-8"
                     }`}
@@ -862,7 +867,7 @@ export function DocumentsScreen({
               ) : visibleDocuments.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className={`px-4 text-center ${
                       isCompanyView ? "py-12" : "py-8"
                     }`}
@@ -897,8 +902,8 @@ export function DocumentsScreen({
                           {variant === "company" && (
                             <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
                               <p className="text-xs font-medium leading-5 text-slate-600">
-                                Yetkilendirme işlemi için lütfen uzmanınız
-                                ile iletişime geçiniz.
+                                Yetkilendirme işlemi için lütfen uzmanınız ile
+                                iletişime geçiniz.
                               </p>
                             </div>
                           )}
@@ -953,6 +958,7 @@ export function DocumentsScreen({
                           </div>
                         </div>
                       </td>
+                      {/* Firma */}
                       <td
                         className={`max-w-xs ${
                           isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
@@ -969,6 +975,20 @@ export function DocumentsScreen({
 
                         <p className="mt-1 text-[11px] text-slate-400 text-left">
                           VKN: {doc.company?.taxNumber ?? "-"}
+                        </p>
+                      </td>
+
+                      {/* Uzman */}
+                      <td
+                        className={`${
+                          isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
+                        } text-center`}
+                      >
+                        <p
+                          title={doc.company?.consultant ?? undefined}
+                          className="truncate text-xs font-semibold text-slate-700"
+                        >
+                          {doc.company?.consultant ?? "-"}
                         </p>
                       </td>
                       <td
@@ -1019,7 +1039,7 @@ export function DocumentsScreen({
                       <td
                         className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
                       >
-                        <div className="flex items-center justify-end">
+                        <div className="flex items-center justify-center px-1">
                           <button
                             type="button"
                             onClick={() =>
@@ -1029,7 +1049,7 @@ export function DocumentsScreen({
                                 doc.documentStatus ?? "OPEN",
                               )
                             }
-                            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                            className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
                               isSelected
                                 ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"

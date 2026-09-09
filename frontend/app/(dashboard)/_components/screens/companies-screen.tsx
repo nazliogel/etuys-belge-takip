@@ -21,6 +21,7 @@ type Firma = {
   firmaAdi: string;
   vergiNo: string;
   yetkiBitisTarihi: string | null;
+  uzman: string | null;
   isActive: boolean;
   documentCount: number;
 };
@@ -30,6 +31,7 @@ type CompanyApiItem = {
   externalCompanyId: number;
   name: string;
   taxNumber: string;
+  consultant: string | null;
   processStatus: string | null;
   isActive: boolean;
   authorizationEndDate: string | null;
@@ -206,6 +208,7 @@ export function CompaniesScreen() {
           firmaAdi: company.name,
           vergiNo: company.taxNumber,
           yetkiBitisTarihi: company.authorizationEndDate,
+          uzman: company.consultant,
           isActive: company.isActive,
           documentCount: company.documentCount,
         }));
@@ -265,6 +268,7 @@ export function CompaniesScreen() {
               firmaAdi: company.name,
               vergiNo: company.taxNumber,
               yetkiBitisTarihi: company.authorizationEndDate,
+              uzman: company.consultant,
               isActive: company.isActive,
               documentCount: company.documentCount,
             };
@@ -483,6 +487,7 @@ export function CompaniesScreen() {
             <thead className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/60">
               <tr>
                 <th className="px-4 py-2">Firma Adı</th>
+                <th className="px-4 py-2">Uzman</th>
                 <th className="px-4 py-2">Vergi No</th>
                 <th className="px-4 py-2">Yetki Bitiş</th>
                 <th className="px-4 py-2 text-right">İşlemler</th>
@@ -503,7 +508,7 @@ export function CompaniesScreen() {
                 // yol açıyordu. Eski satırları loading sırasında da
                 // (soluklaştırarak) ekranda tutmak bu ani zıplamayı önlüyor.
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center">
+                  <td colSpan={5} className="px-4 py-8 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-red-600" />
                       <p className="text-sm font-medium text-slate-500">
@@ -514,7 +519,7 @@ export function CompaniesScreen() {
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center">
+                  <td colSpan={5} className="px-4 py-8 text-center">
                     <p className="text-sm font-semibold text-red-700">
                       Firmalar yüklenemedi
                     </p>
@@ -523,7 +528,7 @@ export function CompaniesScreen() {
                 </tr>
               ) : filteredFirmalar.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center">
+                  <td colSpan={5} className="px-4 py-6 text-center">
                     <p className="text-sm font-semibold text-slate-700">
                       Sonuç bulunamadı
                     </p>
@@ -547,6 +552,10 @@ export function CompaniesScreen() {
                         <p className="text-xs font-semibold text-slate-900">
                           {firma.firmaAdi}
                         </p>
+                      </td>
+
+                      <td className="px-4 py-2 text-xs font-medium text-slate-700">
+                        {firma.uzman || "-"}
                       </td>
 
                       <td className="px-4 py-2 font-mono text-xs font-medium text-slate-600">
