@@ -174,6 +174,7 @@ export class DocumentService {
         externalCompanyId: document.company.externalCompanyId,
         name: document.company.name,
         taxNumber: document.company.taxNumber,
+        consultant: document.company.consultant,
       },
 
       createdAt: document.createdAt.toISOString(),
@@ -283,6 +284,7 @@ export class DocumentService {
             externalCompanyId: document.company.externalCompanyId,
             name: document.company.name,
             taxNumber: document.company.taxNumber,
+            consultant: document.company.consultant,
           },
         };
       });
@@ -364,6 +366,7 @@ export class DocumentService {
         externalCompanyId: document.company.externalCompanyId,
         name: document.company.name,
         taxNumber: document.company.taxNumber,
+        consultant: document.company.consultant,
         processStatus: document.company.processStatus,
         authorizationEndDate:
           document.company.authorization?.authorizationEndDate?.toISOString() ??

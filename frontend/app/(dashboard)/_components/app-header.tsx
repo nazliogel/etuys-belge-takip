@@ -2,12 +2,6 @@ import type { UserRole } from "../_lib/permissions";
 import { FaWhatsapp } from "react-icons/fa";
 import { Mail, Phone } from "lucide-react";
 
-function createWhatsAppUrl(phone: string): string {
-  const normalizedPhone = phone.replace(/\D/g, "").replace(/^0/, "90");
-
-  return `https://wa.me/${normalizedPhone}`;
-}
-
 interface AppHeaderProps {
   userName: string;
   role: UserRole;
@@ -43,10 +37,6 @@ export function AppHeader({
   const displayedConsultantPhone = consultantPhone?.trim() || null;
   const displayedConsultantEmail = consultantEmail?.trim() || null;
 
-  const consultantWhatsAppUrl = displayedConsultantPhone
-    ? createWhatsAppUrl(displayedConsultantPhone)
-    : null;
-
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-blue-900 bg-blue-800 px-6 text-blue-100 backdrop-blur-md">
       <div className="flex items-center gap-3">
@@ -73,24 +63,14 @@ export function AppHeader({
 
               {/* TELEFON VE E-POSTA */}
               <div className="border-l border-blue-600/70 pl-5">
-                {displayedConsultantPhone && consultantWhatsAppUrl ? (
-                  <a
-                    href={consultantWhatsAppUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-blue-100 transition hover:text-white hover:underline"
-                    title="WhatsApp üzerinden iletişime geç"
+                {displayedConsultantPhone ? (
+                  <p
+                    className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-blue-100"
+                    title="Uzmanınızın telefon numarası"
                   >
-                    <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-green-400">
-                      <FaWhatsapp
-                        size={17}
-                        color="currentColor"
-                        aria-hidden="true"
-                      />
-                    </span>
-
+                    <FaWhatsapp size={16} color="#22c55e" aria-hidden="true" />
                     <span>{displayedConsultantPhone}</span>
-                  </a>
+                  </p>
                 ) : (
                   <p className="text-xs text-blue-300">Telefon bilgisi yok</p>
                 )}
