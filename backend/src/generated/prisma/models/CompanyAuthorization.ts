@@ -221,6 +221,7 @@ export type CompanyAuthorizationWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"CompanyAuthorization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyAuthorization"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
+  reminders?: Prisma.CompanyAuthorizationReminderListRelationFilter
 }
 
 export type CompanyAuthorizationOrderByWithRelationInput = {
@@ -230,6 +231,7 @@ export type CompanyAuthorizationOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   company?: Prisma.CompanyOrderByWithRelationInput
+  reminders?: Prisma.CompanyAuthorizationReminderOrderByRelationAggregateInput
 }
 
 export type CompanyAuthorizationWhereUniqueInput = Prisma.AtLeast<{
@@ -242,6 +244,7 @@ export type CompanyAuthorizationWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"CompanyAuthorization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyAuthorization"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
+  reminders?: Prisma.CompanyAuthorizationReminderListRelationFilter
 }, "id" | "companyId">
 
 export type CompanyAuthorizationOrderByWithAggregationInput = {
@@ -273,6 +276,7 @@ export type CompanyAuthorizationCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutAuthorizationInput
+  reminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutAuthorizationInput
 }
 
 export type CompanyAuthorizationUncheckedCreateInput = {
@@ -281,6 +285,7 @@ export type CompanyAuthorizationUncheckedCreateInput = {
   authorizationEndDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutAuthorizationInput
 }
 
 export type CompanyAuthorizationUpdateInput = {
@@ -288,6 +293,7 @@ export type CompanyAuthorizationUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutAuthorizationNestedInput
+  reminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutAuthorizationNestedInput
 }
 
 export type CompanyAuthorizationUncheckedUpdateInput = {
@@ -296,6 +302,7 @@ export type CompanyAuthorizationUncheckedUpdateInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutAuthorizationNestedInput
 }
 
 export type CompanyAuthorizationCreateManyInput = {
@@ -359,6 +366,11 @@ export type CompanyAuthorizationSumOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
 }
 
+export type CompanyAuthorizationScalarRelationFilter = {
+  is?: Prisma.CompanyAuthorizationWhereInput
+  isNot?: Prisma.CompanyAuthorizationWhereInput
+}
+
 export type CompanyAuthorizationCreateNestedOneWithoutCompanyInput = {
   create?: Prisma.XOR<Prisma.CompanyAuthorizationCreateWithoutCompanyInput, Prisma.CompanyAuthorizationUncheckedCreateWithoutCompanyInput>
   connectOrCreate?: Prisma.CompanyAuthorizationCreateOrConnectWithoutCompanyInput
@@ -391,10 +403,25 @@ export type CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyAuthorizationUpdateToOneWithWhereWithoutCompanyInput, Prisma.CompanyAuthorizationUpdateWithoutCompanyInput>, Prisma.CompanyAuthorizationUncheckedUpdateWithoutCompanyInput>
 }
 
+export type CompanyAuthorizationCreateNestedOneWithoutRemindersInput = {
+  create?: Prisma.XOR<Prisma.CompanyAuthorizationCreateWithoutRemindersInput, Prisma.CompanyAuthorizationUncheckedCreateWithoutRemindersInput>
+  connectOrCreate?: Prisma.CompanyAuthorizationCreateOrConnectWithoutRemindersInput
+  connect?: Prisma.CompanyAuthorizationWhereUniqueInput
+}
+
+export type CompanyAuthorizationUpdateOneRequiredWithoutRemindersNestedInput = {
+  create?: Prisma.XOR<Prisma.CompanyAuthorizationCreateWithoutRemindersInput, Prisma.CompanyAuthorizationUncheckedCreateWithoutRemindersInput>
+  connectOrCreate?: Prisma.CompanyAuthorizationCreateOrConnectWithoutRemindersInput
+  upsert?: Prisma.CompanyAuthorizationUpsertWithoutRemindersInput
+  connect?: Prisma.CompanyAuthorizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyAuthorizationUpdateToOneWithWhereWithoutRemindersInput, Prisma.CompanyAuthorizationUpdateWithoutRemindersInput>, Prisma.CompanyAuthorizationUncheckedUpdateWithoutRemindersInput>
+}
+
 export type CompanyAuthorizationCreateWithoutCompanyInput = {
   authorizationEndDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutAuthorizationInput
 }
 
 export type CompanyAuthorizationUncheckedCreateWithoutCompanyInput = {
@@ -402,6 +429,7 @@ export type CompanyAuthorizationUncheckedCreateWithoutCompanyInput = {
   authorizationEndDate?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutAuthorizationInput
 }
 
 export type CompanyAuthorizationCreateOrConnectWithoutCompanyInput = {
@@ -424,6 +452,7 @@ export type CompanyAuthorizationUpdateWithoutCompanyInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutAuthorizationNestedInput
 }
 
 export type CompanyAuthorizationUncheckedUpdateWithoutCompanyInput = {
@@ -431,8 +460,84 @@ export type CompanyAuthorizationUncheckedUpdateWithoutCompanyInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutAuthorizationNestedInput
 }
 
+export type CompanyAuthorizationCreateWithoutRemindersInput = {
+  authorizationEndDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  company: Prisma.CompanyCreateNestedOneWithoutAuthorizationInput
+}
+
+export type CompanyAuthorizationUncheckedCreateWithoutRemindersInput = {
+  id?: number
+  companyId: number
+  authorizationEndDate?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CompanyAuthorizationCreateOrConnectWithoutRemindersInput = {
+  where: Prisma.CompanyAuthorizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.CompanyAuthorizationCreateWithoutRemindersInput, Prisma.CompanyAuthorizationUncheckedCreateWithoutRemindersInput>
+}
+
+export type CompanyAuthorizationUpsertWithoutRemindersInput = {
+  update: Prisma.XOR<Prisma.CompanyAuthorizationUpdateWithoutRemindersInput, Prisma.CompanyAuthorizationUncheckedUpdateWithoutRemindersInput>
+  create: Prisma.XOR<Prisma.CompanyAuthorizationCreateWithoutRemindersInput, Prisma.CompanyAuthorizationUncheckedCreateWithoutRemindersInput>
+  where?: Prisma.CompanyAuthorizationWhereInput
+}
+
+export type CompanyAuthorizationUpdateToOneWithWhereWithoutRemindersInput = {
+  where?: Prisma.CompanyAuthorizationWhereInput
+  data: Prisma.XOR<Prisma.CompanyAuthorizationUpdateWithoutRemindersInput, Prisma.CompanyAuthorizationUncheckedUpdateWithoutRemindersInput>
+}
+
+export type CompanyAuthorizationUpdateWithoutRemindersInput = {
+  authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  company?: Prisma.CompanyUpdateOneRequiredWithoutAuthorizationNestedInput
+}
+
+export type CompanyAuthorizationUncheckedUpdateWithoutRemindersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  companyId?: Prisma.IntFieldUpdateOperationsInput | number
+  authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type CompanyAuthorizationCountOutputType
+ */
+
+export type CompanyAuthorizationCountOutputType = {
+  reminders: number
+}
+
+export type CompanyAuthorizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  reminders?: boolean | CompanyAuthorizationCountOutputTypeCountRemindersArgs
+}
+
+/**
+ * CompanyAuthorizationCountOutputType without action
+ */
+export type CompanyAuthorizationCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyAuthorizationCountOutputType
+   */
+  select?: Prisma.CompanyAuthorizationCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CompanyAuthorizationCountOutputType without action
+ */
+export type CompanyAuthorizationCountOutputTypeCountRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CompanyAuthorizationReminderWhereInput
+}
 
 
 export type CompanyAuthorizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -442,6 +547,8 @@ export type CompanyAuthorizationSelect<ExtArgs extends runtime.Types.Extensions.
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
+  reminders?: boolean | Prisma.CompanyAuthorization$remindersArgs<ExtArgs>
+  _count?: boolean | Prisma.CompanyAuthorizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["companyAuthorization"]>
 
 export type CompanyAuthorizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -473,6 +580,8 @@ export type CompanyAuthorizationSelectScalar = {
 export type CompanyAuthorizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "authorizationEndDate" | "createdAt" | "updatedAt", ExtArgs["result"]["companyAuthorization"]>
 export type CompanyAuthorizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
+  reminders?: boolean | Prisma.CompanyAuthorization$remindersArgs<ExtArgs>
+  _count?: boolean | Prisma.CompanyAuthorizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CompanyAuthorizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -485,6 +594,7 @@ export type $CompanyAuthorizationPayload<ExtArgs extends runtime.Types.Extension
   name: "CompanyAuthorization"
   objects: {
     company: Prisma.$CompanyPayload<ExtArgs>
+    reminders: Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -887,6 +997,7 @@ readonly fields: CompanyAuthorizationFieldRefs;
 export interface Prisma__CompanyAuthorizationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   company<T extends Prisma.CompanyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyDefaultArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  reminders<T extends Prisma.CompanyAuthorization$remindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyAuthorization$remindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1319,6 +1430,30 @@ export type CompanyAuthorizationDeleteManyArgs<ExtArgs extends runtime.Types.Ext
    * Limit how many CompanyAuthorizations to delete.
    */
   limit?: number
+}
+
+/**
+ * CompanyAuthorization.reminders
+ */
+export type CompanyAuthorization$remindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyAuthorizationReminder
+   */
+  select?: Prisma.CompanyAuthorizationReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CompanyAuthorizationReminder
+   */
+  omit?: Prisma.CompanyAuthorizationReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyAuthorizationReminderInclude<ExtArgs> | null
+  where?: Prisma.CompanyAuthorizationReminderWhereInput
+  orderBy?: Prisma.CompanyAuthorizationReminderOrderByWithRelationInput | Prisma.CompanyAuthorizationReminderOrderByWithRelationInput[]
+  cursor?: Prisma.CompanyAuthorizationReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CompanyAuthorizationReminderScalarFieldEnum | Prisma.CompanyAuthorizationReminderScalarFieldEnum[]
 }
 
 /**

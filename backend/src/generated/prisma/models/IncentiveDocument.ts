@@ -280,6 +280,7 @@ export type IncentiveDocumentWhereInput = {
   isActive?: Prisma.BoolFilter<"IncentiveDocument"> | boolean
   createdAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
+  documentReminders?: Prisma.DocumentReminderListRelationFilter
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
   importRows?: Prisma.ImportRowListRelationFilter
   importChanges?: Prisma.ImportChangeListRelationFilter
@@ -300,6 +301,7 @@ export type IncentiveDocumentOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  documentReminders?: Prisma.DocumentReminderOrderByRelationAggregateInput
   company?: Prisma.CompanyOrderByWithRelationInput
   importRows?: Prisma.ImportRowOrderByRelationAggregateInput
   importChanges?: Prisma.ImportChangeOrderByRelationAggregateInput
@@ -323,6 +325,7 @@ export type IncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"IncentiveDocument"> | boolean
   createdAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"IncentiveDocument"> | Date | string
+  documentReminders?: Prisma.DocumentReminderListRelationFilter
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
   importRows?: Prisma.ImportRowListRelationFilter
   importChanges?: Prisma.ImportChangeListRelationFilter
@@ -379,6 +382,7 @@ export type IncentiveDocumentCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutDocumentInput
   company: Prisma.CompanyCreateNestedOneWithoutDocumentsInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutDocumentInput
@@ -399,6 +403,7 @@ export type IncentiveDocumentUncheckedCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutDocumentInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutDocumentInput
@@ -416,6 +421,7 @@ export type IncentiveDocumentUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutDocumentNestedInput
   company?: Prisma.CompanyUpdateOneRequiredWithoutDocumentsNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutDocumentNestedInput
@@ -436,6 +442,7 @@ export type IncentiveDocumentUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutDocumentNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutDocumentNestedInput
@@ -557,6 +564,11 @@ export type IncentiveDocumentNullableScalarRelationFilter = {
   isNot?: Prisma.IncentiveDocumentWhereInput | null
 }
 
+export type IncentiveDocumentScalarRelationFilter = {
+  is?: Prisma.IncentiveDocumentWhereInput
+  isNot?: Prisma.IncentiveDocumentWhereInput
+}
+
 export type IncentiveDocumentCreateNestedManyWithoutCompanyInput = {
   create?: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutCompanyInput, Prisma.IncentiveDocumentUncheckedCreateWithoutCompanyInput> | Prisma.IncentiveDocumentCreateWithoutCompanyInput[] | Prisma.IncentiveDocumentUncheckedCreateWithoutCompanyInput[]
   connectOrCreate?: Prisma.IncentiveDocumentCreateOrConnectWithoutCompanyInput | Prisma.IncentiveDocumentCreateOrConnectWithoutCompanyInput[]
@@ -667,6 +679,20 @@ export type IncentiveDocumentUpdateOneWithoutDetailNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.IncentiveDocumentUpdateToOneWithWhereWithoutDetailInput, Prisma.IncentiveDocumentUpdateWithoutDetailInput>, Prisma.IncentiveDocumentUncheckedUpdateWithoutDetailInput>
 }
 
+export type IncentiveDocumentCreateNestedOneWithoutDocumentRemindersInput = {
+  create?: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUncheckedCreateWithoutDocumentRemindersInput>
+  connectOrCreate?: Prisma.IncentiveDocumentCreateOrConnectWithoutDocumentRemindersInput
+  connect?: Prisma.IncentiveDocumentWhereUniqueInput
+}
+
+export type IncentiveDocumentUpdateOneRequiredWithoutDocumentRemindersNestedInput = {
+  create?: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUncheckedCreateWithoutDocumentRemindersInput>
+  connectOrCreate?: Prisma.IncentiveDocumentCreateOrConnectWithoutDocumentRemindersInput
+  upsert?: Prisma.IncentiveDocumentUpsertWithoutDocumentRemindersInput
+  connect?: Prisma.IncentiveDocumentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.IncentiveDocumentUpdateToOneWithWhereWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUpdateWithoutDocumentRemindersInput>, Prisma.IncentiveDocumentUncheckedUpdateWithoutDocumentRemindersInput>
+}
+
 export type IncentiveDocumentCreateWithoutCompanyInput = {
   externalDocumentId: number
   documentNumber?: string | null
@@ -678,6 +704,7 @@ export type IncentiveDocumentCreateWithoutCompanyInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutDocumentInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutDocumentInput
@@ -696,6 +723,7 @@ export type IncentiveDocumentUncheckedCreateWithoutCompanyInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutDocumentInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutDocumentInput
@@ -757,6 +785,7 @@ export type IncentiveDocumentCreateWithoutImportRowsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutDocumentInput
   company: Prisma.CompanyCreateNestedOneWithoutDocumentsInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutDocumentInput
@@ -776,6 +805,7 @@ export type IncentiveDocumentUncheckedCreateWithoutImportRowsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutDocumentInput
   detail?: Prisma.DocumentDetailUncheckedCreateNestedOneWithoutDocumentInput
@@ -808,6 +838,7 @@ export type IncentiveDocumentUpdateWithoutImportRowsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutDocumentNestedInput
   company?: Prisma.CompanyUpdateOneRequiredWithoutDocumentsNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutDocumentNestedInput
@@ -827,6 +858,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportRowsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutDocumentNestedInput
   detail?: Prisma.DocumentDetailUncheckedUpdateOneWithoutDocumentNestedInput
@@ -843,6 +875,7 @@ export type IncentiveDocumentCreateWithoutImportChangesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutDocumentInput
   company: Prisma.CompanyCreateNestedOneWithoutDocumentsInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutDocumentInput
@@ -862,6 +895,7 @@ export type IncentiveDocumentUncheckedCreateWithoutImportChangesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutDocumentInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutDocumentInput
   detail?: Prisma.DocumentDetailUncheckedCreateNestedOneWithoutDocumentInput
@@ -894,6 +928,7 @@ export type IncentiveDocumentUpdateWithoutImportChangesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutDocumentNestedInput
   company?: Prisma.CompanyUpdateOneRequiredWithoutDocumentsNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutDocumentNestedInput
@@ -913,6 +948,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportChangesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutDocumentNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutDocumentNestedInput
   detail?: Prisma.DocumentDetailUncheckedUpdateOneWithoutDocumentNestedInput
@@ -929,6 +965,7 @@ export type IncentiveDocumentCreateWithoutChangeHistoryInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutDocumentInput
   company: Prisma.CompanyCreateNestedOneWithoutDocumentsInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutDocumentInput
@@ -948,6 +985,7 @@ export type IncentiveDocumentUncheckedCreateWithoutChangeHistoryInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutDocumentInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutDocumentInput
   detail?: Prisma.DocumentDetailUncheckedCreateNestedOneWithoutDocumentInput
@@ -980,6 +1018,7 @@ export type IncentiveDocumentUpdateWithoutChangeHistoryInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutDocumentNestedInput
   company?: Prisma.CompanyUpdateOneRequiredWithoutDocumentsNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutDocumentNestedInput
@@ -999,6 +1038,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutChangeHistoryInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutDocumentNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutDocumentNestedInput
   detail?: Prisma.DocumentDetailUncheckedUpdateOneWithoutDocumentNestedInput
@@ -1015,6 +1055,7 @@ export type IncentiveDocumentCreateWithoutDetailInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutDocumentInput
   company: Prisma.CompanyCreateNestedOneWithoutDocumentsInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutDocumentInput
@@ -1034,6 +1075,7 @@ export type IncentiveDocumentUncheckedCreateWithoutDetailInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutDocumentInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutDocumentInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutDocumentInput
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutDocumentInput
@@ -1066,6 +1108,7 @@ export type IncentiveDocumentUpdateWithoutDetailInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutDocumentNestedInput
   company?: Prisma.CompanyUpdateOneRequiredWithoutDocumentsNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutDocumentNestedInput
@@ -1085,9 +1128,100 @@ export type IncentiveDocumentUncheckedUpdateWithoutDetailInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutDocumentNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutDocumentNestedInput
+}
+
+export type IncentiveDocumentCreateWithoutDocumentRemindersInput = {
+  externalDocumentId: number
+  documentNumber?: string | null
+  documentStartDate?: Date | string | null
+  documentEndDate?: Date | string | null
+  extensionDate?: Date | string | null
+  supportClass?: string | null
+  status?: $Enums.DocumentStatus
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  company: Prisma.CompanyCreateNestedOneWithoutDocumentsInput
+  importRows?: Prisma.ImportRowCreateNestedManyWithoutDocumentInput
+  importChanges?: Prisma.ImportChangeCreateNestedManyWithoutDocumentInput
+  changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutDocumentInput
+  detail?: Prisma.DocumentDetailCreateNestedOneWithoutDocumentInput
+}
+
+export type IncentiveDocumentUncheckedCreateWithoutDocumentRemindersInput = {
+  id?: number
+  companyId: number
+  externalDocumentId: number
+  documentNumber?: string | null
+  documentStartDate?: Date | string | null
+  documentEndDate?: Date | string | null
+  extensionDate?: Date | string | null
+  supportClass?: string | null
+  status?: $Enums.DocumentStatus
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutDocumentInput
+  importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutDocumentInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutDocumentInput
+  detail?: Prisma.DocumentDetailUncheckedCreateNestedOneWithoutDocumentInput
+}
+
+export type IncentiveDocumentCreateOrConnectWithoutDocumentRemindersInput = {
+  where: Prisma.IncentiveDocumentWhereUniqueInput
+  create: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUncheckedCreateWithoutDocumentRemindersInput>
+}
+
+export type IncentiveDocumentUpsertWithoutDocumentRemindersInput = {
+  update: Prisma.XOR<Prisma.IncentiveDocumentUpdateWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUncheckedUpdateWithoutDocumentRemindersInput>
+  create: Prisma.XOR<Prisma.IncentiveDocumentCreateWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUncheckedCreateWithoutDocumentRemindersInput>
+  where?: Prisma.IncentiveDocumentWhereInput
+}
+
+export type IncentiveDocumentUpdateToOneWithWhereWithoutDocumentRemindersInput = {
+  where?: Prisma.IncentiveDocumentWhereInput
+  data: Prisma.XOR<Prisma.IncentiveDocumentUpdateWithoutDocumentRemindersInput, Prisma.IncentiveDocumentUncheckedUpdateWithoutDocumentRemindersInput>
+}
+
+export type IncentiveDocumentUpdateWithoutDocumentRemindersInput = {
+  externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  company?: Prisma.CompanyUpdateOneRequiredWithoutDocumentsNestedInput
+  importRows?: Prisma.ImportRowUpdateManyWithoutDocumentNestedInput
+  importChanges?: Prisma.ImportChangeUpdateManyWithoutDocumentNestedInput
+  changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutDocumentNestedInput
+  detail?: Prisma.DocumentDetailUpdateOneWithoutDocumentNestedInput
+}
+
+export type IncentiveDocumentUncheckedUpdateWithoutDocumentRemindersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  companyId?: Prisma.IntFieldUpdateOperationsInput | number
+  externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutDocumentNestedInput
+  importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutDocumentNestedInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutDocumentNestedInput
+  detail?: Prisma.DocumentDetailUncheckedUpdateOneWithoutDocumentNestedInput
 }
 
 export type IncentiveDocumentCreateManyCompanyInput = {
@@ -1115,6 +1249,7 @@ export type IncentiveDocumentUpdateWithoutCompanyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutDocumentNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutDocumentNestedInput
@@ -1133,6 +1268,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutDocumentNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutDocumentNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutDocumentNestedInput
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutDocumentNestedInput
@@ -1159,12 +1295,14 @@ export type IncentiveDocumentUncheckedUpdateManyWithoutCompanyInput = {
  */
 
 export type IncentiveDocumentCountOutputType = {
+  documentReminders: number
   importRows: number
   importChanges: number
   changeHistory: number
 }
 
 export type IncentiveDocumentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  documentReminders?: boolean | IncentiveDocumentCountOutputTypeCountDocumentRemindersArgs
   importRows?: boolean | IncentiveDocumentCountOutputTypeCountImportRowsArgs
   importChanges?: boolean | IncentiveDocumentCountOutputTypeCountImportChangesArgs
   changeHistory?: boolean | IncentiveDocumentCountOutputTypeCountChangeHistoryArgs
@@ -1178,6 +1316,13 @@ export type IncentiveDocumentCountOutputTypeDefaultArgs<ExtArgs extends runtime.
    * Select specific fields to fetch from the IncentiveDocumentCountOutputType
    */
   select?: Prisma.IncentiveDocumentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * IncentiveDocumentCountOutputType without action
+ */
+export type IncentiveDocumentCountOutputTypeCountDocumentRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DocumentReminderWhereInput
 }
 
 /**
@@ -1215,6 +1360,7 @@ export type IncentiveDocumentSelect<ExtArgs extends runtime.Types.Extensions.Int
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  documentReminders?: boolean | Prisma.IncentiveDocument$documentRemindersArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   importRows?: boolean | Prisma.IncentiveDocument$importRowsArgs<ExtArgs>
   importChanges?: boolean | Prisma.IncentiveDocument$importChangesArgs<ExtArgs>
@@ -1272,6 +1418,7 @@ export type IncentiveDocumentSelectScalar = {
 
 export type IncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "status" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["incentiveDocument"]>
 export type IncentiveDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  documentReminders?: boolean | Prisma.IncentiveDocument$documentRemindersArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   importRows?: boolean | Prisma.IncentiveDocument$importRowsArgs<ExtArgs>
   importChanges?: boolean | Prisma.IncentiveDocument$importChangesArgs<ExtArgs>
@@ -1289,6 +1436,7 @@ export type IncentiveDocumentIncludeUpdateManyAndReturn<ExtArgs extends runtime.
 export type $IncentiveDocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "IncentiveDocument"
   objects: {
+    documentReminders: Prisma.$DocumentReminderPayload<ExtArgs>[]
     company: Prisma.$CompanyPayload<ExtArgs>
     importRows: Prisma.$ImportRowPayload<ExtArgs>[]
     importChanges: Prisma.$ImportChangePayload<ExtArgs>[]
@@ -1702,6 +1850,7 @@ readonly fields: IncentiveDocumentFieldRefs;
  */
 export interface Prisma__IncentiveDocumentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  documentReminders<T extends Prisma.IncentiveDocument$documentRemindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IncentiveDocument$documentRemindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   company<T extends Prisma.CompanyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyDefaultArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   importRows<T extends Prisma.IncentiveDocument$importRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IncentiveDocument$importRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   importChanges<T extends Prisma.IncentiveDocument$importChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IncentiveDocument$importChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportChangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2146,6 +2295,30 @@ export type IncentiveDocumentDeleteManyArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many IncentiveDocuments to delete.
    */
   limit?: number
+}
+
+/**
+ * IncentiveDocument.documentReminders
+ */
+export type IncentiveDocument$documentRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentReminder
+   */
+  select?: Prisma.DocumentReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentReminder
+   */
+  omit?: Prisma.DocumentReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentReminderInclude<ExtArgs> | null
+  where?: Prisma.DocumentReminderWhereInput
+  orderBy?: Prisma.DocumentReminderOrderByWithRelationInput | Prisma.DocumentReminderOrderByWithRelationInput[]
+  cursor?: Prisma.DocumentReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DocumentReminderScalarFieldEnum | Prisma.DocumentReminderScalarFieldEnum[]
 }
 
 /**
