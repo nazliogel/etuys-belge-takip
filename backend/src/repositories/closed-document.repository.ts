@@ -58,6 +58,7 @@ export class ClosedDocumentRepository {
             externalCompanyId: true,
             name: true,
             taxNumber: true,
+            consultant: true,
           },
         },
       },
