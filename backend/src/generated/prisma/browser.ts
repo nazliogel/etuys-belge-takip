@@ -127,3 +127,13 @@ export type DocumentImportedMachine = Prisma.DocumentImportedMachineModel
  * 
  */
 export type DocumentSpecialCondition = Prisma.DocumentSpecialConditionModel
+/**
+ * Model DocumentReminder
+ * 
+ */
+export type DocumentReminder = Prisma.DocumentReminderModel
+/**
+ * Model CompanyAuthorizationReminder
+ * 
+ */
+export type CompanyAuthorizationReminder = Prisma.CompanyAuthorizationReminderModel

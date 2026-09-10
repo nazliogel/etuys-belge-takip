@@ -72,7 +72,9 @@ export const ModelName = {
   DocumentFinancialInfo: 'DocumentFinancialInfo',
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
-  DocumentSpecialCondition: 'DocumentSpecialCondition'
+  DocumentSpecialCondition: 'DocumentSpecialCondition',
+  DocumentReminder: 'DocumentReminder',
+  CompanyAuthorizationReminder: 'CompanyAuthorizationReminder'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -573,6 +575,54 @@ export const DocumentSpecialConditionScalarFieldEnum = {
 } as const
 
 export type DocumentSpecialConditionScalarFieldEnum = (typeof DocumentSpecialConditionScalarFieldEnum)[keyof typeof DocumentSpecialConditionScalarFieldEnum]
+
+
+export const DocumentReminderScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  companyId: 'companyId',
+  contactId: 'contactId',
+  type: 'type',
+  channel: 'channel',
+  status: 'status',
+  reminderMonth: 'reminderMonth',
+  targetDate: 'targetDate',
+  recipient: 'recipient',
+  subject: 'subject',
+  message: 'message',
+  providerId: 'providerId',
+  errorMessage: 'errorMessage',
+  attemptedAt: 'attemptedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentReminderScalarFieldEnum = (typeof DocumentReminderScalarFieldEnum)[keyof typeof DocumentReminderScalarFieldEnum]
+
+
+export const CompanyAuthorizationReminderScalarFieldEnum = {
+  id: 'id',
+  authorizationId: 'authorizationId',
+  companyId: 'companyId',
+  contactId: 'contactId',
+  type: 'type',
+  channel: 'channel',
+  status: 'status',
+  reminderMonth: 'reminderMonth',
+  targetDate: 'targetDate',
+  recipient: 'recipient',
+  subject: 'subject',
+  message: 'message',
+  providerId: 'providerId',
+  errorMessage: 'errorMessage',
+  attemptedAt: 'attemptedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyAuthorizationReminderScalarFieldEnum = (typeof CompanyAuthorizationReminderScalarFieldEnum)[keyof typeof CompanyAuthorizationReminderScalarFieldEnum]
 
 
 export const SortOrder = {

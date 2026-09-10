@@ -1,6 +1,12 @@
-import type { UserRole } from "../_lib/permissions";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Bell, Mail, Phone } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import { Mail, Phone } from "lucide-react";
+
+import { apiFetch } from "@/lib/api";
+import type { UserRole } from "../_lib/permissions";
 
 interface AppHeaderProps {
   userName: string;
@@ -10,6 +16,13 @@ interface AppHeaderProps {
   consultantEmail?: string | null;
 }
 
+interface NotificationCountResponse {
+  success: boolean;
+  data: {
+    unreadCount: number;
+  };
+}
+
 export function AppHeader({
   userName,
   role,
@@ -17,6 +30,8 @@ export function AppHeader({
   consultantPhone,
   consultantEmail,
 }: AppHeaderProps) {
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+
   const roleLabel =
     role === "ADMIN"
       ? "Yönetici"
@@ -33,6 +48,49 @@ export function AppHeader({
 
   const showConsultantInfo = role === "COMPANY";
 
+  useEffect(() => {
+    if (showConsultantInfo) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUnreadNotificationCount(0);
+      return;
+    }
+
+    async function loadUnreadCount() {
+      try {
+        const response = await apiFetch<NotificationCountResponse>(
+          "/notifications?limit=1",
+        );
+
+        setUnreadNotificationCount(response.data.unreadCount);
+      } catch {
+        setUnreadNotificationCount(0);
+      }
+    }
+
+    const handleNotificationsUpdated = () => {
+      void loadUnreadCount();
+    };
+
+    void loadUnreadCount();
+
+    const intervalId = window.setInterval(() => {
+      void loadUnreadCount();
+    }, 60_000);
+
+    window.addEventListener(
+      "notifications-updated",
+      handleNotificationsUpdated,
+    );
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener(
+        "notifications-updated",
+        handleNotificationsUpdated,
+      );
+    };
+  }, [showConsultantInfo]);
+
   const displayedConsultantName = consultantName?.trim() || "—";
   const displayedConsultantPhone = consultantPhone?.trim() || null;
   const displayedConsultantEmail = consultantEmail?.trim() || null;
@@ -48,9 +106,7 @@ export function AppHeader({
       <div className="flex items-center gap-3">
         {showConsultantInfo && (
           <div className="hidden items-center gap-6 lg:flex">
-            {/* DANIŞMAN BİLGİSİ */}
             <div className="flex min-w-[350px] items-center gap-6 border-r border-blue-600 pr-6">
-              {/* BAŞLIK VE İSİM */}
               <div className="shrink-0 text-right">
                 <p className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
                   Uzmanınız
@@ -61,7 +117,6 @@ export function AppHeader({
                 </p>
               </div>
 
-              {/* TELEFON VE E-POSTA */}
               <div className="border-l border-blue-600/70 pl-5">
                 {displayedConsultantPhone ? (
                   <p
@@ -98,7 +153,6 @@ export function AppHeader({
               </div>
             </div>
 
-            {/* GENEL İLETİŞİM */}
             <div className="min-w-[210px] text-left">
               <p className="text-[10px] font-medium uppercase tracking-wide text-blue-200">
                 Genel İletişim
@@ -137,7 +191,23 @@ export function AppHeader({
           </div>
         )}
 
-        {/* KULLANICI BİLGİSİ */}
+        {!showConsultantInfo && (
+          <Link
+            href="/notifications"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-blue-700/80 bg-blue-700/50 text-white transition hover:bg-blue-700"
+            title="Bildirimler"
+            aria-label={`${unreadNotificationCount} okunmamış bildirim`}
+          >
+            <Bell size={19} />
+
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+              </span>
+            )}
+          </Link>
+        )}
+
         <div className="flex items-center gap-3 rounded-xl border border-blue-700/80 bg-blue-700/50 px-3.5 py-1.5 transition hover:bg-blue-700/70">
           <div className="text-right">
             <p className="text-sm font-semibold leading-tight text-white">
