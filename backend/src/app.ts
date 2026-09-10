@@ -14,6 +14,7 @@ import { userRouter } from "./routes/user.routes.js";
 import { companyRequestRouter } from "./routes/company-request.routes.js";
 import { documentReminderRouter } from "./routes/document-reminder.routes.js";
 import { notificationRouter } from "./routes/notification.routes.js";
+import { companyAuthorizationReminderRouter } from "./routes/company-authorization-reminder.routes.js";
 
 const app = express();
 
@@ -54,6 +55,10 @@ app.use("/api/company-requests", companyRequestRouter);
 app.use("/api/document-detail-import", documentDetailImportRoutes);
 app.use("/api/users", userRouter);
 app.use("/api/document-reminders", documentReminderRouter);
+app.use(
+  "/api/company-authorization-reminders",
+  companyAuthorizationReminderRouter,
+);
 app.use("/api/notifications", notificationRouter);
 
 app.use(errorHandler);

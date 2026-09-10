@@ -1,17 +1,17 @@
-import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
-import { DocumentReminderPreviewService } from "./document-reminder-preview.service.js";
+import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
+import { CompanyAuthorizationReminderPreviewService } from "./company-authorization-reminder-preview.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
 
 interface BlockedReminder {
-  documentId: number;
+  authorizationId: number;
   companyName: string;
   warnings: string[];
 }
 
-export class DocumentReminderQueueService {
+export class CompanyAuthorizationReminderQueueService {
   constructor(
-    private readonly repository = new DocumentReminderRepository(),
-    private readonly previewService = new DocumentReminderPreviewService(),
+    private readonly repository = new CompanyAuthorizationReminderRepository(),
+    private readonly previewService = new CompanyAuthorizationReminderPreviewService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
   ) {}
 
@@ -36,12 +36,13 @@ export class DocumentReminderQueueService {
     let consultantNotificationCount = 0;
     let duplicateConsultantNotificationCount = 0;
     let missingConsultantCount = 0;
+
     const blocked: BlockedReminder[] = [];
 
     for (const preview of previews) {
       if (!preview.canSend) {
         blocked.push({
-          documentId: preview.documentId,
+          authorizationId: preview.authorizationId,
           companyName: preview.companyName,
           warnings: preview.warnings,
         });
@@ -53,16 +54,16 @@ export class DocumentReminderQueueService {
         ) {
           const notificationCreated =
             await this.repository.createConsultantNotification({
-              documentId: preview.documentId,
+              authorizationId: preview.authorizationId,
               companyId: preview.companyId,
               contactId: preview.contactId,
               consultantUserId: preview.consultantUserId,
-              type: preview.type,
               reminderMonth: preview.reminderMonth,
               targetDate: preview.targetDate,
-              title: "Belge bildirimi gönderilemedi",
+              title: "Yetki süresi bildirimi gönderilemedi",
               description: [
-                `${preview.companyName} firmasına ait bildirim eksik bilgiler nedeniyle gönderilemedi.`,
+                `${preview.companyName} firmasının yetki süresi dolmak üzeredir.`,
+                "Firma e-postası eksik bilgiler nedeniyle gönderilemedi.",
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
               ].join(" "),
             });
@@ -77,10 +78,9 @@ export class DocumentReminderQueueService {
 
           const adminEmailReminderId =
             await this.repository.createAdminEmailReminder({
-              documentId: preview.documentId,
+              authorizationId: preview.authorizationId,
               companyId: preview.companyId,
               contactId: preview.contactId,
-              type: preview.type,
               reminderMonth: preview.reminderMonth,
               targetDate: preview.targetDate,
               recipient: "salihsahin@akkasgroup.com",
@@ -121,10 +121,9 @@ export class DocumentReminderQueueService {
       }
 
       const queued = await this.repository.enqueue({
-        documentId: preview.documentId,
+        authorizationId: preview.authorizationId,
         companyId: preview.companyId,
         contactId: preview.contactId,
-        type: preview.type,
         reminderMonth: preview.reminderMonth,
         targetDate: preview.targetDate,
         recipient: preview.recipient,

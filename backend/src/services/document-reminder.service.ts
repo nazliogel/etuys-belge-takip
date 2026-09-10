@@ -8,7 +8,7 @@ interface ReminderDecision {
   reminderMonth: number;
 }
 
-function normalizeDate(date: Date): Date {
+export function normalizeDate(date: Date): Date {
   return new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   );
@@ -42,7 +42,10 @@ function subtractMonthsClamped(date: Date, months: number): Date {
   );
 }
 
-function resolveReminderMonth(targetDate: Date, today: Date): number | null {
+export function resolveReminderMonth(
+  targetDate: Date,
+  today: Date,
+): number | null {
   const normalizedTarget = normalizeDate(targetDate);
   const normalizedToday = normalizeDate(today);
 
@@ -100,7 +103,6 @@ export class DocumentReminderService {
       if (!document.documentEndDate || !document.extensionDate) {
         return [];
       }
-
       const decision = resolveReminderDecision(
         document.documentEndDate,
         document.extensionDate,

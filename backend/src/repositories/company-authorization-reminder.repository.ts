@@ -1,29 +1,22 @@
 import { prisma } from "../config/env.js";
 
-type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
-
 type ReminderChannel =
   "EMAIL" | "WHATSAPP" | "CONSULTANT_IN_APP" | "ADMIN_EMAIL";
 
-type ReminderStatus = "PENDING" | "SENT" | "FAILED" | "SKIPPED";
-
-export class DocumentReminderRepository {
+export class CompanyAuthorizationReminderRepository {
   async findActiveCandidates() {
-    return prisma.incentiveDocument.findMany({
+    return prisma.companyAuthorization.findMany({
       where: {
-        isActive: true,
-        status: "OPEN",
-        documentEndDate: {
+        authorizationEndDate: {
           not: null,
         },
-        extensionDate: {
-          not: null,
+        company: {
+          isActive: true,
         },
       },
       include: {
         company: {
           include: {
-            identity: true,
             consultantUser: {
               select: {
                 id: true,
@@ -51,41 +44,23 @@ export class DocumentReminderRepository {
     });
   }
 
-  async findExisting(params: {
-    documentId: number;
-    type: ReminderType;
-    targetDate: Date;
-    reminderMonth: number;
-    channel: ReminderChannel;
-  }) {
-    return prisma.documentReminder.findFirst({
-      where: {
-        documentId: params.documentId,
-        type: params.type,
-        targetDate: params.targetDate,
-        reminderMonth: params.reminderMonth,
-        channel: params.channel,
-      },
-    });
-  }
   async enqueue(params: {
-    documentId: number;
+    authorizationId: number;
     companyId: number;
     contactId?: number;
-    type: ReminderType;
     reminderMonth: number;
     targetDate: Date;
     recipient: string;
     subject?: string;
     message: string;
   }): Promise<boolean> {
-    const result = await prisma.documentReminder.createMany({
+    const result = await prisma.companyAuthorizationReminder.createMany({
       data: [
         {
-          documentId: params.documentId,
+          authorizationId: params.authorizationId,
           companyId: params.companyId,
           contactId: params.contactId,
-          type: params.type,
+          type: "AUTHORIZATION_EXPIRY",
           channel: "EMAIL",
           status: "PENDING",
           reminderMonth: params.reminderMonth,
@@ -102,11 +77,10 @@ export class DocumentReminderRepository {
   }
 
   async createConsultantNotification(params: {
-    documentId: number;
+    authorizationId: number;
     companyId: number;
     contactId?: number;
     consultantUserId: number;
-    type: ReminderType;
     reminderMonth: number;
     targetDate: Date;
     title: string;
@@ -115,13 +89,13 @@ export class DocumentReminderRepository {
     return prisma.$transaction(async (transaction) => {
       const now = new Date();
 
-      const reminderResult = await transaction.documentReminder.createMany({
+      const result = await transaction.companyAuthorizationReminder.createMany({
         data: [
           {
-            documentId: params.documentId,
+            authorizationId: params.authorizationId,
             companyId: params.companyId,
             contactId: params.contactId,
-            type: params.type,
+            type: "AUTHORIZATION_EXPIRY",
             channel: "CONSULTANT_IN_APP",
             status: "SENT",
             reminderMonth: params.reminderMonth,
@@ -136,7 +110,7 @@ export class DocumentReminderRepository {
         skipDuplicates: true,
       });
 
-      if (reminderResult.count === 0) {
+      if (result.count === 0) {
         return false;
       }
 
@@ -154,23 +128,22 @@ export class DocumentReminderRepository {
     });
   }
   async createAdminEmailReminder(params: {
-    documentId: number;
+    authorizationId: number;
     companyId: number;
     contactId?: number;
-    type: ReminderType;
     reminderMonth: number;
     targetDate: Date;
     recipient: string;
     subject: string;
     message: string;
   }): Promise<number | null> {
-    const result = await prisma.documentReminder.createMany({
+    const result = await prisma.companyAuthorizationReminder.createMany({
       data: [
         {
-          documentId: params.documentId,
+          authorizationId: params.authorizationId,
           companyId: params.companyId,
           contactId: params.contactId,
-          type: params.type,
+          type: "AUTHORIZATION_EXPIRY",
           channel: "ADMIN_EMAIL",
           status: "PENDING",
           reminderMonth: params.reminderMonth,
@@ -187,10 +160,10 @@ export class DocumentReminderRepository {
       return null;
     }
 
-    const created = await prisma.documentReminder.findFirst({
+    const created = await prisma.companyAuthorizationReminder.findFirst({
       where: {
-        documentId: params.documentId,
-        type: params.type,
+        authorizationId: params.authorizationId,
+        type: "AUTHORIZATION_EXPIRY",
         targetDate: params.targetDate,
         reminderMonth: params.reminderMonth,
         channel: "ADMIN_EMAIL",
@@ -202,48 +175,17 @@ export class DocumentReminderRepository {
 
     return created?.id ?? null;
   }
-  async create(params: {
-    documentId: number;
-    companyId: number;
-    contactId?: number;
-    type: ReminderType;
-    channel: ReminderChannel;
-    reminderMonth: number;
-    targetDate: Date;
-    recipient: string;
-    subject?: string;
-    message: string;
-    status?: ReminderStatus;
-    errorMessage?: string;
-  }) {
-    return prisma.documentReminder.create({
-      data: {
-        documentId: params.documentId,
-        companyId: params.companyId,
-        contactId: params.contactId,
-        type: params.type,
-        channel: params.channel,
-        reminderMonth: params.reminderMonth,
-        targetDate: params.targetDate,
-        recipient: params.recipient,
-        subject: params.subject,
-        message: params.message,
-        status: params.status ?? "PENDING",
-        errorMessage: params.errorMessage,
-      },
-    });
-  }
+
   async findPending(limit = 20) {
-    return prisma.documentReminder.findMany({
+    return prisma.companyAuthorizationReminder.findMany({
       where: {
         status: "PENDING",
         channel: "EMAIL",
       },
       include: {
-        document: true,
+        authorization: true,
         company: {
           include: {
-            identity: true,
             consultantUser: {
               select: {
                 id: true,
@@ -263,16 +205,18 @@ export class DocumentReminderRepository {
       take: limit,
     });
   }
+
   async countPending(): Promise<number> {
-    return prisma.documentReminder.count({
+    return prisma.companyAuthorizationReminder.count({
       where: {
         status: "PENDING",
         channel: "EMAIL",
       },
     });
   }
+
   async countSentSince(date: Date): Promise<number> {
-    return prisma.documentReminder.count({
+    return prisma.companyAuthorizationReminder.count({
       where: {
         status: "SENT",
         channel: "EMAIL",
@@ -284,7 +228,7 @@ export class DocumentReminderRepository {
   }
 
   async findLatestAttemptedEmail() {
-    return prisma.documentReminder.findFirst({
+    return prisma.companyAuthorizationReminder.findFirst({
       where: {
         channel: "EMAIL",
         attemptedAt: {
@@ -301,7 +245,7 @@ export class DocumentReminderRepository {
   }
 
   async markSent(id: number, providerId?: string) {
-    return prisma.documentReminder.update({
+    return prisma.companyAuthorizationReminder.update({
       where: { id },
       data: {
         status: "SENT",
@@ -314,12 +258,39 @@ export class DocumentReminderRepository {
   }
 
   async markFailed(id: number, errorMessage: string) {
-    return prisma.documentReminder.update({
+    return prisma.companyAuthorizationReminder.update({
       where: { id },
       data: {
         status: "FAILED",
         attemptedAt: new Date(),
         errorMessage,
+      },
+    });
+  }
+
+  async create(params: {
+    authorizationId: number;
+    companyId: number;
+    contactId?: number;
+    channel: ReminderChannel;
+    reminderMonth: number;
+    targetDate: Date;
+    recipient: string;
+    subject?: string;
+    message: string;
+  }) {
+    return prisma.companyAuthorizationReminder.create({
+      data: {
+        authorizationId: params.authorizationId,
+        companyId: params.companyId,
+        contactId: params.contactId,
+        type: "AUTHORIZATION_EXPIRY",
+        channel: params.channel,
+        reminderMonth: params.reminderMonth,
+        targetDate: params.targetDate,
+        recipient: params.recipient,
+        subject: params.subject,
+        message: params.message,
       },
     });
   }

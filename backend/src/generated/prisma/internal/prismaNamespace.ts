@@ -419,7 +419,8 @@ export const ModelName = {
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
   DocumentSpecialCondition: 'DocumentSpecialCondition',
-  DocumentReminder: 'DocumentReminder'
+  DocumentReminder: 'DocumentReminder',
+  CompanyAuthorizationReminder: 'CompanyAuthorizationReminder'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -435,7 +436,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder" | "companyAuthorizationReminder"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2141,6 +2142,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CompanyAuthorizationReminder: {
+      payload: Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>
+      fields: Prisma.CompanyAuthorizationReminderFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CompanyAuthorizationReminderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CompanyAuthorizationReminderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>
+        }
+        findFirst: {
+          args: Prisma.CompanyAuthorizationReminderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CompanyAuthorizationReminderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>
+        }
+        findMany: {
+          args: Prisma.CompanyAuthorizationReminderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>[]
+        }
+        create: {
+          args: Prisma.CompanyAuthorizationReminderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>
+        }
+        createMany: {
+          args: Prisma.CompanyAuthorizationReminderCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CompanyAuthorizationReminderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>[]
+        }
+        delete: {
+          args: Prisma.CompanyAuthorizationReminderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>
+        }
+        update: {
+          args: Prisma.CompanyAuthorizationReminderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>
+        }
+        deleteMany: {
+          args: Prisma.CompanyAuthorizationReminderDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CompanyAuthorizationReminderUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CompanyAuthorizationReminderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>[]
+        }
+        upsert: {
+          args: Prisma.CompanyAuthorizationReminderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyAuthorizationReminderPayload>
+        }
+        aggregate: {
+          args: Prisma.CompanyAuthorizationReminderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCompanyAuthorizationReminder>
+        }
+        groupBy: {
+          args: Prisma.CompanyAuthorizationReminderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyAuthorizationReminderGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CompanyAuthorizationReminderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyAuthorizationReminderCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2688,6 +2763,30 @@ export const DocumentReminderScalarFieldEnum = {
 export type DocumentReminderScalarFieldEnum = (typeof DocumentReminderScalarFieldEnum)[keyof typeof DocumentReminderScalarFieldEnum]
 
 
+export const CompanyAuthorizationReminderScalarFieldEnum = {
+  id: 'id',
+  authorizationId: 'authorizationId',
+  companyId: 'companyId',
+  contactId: 'contactId',
+  type: 'type',
+  channel: 'channel',
+  status: 'status',
+  reminderMonth: 'reminderMonth',
+  targetDate: 'targetDate',
+  recipient: 'recipient',
+  subject: 'subject',
+  message: 'message',
+  providerId: 'providerId',
+  errorMessage: 'errorMessage',
+  attemptedAt: 'attemptedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyAuthorizationReminderScalarFieldEnum = (typeof CompanyAuthorizationReminderScalarFieldEnum)[keyof typeof CompanyAuthorizationReminderScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3002,6 +3101,20 @@ export type ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel> = FieldRef
 
 
 /**
+ * Reference to a field of type 'CompanyAuthorizationReminderType'
+ */
+export type EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CompanyAuthorizationReminderType'>
+    
+
+
+/**
+ * Reference to a field of type 'CompanyAuthorizationReminderType[]'
+ */
+export type ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CompanyAuthorizationReminderType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3188,6 +3301,7 @@ export type GlobalOmitConfig = {
   documentImportedMachine?: Prisma.DocumentImportedMachineOmit
   documentSpecialCondition?: Prisma.DocumentSpecialConditionOmit
   documentReminder?: Prisma.DocumentReminderOmit
+  companyAuthorizationReminder?: Prisma.CompanyAuthorizationReminderOmit
 }
 
 /* Types for Logging */

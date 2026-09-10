@@ -1,12 +1,10 @@
-import { env } from "../config/env.js";
+﻿import { env } from "../config/env.js";
+import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
 import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
-import { ReminderNotificationService } from "./reminder-notification.service.js";
-import {
-  createClosureEmailTemplate,
-  createExtensionEmailTemplate,
-} from "./closure-email-template.service.js";
+import { createAuthorizationExpiryEmailTemplate } from "./closure-email-template.service.js";
 import { DEFAULT_CC_RECIPIENTS } from "./document-reminder-preview.service.js";
 import { EmailService } from "./email.service.js";
+import { ReminderNotificationService } from "./reminder-notification.service.js";
 
 const TURKEY_UTC_OFFSET_HOURS = 3;
 
@@ -29,10 +27,27 @@ function getTurkeyDayStart(now: Date): Date {
   );
 }
 
-export class DocumentReminderWorkerService {
+function getLatestAttemptDate(
+  first?: Date | null,
+  second?: Date | null,
+): Date | null {
+  const dates = [first, second].filter(
+    (date): date is Date => date instanceof Date,
+  );
+
+  if (dates.length === 0) {
+    return null;
+  }
+
+  return new Date(Math.max(...dates.map((date) => date.getTime())));
+}
+
+export class CompanyAuthorizationReminderWorkerService {
   private isProcessing = false;
+
   constructor(
-    private readonly repository = new DocumentReminderRepository(),
+    private readonly repository = new CompanyAuthorizationReminderRepository(),
+    private readonly documentRepository = new DocumentReminderRepository(),
     private readonly emailService = new EmailService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
   ) {}
@@ -67,14 +82,32 @@ export class DocumentReminderWorkerService {
       const hourStart = getHourStart(now);
       const dayStart = getTurkeyDayStart(now);
 
-      const [sentLastHour, sentToday, latestAttempt] = await Promise.all([
+      const [
+        documentSentLastHour,
+        authorizationSentLastHour,
+        documentSentToday,
+        authorizationSentToday,
+        latestDocumentAttempt,
+        latestAuthorizationAttempt,
+      ] = await Promise.all([
+        this.documentRepository.countSentSince(hourStart),
         this.repository.countSentSince(hourStart),
+        this.documentRepository.countSentSince(dayStart),
         this.repository.countSentSince(dayStart),
+        this.documentRepository.findLatestAttemptedEmail(),
         this.repository.findLatestAttemptedEmail(),
       ]);
 
-      const recipientsPerMessage = 1 + DEFAULT_CC_RECIPIENTS.length;
+      const sentLastHour = documentSentLastHour + authorizationSentLastHour;
 
+      const sentToday = documentSentToday + authorizationSentToday;
+
+      const latestAttemptDate = getLatestAttemptDate(
+        latestDocumentAttempt?.attemptedAt,
+        latestAuthorizationAttempt?.attemptedAt,
+      );
+
+      const recipientsPerMessage = 1 + DEFAULT_CC_RECIPIENTS.length;
       const sentRecipientsLastHour = sentLastHour * recipientsPerMessage;
 
       if (sentLastHour >= env.emailMaxMessagesPerHour) {
@@ -110,9 +143,9 @@ export class DocumentReminderWorkerService {
         };
       }
 
-      if (latestAttempt?.attemptedAt) {
+      if (latestAttemptDate) {
         const nextAllowedAt =
-          latestAttempt.attemptedAt.getTime() + env.emailDelaySeconds * 1000;
+          latestAttemptDate.getTime() + env.emailDelaySeconds * 1000;
 
         const remainingMilliseconds = nextAllowedAt - now.getTime();
 
@@ -147,7 +180,6 @@ export class DocumentReminderWorkerService {
 
       let sentCount = 0;
       let failedCount = 0;
-
       const results = [];
 
       for (const reminder of reminders) {
@@ -157,21 +189,11 @@ export class DocumentReminderWorkerService {
           if (!reminder.contact) {
             validationErrors.push("Firma iletişim kaydı bulunamadı.");
           } else if (!reminder.recipient.trim()) {
-            validationErrors.push("Firma iletişim e-posta adresi boş.");
+            validationErrors.push("Firmanın iletişim e-posta adresi boştur.");
           }
 
-          if (
-            reminder.type === "CLOSURE_APPLICATION" &&
-            !reminder.document.documentNumber?.trim()
-          ) {
-            validationErrors.push("Belge numarası bulunamadı.");
-          }
-
-          if (
-            reminder.type === "CLOSURE_APPLICATION" &&
-            !reminder.company.identity?.investorAddress?.trim()
-          ) {
-            validationErrors.push("Firma adresi bulunamadı.");
+          if (!reminder.authorization.authorizationEndDate) {
+            validationErrors.push("Firma yetki bitiş tarihi bulunamadı.");
           }
 
           if (validationErrors.length > 0) {
@@ -182,20 +204,10 @@ export class DocumentReminderWorkerService {
             );
           }
 
-          const template =
-            reminder.type === "CLOSURE_APPLICATION"
-              ? createClosureEmailTemplate({
-                  companyName: reminder.company.name,
-                  documentNumber:
-                    reminder.document.documentNumber ??
-                    "Belge numarası bulunamadı",
-                  targetDate: reminder.targetDate,
-                  investorAddress: reminder.company.identity?.investorAddress,
-                })
-              : createExtensionEmailTemplate({
-                  companyName: reminder.company.name,
-                  targetDate: reminder.targetDate,
-                });
+          const template = createAuthorizationExpiryEmailTemplate({
+            companyName: reminder.company.name,
+            targetDate: reminder.targetDate,
+          });
 
           const result = await this.emailService.send({
             to: reminder.recipient,
@@ -230,6 +242,7 @@ export class DocumentReminderWorkerService {
                 .join(" "),
             );
           }
+
           await this.repository.markSent(reminder.id, result.messageId);
 
           let consultantNotificationCreated = false;
@@ -246,20 +259,16 @@ export class DocumentReminderWorkerService {
             try {
               consultantNotificationCreated =
                 await this.repository.createConsultantNotification({
-                  documentId: reminder.documentId,
+                  authorizationId: reminder.authorizationId,
                   companyId: reminder.companyId,
                   contactId: reminder.contactId ?? undefined,
                   consultantUserId: consultant.id,
-                  type: reminder.type,
                   reminderMonth: reminder.reminderMonth,
                   targetDate: reminder.targetDate,
-                  title:
-                    reminder.type === "CLOSURE_APPLICATION"
-                      ? "Kapatma başvurusu için 1 ay kaldı"
-                      : "Süre uzatma başvurusu için 1 ay kaldı",
+                  title: "Firma yetki süresinin dolmasına 1 ay kaldı",
                   description: [
-                    `${reminder.company.name} firmasına ait belge için son 1 aylık bildirim gönderildi.`,
-                    `Firma alıcısı: ${reminder.recipient}.`,
+                    `${reminder.company.name} firmasının yetki süresinin dolmasına son 1 ay kaldı.`,
+                    `Firma alıcısına yetki yenileme e-postası gönderildi: ${reminder.recipient}.`,
                   ].join(" "),
                 });
             } catch (notificationError) {
@@ -300,16 +309,15 @@ export class DocumentReminderWorkerService {
             try {
               consultantNotificationCreated =
                 await this.repository.createConsultantNotification({
-                  documentId: reminder.documentId,
+                  authorizationId: reminder.authorizationId,
                   companyId: reminder.companyId,
                   contactId: reminder.contactId ?? undefined,
                   consultantUserId: consultant.id,
-                  type: reminder.type,
                   reminderMonth: reminder.reminderMonth,
                   targetDate: reminder.targetDate,
-                  title: "Firma e-postası gönderilemedi",
+                  title: "Yetki süresi e-postası gönderilemedi",
                   description: [
-                    `${reminder.company.name} firmasına ait belge bildirimi gönderilemedi.`,
+                    `${reminder.company.name} firmasının yetki süresi dolmak üzeredir.`,
                     `Alıcı: ${reminder.recipient}.`,
                     `Hata: ${errorMessage}`,
                   ].join(" "),
@@ -323,10 +331,9 @@ export class DocumentReminderWorkerService {
           } else {
             const adminEmailReminderId =
               await this.repository.createAdminEmailReminder({
-                documentId: reminder.documentId,
+                authorizationId: reminder.authorizationId,
                 companyId: reminder.companyId,
                 contactId: reminder.contactId ?? undefined,
-                type: reminder.type,
                 reminderMonth: reminder.reminderMonth,
                 targetDate: reminder.targetDate,
                 recipient: "salihsahin@akkasgroup.com",
@@ -364,7 +371,6 @@ export class DocumentReminderWorkerService {
               }
             }
           }
-
           failedCount += 1;
 
           results.push({

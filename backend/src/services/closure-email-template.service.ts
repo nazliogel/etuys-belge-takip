@@ -11,7 +11,10 @@ interface ExtensionEmailTemplateParams {
   companyName: string;
   targetDate: Date;
 }
-
+interface AuthorizationExpiryEmailTemplateParams {
+  companyName: string;
+  targetDate: Date;
+}
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
@@ -30,24 +33,16 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#039;");
 }
 function getShortCompanyName(companyName: string): string {
-  return companyName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .join(" ");
+  return companyName.trim().split(/\s+/).slice(0, 2).join(" ");
 }
-export function createClosureEmailTemplate(
-  params: ClosureEmailTemplateParams,
-) {
+export function createClosureEmailTemplate(params: ClosureEmailTemplateParams) {
   const companyName = params.companyName.trim();
   const documentNumber = params.documentNumber.trim();
   const targetDate = formatDate(params.targetDate);
   const investorAddress =
-    params.investorAddress?.trim() ||
-    "Adres bilgisi sistemde bulunmamaktadır.";
+    params.investorAddress?.trim() || "Adres bilgisi sistemde bulunmamaktadır.";
 
- const subject =
-  `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Kapatma İşlemleri Hk.`;
+  const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Kapatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 
@@ -166,8 +161,7 @@ Best regards,`;
     html,
     attachments: [
       {
-        filename:
-          "YATIRIM TEŞVİK BELGESİ-KAPATMA EVRAKLARI 2025.pdf",
+        filename: "YATIRIM TEŞVİK BELGESİ-KAPATMA EVRAKLARI 2025.pdf",
         path: path.join(
           attachmentDirectory,
           "yatirim-tesvik-kapatma-evraklari-2025.pdf",
@@ -175,17 +169,11 @@ Best regards,`;
       },
       {
         filename: "BEYAN VE TAAHHÜTNAME-KREDİLİ.DOCX",
-        path: path.join(
-          attachmentDirectory,
-          "beyan-taahhutname-kredili.docx",
-        ),
+        path: path.join(attachmentDirectory, "beyan-taahhutname-kredili.docx"),
       },
       {
         filename: "BEYAN VE TAAHHÜTNAME-KREDİSİZ.DOCX",
-        path: path.join(
-          attachmentDirectory,
-          "beyan-taahhutname-kredisiz.docx",
-        ),
+        path: path.join(attachmentDirectory, "beyan-taahhutname-kredisiz.docx"),
       },
     ],
   };
@@ -197,8 +185,7 @@ export function createExtensionEmailTemplate(
   const companyName = params.companyName.trim();
   const targetDate = formatDate(params.targetDate);
 
-  const subject =
-  `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
+  const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 
@@ -258,5 +245,135 @@ Best regards,`;
     text,
     html,
     attachments: [],
+  };
+}
+
+export function createAuthorizationExpiryEmailTemplate(
+  params: AuthorizationExpiryEmailTemplateParams,
+) {
+  const companyName = params.companyName.trim();
+  const targetDate = formatDate(params.targetDate);
+
+  const subject = `${getShortCompanyName(companyName)} E-TUYS Yetkilendirme Süresi Hk.`;
+
+  const text = `Merhabalar,
+
+Yatırım teşvik belgenizin yürütümü için tarafımıza vermiş olduğunuz yetkilendirmenin süresi ${targetDate} tarihinde dolacaktır.
+
+Yetki süresinin sona ermesinin ardından firmanıza ait ekranları kontrol edemeyeceğimiz için belge kapatma ve gerekli olması hâlinde yapılması gereken diğer işlemleri gerçekleştirebilmemiz adına yetkilendirmenin yenilenmesi gerekmektedir.
+
+Yetkilendirme evrakları ekte yer almaktadır. Evrakların aşağıdaki şekilde tamamlanarak tarafımıza iletilmesini rica ederiz.
+
+1- E-TUYS Dilekçesi: Firma kaşesi ve imzası yeterlidir.
+
+2- E-TUYS Taahhütnamesi: Noter onaylı olması gerekmektedir.
+
+3- Kullanıcı Yetkilendirme Formu: Firma kaşesi ve imzası yeterlidir.
+
+4- Vekâletname: Noter onaylı olması gerekmektedir.
+
+5- İmza sirküleri
+
+Evraklarınız hazırlandıktan sonra KEP adresiniz üzerinden Bakanlığın KEP adresine gönderim yapılırken bilgisayarınıza uzaktan bağlanarak destek olacağım.
+
+Bu işlem için firmanıza ait kurumsal bir KEP adresi ile firma yetkilisine ait elektronik imza gerekmektedir.
+
+Saygılarımla,
+
+Best regards,`;
+
+  const html = `
+    <p>Merhabalar,</p>
+
+    <p>
+      Yatırım teşvik belgenizin yürütümü için tarafımıza vermiş olduğunuz
+      yetkilendirmenin süresi <strong>${escapeHtml(targetDate)}</strong>
+      tarihinde dolacaktır.
+    </p>
+
+    <p>
+      Yetki süresinin sona ermesinin ardından firmanıza ait ekranları kontrol
+      edemeyeceğimiz için belge kapatma ve gerekli olması hâlinde yapılması
+      gereken diğer işlemleri gerçekleştirebilmemiz adına yetkilendirmenin
+      yenilenmesi gerekmektedir.
+    </p>
+
+    <p>
+      Yetkilendirme evrakları ekte yer almaktadır. Evrakların aşağıdaki şekilde
+      tamamlanarak tarafımıza iletilmesini rica ederiz.
+    </p>
+
+    <ol>
+      <li>
+        <strong>E-TUYS Dilekçesi:</strong>
+        Firma kaşesi ve imzası yeterlidir.
+      </li>
+      <li>
+        <strong>E-TUYS Taahhütnamesi:</strong>
+        Noter onaylı olması gerekmektedir.
+      </li>
+      <li>
+        <strong>Kullanıcı Yetkilendirme Formu:</strong>
+        Firma kaşesi ve imzası yeterlidir.
+      </li>
+      <li>
+        <strong>Vekâletname:</strong>
+        Noter onaylı olması gerekmektedir.
+      </li>
+      <li>
+        <strong>İmza sirküleri</strong>
+      </li>
+    </ol>
+
+    <p>
+      Evraklarınız hazırlandıktan sonra KEP adresiniz üzerinden Bakanlığın KEP
+      adresine gönderim yapılırken bilgisayarınıza uzaktan bağlanarak destek
+      olacağım.
+    </p>
+
+    <p>
+      Bu işlem için firmanıza ait kurumsal bir KEP adresi ile firma yetkilisine
+      ait elektronik imza gerekmektedir.
+    </p>
+
+    <p>
+      Saygılarımla,
+      <br /><br />
+      Best regards,
+    </p>
+  `;
+
+  const attachmentDirectory = path.resolve(
+    process.cwd(),
+    "assets",
+    "email-attachments",
+    "authorization",
+  );
+
+  return {
+    subject,
+    text,
+    html,
+    attachments: [
+      {
+        filename: "E-TUYS DİLEKÇE.DOCX",
+        path: path.join(attachmentDirectory, "E-TUYS DİLEKÇE.DOCX"),
+      },
+      {
+        filename: "E-TUYS TAAHHÜTNAME 2026.doc",
+        path: path.join(attachmentDirectory, "E-TUYS TAAHHÜTNAME 2026.doc"),
+      },
+      {
+        filename: "E-TUYS Kullanıcı Yetkilendirme Formu.xlsx",
+        path: path.join(
+          attachmentDirectory,
+          "E-TUYS-Kullanici_Yetkilendirme_Formu - Kopya.xlsx",
+        ),
+      },
+      {
+        filename: "2026 TEŞVİK VEKALETNAMESİ.DOC",
+        path: path.join(attachmentDirectory, "2026 TEŞVİK VEKALETNAMESİ.DOC"),
+      },
+    ],
   };
 }

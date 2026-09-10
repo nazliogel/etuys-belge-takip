@@ -569,6 +569,23 @@ export type EnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
 }
 
+export type EnumCompanyAuthorizationReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+}
+
+export type EnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -1081,6 +1098,23 @@ export type NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+}
+
+export type NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
 }
 
 

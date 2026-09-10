@@ -122,7 +122,8 @@ export type DocumentReminderType = (typeof DocumentReminderType)[keyof typeof Do
 export const DocumentReminderChannel = {
   EMAIL: 'EMAIL',
   WHATSAPP: 'WHATSAPP',
-  CONSULTANT_IN_APP: 'CONSULTANT_IN_APP'
+  CONSULTANT_IN_APP: 'CONSULTANT_IN_APP',
+  ADMIN_EMAIL: 'ADMIN_EMAIL'
 } as const
 
 export type DocumentReminderChannel = (typeof DocumentReminderChannel)[keyof typeof DocumentReminderChannel]
@@ -136,3 +137,10 @@ export const DocumentReminderStatus = {
 } as const
 
 export type DocumentReminderStatus = (typeof DocumentReminderStatus)[keyof typeof DocumentReminderStatus]
+
+
+export const CompanyAuthorizationReminderType = {
+  AUTHORIZATION_EXPIRY: 'AUTHORIZATION_EXPIRY'
+} as const
+
+export type CompanyAuthorizationReminderType = (typeof CompanyAuthorizationReminderType)[keyof typeof CompanyAuthorizationReminderType]

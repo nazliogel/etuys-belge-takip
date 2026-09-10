@@ -55,6 +55,20 @@ const emailDelaySeconds = parsePositiveInteger(
   90,
   "EMAIL_DELAY_SECONDS",
 );
+const reminderSchedulerEnabled =
+  process.env.REMINDER_SCHEDULER_ENABLED === "true";
+
+const reminderQueueIntervalMinutes = parsePositiveInteger(
+  process.env.REMINDER_QUEUE_INTERVAL_MINUTES,
+  1440,
+  "REMINDER_QUEUE_INTERVAL_MINUTES",
+);
+
+const reminderWorkerIntervalSeconds = parsePositiveInteger(
+  process.env.REMINDER_WORKER_INTERVAL_SECONDS,
+  60,
+  "REMINDER_WORKER_INTERVAL_SECONDS",
+);
 
 if (Number.isNaN(port)) {
   throw new Error("PORT must be a valid number.");
@@ -93,6 +107,9 @@ export const env = {
   emailMaxRecipientsPerHour,
   emailMaxMessagesPerDay,
   emailDelaySeconds,
+  reminderSchedulerEnabled,
+  reminderQueueIntervalMinutes,
+  reminderWorkerIntervalSeconds,
 };
 
 const adapter = new PrismaPg({

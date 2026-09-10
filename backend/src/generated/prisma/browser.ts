@@ -132,3 +132,8 @@ export type DocumentSpecialCondition = Prisma.DocumentSpecialConditionModel
  * 
  */
 export type DocumentReminder = Prisma.DocumentReminderModel
+/**
+ * Model CompanyAuthorizationReminder
+ * 
+ */
+export type CompanyAuthorizationReminder = Prisma.CompanyAuthorizationReminderModel

@@ -269,6 +269,7 @@ export type CompanyWhereInput = {
   authorization?: Prisma.XOR<Prisma.CompanyAuthorizationNullableScalarRelationFilter, Prisma.CompanyAuthorizationWhereInput> | null
   identity?: Prisma.XOR<Prisma.CompanyIdentityNullableScalarRelationFilter, Prisma.CompanyIdentityWhereInput> | null
   documentReminders?: Prisma.DocumentReminderListRelationFilter
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderListRelationFilter
   documents?: Prisma.IncentiveDocumentListRelationFilter
   importRows?: Prisma.ImportRowListRelationFilter
   closedDocuments?: Prisma.ClosedIncentiveDocumentListRelationFilter
@@ -296,6 +297,7 @@ export type CompanyOrderByWithRelationInput = {
   authorization?: Prisma.CompanyAuthorizationOrderByWithRelationInput
   identity?: Prisma.CompanyIdentityOrderByWithRelationInput
   documentReminders?: Prisma.DocumentReminderOrderByRelationAggregateInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderOrderByRelationAggregateInput
   documents?: Prisma.IncentiveDocumentOrderByRelationAggregateInput
   importRows?: Prisma.ImportRowOrderByRelationAggregateInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentOrderByRelationAggregateInput
@@ -326,6 +328,7 @@ export type CompanyWhereUniqueInput = Prisma.AtLeast<{
   authorization?: Prisma.XOR<Prisma.CompanyAuthorizationNullableScalarRelationFilter, Prisma.CompanyAuthorizationWhereInput> | null
   identity?: Prisma.XOR<Prisma.CompanyIdentityNullableScalarRelationFilter, Prisma.CompanyIdentityWhereInput> | null
   documentReminders?: Prisma.DocumentReminderListRelationFilter
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderListRelationFilter
   documents?: Prisma.IncentiveDocumentListRelationFilter
   importRows?: Prisma.ImportRowListRelationFilter
   closedDocuments?: Prisma.ClosedIncentiveDocumentListRelationFilter
@@ -385,6 +388,7 @@ export type CompanyCreateInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -411,6 +415,7 @@ export type CompanyUncheckedCreateInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -436,6 +441,7 @@ export type CompanyUpdateInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -462,6 +468,7 @@ export type CompanyUncheckedUpdateInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -819,6 +826,20 @@ export type CompanyUpdateOneRequiredWithoutDocumentRemindersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyUpdateToOneWithWhereWithoutDocumentRemindersInput, Prisma.CompanyUpdateWithoutDocumentRemindersInput>, Prisma.CompanyUncheckedUpdateWithoutDocumentRemindersInput>
 }
 
+export type CompanyCreateNestedOneWithoutAuthorizationRemindersInput = {
+  create?: Prisma.XOR<Prisma.CompanyCreateWithoutAuthorizationRemindersInput, Prisma.CompanyUncheckedCreateWithoutAuthorizationRemindersInput>
+  connectOrCreate?: Prisma.CompanyCreateOrConnectWithoutAuthorizationRemindersInput
+  connect?: Prisma.CompanyWhereUniqueInput
+}
+
+export type CompanyUpdateOneRequiredWithoutAuthorizationRemindersNestedInput = {
+  create?: Prisma.XOR<Prisma.CompanyCreateWithoutAuthorizationRemindersInput, Prisma.CompanyUncheckedCreateWithoutAuthorizationRemindersInput>
+  connectOrCreate?: Prisma.CompanyCreateOrConnectWithoutAuthorizationRemindersInput
+  upsert?: Prisma.CompanyUpsertWithoutAuthorizationRemindersInput
+  connect?: Prisma.CompanyWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyUpdateToOneWithWhereWithoutAuthorizationRemindersInput, Prisma.CompanyUpdateWithoutAuthorizationRemindersInput>, Prisma.CompanyUncheckedUpdateWithoutAuthorizationRemindersInput>
+}
+
 export type CompanyCreateWithoutUsersInput = {
   externalCompanyId: number
   name: string
@@ -832,6 +853,7 @@ export type CompanyCreateWithoutUsersInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -857,6 +879,7 @@ export type CompanyUncheckedCreateWithoutUsersInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -886,6 +909,7 @@ export type CompanyCreateWithoutConsultantUserInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -911,6 +935,7 @@ export type CompanyUncheckedCreateWithoutConsultantUserInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -956,6 +981,7 @@ export type CompanyUpdateWithoutUsersInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -981,6 +1007,7 @@ export type CompanyUncheckedUpdateWithoutUsersInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1037,6 +1064,7 @@ export type CompanyCreateWithoutIdentityInput = {
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -1062,6 +1090,7 @@ export type CompanyUncheckedCreateWithoutIdentityInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -1102,6 +1131,7 @@ export type CompanyUpdateWithoutIdentityInput = {
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -1127,6 +1157,7 @@ export type CompanyUncheckedUpdateWithoutIdentityInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1152,6 +1183,7 @@ export type CompanyCreateWithoutCompanyRequestsInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -1177,6 +1209,7 @@ export type CompanyUncheckedCreateWithoutCompanyRequestsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -1217,6 +1250,7 @@ export type CompanyUpdateWithoutCompanyRequestsInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -1242,6 +1276,7 @@ export type CompanyUncheckedUpdateWithoutCompanyRequestsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1266,6 +1301,7 @@ export type CompanyCreateWithoutContactsInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -1291,6 +1327,7 @@ export type CompanyUncheckedCreateWithoutContactsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -1331,6 +1368,7 @@ export type CompanyUpdateWithoutContactsInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -1356,6 +1394,7 @@ export type CompanyUncheckedUpdateWithoutContactsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1380,6 +1419,7 @@ export type CompanyCreateWithoutNotesInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -1405,6 +1445,7 @@ export type CompanyUncheckedCreateWithoutNotesInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -1445,6 +1486,7 @@ export type CompanyUpdateWithoutNotesInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -1470,6 +1512,7 @@ export type CompanyUncheckedUpdateWithoutNotesInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1493,6 +1536,7 @@ export type CompanyCreateWithoutAuthorizationInput = {
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -1518,6 +1562,7 @@ export type CompanyUncheckedCreateWithoutAuthorizationInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -1558,6 +1603,7 @@ export type CompanyUpdateWithoutAuthorizationInput = {
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -1583,6 +1629,7 @@ export type CompanyUncheckedUpdateWithoutAuthorizationInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1608,6 +1655,7 @@ export type CompanyCreateWithoutDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutCompanyInput
@@ -1633,6 +1681,7 @@ export type CompanyUncheckedCreateWithoutDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutCompanyInput
@@ -1673,6 +1722,7 @@ export type CompanyUpdateWithoutDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutCompanyNestedInput
@@ -1698,6 +1748,7 @@ export type CompanyUncheckedUpdateWithoutDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1722,6 +1773,7 @@ export type CompanyCreateWithoutClosedDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutCompanyInput
@@ -1747,6 +1799,7 @@ export type CompanyUncheckedCreateWithoutClosedDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutCompanyInput
@@ -1787,6 +1840,7 @@ export type CompanyUpdateWithoutClosedDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutCompanyNestedInput
@@ -1812,6 +1866,7 @@ export type CompanyUncheckedUpdateWithoutClosedDocumentsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1836,6 +1891,7 @@ export type CompanyCreateWithoutImportRowsInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
   importChanges?: Prisma.ImportChangeCreateNestedManyWithoutCompanyInput
@@ -1861,6 +1917,7 @@ export type CompanyUncheckedCreateWithoutImportRowsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutCompanyInput
@@ -1901,6 +1958,7 @@ export type CompanyUpdateWithoutImportRowsInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importChanges?: Prisma.ImportChangeUpdateManyWithoutCompanyNestedInput
@@ -1926,6 +1984,7 @@ export type CompanyUncheckedUpdateWithoutImportRowsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutCompanyNestedInput
@@ -1950,6 +2009,7 @@ export type CompanyCreateWithoutImportChangesInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -1975,6 +2035,7 @@ export type CompanyUncheckedCreateWithoutImportChangesInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -2015,6 +2076,7 @@ export type CompanyUpdateWithoutImportChangesInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -2040,6 +2102,7 @@ export type CompanyUncheckedUpdateWithoutImportChangesInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -2064,6 +2127,7 @@ export type CompanyCreateWithoutChangeHistoryInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -2089,6 +2153,7 @@ export type CompanyUncheckedCreateWithoutChangeHistoryInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -2129,6 +2194,7 @@ export type CompanyUpdateWithoutChangeHistoryInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -2154,6 +2220,7 @@ export type CompanyUncheckedUpdateWithoutChangeHistoryInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -2178,6 +2245,7 @@ export type CompanyCreateWithoutNotificationsInput = {
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -2203,6 +2271,7 @@ export type CompanyUncheckedCreateWithoutNotificationsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -2243,6 +2312,7 @@ export type CompanyUpdateWithoutNotificationsInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -2268,6 +2338,7 @@ export type CompanyUncheckedUpdateWithoutNotificationsInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -2291,6 +2362,7 @@ export type CompanyCreateWithoutDocumentRemindersInput = {
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
   authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
@@ -2316,6 +2388,7 @@ export type CompanyUncheckedCreateWithoutDocumentRemindersInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
   authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
   identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutCompanyInput
   documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
   importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
@@ -2356,6 +2429,7 @@ export type CompanyUpdateWithoutDocumentRemindersInput = {
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -2381,6 +2455,125 @@ export type CompanyUncheckedUpdateWithoutDocumentRemindersInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
+  importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
+  closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
+  importChanges?: Prisma.ImportChangeUncheckedUpdateManyWithoutCompanyNestedInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutCompanyNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutCompanyNestedInput
+  contacts?: Prisma.CompanyContactUncheckedUpdateManyWithoutCompanyNestedInput
+  notes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutCompanyNestedInput
+  companyRequests?: Prisma.CompanyRequestUncheckedUpdateManyWithoutCompanyNestedInput
+}
+
+export type CompanyCreateWithoutAuthorizationRemindersInput = {
+  externalCompanyId: number
+  name: string
+  taxNumber: string
+  processStatus?: string | null
+  consultant?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  consultantUser?: Prisma.UserCreateNestedOneWithoutConsultantCompaniesInput
+  users?: Prisma.UserCreateNestedManyWithoutCompanyInput
+  authorization?: Prisma.CompanyAuthorizationCreateNestedOneWithoutCompanyInput
+  identity?: Prisma.CompanyIdentityCreateNestedOneWithoutCompanyInput
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutCompanyInput
+  documents?: Prisma.IncentiveDocumentCreateNestedManyWithoutCompanyInput
+  importRows?: Prisma.ImportRowCreateNestedManyWithoutCompanyInput
+  closedDocuments?: Prisma.ClosedIncentiveDocumentCreateNestedManyWithoutCompanyInput
+  importChanges?: Prisma.ImportChangeCreateNestedManyWithoutCompanyInput
+  changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutCompanyInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutCompanyInput
+  contacts?: Prisma.CompanyContactCreateNestedManyWithoutCompanyInput
+  notes?: Prisma.CompanyNoteCreateNestedManyWithoutCompanyInput
+  companyRequests?: Prisma.CompanyRequestCreateNestedManyWithoutCompanyInput
+}
+
+export type CompanyUncheckedCreateWithoutAuthorizationRemindersInput = {
+  id?: number
+  externalCompanyId: number
+  name: string
+  taxNumber: string
+  processStatus?: string | null
+  consultant?: string | null
+  consultantUserId?: number | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
+  authorization?: Prisma.CompanyAuthorizationUncheckedCreateNestedOneWithoutCompanyInput
+  identity?: Prisma.CompanyIdentityUncheckedCreateNestedOneWithoutCompanyInput
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutCompanyInput
+  documents?: Prisma.IncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
+  importRows?: Prisma.ImportRowUncheckedCreateNestedManyWithoutCompanyInput
+  closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedCreateNestedManyWithoutCompanyInput
+  importChanges?: Prisma.ImportChangeUncheckedCreateNestedManyWithoutCompanyInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutCompanyInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutCompanyInput
+  contacts?: Prisma.CompanyContactUncheckedCreateNestedManyWithoutCompanyInput
+  notes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutCompanyInput
+  companyRequests?: Prisma.CompanyRequestUncheckedCreateNestedManyWithoutCompanyInput
+}
+
+export type CompanyCreateOrConnectWithoutAuthorizationRemindersInput = {
+  where: Prisma.CompanyWhereUniqueInput
+  create: Prisma.XOR<Prisma.CompanyCreateWithoutAuthorizationRemindersInput, Prisma.CompanyUncheckedCreateWithoutAuthorizationRemindersInput>
+}
+
+export type CompanyUpsertWithoutAuthorizationRemindersInput = {
+  update: Prisma.XOR<Prisma.CompanyUpdateWithoutAuthorizationRemindersInput, Prisma.CompanyUncheckedUpdateWithoutAuthorizationRemindersInput>
+  create: Prisma.XOR<Prisma.CompanyCreateWithoutAuthorizationRemindersInput, Prisma.CompanyUncheckedCreateWithoutAuthorizationRemindersInput>
+  where?: Prisma.CompanyWhereInput
+}
+
+export type CompanyUpdateToOneWithWhereWithoutAuthorizationRemindersInput = {
+  where?: Prisma.CompanyWhereInput
+  data: Prisma.XOR<Prisma.CompanyUpdateWithoutAuthorizationRemindersInput, Prisma.CompanyUncheckedUpdateWithoutAuthorizationRemindersInput>
+}
+
+export type CompanyUpdateWithoutAuthorizationRemindersInput = {
+  externalCompanyId?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  consultantUser?: Prisma.UserUpdateOneWithoutConsultantCompaniesNestedInput
+  users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
+  authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
+  identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
+  importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
+  closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
+  importChanges?: Prisma.ImportChangeUpdateManyWithoutCompanyNestedInput
+  changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutCompanyNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutCompanyNestedInput
+  contacts?: Prisma.CompanyContactUpdateManyWithoutCompanyNestedInput
+  notes?: Prisma.CompanyNoteUpdateManyWithoutCompanyNestedInput
+  companyRequests?: Prisma.CompanyRequestUpdateManyWithoutCompanyNestedInput
+}
+
+export type CompanyUncheckedUpdateWithoutAuthorizationRemindersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  externalCompanyId?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  taxNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultantUserId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
+  authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
+  identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -2417,6 +2610,7 @@ export type CompanyUpdateWithoutConsultantUserInput = {
   authorization?: Prisma.CompanyAuthorizationUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUpdateManyWithoutCompanyNestedInput
@@ -2442,6 +2636,7 @@ export type CompanyUncheckedUpdateWithoutConsultantUserInput = {
   authorization?: Prisma.CompanyAuthorizationUncheckedUpdateOneWithoutCompanyNestedInput
   identity?: Prisma.CompanyIdentityUncheckedUpdateOneWithoutCompanyNestedInput
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutCompanyNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutCompanyNestedInput
   documents?: Prisma.IncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
   importRows?: Prisma.ImportRowUncheckedUpdateManyWithoutCompanyNestedInput
   closedDocuments?: Prisma.ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -2473,6 +2668,7 @@ export type CompanyUncheckedUpdateManyWithoutConsultantUserInput = {
 export type CompanyCountOutputType = {
   users: number
   documentReminders: number
+  authorizationReminders: number
   documents: number
   importRows: number
   closedDocuments: number
@@ -2487,6 +2683,7 @@ export type CompanyCountOutputType = {
 export type CompanyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | CompanyCountOutputTypeCountUsersArgs
   documentReminders?: boolean | CompanyCountOutputTypeCountDocumentRemindersArgs
+  authorizationReminders?: boolean | CompanyCountOutputTypeCountAuthorizationRemindersArgs
   documents?: boolean | CompanyCountOutputTypeCountDocumentsArgs
   importRows?: boolean | CompanyCountOutputTypeCountImportRowsArgs
   closedDocuments?: boolean | CompanyCountOutputTypeCountClosedDocumentsArgs
@@ -2520,6 +2717,13 @@ export type CompanyCountOutputTypeCountUsersArgs<ExtArgs extends runtime.Types.E
  */
 export type CompanyCountOutputTypeCountDocumentRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.DocumentReminderWhereInput
+}
+
+/**
+ * CompanyCountOutputType without action
+ */
+export type CompanyCountOutputTypeCountAuthorizationRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CompanyAuthorizationReminderWhereInput
 }
 
 /**
@@ -2602,6 +2806,7 @@ export type CompanySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   authorization?: boolean | Prisma.Company$authorizationArgs<ExtArgs>
   identity?: boolean | Prisma.Company$identityArgs<ExtArgs>
   documentReminders?: boolean | Prisma.Company$documentRemindersArgs<ExtArgs>
+  authorizationReminders?: boolean | Prisma.Company$authorizationRemindersArgs<ExtArgs>
   documents?: boolean | Prisma.Company$documentsArgs<ExtArgs>
   importRows?: boolean | Prisma.Company$importRowsArgs<ExtArgs>
   closedDocuments?: boolean | Prisma.Company$closedDocumentsArgs<ExtArgs>
@@ -2662,6 +2867,7 @@ export type CompanyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   authorization?: boolean | Prisma.Company$authorizationArgs<ExtArgs>
   identity?: boolean | Prisma.Company$identityArgs<ExtArgs>
   documentReminders?: boolean | Prisma.Company$documentRemindersArgs<ExtArgs>
+  authorizationReminders?: boolean | Prisma.Company$authorizationRemindersArgs<ExtArgs>
   documents?: boolean | Prisma.Company$documentsArgs<ExtArgs>
   importRows?: boolean | Prisma.Company$importRowsArgs<ExtArgs>
   closedDocuments?: boolean | Prisma.Company$closedDocumentsArgs<ExtArgs>
@@ -2688,6 +2894,7 @@ export type $CompanyPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     authorization: Prisma.$CompanyAuthorizationPayload<ExtArgs> | null
     identity: Prisma.$CompanyIdentityPayload<ExtArgs> | null
     documentReminders: Prisma.$DocumentReminderPayload<ExtArgs>[]
+    authorizationReminders: Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>[]
     documents: Prisma.$IncentiveDocumentPayload<ExtArgs>[]
     importRows: Prisma.$ImportRowPayload<ExtArgs>[]
     closedDocuments: Prisma.$ClosedIncentiveDocumentPayload<ExtArgs>[]
@@ -3108,6 +3315,7 @@ export interface Prisma__CompanyClient<T, Null = never, ExtArgs extends runtime.
   authorization<T extends Prisma.Company$authorizationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$authorizationArgs<ExtArgs>>): Prisma.Prisma__CompanyAuthorizationClient<runtime.Types.Result.GetResult<Prisma.$CompanyAuthorizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   identity<T extends Prisma.Company$identityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$identityArgs<ExtArgs>>): Prisma.Prisma__CompanyIdentityClient<runtime.Types.Result.GetResult<Prisma.$CompanyIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   documentReminders<T extends Prisma.Company$documentRemindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$documentRemindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  authorizationReminders<T extends Prisma.Company$authorizationRemindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$authorizationRemindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   documents<T extends Prisma.Company$documentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncentiveDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   importRows<T extends Prisma.Company$importRowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$importRowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   closedDocuments<T extends Prisma.Company$closedDocumentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Company$closedDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClosedIncentiveDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3659,6 +3867,30 @@ export type Company$documentRemindersArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.DocumentReminderScalarFieldEnum | Prisma.DocumentReminderScalarFieldEnum[]
+}
+
+/**
+ * Company.authorizationReminders
+ */
+export type Company$authorizationRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyAuthorizationReminder
+   */
+  select?: Prisma.CompanyAuthorizationReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CompanyAuthorizationReminder
+   */
+  omit?: Prisma.CompanyAuthorizationReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyAuthorizationReminderInclude<ExtArgs> | null
+  where?: Prisma.CompanyAuthorizationReminderWhereInput
+  orderBy?: Prisma.CompanyAuthorizationReminderOrderByWithRelationInput | Prisma.CompanyAuthorizationReminderOrderByWithRelationInput[]
+  cursor?: Prisma.CompanyAuthorizationReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CompanyAuthorizationReminderScalarFieldEnum | Prisma.CompanyAuthorizationReminderScalarFieldEnum[]
 }
 
 /**
