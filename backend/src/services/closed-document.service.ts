@@ -73,6 +73,7 @@ export class ClosedDocumentService {
           externalCompanyId: document.company.externalCompanyId,
           name: document.company.name,
           taxNumber: document.company.taxNumber,
+          consultant: document.company.consultant,
         },
 
         createdAt: document.createdAt.toISOString(),
