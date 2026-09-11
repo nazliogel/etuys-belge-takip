@@ -74,7 +74,8 @@ export const ModelName = {
   DocumentImportedMachine: 'DocumentImportedMachine',
   DocumentSpecialCondition: 'DocumentSpecialCondition',
   DocumentReminder: 'DocumentReminder',
-  CompanyAuthorizationReminder: 'CompanyAuthorizationReminder'
+  CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
+  SupportRequest: 'SupportRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -117,6 +118,7 @@ export const CompanyScalarFieldEnum = {
   processStatus: 'processStatus',
   consultant: 'consultant',
   consultantUserId: 'consultantUserId',
+  supportRequestSequence: 'supportRequestSequence',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -623,6 +625,28 @@ export const CompanyAuthorizationReminderScalarFieldEnum = {
 } as const
 
 export type CompanyAuthorizationReminderScalarFieldEnum = (typeof CompanyAuthorizationReminderScalarFieldEnum)[keyof typeof CompanyAuthorizationReminderScalarFieldEnum]
+
+
+export const SupportRequestScalarFieldEnum = {
+  id: 'id',
+  ticketNumber: 'ticketNumber',
+  companyId: 'companyId',
+  assignedToId: 'assignedToId',
+  topic: 'topic',
+  section: 'section',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  relatedRecordId: 'relatedRecordId',
+  relatedRecordName: 'relatedRecordName',
+  description: 'description',
+  status: 'status',
+  viewedAt: 'viewedAt',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
 
 
 export const SortOrder = {

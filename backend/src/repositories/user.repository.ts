@@ -19,7 +19,7 @@ export class UserRepository {
     });
   }
 
-  async findOperationByFullName(
+  async findConsultantByFullName(
     firstName: string,
     lastName: string,
   ): Promise<User | null> {
@@ -33,7 +33,9 @@ export class UserRepository {
           equals: lastName,
           mode: "insensitive",
         },
-        role: "OPERATION",
+        role: {
+          in: ["ADMIN", "OPERATION"],
+        },
         isActive: true,
       },
     });

@@ -79,6 +79,32 @@ enum NotificationType {
   SYSTEM
 }
 
+enum SupportRequestStatus {
+  SENT
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum SupportRequestTopic {
+  DOCUMENT_GENERAL
+  EXTENSION
+  CLOSURE
+  AUTHORIZATION
+  DOCUMENT_DETAIL
+  TECHNICAL
+  OTHER
+}
+
+enum SupportRequestSection {
+  INVESTMENT_TYPE
+  PRODUCTS
+  SUPPORTS
+  FINANCIAL_INFO
+  DOMESTIC_MACHINES
+  IMPORTED_MACHINES
+  SPECIAL_CONDITIONS
+}
+
 enum DocumentReminderType {
   EXTENSION_APPLICATION
   CLOSURE_APPLICATION
@@ -113,7 +139,8 @@ model User {
   companyId    Int?
   company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
-  consultantCompanies Company[] @relation("ConsultantCompanies")
+  consultantCompanies     Company[]        @relation("ConsultantCompanies")
+  assignedSupportRequests SupportRequest[] @relation("AssignedSupportRequests")
 
   uploadedImports ImportBatch[]   @relation("ImportUploadedBy")
   changeHistory   ChangeHistory[]
@@ -135,9 +162,11 @@ model Company {
 
   consultant       String?
   consultantUserId Int?
-  consultantUser   User?   @relation("ConsultantCompanies", fields: [consultantUserId], references: [id], onDelete: SetNull)
 
-  isActive Boolean @default(true)
+  consultantUser User? @relation("ConsultantCompanies", fields: [consultantUserId], references: [id], onDelete: SetNull)
+
+  supportRequestSequence Int     @default(0)
+  isActive               Boolean @default(true)
 
   users                  User[]
   authorization          CompanyAuthorization?
@@ -153,6 +182,7 @@ model Company {
   contacts               CompanyContact[]
   notes                  CompanyNote[]
   companyRequests        CompanyRequest[]
+  supportRequests        SupportRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -849,4 +879,40 @@ model CompanyAuthorizationReminder {
   @@index([contactId])
   @@index([status])
   @@index([targetDate])
+}
+
+model SupportRequest {
+  id           Int     @id @default(autoincrement())
+  ticketNumber String?
+
+  companyId    Int
+  assignedToId Int?
+
+  topic   SupportRequestTopic
+  section SupportRequestSection?
+
+  externalDocumentId Int?
+  documentNumber     String?
+
+  relatedRecordId   Int?
+  relatedRecordName String?
+
+  description String @db.Text
+
+  status   SupportRequestStatus @default(SENT)
+  viewedAt DateTime?
+
+  company    Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assignedTo User?   @relation("AssignedSupportRequests", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([companyId, ticketNumber])
+  @@index([companyId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([externalDocumentId])
+  @@index([createdAt])
 }

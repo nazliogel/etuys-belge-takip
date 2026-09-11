@@ -137,3 +137,8 @@ export type DocumentReminder = Prisma.DocumentReminderModel
  * 
  */
 export type CompanyAuthorizationReminder = Prisma.CompanyAuthorizationReminderModel
+/**
+ * Model SupportRequest
+ * 
+ */
+export type SupportRequest = Prisma.SupportRequestModel

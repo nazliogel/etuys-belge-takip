@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { Headphones, LogOut } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 import { logoutMockUser } from "@/lib/mock-auth";
@@ -188,7 +188,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   };
 
   return (
-    <aside className="sticky top-0 flex h-screen w-64 flex-col bg-gradient-to-b from-blue-800 to-blue-900 border-r border-blue-900 text-blue-100">
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100">
       {/* LOGO - Beyaz kart içinde, kenarları yuvarlak */}
       <div className="mx-2 mt-8 flex items-center justify-center rounded-2xl bg-white px-4 py-6 shadow-sm">
         <div className="relative h-18 w-52 shrink-0">
@@ -311,8 +311,41 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
         })}
       </nav>
 
+      {/* DESTEK TALEPLERİ - SABİT ALT MENÜ */}
+      {(role === "COMPANY" || role === "OPERATION" || role === "ADMIN") && (
+        <div className="shrink-0 border-t border-blue-700/60 px-3 pt-3">
+          <Link
+            href="/support-requests"
+            className={`group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-150 ${
+              pathname === "/support-requests" ||
+              pathname.startsWith("/support-requests/")
+                ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
+                : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white"
+            }`}
+          >
+            <Headphones
+              size={19}
+              className={
+                pathname === "/support-requests" ||
+                pathname.startsWith("/support-requests/")
+                  ? "text-white"
+                  : "text-blue-200 transition group-hover:text-white"
+              }
+            />
+
+            <span>
+              {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
+            </span>
+
+            {(pathname === "/support-requests" ||
+              pathname.startsWith("/support-requests/")) && (
+              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+            )}
+          </Link>
+        </div>
+      )}
       {/* KULLANICI / ÇIKIŞ */}
-      <div className="border-t border-blue-900/60 p-3">
+      <div className="shrink-0 border-t border-blue-900/60 p-3">
         <button
           onClick={handleLogout}
           className="group flex w-full items-center gap-3 rounded-xl bg-blue-900/40 p-2.5 text-left text-sm border border-blue-900/60 transition hover:bg-red-500/20 hover:border-red-500/50"

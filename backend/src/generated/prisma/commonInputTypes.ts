@@ -586,6 +586,57 @@ export type EnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaMode
   _max?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
 }
 
+export type EnumSupportRequestTopicFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel> | $Enums.SupportRequestTopic
+}
+
+export type EnumSupportRequestSectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+}
+
+export type EnumSupportRequestStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel> | $Enums.SupportRequestStatus
+}
+
+export type EnumSupportRequestTopicWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestTopic
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+}
+
+export type EnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+}
+
+export type EnumSupportRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -1115,6 +1166,57 @@ export type NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$Pris
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumSupportRequestTopicFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel> | $Enums.SupportRequestTopic
+}
+
+export type NestedEnumSupportRequestSectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+}
+
+export type NestedEnumSupportRequestStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel> | $Enums.SupportRequestStatus
+}
+
+export type NestedEnumSupportRequestTopicWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestTopic
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+}
+
+export type NestedEnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
 }
 
 

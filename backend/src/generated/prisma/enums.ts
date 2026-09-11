@@ -111,6 +111,41 @@ export const NotificationType = {
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
 
 
+export const SupportRequestStatus = {
+  SENT: 'SENT',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED'
+} as const
+
+export type SupportRequestStatus = (typeof SupportRequestStatus)[keyof typeof SupportRequestStatus]
+
+
+export const SupportRequestTopic = {
+  DOCUMENT_GENERAL: 'DOCUMENT_GENERAL',
+  EXTENSION: 'EXTENSION',
+  CLOSURE: 'CLOSURE',
+  AUTHORIZATION: 'AUTHORIZATION',
+  DOCUMENT_DETAIL: 'DOCUMENT_DETAIL',
+  TECHNICAL: 'TECHNICAL',
+  OTHER: 'OTHER'
+} as const
+
+export type SupportRequestTopic = (typeof SupportRequestTopic)[keyof typeof SupportRequestTopic]
+
+
+export const SupportRequestSection = {
+  INVESTMENT_TYPE: 'INVESTMENT_TYPE',
+  PRODUCTS: 'PRODUCTS',
+  SUPPORTS: 'SUPPORTS',
+  FINANCIAL_INFO: 'FINANCIAL_INFO',
+  DOMESTIC_MACHINES: 'DOMESTIC_MACHINES',
+  IMPORTED_MACHINES: 'IMPORTED_MACHINES',
+  SPECIAL_CONDITIONS: 'SPECIAL_CONDITIONS'
+} as const
+
+export type SupportRequestSection = (typeof SupportRequestSection)[keyof typeof SupportRequestSection]
+
+
 export const DocumentReminderType = {
   EXTENSION_APPLICATION: 'EXTENSION_APPLICATION',
   CLOSURE_APPLICATION: 'CLOSURE_APPLICATION'
