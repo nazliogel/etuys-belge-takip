@@ -109,3 +109,73 @@ export const NotificationType = {
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const SupportRequestStatus = {
+  SENT: 'SENT',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED'
+} as const
+
+export type SupportRequestStatus = (typeof SupportRequestStatus)[keyof typeof SupportRequestStatus]
+
+
+export const SupportRequestTopic = {
+  DOCUMENT_GENERAL: 'DOCUMENT_GENERAL',
+  EXTENSION: 'EXTENSION',
+  CLOSURE: 'CLOSURE',
+  AUTHORIZATION: 'AUTHORIZATION',
+  DOCUMENT_DETAIL: 'DOCUMENT_DETAIL',
+  TECHNICAL: 'TECHNICAL',
+  OTHER: 'OTHER'
+} as const
+
+export type SupportRequestTopic = (typeof SupportRequestTopic)[keyof typeof SupportRequestTopic]
+
+
+export const SupportRequestSection = {
+  INVESTMENT_TYPE: 'INVESTMENT_TYPE',
+  PRODUCTS: 'PRODUCTS',
+  SUPPORTS: 'SUPPORTS',
+  FINANCIAL_INFO: 'FINANCIAL_INFO',
+  DOMESTIC_MACHINES: 'DOMESTIC_MACHINES',
+  IMPORTED_MACHINES: 'IMPORTED_MACHINES',
+  SPECIAL_CONDITIONS: 'SPECIAL_CONDITIONS'
+} as const
+
+export type SupportRequestSection = (typeof SupportRequestSection)[keyof typeof SupportRequestSection]
+
+
+export const DocumentReminderType = {
+  EXTENSION_APPLICATION: 'EXTENSION_APPLICATION',
+  CLOSURE_APPLICATION: 'CLOSURE_APPLICATION'
+} as const
+
+export type DocumentReminderType = (typeof DocumentReminderType)[keyof typeof DocumentReminderType]
+
+
+export const DocumentReminderChannel = {
+  EMAIL: 'EMAIL',
+  WHATSAPP: 'WHATSAPP',
+  CONSULTANT_IN_APP: 'CONSULTANT_IN_APP',
+  ADMIN_EMAIL: 'ADMIN_EMAIL'
+} as const
+
+export type DocumentReminderChannel = (typeof DocumentReminderChannel)[keyof typeof DocumentReminderChannel]
+
+
+export const DocumentReminderStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type DocumentReminderStatus = (typeof DocumentReminderStatus)[keyof typeof DocumentReminderStatus]
+
+
+export const CompanyAuthorizationReminderType = {
+  AUTHORIZATION_EXPIRY: 'AUTHORIZATION_EXPIRY'
+} as const
+
+export type CompanyAuthorizationReminderType = (typeof CompanyAuthorizationReminderType)[keyof typeof CompanyAuthorizationReminderType]

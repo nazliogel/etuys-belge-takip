@@ -518,6 +518,125 @@ export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
 }
 
+export type EnumDocumentReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel> | $Enums.DocumentReminderType
+}
+
+export type EnumDocumentReminderChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+}
+
+export type EnumDocumentReminderStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+}
+
+export type EnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+}
+
+export type EnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+}
+
+export type EnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+}
+
+export type EnumCompanyAuthorizationReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+}
+
+export type EnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+}
+
+export type EnumSupportRequestTopicFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel> | $Enums.SupportRequestTopic
+}
+
+export type EnumSupportRequestSectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+}
+
+export type EnumSupportRequestStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel> | $Enums.SupportRequestStatus
+}
+
+export type EnumSupportRequestTopicWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestTopic
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+}
+
+export type EnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+}
+
+export type EnumSupportRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -979,6 +1098,125 @@ export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumDocumentReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel> | $Enums.DocumentReminderType
+}
+
+export type NestedEnumDocumentReminderChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+}
+
+export type NestedEnumDocumentReminderStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+}
+
+export type NestedEnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderChannel | Prisma.EnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderChannel[] | Prisma.ListEnumDocumentReminderChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderChannelWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderChannelFilter<$PrismaModel>
+}
+
+export type NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocumentReminderStatus | Prisma.EnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocumentReminderStatus[] | Prisma.ListEnumDocumentReminderStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocumentReminderStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocumentReminderStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocumentReminderStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+}
+
+export type NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyAuthorizationReminderType | Prisma.EnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyAuthorizationReminderType[] | Prisma.ListEnumCompanyAuthorizationReminderTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyAuthorizationReminderTypeWithAggregatesFilter<$PrismaModel> | $Enums.CompanyAuthorizationReminderType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCompanyAuthorizationReminderTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumSupportRequestTopicFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel> | $Enums.SupportRequestTopic
+}
+
+export type NestedEnumSupportRequestSectionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+}
+
+export type NestedEnumSupportRequestStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel> | $Enums.SupportRequestStatus
+}
+
+export type NestedEnumSupportRequestTopicWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestTopic | Prisma.EnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestTopic[] | Prisma.ListEnumSupportRequestTopicFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestTopicWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestTopic
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestTopicFilter<$PrismaModel>
+}
+
+export type NestedEnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestSection | Prisma.EnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SupportRequestSection[] | Prisma.ListEnumSupportRequestSectionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSupportRequestSectionNullableWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestSection | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestSectionNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SupportRequestStatus | Prisma.EnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SupportRequestStatus[] | Prisma.ListEnumSupportRequestStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.SupportRequestStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
 }
 
 

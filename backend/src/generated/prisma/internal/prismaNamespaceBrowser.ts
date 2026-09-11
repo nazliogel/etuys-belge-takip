@@ -72,7 +72,10 @@ export const ModelName = {
   DocumentFinancialInfo: 'DocumentFinancialInfo',
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
-  DocumentSpecialCondition: 'DocumentSpecialCondition'
+  DocumentSpecialCondition: 'DocumentSpecialCondition',
+  DocumentReminder: 'DocumentReminder',
+  CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
+  SupportRequest: 'SupportRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -115,6 +118,7 @@ export const CompanyScalarFieldEnum = {
   processStatus: 'processStatus',
   consultant: 'consultant',
   consultantUserId: 'consultantUserId',
+  supportRequestSequence: 'supportRequestSequence',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -573,6 +577,76 @@ export const DocumentSpecialConditionScalarFieldEnum = {
 } as const
 
 export type DocumentSpecialConditionScalarFieldEnum = (typeof DocumentSpecialConditionScalarFieldEnum)[keyof typeof DocumentSpecialConditionScalarFieldEnum]
+
+
+export const DocumentReminderScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  companyId: 'companyId',
+  contactId: 'contactId',
+  type: 'type',
+  channel: 'channel',
+  status: 'status',
+  reminderMonth: 'reminderMonth',
+  targetDate: 'targetDate',
+  recipient: 'recipient',
+  subject: 'subject',
+  message: 'message',
+  providerId: 'providerId',
+  errorMessage: 'errorMessage',
+  attemptedAt: 'attemptedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentReminderScalarFieldEnum = (typeof DocumentReminderScalarFieldEnum)[keyof typeof DocumentReminderScalarFieldEnum]
+
+
+export const CompanyAuthorizationReminderScalarFieldEnum = {
+  id: 'id',
+  authorizationId: 'authorizationId',
+  companyId: 'companyId',
+  contactId: 'contactId',
+  type: 'type',
+  channel: 'channel',
+  status: 'status',
+  reminderMonth: 'reminderMonth',
+  targetDate: 'targetDate',
+  recipient: 'recipient',
+  subject: 'subject',
+  message: 'message',
+  providerId: 'providerId',
+  errorMessage: 'errorMessage',
+  attemptedAt: 'attemptedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyAuthorizationReminderScalarFieldEnum = (typeof CompanyAuthorizationReminderScalarFieldEnum)[keyof typeof CompanyAuthorizationReminderScalarFieldEnum]
+
+
+export const SupportRequestScalarFieldEnum = {
+  id: 'id',
+  ticketNumber: 'ticketNumber',
+  companyId: 'companyId',
+  assignedToId: 'assignedToId',
+  topic: 'topic',
+  section: 'section',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  relatedRecordId: 'relatedRecordId',
+  relatedRecordName: 'relatedRecordName',
+  description: 'description',
+  status: 'status',
+  viewedAt: 'viewedAt',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -236,6 +236,8 @@ export type CompanyContactWhereInput = {
   phone?: Prisma.StringFilter<"CompanyContact"> | string
   createdAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
+  documentReminders?: Prisma.DocumentReminderListRelationFilter
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderListRelationFilter
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
 }
 
@@ -247,6 +249,8 @@ export type CompanyContactOrderByWithRelationInput = {
   phone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  documentReminders?: Prisma.DocumentReminderOrderByRelationAggregateInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderOrderByRelationAggregateInput
   company?: Prisma.CompanyOrderByWithRelationInput
 }
 
@@ -261,6 +265,8 @@ export type CompanyContactWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringFilter<"CompanyContact"> | string
   createdAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
+  documentReminders?: Prisma.DocumentReminderListRelationFilter
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderListRelationFilter
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
 }, "id">
 
@@ -298,6 +304,8 @@ export type CompanyContactCreateInput = {
   phone: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutContactInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutContactInput
   company: Prisma.CompanyCreateNestedOneWithoutContactsInput
 }
 
@@ -309,6 +317,8 @@ export type CompanyContactUncheckedCreateInput = {
   phone: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutContactInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutContactInput
 }
 
 export type CompanyContactUpdateInput = {
@@ -317,6 +327,8 @@ export type CompanyContactUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutContactNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutContactNestedInput
   company?: Prisma.CompanyUpdateOneRequiredWithoutContactsNestedInput
 }
 
@@ -328,6 +340,8 @@ export type CompanyContactUncheckedUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutContactNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutContactNestedInput
 }
 
 export type CompanyContactCreateManyInput = {
@@ -408,6 +422,11 @@ export type CompanyContactSumOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
 }
 
+export type CompanyContactNullableScalarRelationFilter = {
+  is?: Prisma.CompanyContactWhereInput | null
+  isNot?: Prisma.CompanyContactWhereInput | null
+}
+
 export type CompanyContactCreateNestedManyWithoutCompanyInput = {
   create?: Prisma.XOR<Prisma.CompanyContactCreateWithoutCompanyInput, Prisma.CompanyContactUncheckedCreateWithoutCompanyInput> | Prisma.CompanyContactCreateWithoutCompanyInput[] | Prisma.CompanyContactUncheckedCreateWithoutCompanyInput[]
   connectOrCreate?: Prisma.CompanyContactCreateOrConnectWithoutCompanyInput | Prisma.CompanyContactCreateOrConnectWithoutCompanyInput[]
@@ -450,12 +469,46 @@ export type CompanyContactUncheckedUpdateManyWithoutCompanyNestedInput = {
   deleteMany?: Prisma.CompanyContactScalarWhereInput | Prisma.CompanyContactScalarWhereInput[]
 }
 
+export type CompanyContactCreateNestedOneWithoutDocumentRemindersInput = {
+  create?: Prisma.XOR<Prisma.CompanyContactCreateWithoutDocumentRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutDocumentRemindersInput>
+  connectOrCreate?: Prisma.CompanyContactCreateOrConnectWithoutDocumentRemindersInput
+  connect?: Prisma.CompanyContactWhereUniqueInput
+}
+
+export type CompanyContactUpdateOneWithoutDocumentRemindersNestedInput = {
+  create?: Prisma.XOR<Prisma.CompanyContactCreateWithoutDocumentRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutDocumentRemindersInput>
+  connectOrCreate?: Prisma.CompanyContactCreateOrConnectWithoutDocumentRemindersInput
+  upsert?: Prisma.CompanyContactUpsertWithoutDocumentRemindersInput
+  disconnect?: Prisma.CompanyContactWhereInput | boolean
+  delete?: Prisma.CompanyContactWhereInput | boolean
+  connect?: Prisma.CompanyContactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyContactUpdateToOneWithWhereWithoutDocumentRemindersInput, Prisma.CompanyContactUpdateWithoutDocumentRemindersInput>, Prisma.CompanyContactUncheckedUpdateWithoutDocumentRemindersInput>
+}
+
+export type CompanyContactCreateNestedOneWithoutAuthorizationRemindersInput = {
+  create?: Prisma.XOR<Prisma.CompanyContactCreateWithoutAuthorizationRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutAuthorizationRemindersInput>
+  connectOrCreate?: Prisma.CompanyContactCreateOrConnectWithoutAuthorizationRemindersInput
+  connect?: Prisma.CompanyContactWhereUniqueInput
+}
+
+export type CompanyContactUpdateOneWithoutAuthorizationRemindersNestedInput = {
+  create?: Prisma.XOR<Prisma.CompanyContactCreateWithoutAuthorizationRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutAuthorizationRemindersInput>
+  connectOrCreate?: Prisma.CompanyContactCreateOrConnectWithoutAuthorizationRemindersInput
+  upsert?: Prisma.CompanyContactUpsertWithoutAuthorizationRemindersInput
+  disconnect?: Prisma.CompanyContactWhereInput | boolean
+  delete?: Prisma.CompanyContactWhereInput | boolean
+  connect?: Prisma.CompanyContactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CompanyContactUpdateToOneWithWhereWithoutAuthorizationRemindersInput, Prisma.CompanyContactUpdateWithoutAuthorizationRemindersInput>, Prisma.CompanyContactUncheckedUpdateWithoutAuthorizationRemindersInput>
+}
+
 export type CompanyContactCreateWithoutCompanyInput = {
   fullName: string
   email: string
   phone: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutContactInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutContactInput
 }
 
 export type CompanyContactUncheckedCreateWithoutCompanyInput = {
@@ -465,6 +518,8 @@ export type CompanyContactUncheckedCreateWithoutCompanyInput = {
   phone: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutContactInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutContactInput
 }
 
 export type CompanyContactCreateOrConnectWithoutCompanyInput = {
@@ -506,6 +561,122 @@ export type CompanyContactScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
 }
 
+export type CompanyContactCreateWithoutDocumentRemindersInput = {
+  fullName: string
+  email: string
+  phone: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutContactInput
+  company: Prisma.CompanyCreateNestedOneWithoutContactsInput
+}
+
+export type CompanyContactUncheckedCreateWithoutDocumentRemindersInput = {
+  id?: number
+  companyId: number
+  fullName: string
+  email: string
+  phone: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutContactInput
+}
+
+export type CompanyContactCreateOrConnectWithoutDocumentRemindersInput = {
+  where: Prisma.CompanyContactWhereUniqueInput
+  create: Prisma.XOR<Prisma.CompanyContactCreateWithoutDocumentRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutDocumentRemindersInput>
+}
+
+export type CompanyContactUpsertWithoutDocumentRemindersInput = {
+  update: Prisma.XOR<Prisma.CompanyContactUpdateWithoutDocumentRemindersInput, Prisma.CompanyContactUncheckedUpdateWithoutDocumentRemindersInput>
+  create: Prisma.XOR<Prisma.CompanyContactCreateWithoutDocumentRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutDocumentRemindersInput>
+  where?: Prisma.CompanyContactWhereInput
+}
+
+export type CompanyContactUpdateToOneWithWhereWithoutDocumentRemindersInput = {
+  where?: Prisma.CompanyContactWhereInput
+  data: Prisma.XOR<Prisma.CompanyContactUpdateWithoutDocumentRemindersInput, Prisma.CompanyContactUncheckedUpdateWithoutDocumentRemindersInput>
+}
+
+export type CompanyContactUpdateWithoutDocumentRemindersInput = {
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutContactNestedInput
+  company?: Prisma.CompanyUpdateOneRequiredWithoutContactsNestedInput
+}
+
+export type CompanyContactUncheckedUpdateWithoutDocumentRemindersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  companyId?: Prisma.IntFieldUpdateOperationsInput | number
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutContactNestedInput
+}
+
+export type CompanyContactCreateWithoutAuthorizationRemindersInput = {
+  fullName: string
+  email: string
+  phone: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutContactInput
+  company: Prisma.CompanyCreateNestedOneWithoutContactsInput
+}
+
+export type CompanyContactUncheckedCreateWithoutAuthorizationRemindersInput = {
+  id?: number
+  companyId: number
+  fullName: string
+  email: string
+  phone: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutContactInput
+}
+
+export type CompanyContactCreateOrConnectWithoutAuthorizationRemindersInput = {
+  where: Prisma.CompanyContactWhereUniqueInput
+  create: Prisma.XOR<Prisma.CompanyContactCreateWithoutAuthorizationRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutAuthorizationRemindersInput>
+}
+
+export type CompanyContactUpsertWithoutAuthorizationRemindersInput = {
+  update: Prisma.XOR<Prisma.CompanyContactUpdateWithoutAuthorizationRemindersInput, Prisma.CompanyContactUncheckedUpdateWithoutAuthorizationRemindersInput>
+  create: Prisma.XOR<Prisma.CompanyContactCreateWithoutAuthorizationRemindersInput, Prisma.CompanyContactUncheckedCreateWithoutAuthorizationRemindersInput>
+  where?: Prisma.CompanyContactWhereInput
+}
+
+export type CompanyContactUpdateToOneWithWhereWithoutAuthorizationRemindersInput = {
+  where?: Prisma.CompanyContactWhereInput
+  data: Prisma.XOR<Prisma.CompanyContactUpdateWithoutAuthorizationRemindersInput, Prisma.CompanyContactUncheckedUpdateWithoutAuthorizationRemindersInput>
+}
+
+export type CompanyContactUpdateWithoutAuthorizationRemindersInput = {
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutContactNestedInput
+  company?: Prisma.CompanyUpdateOneRequiredWithoutContactsNestedInput
+}
+
+export type CompanyContactUncheckedUpdateWithoutAuthorizationRemindersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  companyId?: Prisma.IntFieldUpdateOperationsInput | number
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutContactNestedInput
+}
+
 export type CompanyContactCreateManyCompanyInput = {
   id?: number
   fullName: string
@@ -521,6 +692,8 @@ export type CompanyContactUpdateWithoutCompanyInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUpdateManyWithoutContactNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutContactNestedInput
 }
 
 export type CompanyContactUncheckedUpdateWithoutCompanyInput = {
@@ -530,6 +703,8 @@ export type CompanyContactUncheckedUpdateWithoutCompanyInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutContactNestedInput
+  authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutContactNestedInput
 }
 
 export type CompanyContactUncheckedUpdateManyWithoutCompanyInput = {
@@ -542,6 +717,44 @@ export type CompanyContactUncheckedUpdateManyWithoutCompanyInput = {
 }
 
 
+/**
+ * Count Type CompanyContactCountOutputType
+ */
+
+export type CompanyContactCountOutputType = {
+  documentReminders: number
+  authorizationReminders: number
+}
+
+export type CompanyContactCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  documentReminders?: boolean | CompanyContactCountOutputTypeCountDocumentRemindersArgs
+  authorizationReminders?: boolean | CompanyContactCountOutputTypeCountAuthorizationRemindersArgs
+}
+
+/**
+ * CompanyContactCountOutputType without action
+ */
+export type CompanyContactCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyContactCountOutputType
+   */
+  select?: Prisma.CompanyContactCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CompanyContactCountOutputType without action
+ */
+export type CompanyContactCountOutputTypeCountDocumentRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DocumentReminderWhereInput
+}
+
+/**
+ * CompanyContactCountOutputType without action
+ */
+export type CompanyContactCountOutputTypeCountAuthorizationRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CompanyAuthorizationReminderWhereInput
+}
+
 
 export type CompanyContactSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -551,7 +764,10 @@ export type CompanyContactSelect<ExtArgs extends runtime.Types.Extensions.Intern
   phone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  documentReminders?: boolean | Prisma.CompanyContact$documentRemindersArgs<ExtArgs>
+  authorizationReminders?: boolean | Prisma.CompanyContact$authorizationRemindersArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.CompanyContactCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["companyContact"]>
 
 export type CompanyContactSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -588,7 +804,10 @@ export type CompanyContactSelectScalar = {
 
 export type CompanyContactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "fullName" | "email" | "phone" | "createdAt" | "updatedAt", ExtArgs["result"]["companyContact"]>
 export type CompanyContactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  documentReminders?: boolean | Prisma.CompanyContact$documentRemindersArgs<ExtArgs>
+  authorizationReminders?: boolean | Prisma.CompanyContact$authorizationRemindersArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.CompanyContactCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CompanyContactIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -600,6 +819,8 @@ export type CompanyContactIncludeUpdateManyAndReturn<ExtArgs extends runtime.Typ
 export type $CompanyContactPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CompanyContact"
   objects: {
+    documentReminders: Prisma.$DocumentReminderPayload<ExtArgs>[]
+    authorizationReminders: Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>[]
     company: Prisma.$CompanyPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1004,6 +1225,8 @@ readonly fields: CompanyContactFieldRefs;
  */
 export interface Prisma__CompanyContactClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  documentReminders<T extends Prisma.CompanyContact$documentRemindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyContact$documentRemindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  authorizationReminders<T extends Prisma.CompanyContact$authorizationRemindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyContact$authorizationRemindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyAuthorizationReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   company<T extends Prisma.CompanyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyDefaultArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1439,6 +1662,54 @@ export type CompanyContactDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many CompanyContacts to delete.
    */
   limit?: number
+}
+
+/**
+ * CompanyContact.documentReminders
+ */
+export type CompanyContact$documentRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentReminder
+   */
+  select?: Prisma.DocumentReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentReminder
+   */
+  omit?: Prisma.DocumentReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentReminderInclude<ExtArgs> | null
+  where?: Prisma.DocumentReminderWhereInput
+  orderBy?: Prisma.DocumentReminderOrderByWithRelationInput | Prisma.DocumentReminderOrderByWithRelationInput[]
+  cursor?: Prisma.DocumentReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DocumentReminderScalarFieldEnum | Prisma.DocumentReminderScalarFieldEnum[]
+}
+
+/**
+ * CompanyContact.authorizationReminders
+ */
+export type CompanyContact$authorizationRemindersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyAuthorizationReminder
+   */
+  select?: Prisma.CompanyAuthorizationReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CompanyAuthorizationReminder
+   */
+  omit?: Prisma.CompanyAuthorizationReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyAuthorizationReminderInclude<ExtArgs> | null
+  where?: Prisma.CompanyAuthorizationReminderWhereInput
+  orderBy?: Prisma.CompanyAuthorizationReminderOrderByWithRelationInput | Prisma.CompanyAuthorizationReminderOrderByWithRelationInput[]
+  cursor?: Prisma.CompanyAuthorizationReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CompanyAuthorizationReminderScalarFieldEnum | Prisma.CompanyAuthorizationReminderScalarFieldEnum[]
 }
 
 /**
