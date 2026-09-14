@@ -15,6 +15,7 @@ import { companyRequestRouter } from "./routes/company-request.routes.js";
 import { documentReminderRouter } from "./routes/document-reminder.routes.js";
 import { notificationRouter } from "./routes/notification.routes.js";
 import { companyAuthorizationReminderRouter } from "./routes/company-authorization-reminder.routes.js";
+import { supportRequestRouter } from "./routes/support-request.routes.js";
 import { authenticate } from "./middlewares/auth.js";
 import { requireActiveCompanyAuthorization } from "./middlewares/company-authorization.js";
 
@@ -65,6 +66,7 @@ app.use(
   companyAuthorizationReminderRouter,
 );
 app.use("/api/notifications", notificationRouter);
+app.use("/api/support-requests", supportRequestRouter);
 
 app.use(errorHandler);
 

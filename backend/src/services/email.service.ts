@@ -27,9 +27,7 @@ function getSmtpConfig() {
   }
 
   if (missingFields.length > 0) {
-    throw new Error(
-      `SMTP ayarlari eksik: ${missingFields.join(", ")}`,
-    );
+    throw new Error(`SMTP ayarlari eksik: ${missingFields.join(", ")}`);
   }
 
   return {
@@ -76,22 +74,16 @@ export class EmailService {
     }
 
     if (!env.emailTestSendingEnabled) {
-      throw new Error(
-        "Test e-posta gönderimi devre dışı.",
-      );
+      throw new Error("Test e-posta gönderimi devre dışı.");
     }
 
-    const testRecipient =
-      env.emailTestRecipient?.trim();
+    const testRecipient = env.emailTestRecipient?.trim();
 
     if (!testRecipient) {
-      throw new Error(
-        "EMAIL_TEST_RECIPIENT tanımlı değil.",
-      );
+      throw new Error("EMAIL_TEST_RECIPIENT tanımlı değil.");
     }
 
-    const { transporter, from } =
-      this.createTransporter();
+    const { transporter, from } = this.createTransporter();
 
     const result = await transporter.sendMail({
       from,
@@ -100,14 +92,14 @@ export class EmailService {
       subject: `[TEST] ${params.subject}`,
       text: [
         "BU BİR TEST E-POSTASIDIR.",
-        `Gerçek firma alıcısı: ${params.to}`,
+        `Gerçek alıcı: ${params.to}`,
         "",
         params.text,
       ].join("\n"),
       html: params.html
         ? `
             <p><strong>BU BİR TEST E-POSTASIDIR.</strong></p>
-            <p>Gerçek firma alıcısı: ${params.to}</p>
+            <p>Gerçek alıcı: ${params.to}</p>
             <hr />
             ${params.html}
           `
@@ -125,13 +117,10 @@ export class EmailService {
 
   async send(params: SendEmailParams) {
     if (!env.emailSendingEnabled) {
-      throw new Error(
-        "E-posta gönderimi güvenlik nedeniyle devre dışı.",
-      );
+      throw new Error("E-posta gönderimi güvenlik nedeniyle devre dışı.");
     }
 
-    const { transporter, from } =
-      this.createTransporter();
+    const { transporter, from } = this.createTransporter();
 
     const result = await transporter.sendMail({
       from,

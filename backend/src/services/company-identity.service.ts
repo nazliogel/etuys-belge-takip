@@ -62,12 +62,13 @@ export class CompanyIdentityService {
       const lastName = parts.slice(1).join(" ");
 
       if (firstName && lastName) {
-        const operationUser = await this.userRepository.findOperationByFullName(
-          firstName,
-          lastName,
-        );
+        const consultantUser =
+          await this.userRepository.findConsultantByFullName(
+            firstName,
+            lastName,
+          );
 
-        consultantUserId = operationUser?.id ?? null;
+        consultantUserId = consultantUser?.id ?? null;
       }
     }
 
