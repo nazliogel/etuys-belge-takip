@@ -393,32 +393,7 @@ export class CompareService {
 
     this.compareCompany(row, company, changes, importType);
     this.compareAuthorization(row, company, changes);
-    const normalizedProcessStatus = row.processStatus
-      ?.trim()
-      .toLocaleLowerCase("tr-TR");
-
-    const isAuthorizationExpired =
-      importType === "OPEN" &&
-      row.externalDocumentId === null &&
-      normalizedProcessStatus === "yetki süresi dolmuş";
-
-    if (isAuthorizationExpired) {
-      for (const document of company.documents) {
-        if (!document.isActive) {
-          continue;
-        }
-
-        changes.push({
-          entityType: "INCENTIVE_DOCUMENT",
-          changeType: "UPDATED",
-          fieldName: "isActive",
-          oldValue: "true",
-          newValue: "false",
-          companyId: company.id,
-          documentId: document.id,
-        });
-      }
-    }
+   
     const matchingOpenDocument =
       row.externalDocumentId !== null
         ? company.documents.find(

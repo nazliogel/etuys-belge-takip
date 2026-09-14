@@ -13,7 +13,16 @@ export const companyRouter = Router();
 
 companyRouter.use(authenticate);
 
-companyRouter.get("/", validate(companyListSchema), companyController.list);
+companyRouter.get(
+  "/",
+  validate(companyListSchema),
+  companyController.list,
+);
+
+companyRouter.get(
+  "/authorization-required",
+  companyController.authorizationRequired,
+);
 
 companyRouter.get(
   "/:id",

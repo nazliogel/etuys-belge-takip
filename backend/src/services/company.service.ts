@@ -99,7 +99,107 @@ export class CompanyService {
       totalCount,
     };
   }
+  async getAuthorizationRequiredCompanies(userId: number, role: UserRole) {
+    if (role === "COMPANY") {
+      throw new AppError(
+        "You do not have permission to view authorization operations.",
+        {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          code: "FORBIDDEN",
+        },
+      );
+    }
 
+    const consultantUserId = role === "OPERATION" ? userId : undefined;
+
+    const companies = await this.companyRepository.findAuthorizationRequired({
+      consultantUserId,
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const items = companies.map((company) => {
+      const authorizationEndDate =
+        company.authorization?.authorizationEndDate ?? null;
+
+      let authorizationStatus: "MISSING" | "EXPIRED" | "EXPIRING";
+
+      if (!authorizationEndDate) {
+        authorizationStatus = "MISSING";
+      } else {
+        const normalizedEndDate = new Date(authorizationEndDate);
+        normalizedEndDate.setHours(0, 0, 0, 0);
+
+        authorizationStatus =
+          normalizedEndDate < today ? "EXPIRED" : "EXPIRING";
+      }
+
+      return {
+        id: company.id,
+        externalCompanyId: company.externalCompanyId,
+        name: company.name,
+        taxNumber: company.taxNumber,
+        processStatus: company.processStatus,
+        consultant: company.consultant,
+        consultantPhone: getConsultantPhone(company.consultant),
+        consultantEmail: getConsultantEmail(company.consultant),
+        isActive: company.isActive,
+        authorizationEndDate: authorizationEndDate?.toISOString() ?? null,
+        authorizationStatus,
+        documentCount: company._count.documents,
+
+        documents: company.documents.map((document) => ({
+          id: document.id,
+          externalDocumentId: document.externalDocumentId,
+          documentNumber: document.documentNumber,
+        })),
+
+        createdAt: company.createdAt.toISOString(),
+        updatedAt: company.updatedAt.toISOString(),
+      };
+    });
+    items.sort((a, b) => {
+      // Yetki tarihi olmayan firmalar en altta gösterilir
+      if (!a.authorizationEndDate && !b.authorizationEndDate) {
+        return a.name.localeCompare(b.name, "tr");
+      }
+
+      if (!a.authorizationEndDate) return 1;
+      if (!b.authorizationEndDate) return -1;
+
+      // Önce henüz bitmemiş, en yakın tarihte bitecek yetkiler
+      if (
+        a.authorizationStatus === "EXPIRING" &&
+        b.authorizationStatus === "EXPIRED"
+      ) {
+        return -1;
+      }
+
+      if (
+        a.authorizationStatus === "EXPIRED" &&
+        b.authorizationStatus === "EXPIRING"
+      ) {
+        return 1;
+      }
+
+      const aTime = new Date(a.authorizationEndDate).getTime();
+      const bTime = new Date(b.authorizationEndDate).getTime();
+
+      if (a.authorizationStatus === "EXPIRING") {
+        // En yakın bitecek tarih önce
+        return aTime - bTime;
+      }
+
+      // Süresi bitenlerde en yakın zamanda bitmiş olan önce
+      return bTime - aTime;
+    });
+
+    return {
+      items,
+      totalCount: items.length,
+    };
+  }
   async getCompanyById(
     id: number,
     userId: number,

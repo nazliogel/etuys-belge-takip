@@ -52,6 +52,44 @@ function formatDate(date: string | null): string {
   }).format(parsedDate);
 }
 
+function normalizeDate(date: Date): Date {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(0, 0, 0, 0);
+  return normalizedDate;
+}
+
+function subtractMonths(date: Date, months: number): Date {
+  const result = new Date(date);
+  const originalDay = result.getDate();
+
+  result.setDate(1);
+  result.setMonth(result.getMonth() - months);
+
+  const lastDayOfMonth = new Date(
+    result.getFullYear(),
+    result.getMonth() + 1,
+    0,
+  ).getDate();
+
+  result.setDate(Math.min(originalDay, lastDayOfMonth));
+
+  return normalizeDate(result);
+}
+function hasExpiredAuthorization(authorizationEndDate: string | null): boolean {
+  if (!authorizationEndDate) {
+    return true;
+  }
+
+  const endDate = normalizeDate(new Date(authorizationEndDate));
+
+  if (Number.isNaN(endDate.getTime())) {
+    return true;
+  }
+
+  const today = normalizeDate(new Date());
+
+  return endDate < today;
+}
 function getStatus(document: ApiDocumentDetail): string {
   if (document.status === "CANCELLED") {
     return "İptal";
@@ -61,26 +99,37 @@ function getStatus(document: ApiDocumentDetail): string {
     return "Kapalı";
   }
 
-  if (!document.documentEndDate) {
+  if (!document.documentEndDate || !document.extensionDate) {
     return "Aktif";
   }
 
-  const end = new Date(document.documentEndDate);
-  const today = new Date();
+  const documentEndDate = normalizeDate(new Date(document.documentEndDate));
 
-  today.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
+  const extensionDate = normalizeDate(new Date(document.extensionDate));
 
-  const remainingDays = Math.ceil(
-    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (remainingDays < 0) {
-    return "Süresi Dolmuş";
+  if (
+    Number.isNaN(documentEndDate.getTime()) ||
+    Number.isNaN(extensionDate.getTime())
+  ) {
+    return "Aktif";
   }
 
-  if (remainingDays <= 180) {
-    return "Süresi Yaklaşıyor";
+  const today = normalizeDate(new Date());
+
+  const datesAreEqual = documentEndDate.getTime() === extensionDate.getTime();
+
+  if (datesAreEqual) {
+    const extensionApplicationStartDate = subtractMonths(documentEndDate, 6);
+
+    if (today >= extensionApplicationStartDate) {
+      return "Uzatma Yapılabilir";
+    }
+
+    return "Aktif";
+  }
+
+  if (extensionDate < today) {
+    return "Kapatma Yapılacak";
   }
 
   return "Aktif";
@@ -154,8 +203,19 @@ export function AdminDocumentIdentity({
     );
   }
 
-  const status = getStatus(document);
+  const authorizationExpired = hasExpiredAuthorization(
+    document.company.authorizationEndDate,
+  );
 
+const isClosedOrCancelled =
+  isClosed ||
+  document.status === "CLOSED" ||
+  document.status === "CANCELLED";
+
+  const status =
+    !isClosedOrCancelled && authorizationExpired
+      ? "Yetkisi Bitmiş"
+      : getStatus(document);
   return (
     <div className="space-y-3">
       <section className="flex items-center justify-between">
