@@ -19,7 +19,7 @@ export class UserRepository {
     });
   }
 
-  async findOperationByFullName(
+  async findConsultantByFullName(
     firstName: string,
     lastName: string,
   ): Promise<User | null> {
@@ -33,9 +33,39 @@ export class UserRepository {
           equals: lastName,
           mode: "insensitive",
         },
-        role: "OPERATION",
+        role: {
+          in: ["ADMIN", "OPERATION"],
+        },
         isActive: true,
       },
+    });
+  }
+
+  async findSupportConsultants() {
+    return prisma.user.findMany({
+      where: {
+        role: {
+          in: ["ADMIN", "OPERATION"],
+        },
+        isActive: true,
+        consultantCompanies: {
+          some: {},
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+      orderBy: [
+        {
+          firstName: "asc",
+        },
+        {
+          lastName: "asc",
+        },
+      ],
     });
   }
 
