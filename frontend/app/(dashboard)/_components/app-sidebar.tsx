@@ -117,8 +117,18 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
           );
         }
       } catch (error) {
-        console.error("Sidebar belgeleri alınamadı:", error);
-        setDocuments([]);
+        const message =
+          error instanceof Error ? error.message : "Belgeler yüklenemedi.";
+
+        if (message.includes("yetki süresi dolmuştur")) {
+          setDocuments([]);
+          setSelectedDocumentId("");
+          setDocumentWarning(false);
+          clearSelectedDocument();
+          return;
+        }
+
+        console.error("Sidebar belgeleri yüklenemedi:", error);
       } finally {
         setDocumentsLoading(false);
       }

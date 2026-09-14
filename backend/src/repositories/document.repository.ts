@@ -62,6 +62,11 @@ export class DocumentRepository {
             name: true,
             taxNumber: true,
             consultant: true,
+            authorization: {
+              select: {
+                authorizationEndDate: true,
+              },
+            },
           },
         },
       },

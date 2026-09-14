@@ -11,6 +11,12 @@ documentRouter.get("/", documentController.list);
 
 documentRouter.get("/extension-eligible", documentController.extensionEligible);
 
+
+documentRouter.get(
+  "/closure-eligible",
+  documentController.closureEligible,
+);
+
 documentRouter.get("/:id/products", documentController.getProducts);
 
 documentRouter.get("/:id/supports", documentController.getSupports);

@@ -15,6 +15,8 @@ import { companyRequestRouter } from "./routes/company-request.routes.js";
 import { documentReminderRouter } from "./routes/document-reminder.routes.js";
 import { notificationRouter } from "./routes/notification.routes.js";
 import { companyAuthorizationReminderRouter } from "./routes/company-authorization-reminder.routes.js";
+import { authenticate } from "./middlewares/auth.js";
+import { requireActiveCompanyAuthorization } from "./middlewares/company-authorization.js";
 
 const app = express();
 
@@ -46,6 +48,9 @@ app.get("/health", async (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+
+app.use("/api", authenticate, requireActiveCompanyAuthorization);
+
 app.use("/api/companies", companyRouter);
 app.use("/api/companies", companyIdentityRoutes);
 app.use("/api/documents", documentRouter);

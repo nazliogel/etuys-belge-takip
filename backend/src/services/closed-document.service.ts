@@ -16,6 +16,41 @@ export class ClosedDocumentService {
     private readonly companyRepository: CompanyRepository,
   ) {}
 
+  private async getAuthorizedCompany(userId: number) {
+    const company = await this.companyRepository.findByUserId(userId);
+
+    if (!company) {
+      throw new AppError("Company is not assigned to this user.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "USER_COMPANY_NOT_FOUND",
+      });
+    }
+
+    const authorizationEndDate =
+      company.authorization?.authorizationEndDate ?? null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const normalizedAuthorizationEndDate = authorizationEndDate
+      ? new Date(authorizationEndDate)
+      : null;
+
+    normalizedAuthorizationEndDate?.setHours(0, 0, 0, 0);
+
+    if (
+      !normalizedAuthorizationEndDate ||
+      normalizedAuthorizationEndDate < today
+    ) {
+      throw new AppError("Firmanın yetki süresi dolmuştur.", {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        code: "COMPANY_AUTHORIZATION_EXPIRED",
+      });
+    }
+
+    return company;
+  }
+
   async getDocuments(
     query: ClosedDocumentListQuery,
     userId: number,
@@ -30,14 +65,7 @@ export class ClosedDocumentService {
     const consultantUserId = role === "OPERATION" ? userId : undefined;
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       companyId = company.id;
     }
@@ -93,14 +121,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -160,15 +181,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       if (document.companyId !== company.id) {
         throw new AppError(
           "You do not have permission to access this document.",
@@ -223,14 +236,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -282,14 +288,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -404,15 +403,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       if (document.companyId !== company.id) {
         throw new AppError(
           "You do not have permission to access this document.",
@@ -484,14 +475,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -567,15 +551,7 @@ export class ClosedDocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       if (document.companyId !== company.id) {
         throw new AppError(
           "You do not have permission to access this document.",
