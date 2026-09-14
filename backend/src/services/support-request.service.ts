@@ -2,6 +2,7 @@ import { AppError } from "../errors/app-error.js";
 
 import type { SupportRequestRepository } from "../repositories/support-request.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
+import type { UserRepository } from "../repositories/user.repository.js";
 import { env } from "../config/env.js";
 import type { EmailService } from "./email.service.js";
 import { buildSupportRequestEmailTemplate } from "./support-request-email-template.service.js";
@@ -24,6 +25,7 @@ export class SupportRequestService {
   constructor(
     private readonly supportRequestRepository: SupportRequestRepository,
     private readonly companyRepository: CompanyRepository,
+    private readonly userRepository: UserRepository,
     private readonly emailService: EmailService,
   ) {}
 
@@ -109,6 +111,20 @@ export class SupportRequestService {
     }
 
     return supportRequest;
+  }
+
+  async listConsultants(user: AuthUser) {
+    if (user.role !== "ADMIN") {
+      throw new AppError(
+        "Uzman listesini görüntüleme yetkiniz bulunmamaktadır.",
+        {
+          statusCode: 403,
+          code: "SUPPORT_REQUEST_CONSULTANTS_FORBIDDEN",
+        },
+      );
+    }
+
+    return this.userRepository.findSupportConsultants();
   }
 
   async list(user: AuthUser, status?: SupportRequestStatus) {

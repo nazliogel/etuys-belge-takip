@@ -19,6 +19,8 @@ import {
   Tag,
   User,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
@@ -51,6 +53,18 @@ type SupportRequestUser = {
   firstName: string;
   lastName: string;
   email: string;
+};
+
+type SupportConsultant = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  role: "ADMIN" | "OPERATION";
+};
+
+type SupportConsultantsResponse = {
+  success: boolean;
+  data: SupportConsultant[];
 };
 
 type SupportRequestCompany = {
@@ -127,11 +141,14 @@ function formatDate(value: string | null | undefined) {
   }).format(new Date(value));
 }
 
+const PAGE_SIZE = 10;
+
 export default function SupportRequestsScreen() {
   const sessionUser = getSessionUser();
   const role = sessionUser?.role as UserRole | undefined;
 
   const [requests, setRequests] = useState<SupportRequest[]>([]);
+  const [consultants, setConsultants] = useState<SupportConsultant[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -152,6 +169,12 @@ export default function SupportRequestsScreen() {
     "ALL" | SupportRequestStatus
   >("ALL");
 
+  const [consultantFilter, setConsultantFilter] = useState<
+    "ALL" | number | "UNASSIGNED"
+  >("ALL");
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   const loadRequests = async () => {
     try {
       setLoading(true);
@@ -169,8 +192,26 @@ export default function SupportRequestsScreen() {
     }
   };
 
+  const loadConsultants = async () => {
+    if (role !== "ADMIN") {
+      setConsultants([]);
+      return;
+    }
+
+    try {
+      const response = await apiFetch<SupportConsultantsResponse>(
+        "/support-requests/consultants",
+      );
+
+      setConsultants(response.data ?? []);
+    } catch (error) {
+      console.error("Uzman listesi alınamadı:", error);
+    }
+  };
+
   useEffect(() => {
     void loadRequests();
+    void loadConsultants();
   }, [role]);
 
   const resetForm = () => {
@@ -355,6 +396,16 @@ export default function SupportRequestsScreen() {
         return false;
       }
 
+      if (role === "ADMIN" && consultantFilter !== "ALL") {
+        if (consultantFilter === "UNASSIGNED") {
+          if (request.assignedToId !== null) {
+            return false;
+          }
+        } else if (request.assignedToId !== consultantFilter) {
+          return false;
+        }
+      }
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
 
@@ -364,6 +415,9 @@ export default function SupportRequestsScreen() {
           request.documentNumber,
           request.company.name,
           topicLabels[request.topic],
+          request.assignedTo
+            ? `${request.assignedTo.firstName} ${request.assignedTo.lastName}`
+            : "",
         ]
           .filter(Boolean)
           .join(" ")
@@ -376,7 +430,28 @@ export default function SupportRequestsScreen() {
 
       return true;
     });
-  }, [requests, searchQuery, statusFilter]);
+  }, [requests, searchQuery, statusFilter, consultantFilter, role]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredRequests.length / PAGE_SIZE),
+  );
+
+  const paginatedRequests = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+
+    return filteredRequests.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredRequests, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, consultantFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const stats = useMemo(() => {
     return {
@@ -395,6 +470,104 @@ export default function SupportRequestsScreen() {
         .length,
     };
   }, [requests]);
+
+  const consultantStats = useMemo(() => {
+    const summary = new Map<
+      string,
+      {
+        consultantId: number | null;
+        name: string;
+        total: number;
+        sent: number;
+        inProgress: number;
+        resolved: number;
+      }
+    >();
+
+    // Önce sistemdeki bütün uzmanları 0 değerlerle ekle.
+    consultants.forEach((consultant) => {
+      summary.set(String(consultant.id), {
+        consultantId: consultant.id,
+        name: `${consultant.firstName} ${consultant.lastName}`,
+        total: 0,
+        sent: 0,
+        inProgress: 0,
+        resolved: 0,
+      });
+    });
+
+    // Sonra destek taleplerini ilgili uzmanların üzerine işle.
+    requests.forEach((request) => {
+      const consultantId = request.assignedToId;
+
+      const key = consultantId === null ? "UNASSIGNED" : String(consultantId);
+
+      const name = request.assignedTo
+        ? `${request.assignedTo.firstName} ${request.assignedTo.lastName}`
+        : "Atanmamış";
+
+      const current = summary.get(key) ?? {
+        consultantId,
+        name,
+        total: 0,
+        sent: 0,
+        inProgress: 0,
+        resolved: 0,
+      };
+
+      current.total += 1;
+
+      if (request.status === "SENT" && !request.viewedAt) {
+        current.sent += 1;
+      }
+
+      if (request.status === "IN_PROGRESS") {
+        current.inProgress += 1;
+      }
+
+      if (request.status === "RESOLVED") {
+        current.resolved += 1;
+      }
+
+      summary.set(key, current);
+    });
+
+    return Array.from(summary.values())
+      .map((item) => {
+        const unresolved = item.total - item.resolved;
+
+        const resolutionRate =
+          item.total > 0 ? Math.round((item.resolved / item.total) * 100) : 0;
+
+        return {
+          ...item,
+          unresolved,
+          resolutionRate,
+        };
+      })
+      .sort(
+        (a, b) =>
+          b.unresolved - a.unresolved ||
+          b.total - a.total ||
+          a.name.localeCompare(b.name, "tr"),
+      );
+  }, [requests, consultants]);
+
+  const selectedConsultantName = useMemo(() => {
+    if (consultantFilter === "ALL") {
+      return null;
+    }
+
+    if (consultantFilter === "UNASSIGNED") {
+      return "Atanmamış";
+    }
+
+    return (
+      consultantStats.find(
+        (consultant) => consultant.consultantId === consultantFilter,
+      )?.name ?? null
+    );
+  }, [consultantFilter, consultantStats]);
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -472,8 +645,160 @@ export default function SupportRequestsScreen() {
           </div>
         )}
 
+        {role === "ADMIN" && consultantStats.length > 0 && (
+          <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm shadow-stone-200/40">
+            <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+                  <User size={18} />
+                </div>
+
+                <div>
+                  <h2 className="text-base font-semibold text-stone-900">
+                    Uzman Bazlı Talep Özeti
+                  </h2>
+
+                  <p className="mt-0.5 text-xs text-stone-500">
+                    Uzmanların talep ve çözüm durumlarını görüntüleyin.
+                  </p>
+                </div>
+              </div>
+
+              {consultantFilter !== "ALL" && (
+                <button
+                  type="button"
+                  onClick={() => setConsultantFilter("ALL")}
+                  className="text-xs font-medium text-blue-700 hover:text-blue-800"
+                >
+                  Filtreyi temizle
+                </button>
+              )}
+            </div>
+
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px]">
+                <div className="grid grid-cols-[minmax(220px,1.5fr)_100px_90px_90px_100px_110px_minmax(160px,1fr)] items-center gap-4 border-b border-stone-100 bg-stone-50/60 px-5 py-3 text-xs font-medium text-stone-500">
+                  <div>Uzman</div>
+                  <div>Toplam</div>
+                  <div>Yeni</div>
+                  <div>İşlemde</div>
+                  <div>Çözüldü</div>
+                  <div>Çözülmemiş</div>
+                  <div>Çözüm Oranı</div>
+                </div>
+
+                <div className="divide-y divide-stone-100">
+                  {consultantStats.map((consultant) => {
+                    const filterValue =
+                      consultant.consultantId === null
+                        ? "UNASSIGNED"
+                        : consultant.consultantId;
+
+                    const isSelected = consultantFilter === filterValue;
+
+                    return (
+                      <button
+                        key={
+                          consultant.consultantId === null
+                            ? "unassigned"
+                            : consultant.consultantId
+                        }
+                        type="button"
+                        onClick={() =>
+                          setConsultantFilter(isSelected ? "ALL" : filterValue)
+                        }
+                        className={`grid w-full grid-cols-[minmax(220px,1.5fr)_100px_90px_90px_100px_110px_minmax(160px,1fr)] items-center gap-4 px-5 py-3 text-left transition ${
+                          isSelected ? "bg-blue-50/70" : "hover:bg-stone-50"
+                        }`}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <User size={14} className="shrink-0 text-stone-400" />
+
+                          <span
+                            className={`truncate text-sm font-medium ${
+                              isSelected ? "text-blue-700" : "text-stone-800"
+                            }`}
+                          >
+                            {consultant.name}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="inline-flex min-w-8 justify-center rounded-md bg-stone-100 px-2 py-1 text-xs font-semibold text-stone-700">
+                            {consultant.total}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="inline-flex min-w-8 justify-center rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700">
+                            {consultant.sent}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="inline-flex min-w-8 justify-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700">
+                            {consultant.inProgress}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="inline-flex min-w-8 justify-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                            {consultant.resolved}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="inline-flex min-w-8 justify-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+                            {consultant.unresolved}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
+                            <div
+                              className="h-full rounded-full bg-emerald-500 transition-all"
+                              style={{
+                                width: `${consultant.resolutionRate}%`,
+                              }}
+                            />
+                          </div>
+
+                          <span className="w-10 text-right text-xs font-semibold tabular-nums text-stone-700">
+                            %{consultant.resolutionRate}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* TALEP LİSTESİ */}
         <div className="rounded-xl border border-stone-200 bg-white shadow-sm shadow-stone-200/40">
+          {role === "ADMIN" && selectedConsultantName && (
+            <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50/60 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Filter size={14} className="text-blue-600" />
+
+                <span className="text-stone-500">Uzman filtresi:</span>
+
+                <span className="font-semibold text-blue-700">
+                  {selectedConsultantName}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setConsultantFilter("ALL")}
+                className="text-xs font-medium text-blue-700 transition hover:text-blue-900"
+              >
+                Filtreyi temizle
+              </button>
+            </div>
+          )}
           {/* ARAMA VE FİLTRE */}
           <div className="flex flex-col gap-3 border-b border-stone-100 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 sm:max-w-md">
@@ -545,13 +870,17 @@ export default function SupportRequestsScreen() {
               </div>
 
               <h2 className="mt-4 text-base font-semibold text-stone-900">
-                {searchQuery || statusFilter !== "ALL"
+                {searchQuery ||
+                statusFilter !== "ALL" ||
+                consultantFilter !== "ALL"
                   ? "Filtreye uyan talep bulunamadı"
                   : "Henüz destek talebi bulunmuyor"}
               </h2>
 
               <p className="mt-1 max-w-sm text-sm text-stone-500">
-                {searchQuery || statusFilter !== "ALL"
+                {searchQuery ||
+                statusFilter !== "ALL" ||
+                consultantFilter !== "ALL"
                   ? "Farklı bir arama veya filtre deneyebilirsiniz."
                   : role === "COMPANY"
                     ? "Yeni bir destek talebi oluşturarak uzmanınıza iletebilirsiniz."
@@ -584,7 +913,7 @@ export default function SupportRequestsScreen() {
               </div>
 
               <div className="divide-y divide-stone-100">
-                {filteredRequests.map((request) => (
+                {paginatedRequests.map((request) => (
                   <button
                     key={request.id}
                     type="button"
@@ -666,6 +995,65 @@ export default function SupportRequestsScreen() {
                     </div>
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+          {!loading && filteredRequests.length > 0 && (
+            <div className="flex flex-col gap-3 border-t border-stone-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs text-stone-500">
+                <span className="font-medium text-stone-700">
+                  {(currentPage - 1) * PAGE_SIZE + 1}
+                </span>
+
+                {" - "}
+
+                <span className="font-medium text-stone-700">
+                  {Math.min(currentPage * PAGE_SIZE, filteredRequests.length)}
+                </span>
+
+                {" / "}
+
+                <span className="font-medium text-stone-700">
+                  {filteredRequests.length}
+                </span>
+
+                {" talep"}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="inline-flex h-8 items-center gap-1 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-600 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={14} />
+                  Önceki
+                </button>
+
+                <div className="min-w-20 text-center text-xs text-stone-500">
+                  <span className="font-semibold text-stone-800">
+                    {currentPage}
+                  </span>
+
+                  {" / "}
+
+                  {totalPages}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="inline-flex h-8 items-center gap-1 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-600 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Sonraki
+                  <ChevronRight size={14} />
+                </button>
               </div>
             </div>
           )}

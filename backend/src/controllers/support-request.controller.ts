@@ -78,6 +78,33 @@ export class SupportRequestController {
     }
   };
 
+  listConsultants = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new AppError("Oturum bilgisi bulunamadı.", {
+          statusCode: 401,
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const consultants = await this.supportRequestService.listConsultants({
+        id: req.user.id,
+        role: req.user.role,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: consultants,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getById = async (
     req: Request,
     res: Response,

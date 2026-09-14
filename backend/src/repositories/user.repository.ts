@@ -41,6 +41,34 @@ export class UserRepository {
     });
   }
 
+  async findSupportConsultants() {
+    return prisma.user.findMany({
+      where: {
+        role: {
+          in: ["ADMIN", "OPERATION"],
+        },
+        isActive: true,
+        consultantCompanies: {
+          some: {},
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+      orderBy: [
+        {
+          firstName: "asc",
+        },
+        {
+          lastName: "asc",
+        },
+      ],
+    });
+  }
+
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return prisma.user.create({
       data,
