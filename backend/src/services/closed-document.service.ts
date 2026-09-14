@@ -101,6 +101,10 @@ export class ClosedDocumentService {
           externalCompanyId: document.company.externalCompanyId,
           name: document.company.name,
           taxNumber: document.company.taxNumber,
+          consultant: document.company.consultant ?? null,
+          authorizationEndDate:
+            document.company.authorization?.authorizationEndDate?.toISOString() ??
+            null,
         },
 
         createdAt: document.createdAt.toISOString(),

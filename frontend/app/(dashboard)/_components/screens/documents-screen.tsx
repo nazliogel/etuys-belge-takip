@@ -43,6 +43,7 @@ type DocumentSortKey =
   | "documentStartDate"
   | "documentEndDate"
   | "extensionDate"
+  | "authorizationEndDate"
   | "supportClass"
   | "status";
 
@@ -51,6 +52,7 @@ const DATE_SORT_KEYS: ReadonlySet<DocumentSortKey> = new Set([
   "documentStartDate",
   "documentEndDate",
   "extensionDate",
+  "authorizationEndDate",
 ]);
 
 // Yetkilendirme (authorization-required) tablosu için sıralanabilir sütunlar
@@ -439,7 +441,9 @@ function getDocumentSortValue(
         ? doc.documentStartDate
         : key === "documentEndDate"
           ? doc.documentEndDate
-          : doc.extensionDate;
+          : key === "extensionDate"
+            ? doc.extensionDate
+            : doc.company?.authorizationEndDate ?? null;
 
     if (!rawDate) return Infinity; // tarihi olmayanlar en sona
 
@@ -984,12 +988,9 @@ export function DocumentsScreen({
             : [];
 
           setSummary({
-            // Yetkisi biten açık belgeler toplamdan çıkarılır.
-            // Kapalı/İptal belgeler yetki durumundan bağımsız olarak toplamda kalır.
-            total: mappedDocuments.filter(
-              (document) =>
-                document.status === "INACTIVE" || companyAuthorizationIsValid,
-            ).length,
+            // Toplam belge sayısı, yetki durumundan bağımsız olarak firmanın
+            // sahip olduğu TÜM belgeleri sayar (açık + kapalı/iptal).
+            total: mappedDocuments.length,
 
             active: activeMappedDocuments.length,
 
@@ -1264,22 +1265,6 @@ export function DocumentsScreen({
               : document,
           ),
         );
-
-        if (variant !== "company") {
-          if (response.data.items.length > 0) {
-            const firstDocumentId = response.data.items[0].id;
-
-            const detailResponse = await apiFetch<DocumentDetailResponse>(
-              `/documents/${firstDocumentId}`,
-            );
-
-            setAuthorizationEndDate(
-              detailResponse.data.company.authorizationEndDate ?? null,
-            );
-          } else {
-            setAuthorizationEndDate(null);
-          }
-        }
       } catch (error) {
         setDocuments([]);
 
@@ -1546,6 +1531,7 @@ export function DocumentsScreen({
     { label: "Belge Başlangıç", key: "documentStartDate" },
     { label: "Belge Bitiş", key: "documentEndDate" },
     { label: "Süre Uzatım", key: "extensionDate" },
+    { label: "Yetki Bitiş", key: "authorizationEndDate" },
     {
       label: "Destekleme Sınıfı",
       key: "supportClass",
@@ -1747,7 +1733,7 @@ export function DocumentsScreen({
         <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
           <table
             className={`w-full table-fixed text-left text-sm ${
-              isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1050px]"
+              isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1150px]"
             }`}
           >
             {isAuthorizationRequiredView ? (
@@ -1762,15 +1748,16 @@ export function DocumentsScreen({
               </colgroup>
             ) : (
               <colgroup>
+                <col className="w-[9%]" />
+                <col className="w-[13%]" />
                 <col className="w-[10%]" />
-                <col className="w-[14%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[12%]" />
                 <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[8%]" />
               </colgroup>
             )}
             <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
@@ -1924,7 +1911,7 @@ export function DocumentsScreen({
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center">
+                  <td colSpan={10} className="px-4 py-8 text-center">
                     <p className="text-sm font-medium text-slate-500">
                       Belgeler yükleniyor...
                     </p>
@@ -1932,7 +1919,7 @@ export function DocumentsScreen({
                 </tr>
               ) : loadError ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center">
+                  <td colSpan={10} className="px-4 py-8 text-center">
                     <p className="text-sm font-semibold text-red-700">
                       Belgeler yüklenemedi
                     </p>
@@ -2011,7 +1998,7 @@ export function DocumentsScreen({
                 )
               ) : paginatedVisibleDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center">
+                  <td colSpan={10} className="px-4 py-8 text-center">
                     {(companyId || variant === "company") &&
                     documents.length === 0 &&
                     !isAuthorizationLoading &&
@@ -2064,11 +2051,20 @@ export function DocumentsScreen({
                     doc.documentStatus === "CLOSED" ||
                     doc.documentStatus === "CANCELLED";
 
+                  const documentAuthorizationIsValid = hasValidAuthorization(
+                    doc.company?.authorizationEndDate ?? null,
+                  );
+
+                  // Firma detay sayfasında (companyId varken) yetkilendirme
+                  // bilgisi ayrı bir istekle geldiği için isAuthorizationLoading
+                  // ile flicker önleniyor. Genel listede (companyId yokken) her
+                  // belge zaten kendi firmasının authorizationEndDate bilgisiyle
+                  // geldiği için doğrudan o değer kullanılıyor.
                   const authorizationExpired =
                     !isClosedOrCancelled &&
-                    Boolean(companyId) &&
-                    !isAuthorizationLoading &&
-                    !authorizationIsValid;
+                    (companyId
+                      ? !isAuthorizationLoading && !documentAuthorizationIsValid
+                      : !documentAuthorizationIsValid);
                   const displayedStatus = authorizationExpired
                     ? "AUTHORIZATION_EXPIRED"
                     : getDisplayStatus(doc);
@@ -2145,6 +2141,12 @@ export function DocumentsScreen({
                       <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
                         {formatDate(doc.extensionDate)}
                       </td>
+
+                      {/* Yetki Bitiş */}
+                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                        {formatDate(doc.company?.authorizationEndDate ?? null)}
+                      </td>
+
                       <td className="px-3 py-1.5 text-center">
                         <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
                           {doc.supportClass ?? "-"}
