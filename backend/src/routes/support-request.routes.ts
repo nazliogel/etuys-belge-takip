@@ -5,15 +5,18 @@ import { authenticate } from "../middlewares/auth.js";
 import { CompanyRepository } from "../repositories/company.repository.js";
 import { SupportRequestRepository } from "../repositories/support-request.repository.js";
 import { SupportRequestService } from "../services/support-request.service.js";
+import { EmailService } from "../services/email.service.js";
 
 const router = Router();
 
 const supportRequestRepository = new SupportRequestRepository();
 const companyRepository = new CompanyRepository();
+const emailService = new EmailService();
 
 const supportRequestService = new SupportRequestService(
   supportRequestRepository,
   companyRepository,
+  emailService,
 );
 
 const supportRequestController = new SupportRequestController(

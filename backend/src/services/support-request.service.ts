@@ -2,6 +2,9 @@ import { AppError } from "../errors/app-error.js";
 
 import type { SupportRequestRepository } from "../repositories/support-request.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
+import { env } from "../config/env.js";
+import type { EmailService } from "./email.service.js";
+import { buildSupportRequestEmailTemplate } from "./support-request-email-template.service.js";
 
 import type {
   SupportRequestStatus,
@@ -21,6 +24,7 @@ export class SupportRequestService {
   constructor(
     private readonly supportRequestRepository: SupportRequestRepository,
     private readonly companyRepository: CompanyRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(user: AuthUser, input: CreateSupportRequestInput) {
@@ -52,11 +56,59 @@ export class SupportRequestService {
       });
     }
 
-    return this.supportRequestRepository.createWithNextTicketNumber({
-      companyId: company.id,
-      assignedToId: company.consultantUserId,
-      description,
-    });
+    const supportRequest =
+      await this.supportRequestRepository.createWithNextTicketNumber({
+        companyId: company.id,
+        assignedToId: company.consultantUserId,
+        description,
+      });
+
+    const consultantEmail = supportRequest.assignedTo?.email?.trim();
+
+    if (!consultantEmail) {
+      console.warn(
+        `[SupportRequest] Atanan uzman veya uzman e-posta adresi bulunamadı. Talep: ${supportRequest.ticketNumber}`,
+      );
+
+      return supportRequest;
+    }
+
+    try {
+      const ticketNumber = supportRequest.ticketNumber ?? "-";
+
+      const consultantName = supportRequest.assignedTo
+        ? `${supportRequest.assignedTo.firstName} ${supportRequest.assignedTo.lastName}`
+        : "-";
+
+      const emailContent = buildSupportRequestEmailTemplate({
+        ticketNumber,
+        companyName: company.name,
+        consultantName,
+        description,
+      });
+
+      const emailParams = {
+        to: consultantEmail,
+        ...emailContent,
+      };
+
+      if (env.emailSendingEnabled) {
+        await this.emailService.send(emailParams);
+      } else if (env.emailTestSendingEnabled) {
+        await this.emailService.sendTest(emailParams);
+      } else {
+        console.log(
+          `[SupportRequest] E-posta gönderimi kapalı. Talep: ${supportRequest.ticketNumber}`,
+        );
+      }
+    } catch (error) {
+      console.error(
+        `[SupportRequest] E-posta gönderilemedi. Talep: ${supportRequest.ticketNumber}`,
+        error,
+      );
+    }
+
+    return supportRequest;
   }
 
   async list(user: AuthUser, status?: SupportRequestStatus) {
