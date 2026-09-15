@@ -32,6 +32,13 @@ type DocumentsResponse = {
   };
 };
 
+type UnreadSupportRequestCountResponse = {
+  success: boolean;
+  data: {
+    count: number;
+  };
+};
+
 interface AppSidebarProps {
   role: UserRole;
   userName?: string;
@@ -46,6 +53,8 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [documentWarning, setDocumentWarning] = useState(false);
+
+  const [supportUnreadCount, setSupportUnreadCount] = useState(0);
 
   const visibleItems = navigationItems.filter((item) =>
     hasPermission(role, item.permission),
@@ -127,6 +136,64 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     void loadDocuments();
   }, [searchParams]);
 
+  // Destek talebi okunmamış bildirim sayısı
+  useEffect(() => {
+    if (role !== "ADMIN" && role !== "OPERATION") {
+      setSupportUnreadCount(0);
+      return;
+    }
+
+    let active = true;
+
+    const loadUnreadCount = async () => {
+      try {
+        const response = await apiFetch<UnreadSupportRequestCountResponse>(
+          "/support-requests/unread-count",
+        );
+
+        if (active) {
+          setSupportUnreadCount(response.data?.count ?? 0);
+        }
+      } catch (error) {
+        console.error("Okunmamış destek talebi sayısı alınamadı:", error);
+      }
+    };
+
+    // Sidebar ilk açıldığında sayıyı getir
+    void loadUnreadCount();
+
+    // Destek talebi okundu / okunmadı olduğunda anında yenile
+    const handleUnreadChanged = () => {
+      void loadUnreadCount();
+    };
+
+    window.addEventListener(
+      "support-request-unread-changed",
+      handleUnreadChanged,
+    );
+
+    // Kullanıcı sekmeye geri döndüğünde tekrar kontrol et
+    window.addEventListener("focus", handleUnreadChanged);
+
+    // Yeni talep geldiyse 15 saniyede bir kontrol et
+    const intervalId = window.setInterval(() => {
+      void loadUnreadCount();
+    }, 15000);
+
+    return () => {
+      active = false;
+
+      window.removeEventListener(
+        "support-request-unread-changed",
+        handleUnreadChanged,
+      );
+
+      window.removeEventListener("focus", handleUnreadChanged);
+
+      window.clearInterval(intervalId);
+    };
+  }, [role]);
+
   const showDocumentWarning = () => {
     setDocumentWarning(true);
 
@@ -168,6 +235,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
     setSelectedDocumentId(documentId);
     setDocumentWarning(false);
+
     setSelectedDocument(
       documentId,
       document.documentNumber,
@@ -187,9 +255,13 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     router.replace("/login");
   };
 
+  const isSupportRequestsActive =
+    pathname === "/support-requests" ||
+    pathname.startsWith("/support-requests/");
+
   return (
     <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100">
-      {/* LOGO - Beyaz kart içinde, kenarları yuvarlak */}
+      {/* LOGO */}
       <div className="mx-2 mt-8 flex items-center justify-center rounded-2xl bg-white px-4 py-6 shadow-sm">
         <div className="relative h-18 w-52 shrink-0">
           <Image
@@ -254,6 +326,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       >
                         {document.documentNumber ??
                           `Belge ${document.externalDocumentId}`}
+
                         {document.status === "CLOSED"
                           ? " - Kapalı"
                           : document.status === "CANCELLED"
@@ -262,6 +335,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       </option>
                     ))}
                   </select>
+
                   {documentWarning && (
                     <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
                       Önce belge seçimi yapınız.
@@ -278,6 +352,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                   title="Önce bir belge seçiniz"
                 >
                   <Icon size={18} className="text-blue-300/40" />
+
                   <span>{item.label}</span>
                 </button>
               ) : (
@@ -287,7 +362,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                   className={`group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-150 ${
                     active
                       ? "bg-gradient-to-r from-red-600 to-red-500 font-semibold text-white shadow-md shadow-red-600/30"
-                      : "text-blue-100 font-medium hover:bg-blue-700/60 hover:text-white"
+                      : "font-medium text-blue-100 hover:bg-blue-700/60 hover:text-white"
                   }`}
                 >
                   <Icon
@@ -314,56 +389,77 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
       {/* DESTEK TALEPLERİ - SABİT ALT MENÜ */}
       {(role === "COMPANY" || role === "OPERATION" || role === "ADMIN") && (
         <div className="shrink-0 border-t border-blue-700/60 px-3 pt-3">
-          <Link
-            href="/support-requests"
-            className={`group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-150 ${
-              pathname === "/support-requests" ||
-              pathname.startsWith("/support-requests/")
-                ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
-                : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white"
-            }`}
-          >
-            <Headphones
-              size={19}
-              className={
-                pathname === "/support-requests" ||
-                pathname.startsWith("/support-requests/")
-                  ? "text-white"
-                  : "text-blue-200 transition group-hover:text-white"
-              }
-            />
+          {(() => {
+            const canSeeBadge = role === "ADMIN" || role === "OPERATION";
+            const hasUnread = canSeeBadge && supportUnreadCount > 0;
+            const shouldAnimate = hasUnread && !isSupportRequestsActive;
 
-            <span>
-              {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
-            </span>
+            return (
+              <Link
+                href="/support-requests"
+                className={`group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-150 ${
+                  isSupportRequestsActive
+                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
+                    : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white"
+                }`}
+              >
+                <Headphones
+                  size={19}
+                  className={`${
+                    isSupportRequestsActive
+                      ? "text-white"
+                      : "text-blue-200 transition group-hover:text-white"
+                  } ${shouldAnimate ? "animate-ring-shake" : ""}`}
+                />
 
-            {(pathname === "/support-requests" ||
-              pathname.startsWith("/support-requests/")) && (
-              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
-            )}
-          </Link>
+                <span>
+                  {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
+                </span>
+
+                <div className="ml-auto flex items-center gap-2">
+                  {hasUnread && (
+                    <span
+                      className={`flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                        isSupportRequestsActive
+                          ? "bg-white text-red-600"
+                          : "bg-red-500 text-white"
+                      } ${shouldAnimate ? "animate-badge-bounce" : ""}`}
+                    >
+                      {supportUnreadCount > 99 ? "99+" : supportUnreadCount}
+                    </span>
+                  )}
+
+                  {isSupportRequestsActive && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                  )}
+                </div>
+              </Link>
+            );
+          })()}
         </div>
       )}
+
       {/* KULLANICI / ÇIKIŞ */}
       <div className="shrink-0 border-t border-blue-900/60 p-3">
         <button
           onClick={handleLogout}
-          className="group flex w-full items-center gap-3 rounded-xl bg-blue-900/40 p-2.5 text-left text-sm border border-blue-900/60 transition hover:bg-red-500/20 hover:border-red-500/50"
+          className="group flex w-full items-center gap-3 rounded-xl border border-blue-900/60 bg-blue-900/40 p-2.5 text-left text-sm transition hover:border-red-500/50 hover:bg-red-500/20"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 text-xs font-bold text-white shadow-sm shadow-red-600/30">
             {userName?.charAt(0).toUpperCase() ?? "?"}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="truncate text-xs font-semibold text-white group-hover:text-red-300 transition">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold text-white transition group-hover:text-red-300">
               {userName ?? "Kullanıcı"}
             </p>
+
             <p className="text-[11px] text-blue-200">Oturumu Kapat</p>
           </div>
 
           <LogOut
             size={16}
-            className="shrink-0 text-blue-200 group-hover:text-red-300 transition"
+            className="shrink-0 text-blue-200 transition group-hover:text-red-300"
           />
         </button>
       </div>

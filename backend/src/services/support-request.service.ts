@@ -173,10 +173,18 @@ export class SupportRequestService {
       });
     }
 
+    // Admin tüm destek taleplerini görebilir.
+    // Ancak sadece kendi üzerine atanmış talebi açarsa "görüldü" olur.
     if (user.role === "ADMIN") {
+      if (request.assignedToId === user.id && !request.viewedAt) {
+        return this.supportRequestRepository.markViewed(id);
+      }
+
       return request;
     }
 
+    // Uzman yalnızca kendi talebini görebilir.
+    // Açtığı anda "görüldü" olur.
     if (user.role === "OPERATION" && request.assignedToId === user.id) {
       if (!request.viewedAt) {
         return this.supportRequestRepository.markViewed(id);
@@ -185,6 +193,8 @@ export class SupportRequestService {
       return request;
     }
 
+    // Firma yalnızca kendi destek talebini görebilir.
+    // Firma görüntülediğinde uzman bildirimi etkilenmez.
     if (user.role === "COMPANY") {
       const company = await this.companyRepository.findByUserId(user.id);
 
@@ -197,6 +207,55 @@ export class SupportRequestService {
       statusCode: 403,
       code: "SUPPORT_REQUEST_ACCESS_FORBIDDEN",
     });
+  }
+  async getUnreadCount(user: AuthUser) {
+    if (user.role !== "ADMIN" && user.role !== "OPERATION") {
+      throw new AppError(
+        "Okunmamış destek talebi sayısını görüntüleme yetkiniz bulunmamaktadır.",
+        {
+          statusCode: 403,
+          code: "SUPPORT_REQUEST_UNREAD_COUNT_FORBIDDEN",
+        },
+      );
+    }
+
+    const count = await this.supportRequestRepository.countUnreadByAssignedTo(
+      user.id,
+    );
+
+    return {
+      count,
+    };
+  }
+
+  async markUnread(user: AuthUser, id: number) {
+    const request = await this.supportRequestRepository.findById(id);
+
+    if (!request) {
+      throw new AppError("Destek talebi bulunamadı.", {
+        statusCode: 404,
+        code: "SUPPORT_REQUEST_NOT_FOUND",
+      });
+    }
+
+    if (
+      (user.role === "ADMIN" || user.role === "OPERATION") &&
+      request.assignedToId === user.id
+    ) {
+      if (!request.viewedAt) {
+        return request;
+      }
+
+      return this.supportRequestRepository.markUnread(id);
+    }
+
+    throw new AppError(
+      "Bu destek talebini okunmadı olarak işaretleme yetkiniz bulunmamaktadır.",
+      {
+        statusCode: 403,
+        code: "SUPPORT_REQUEST_MARK_UNREAD_FORBIDDEN",
+      },
+    );
   }
 
   async markInProgress(user: AuthUser, id: number) {
