@@ -4,6 +4,7 @@ import { CompanyAuthorizationReminderWorkerService } from "./company-authorizati
 import { DocumentReminderQueueService } from "./document-reminder-queue.service.js";
 import { DocumentReminderWorkerService } from "./document-reminder-worker.service.js";
 import { DocumentReminderWhatsAppQueueService } from "./document-reminder-whatsapp-queue.service.js";
+import { DocumentReminderWhatsAppWorkerService } from "./document-reminder-whatsapp-worker.service.js";
 
 type WorkerPriority = "DOCUMENT" | "AUTHORIZATION";
 
@@ -17,6 +18,7 @@ export class ReminderSchedulerService {
 
   constructor(
     private readonly documentQueueService = new DocumentReminderQueueService(),
+    private readonly documentWhatsAppWorkerService = new DocumentReminderWhatsAppWorkerService(),
     private readonly documentWhatsAppQueueService = new DocumentReminderWhatsAppQueueService(),
     private readonly authorizationQueueService = new CompanyAuthorizationReminderQueueService(),
     private readonly documentWorkerService = new DocumentReminderWorkerService(),
@@ -42,16 +44,14 @@ export class ReminderSchedulerService {
       void this.runQueueCycle();
     }, queueIntervalMilliseconds);
 
-    if (env.emailSendingEnabled) {
+    if (env.emailSendingEnabled || env.whatsappSendingEnabled) {
       void this.runWorkerCycle();
 
       this.workerTimer = setInterval(() => {
         void this.runWorkerCycle();
       }, workerIntervalMilliseconds);
     } else {
-      console.log(
-        "Reminder queues will be created, but email workers are disabled.",
-      );
+      console.log("Reminder queues will be created, but workers are disabled.");
     }
 
     console.log("Reminder scheduler started.");
@@ -105,27 +105,32 @@ export class ReminderSchedulerService {
   }
 
   private async runWorkerCycle() {
-    if (this.workerCycleRunning || !env.emailSendingEnabled) {
+    if (
+      this.workerCycleRunning ||
+      (!env.emailSendingEnabled && !env.whatsappSendingEnabled)
+    ) {
       return;
     }
 
     this.workerCycleRunning = true;
 
     try {
-      /*
-       * İki kuyruktan birinin diğerini sürekli bekletmemesi için
-       * her çalışmada öncelik değiştirilir.
-       */
-      if (this.nextWorkerPriority === "DOCUMENT") {
-        await this.documentWorkerService.processPendingReminders(1);
-        await this.authorizationWorkerService.processPendingReminders(1);
+      if (env.emailSendingEnabled) {
+        if (this.nextWorkerPriority === "DOCUMENT") {
+          await this.documentWorkerService.processPendingReminders(1);
+          await this.authorizationWorkerService.processPendingReminders(1);
 
-        this.nextWorkerPriority = "AUTHORIZATION";
-      } else {
-        await this.authorizationWorkerService.processPendingReminders(1);
-        await this.documentWorkerService.processPendingReminders(1);
+          this.nextWorkerPriority = "AUTHORIZATION";
+        } else {
+          await this.authorizationWorkerService.processPendingReminders(1);
+          await this.documentWorkerService.processPendingReminders(1);
 
-        this.nextWorkerPriority = "DOCUMENT";
+          this.nextWorkerPriority = "DOCUMENT";
+        }
+      }
+
+      if (env.whatsappSendingEnabled) {
+        await this.documentWhatsAppWorkerService.processPendingReminders(1);
       }
     } catch (error) {
       console.error("Reminder worker cycle failed.", error);

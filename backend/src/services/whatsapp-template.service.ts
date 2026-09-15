@@ -35,7 +35,7 @@ export function createExtensionWhatsAppTemplate(
     previewText: [
       "Sayın Yetkili,",
       `${params.companyName} firmasına ait ${documentNumber} numaralı yatırım teşvik belgesinin bitiş tarihi ${targetDate} olarak kayıtlıdır.`,
-      "Süre uzatma başvurusu hakkında gerekli işlemlerin tamamlanmasını rica ederiz.",
+      "Süre uzatma başvurusu hakkındaki gerekli işlemlerin tamamlanmasını rica ederiz.",
       "Akkaş Group",
     ].join("\n\n"),
   };
@@ -56,7 +56,7 @@ export function createClosureWhatsAppTemplate(
     previewText: [
       "Sayın Yetkili,",
       `${params.companyName} firmasına ait ${documentNumber} numaralı yatırım teşvik belgesinin uzatılmış süresi ${targetDate} tarihinde sona ermiştir.`,
-      "Belge kapatma başvurusu hakkında gerekli işlemlerin tamamlanmasını rica ederiz.",
+      "Belge kapatma başvurusu hakkındaki gerekli işlemlerin tamamlanmasını rica ederiz.",
       "Akkaş Group",
     ].join("\n\n"),
   };
