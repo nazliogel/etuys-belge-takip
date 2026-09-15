@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Loader2 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
@@ -45,6 +50,57 @@ type DomesticMachinesResponse = {
   };
 };
 
+type ColumnKey =
+  | "sequence"
+  | "gtipCode"
+  | "name"
+  | "vatExemption"
+  | "quantity"
+  | "unit"
+  | "unitPrice"
+  | "invoiceQuantity"
+  | "invoiceValue"
+  | "total"
+  | "gtipDescription"
+  | "machineId"
+  | "machineType"
+  | "sellerTaxNumber"
+  | "sellerEmail"
+  | "barcode";
+
+type ColumnWidths = Record<ColumnKey, number>;
+
+type ResizeState = {
+  column: ColumnKey;
+  startX: number;
+  startWidth: number;
+  pointerId: number;
+};
+
+const COLUMN_STORAGE_KEY = "domestic-machines-column-widths-v1";
+
+const MIN_COLUMN_WIDTH = 45;
+const MAX_COLUMN_WIDTH = 500;
+
+const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
+  sequence: 42,
+  gtipCode: 80,
+  name: 180,
+  vatExemption: 52,
+  quantity: 46,
+  unit: 64,
+  unitPrice: 64,
+  invoiceQuantity: 68,
+  invoiceValue: 68,
+  total: 70,
+  gtipDescription: 105,
+  machineId: 65,
+  machineType: 72,
+  sellerTaxNumber: 72,
+  sellerEmail: 88,
+  barcode: 72,
+};
+
 function formatNumber(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") {
     return "-";
@@ -82,7 +138,7 @@ function formatQuantity(value: string | number | null | undefined): string {
 }
 
 const HEAD_BASE =
-  "sticky top-0 z-20 bg-slate-100 border-b-2 border-[#1e2a5e]/15 border-r border-slate-200 px-1 py-1.5 text-[9px] font-bold uppercase tracking-normal text-slate-500 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
+  "sticky top-0 z-20 relative bg-slate-100 border-b-2 border-[#1e2a5e]/15 border-r border-slate-200 px-1 py-1.5 text-[9px] font-bold uppercase tracking-normal text-slate-500 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
 
 export function AdminDocumentDomesticMachines({
   documentId,
@@ -91,6 +147,35 @@ export function AdminDocumentDomesticMachines({
   const [machines, setMachines] = useState<DomesticMachine[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(
+    DEFAULT_COLUMN_WIDTHS,
+  );
+
+  const columnWidthsRef = useRef<ColumnWidths>(DEFAULT_COLUMN_WIDTHS);
+  const resizeStateRef = useRef<ResizeState | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(COLUMN_STORAGE_KEY);
+
+      if (!stored) {
+        return;
+      }
+
+      const parsed = JSON.parse(stored) as Partial<ColumnWidths>;
+
+      const nextWidths: ColumnWidths = {
+        ...DEFAULT_COLUMN_WIDTHS,
+        ...parsed,
+      };
+
+      columnWidthsRef.current = nextWidths;
+      setColumnWidths(nextWidths);
+    } catch {
+      // localStorage okunamazsa varsayılan değerler kullanılır.
+    }
+  }, []);
 
   useEffect(() => {
     async function loadMachines() {
@@ -120,6 +205,107 @@ export function AdminDocumentDomesticMachines({
 
     void loadMachines();
   }, [documentId, isClosed]);
+
+  const handleResizeStart = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    column: ColumnKey,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    resizeStateRef.current = {
+      column,
+      startX: event.clientX,
+      startWidth: columnWidthsRef.current[column],
+      pointerId: event.pointerId,
+    };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleResizeMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const resizeState = resizeStateRef.current;
+
+    if (!resizeState || resizeState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const difference = event.clientX - resizeState.startX;
+
+    const nextWidth = Math.min(
+      MAX_COLUMN_WIDTH,
+      Math.max(
+        resizeState.column === "sequence" ? 42 : MIN_COLUMN_WIDTH,
+        resizeState.startWidth + difference,
+      ),
+    );
+
+    setColumnWidths((current) => {
+      const next = {
+        ...current,
+        [resizeState.column]: nextWidth,
+      };
+
+      columnWidthsRef.current = next;
+
+      return next;
+    });
+  };
+
+  const handleResizeEnd = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const resizeState = resizeStateRef.current;
+
+    if (!resizeState || resizeState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // Pointer zaten bırakılmış olabilir.
+    }
+
+    resizeStateRef.current = null;
+
+    try {
+      window.localStorage.setItem(
+        COLUMN_STORAGE_KEY,
+        JSON.stringify(columnWidthsRef.current),
+      );
+    } catch {
+      // localStorage kullanılamıyorsa devam et.
+    }
+  };
+
+  const resizeHandle = (column: ColumnKey, label: string) => (
+    <button
+      type="button"
+      tabIndex={-1}
+      aria-label={`${label} sütun genişliğini değiştir`}
+      onPointerDown={(event) => handleResizeStart(event, column)}
+      onPointerMove={handleResizeMove}
+      onPointerUp={handleResizeEnd}
+      onPointerCancel={handleResizeEnd}
+      className="group absolute right-0 top-0 z-50 h-full w-2 cursor-col-resize touch-none select-none"
+    >
+      <span className="mx-auto block h-full w-px bg-transparent transition-colors group-hover:bg-blue-500" />
+    </button>
+  );
+
+  const sequenceLeft = 0;
+
+  const gtipLeft = columnWidths.sequence;
+
+  const nameLeft = columnWidths.sequence + columnWidths.gtipCode;
+
+  const totalTableWidth = Object.values(columnWidths).reduce(
+    (total, width) => total + width,
+    0,
+  );
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -164,125 +350,140 @@ export function AdminDocumentDomesticMachines({
         </div>
       ) : (
         <div className="max-h-[70vh] overflow-auto">
-          <table className="w-max min-w-full border-separate border-spacing-0 text-left">
+          <table
+            className="table-fixed border-separate border-spacing-0 text-left"
+            style={{
+              width: `${totalTableWidth}px`,
+              minWidth: `${totalTableWidth}px`,
+            }}
+          >
+            <colgroup>
+              <col style={{ width: columnWidths.sequence }} />
+              <col style={{ width: columnWidths.gtipCode }} />
+              <col style={{ width: columnWidths.name }} />
+              <col style={{ width: columnWidths.vatExemption }} />
+              <col style={{ width: columnWidths.quantity }} />
+              <col style={{ width: columnWidths.unit }} />
+              <col style={{ width: columnWidths.unitPrice }} />
+              <col style={{ width: columnWidths.invoiceQuantity }} />
+              <col style={{ width: columnWidths.invoiceValue }} />
+              <col style={{ width: columnWidths.total }} />
+              <col style={{ width: columnWidths.gtipDescription }} />
+              <col style={{ width: columnWidths.machineId }} />
+              <col style={{ width: columnWidths.machineType }} />
+              <col style={{ width: columnWidths.sellerTaxNumber }} />
+              <col style={{ width: columnWidths.sellerEmail }} />
+              <col style={{ width: columnWidths.barcode }} />
+            </colgroup>
+
             <thead>
               <tr className="text-left">
-                {/* 1 - SIRA */}
                 <th
-                  className={`${HEAD_BASE} left-0 z-40 w-[42px] min-w-[42px] max-w-[42px] text-right`}
+                  className={`${HEAD_BASE} z-40 text-right`}
+                  style={{
+                    left: sequenceLeft,
+                    width: columnWidths.sequence,
+                  }}
                 >
                   Sıra
+                  {resizeHandle("sequence", "Sıra")}
                 </th>
 
-                {/* 2 - GTİP NO */}
                 <th
-                  className={`${HEAD_BASE} left-[42px] z-40 w-[80px] min-w-[80px] max-w-[80px]`}
+                  className={`${HEAD_BASE} z-40`}
+                  style={{
+                    left: gtipLeft,
+                    width: columnWidths.gtipCode,
+                  }}
                 >
                   GTİP No
+                  {resizeHandle("gtipCode", "GTİP No")}
                 </th>
 
-                {/* 3 - ADI / ÖZELLİĞİ */}
                 <th
-                  className={`${HEAD_BASE} left-[122px] z-40 w-[180px] min-w-[180px] max-w-[180px]`}
+                  className={`${HEAD_BASE} z-40`}
+                  style={{
+                    left: nameLeft,
+                    width: columnWidths.name,
+                  }}
                 >
                   Adı / Özelliği
+                  {resizeHandle("name", "Adı / Özelliği")}
                 </th>
 
-                {/* KDV İSTİSNASI */}
-                <th
-                  className={`${HEAD_BASE} w-[52px] min-w-[52px] max-w-[52px] whitespace-normal leading-tight`}
-                >
+                <th className={HEAD_BASE}>
                   KDV
                   <br />
                   İstisnası
+                  {resizeHandle("vatExemption", "KDV İstisnası")}
                 </th>
 
-                {/* MİKTAR */}
-                <th
-                  className={`${HEAD_BASE} w-[46px] min-w-[46px] max-w-[46px] text-right`}
-                >
+                <th className={`${HEAD_BASE} text-right`}>
                   Miktar
+                  {resizeHandle("quantity", "Miktar")}
                 </th>
 
-                {/* BİRİM */}
-                <th
-                  className={`${HEAD_BASE} w-[64px] min-w-[64px] max-w-[64px]`}
-                >
+                <th className={HEAD_BASE}>
                   Birim
+                  {resizeHandle("unit", "Birim")}
                 </th>
 
-                {/* BİRİM FİYAT */}
-                <th
-                  className={`${HEAD_BASE} w-[64px] min-w-[64px] max-w-[64px] text-right whitespace-normal leading-tight`}
-                >
+                <th className={`${HEAD_BASE} text-right leading-tight`}>
                   Birim
                   <br />
                   Fiyat
+                  {resizeHandle("unitPrice", "Birim Fiyat")}
                 </th>
 
-                {/* FATURA GERÇEKLEŞEN MİKTAR */}
-                <th
-                  className={`${HEAD_BASE} w-[68px] min-w-[68px] max-w-[68px] whitespace-normal text-right leading-tight`}
-                >
+                <th className={`${HEAD_BASE} text-right leading-tight`}>
                   Fatura
                   <br />
                   Gerç. Miktar
+                  {resizeHandle("invoiceQuantity", "Fatura Gerçekleşen Miktar")}
                 </th>
 
-                {/* FATURA GERÇEKLEŞEN DEĞER */}
-                <th
-                  className={`${HEAD_BASE} w-[68px] min-w-[68px] max-w-[68px] whitespace-normal text-right leading-tight`}
-                >
+                <th className={`${HEAD_BASE} text-right leading-tight`}>
                   Fatura
                   <br />
                   Gerç. Değer
+                  {resizeHandle("invoiceValue", "Fatura Gerçekleşen Değer")}
                 </th>
 
-                {/* TOPLAM TUTAR */}
-                <th
-                  className={`${HEAD_BASE} w-[70px] min-w-[70px] max-w-[70px] text-right whitespace-normal leading-tight`}
-                >
+                <th className={`${HEAD_BASE} text-right leading-tight`}>
                   Toplam
                   <br />
                   Tutar
+                  {resizeHandle("total", "Toplam Tutar")}
                 </th>
 
-                {/* DİĞER ALANLAR */}
-
-                <th
-                  className={`${HEAD_BASE} w-[105px] min-w-[105px] max-w-[105px]`}
-                >
+                <th className={HEAD_BASE}>
                   GTİP Açıklama
+                  {resizeHandle("gtipDescription", "GTİP Açıklama")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[65px] min-w-[65px] max-w-[65px]`}
-                >
+                <th className={HEAD_BASE}>
                   Makine ID
+                  {resizeHandle("machineId", "Makine ID")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px]`}
-                >
+                <th className={HEAD_BASE}>
                   Makine Tipi
+                  {resizeHandle("machineType", "Makine Tipi")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px]`}
-                >
+                <th className={HEAD_BASE}>
                   Satıcı VKN
+                  {resizeHandle("sellerTaxNumber", "Satıcı VKN")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[88px] min-w-[88px] max-w-[88px]`}
-                >
+                <th className={HEAD_BASE}>
                   Satıcı E-Posta
+                  {resizeHandle("sellerEmail", "Satıcı E-Posta")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px] border-r-0`}
-                >
+                <th className={`${HEAD_BASE} border-r-0`}>
                   Barkod
+                  {resizeHandle("barcode", "Barkod")}
                 </th>
               </tr>
             </thead>
@@ -322,7 +523,11 @@ export function AdminDocumentDomesticMachines({
                     {/* SIRA */}
                     <td
                       title={String(machine.sequenceNumber ?? "-")}
-                      className={`sticky left-0 z-10 w-[42px] min-w-[42px] max-w-[42px] border-b border-r border-slate-200 px-1.5 py-1.5 text-right font-mono text-[10px] font-semibold text-slate-600 ${rowBackground}`}
+                      className={`sticky z-10 border-b border-r border-slate-200 px-1.5 py-1.5 text-right font-mono text-[10px] font-semibold text-slate-600 ${rowBackground}`}
+                      style={{
+                        left: sequenceLeft,
+                        width: columnWidths.sequence,
+                      }}
                     >
                       {machine.sequenceNumber ?? "-"}
                     </td>
@@ -330,7 +535,11 @@ export function AdminDocumentDomesticMachines({
                     {/* GTİP NO */}
                     <td
                       title={machine.gtipCode ?? "-"}
-                      className={`sticky left-[42px] z-10 w-[80px] min-w-[80px] max-w-[80px] border-b border-r border-slate-200 px-1.5 py-1.5 font-mono text-[9px] text-slate-700 ${rowBackground}`}
+                      className={`sticky z-10 border-b border-r border-slate-200 px-1.5 py-1.5 font-mono text-[9px] text-slate-700 ${rowBackground}`}
+                      style={{
+                        left: gtipLeft,
+                        width: columnWidths.gtipCode,
+                      }}
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.gtipCode ?? "-"}
@@ -340,7 +549,11 @@ export function AdminDocumentDomesticMachines({
                     {/* ADI / ÖZELLİĞİ */}
                     <td
                       title={machine.name ?? "-"}
-                      className={`sticky left-[122px] z-10 w-[180px] min-w-[180px] max-w-[180px] border-b border-r border-slate-200 px-1.5 py-1.5 text-[11px] font-semibold text-slate-900 ${rowBackground}`}
+                      className={`sticky z-10 border-b border-r border-slate-200 px-1.5 py-1.5 text-[11px] font-semibold text-slate-900 ${rowBackground}`}
+                      style={{
+                        left: nameLeft,
+                        width: columnWidths.name,
+                      }}
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.name ?? "-"}
@@ -348,7 +561,7 @@ export function AdminDocumentDomesticMachines({
                     </td>
 
                     {/* KDV */}
-                    <td className="w-[52px] min-w-[52px] max-w-[52px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] font-semibold text-slate-700">
+                    <td className="border-b border-r border-slate-200 px-1 py-1.5 text-[10px] font-semibold text-slate-700">
                       {machine.vatExemption === "1"
                         ? "EVET"
                         : machine.vatExemption === "0"
@@ -359,7 +572,7 @@ export function AdminDocumentDomesticMachines({
                     {/* MİKTAR */}
                     <td
                       title={quantity}
-                      className="w-[46px] min-w-[46px] max-w-[46px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {quantity}
@@ -369,7 +582,7 @@ export function AdminDocumentDomesticMachines({
                     {/* BİRİM */}
                     <td
                       title={machine.unit ?? "-"}
-                      className="w-[64px] min-w-[64px] max-w-[64px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.unit ?? "-"}
@@ -379,7 +592,7 @@ export function AdminDocumentDomesticMachines({
                     {/* BİRİM FİYAT */}
                     <td
                       title={unitPrice}
-                      className="w-[64px] min-w-[64px] max-w-[64px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {unitPrice}
@@ -389,7 +602,7 @@ export function AdminDocumentDomesticMachines({
                     {/* FATURA GERÇEKLEŞEN MİKTAR */}
                     <td
                       title={invoiceQuantity}
-                      className="w-[68px] min-w-[68px] max-w-[68px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {invoiceQuantity}
@@ -399,7 +612,7 @@ export function AdminDocumentDomesticMachines({
                     {/* FATURA GERÇEKLEŞEN DEĞER */}
                     <td
                       title={invoiceValue}
-                      className="w-[68px] min-w-[68px] max-w-[68px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {invoiceValue}
@@ -409,7 +622,7 @@ export function AdminDocumentDomesticMachines({
                     {/* TOPLAM TUTAR */}
                     <td
                       title={total}
-                      className="w-[70px] min-w-[70px] max-w-[70px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-bold text-slate-900"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-bold text-slate-900"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {total}
@@ -419,7 +632,7 @@ export function AdminDocumentDomesticMachines({
                     {/* GTİP AÇIKLAMA */}
                     <td
                       title={machine.gtipDescription ?? "-"}
-                      className="w-[105px] min-w-[105px] max-w-[105px] border-b border-r border-slate-200 px-1.5 py-1.5 text-[10px] text-slate-600"
+                      className="border-b border-r border-slate-200 px-1.5 py-1.5 text-[10px] text-slate-600"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.gtipDescription ?? "-"}
@@ -429,7 +642,7 @@ export function AdminDocumentDomesticMachines({
                     {/* MAKİNE ID */}
                     <td
                       title={String(machine.externalMachineId ?? "-")}
-                      className="w-[65px] min-w-[65px] max-w-[65px] border-b border-r border-slate-200 px-1.5 py-1.5 font-mono text-[9px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1.5 py-1.5 font-mono text-[9px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.externalMachineId ?? "-"}
@@ -439,7 +652,7 @@ export function AdminDocumentDomesticMachines({
                     {/* MAKİNE TİPİ */}
                     <td
                       title={machine.machineryEquipmentType ?? "-"}
-                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.machineryEquipmentType ?? "-"}
@@ -449,7 +662,7 @@ export function AdminDocumentDomesticMachines({
                     {/* SATICI VKN */}
                     <td
                       title={machine.sellerTaxNumber ?? "-"}
-                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.sellerTaxNumber ?? "-"}
@@ -459,7 +672,7 @@ export function AdminDocumentDomesticMachines({
                     {/* SATICI E-POSTA */}
                     <td
                       title={machine.sellerEmail ?? "-"}
-                      className="w-[88px] min-w-[88px] max-w-[88px] border-b border-r border-slate-200 px-1 py-1.5 text-[9px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-[9px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.sellerEmail ?? "-"}
@@ -469,7 +682,7 @@ export function AdminDocumentDomesticMachines({
                     {/* BARKOD */}
                     <td
                       title={machine.barcode ?? "-"}
-                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-600"
+                      className="border-b border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-600"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.barcode ?? "-"}
