@@ -6,7 +6,6 @@ import { getSessionUser } from "@/lib/mock-auth";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useRouter } from "next/navigation";
 import {
-  Bell,
   Building2,
   CalendarClock,
   Clock3,
@@ -33,6 +32,16 @@ type CompanyListResponse = {
     totalCount: number;
   };
 };
+
+type AuthorizationRequiredResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    items: ApiCompany[];
+    totalCount: number;
+  };
+};
+
 type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
 
 type ApiDocument = {
@@ -303,20 +312,14 @@ type SummaryItem = {
   clickable: boolean;
 };
 
-/**
- * Dashboard verileri için tek bir localStorage cache anahtarı.
- * Tüm istatistikler + yaklaşan süreler + son işlemler burada tutulur,
- * component her mount olduğunda önce bu cache okunur (varsa) ve state
- * o veriyle başlatılır; API cevabı geldiğinde arka planda güncellenir.
- */
 function getDashboardCacheKey() {
   const user = getSessionUser();
 
   if (!user) {
-    return "dashboard-overview-cache-v4-guest";
+    return "dashboard-overview-cache-v5-guest";
   }
 
-  return `dashboard-overview-cache-v4-${user.role}-${user.id}`;
+  return `dashboard-overview-cache-v5-${user.role}-${user.id}`;
 }
 
 type DashboardCache = {
@@ -326,6 +329,7 @@ type DashboardCache = {
   activeDocuments: number;
   expiredDocuments: number;
   expiredDocumentItems: ApiDocument[];
+  authorizationRequiredDocuments: number;
   closureEligibleDocuments: number;
   closedCancelledDocuments: number;
   closedCancelledItems: ApiDocument[];
@@ -373,12 +377,16 @@ export function DashboardScreen() {
   const [expiredDocuments, setExpiredDocuments] = useState<number | null>(
     () => readDashboardCache()?.expiredDocuments ?? null,
   );
+
+  const [authorizationRequiredDocuments, setAuthorizationRequiredDocuments] =
+    useState<number | null>(
+      () => readDashboardCache()?.authorizationRequiredDocuments ?? null,
+    );
   const [expiredDocumentItems, setExpiredDocumentItems] = useState<
     ApiDocument[]
   >(() => readDashboardCache()?.expiredDocumentItems ?? []);
 
-  // "Süresi Yaklaşan" artık ayrı bir özet kartı değil (o belgeler Aktif'e
-  // dahil); bu kartın yerini Kapatma Yapılacaklar (closure-eligible) aldı.
+
   const [closureEligibleDocuments, setClosureEligibleDocuments] = useState<
     number | null
   >(() => readDashboardCache()?.closureEligibleDocuments ?? null);
@@ -428,6 +436,7 @@ export function DashboardScreen() {
           closedDocumentResponse,
           extensionEligibleResponse,
           closureEligibleResponse,
+          authorizationRequiredResponse,
           importResponse,
         ] = await Promise.all([
           apiFetch<CompanyListResponse>("/companies?page=1&limit=1"),
@@ -447,6 +456,9 @@ export function DashboardScreen() {
           apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
 
           apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
+          apiFetch<AuthorizationRequiredResponse>(
+            "/companies/authorization-required",
+          ),
 
           isOperation
             ? Promise.resolve<ImportBatchListApiResponse>({
@@ -562,6 +574,8 @@ export function DashboardScreen() {
           activeDocuments: adjustedActiveDocuments,
           expiredDocuments: documentResponse.data.summary.expired,
           expiredDocumentItems: sortedExpiredItems,
+          authorizationRequiredDocuments:
+            authorizationRequiredResponse.data.totalCount,
           closureEligibleDocuments: closureEligibleResponse.data.totalCount,
           closedCancelledDocuments: closedDocumentResponse.data.totalCount,
           closedCancelledItems: sortedClosedCancelledItems,
@@ -578,6 +592,7 @@ export function DashboardScreen() {
         setActiveDocuments(cache.activeDocuments);
         setExpiredDocuments(cache.expiredDocuments);
         setExpiredDocumentItems(cache.expiredDocumentItems);
+        setAuthorizationRequiredDocuments(cache.authorizationRequiredDocuments);
         setClosureEligibleDocuments(cache.closureEligibleDocuments);
         setClosedCancelledDocuments(cache.closedCancelledDocuments);
         setClosedCancelledItems(cache.closedCancelledItems);
@@ -605,6 +620,7 @@ export function DashboardScreen() {
           setActiveDocuments(0);
           setExpiredDocuments(0);
           setExpiredDocumentItems([]);
+          setAuthorizationRequiredDocuments(0);
           setClosureEligibleDocuments(0);
           setClosedCancelledDocuments(0);
           setExtensionEligibleDocuments(0);
@@ -676,11 +692,14 @@ export function DashboardScreen() {
       clickable: true,
     },
     {
-      title: "Yeni Bildirim",
-      value: "7",
-      description: "Okunmamış bildirim",
-      icon: Bell,
-      href: "/notifications",
+      title: "Yetkilendirme Yapılacaklar",
+      value:
+        authorizationRequiredDocuments === null
+          ? "..."
+          : String(authorizationRequiredDocuments),
+      description: "Yetkilendirme işlemi yapılması gereken firmalar",
+      icon: Pencil,
+      href: "/documents?view=authorization-required",
       clickable: true,
     },
   ];
