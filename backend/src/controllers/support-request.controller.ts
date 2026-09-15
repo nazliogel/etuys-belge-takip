@@ -144,6 +144,72 @@ export class SupportRequestController {
     }
   };
 
+  getUnreadCount = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new AppError("Oturum bilgisi bulunamadı.", {
+          statusCode: 401,
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const result = await this.supportRequestService.getUnreadCount({
+        id: req.user.id,
+        role: req.user.role,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  markUnread = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new AppError("Oturum bilgisi bulunamadı.", {
+          statusCode: 401,
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const id = Number(req.params.id);
+
+      if (!Number.isInteger(id) || id <= 0) {
+        throw new AppError("Geçersiz destek talebi ID'si.", {
+          statusCode: 400,
+          code: "INVALID_SUPPORT_REQUEST_ID",
+        });
+      }
+
+      const request = await this.supportRequestService.markUnread(
+        {
+          id: req.user.id,
+          role: req.user.role,
+        },
+        id,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: request,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   markInProgress = async (
     req: Request,
     res: Response,

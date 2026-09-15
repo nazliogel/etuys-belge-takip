@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Clock3,
   Eye,
+  EyeOff,
   FileText,
   Filter,
   Headphones,
@@ -271,8 +272,39 @@ export default function SupportRequestsScreen() {
           item.id === response.data.id ? response.data : item,
         ),
       );
+
+      // Sidebar bildirim sayısını hemen yenile.
+      window.dispatchEvent(new Event("support-request-unread-changed"));
     } catch (error) {
       console.error("Destek talebi açılamadı:", error);
+    }
+  };
+
+  const markUnread = async (id: number) => {
+    try {
+      setActionLoading(id);
+
+      const response = await apiFetch<SupportRequestResponse>(
+        `/support-requests/${id}/unread`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      setSelectedRequest(response.data);
+
+      setRequests((current) =>
+        current.map((item) =>
+          item.id === response.data.id ? response.data : item,
+        ),
+      );
+
+      // Tekrar okunmadı yapıldığı için sidebar sayısını yenile.
+      window.dispatchEvent(new Event("support-request-unread-changed"));
+    } catch (error) {
+      console.error("Talep okunmadı olarak işaretlenemedi:", error);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -1317,40 +1349,61 @@ export default function SupportRequestsScreen() {
             </div>
 
             {/* UZMAN AKSİYONLARI */}
-            {(role === "OPERATION" || role === "ADMIN") &&
-              selectedRequest.status !== "RESOLVED" && (
-                <div className="flex items-center justify-end gap-3 border-t border-stone-100 bg-stone-50 px-6 py-4">
-                  {selectedRequest.status === "SENT" && (
+            {(role === "OPERATION" || role === "ADMIN") && (
+              <div className="flex items-center gap-3 border-t border-stone-100 bg-stone-50 px-6 py-4">
+                {/* SADECE TALEBİN SAHİBİ TEKRAR OKUNMADI YAPABİLİR */}
+                {selectedRequest.assignedToId === sessionUser?.id &&
+                  selectedRequest.viewedAt && (
                     <button
                       type="button"
                       disabled={actionLoading === selectedRequest.id}
-                      onClick={() => void markInProgress(selectedRequest.id)}
-                      className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-60"
+                      onClick={() => void markUnread(selectedRequest.id)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:opacity-60"
                     >
                       {actionLoading === selectedRequest.id ? (
                         <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <Clock3 size={16} />
+                        <EyeOff size={16} />
                       )}
-                      İşleme Al
+                      Okunmadı Olarak İşaretle
                     </button>
                   )}
 
-                  <button
-                    type="button"
-                    disabled={actionLoading === selectedRequest.id}
-                    onClick={() => void resolveRequest(selectedRequest.id)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
-                  >
-                    {actionLoading === selectedRequest.id ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <CheckCircle2 size={16} />
+                {selectedRequest.status !== "RESOLVED" && (
+                  <div className="ml-auto flex items-center gap-3">
+                    {selectedRequest.status === "SENT" && (
+                      <button
+                        type="button"
+                        disabled={actionLoading === selectedRequest.id}
+                        onClick={() => void markInProgress(selectedRequest.id)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-60"
+                      >
+                        {actionLoading === selectedRequest.id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Clock3 size={16} />
+                        )}
+                        İşleme Al
+                      </button>
                     )}
-                    Çözüldü Olarak İşaretle
-                  </button>
-                </div>
-              )}
+
+                    <button
+                      type="button"
+                      disabled={actionLoading === selectedRequest.id}
+                      onClick={() => void resolveRequest(selectedRequest.id)}
+                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
+                    >
+                      {actionLoading === selectedRequest.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <CheckCircle2 size={16} />
+                      )}
+                      Çözüldü Olarak İşaretle
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

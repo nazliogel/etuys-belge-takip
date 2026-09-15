@@ -112,6 +112,7 @@ export class SupportRequestRepository {
     });
   }
 
+  // Talebi okundu/görüldü yap
   async markViewed(id: number) {
     return prisma.supportRequest.update({
       where: { id },
@@ -125,12 +126,35 @@ export class SupportRequestRepository {
     });
   }
 
+  // Talebi tekrar okunmadı yap
+  async markUnread(id: number) {
+    return prisma.supportRequest.update({
+      where: { id },
+      data: {
+        viewedAt: null,
+      },
+      include: {
+        company: true,
+        assignedTo: true,
+      },
+    });
+  }
+
+  // Giriş yapan uzmana ait okunmamış talep sayısı
+  async countUnreadByAssignedTo(assignedToId: number) {
+    return prisma.supportRequest.count({
+      where: {
+        assignedToId,
+        viewedAt: null,
+      },
+    });
+  }
+
   async markInProgress(id: number) {
     return prisma.supportRequest.update({
       where: { id },
       data: {
         status: "IN_PROGRESS",
-        viewedAt: new Date(),
       },
       include: {
         company: true,

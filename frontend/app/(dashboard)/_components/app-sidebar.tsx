@@ -32,6 +32,13 @@ type DocumentsResponse = {
   };
 };
 
+type UnreadSupportRequestCountResponse = {
+  success: boolean;
+  data: {
+    count: number;
+  };
+};
+
 interface AppSidebarProps {
   role: UserRole;
   userName?: string;
@@ -49,6 +56,8 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [documentWarning, setDocumentWarning] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
+  const [supportUnreadCount, setSupportUnreadCount] = useState(0);
 
   const visibleItems = navigationItems.filter((item) =>
     hasPermission(role, item.permission),
@@ -163,6 +172,64 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     void loadDocuments();
   }, [searchParams]);
 
+  // Destek talebi okunmamış bildirim sayısı
+  useEffect(() => {
+    if (role !== "ADMIN" && role !== "OPERATION") {
+      setSupportUnreadCount(0);
+      return;
+    }
+
+    let active = true;
+
+    const loadUnreadCount = async () => {
+      try {
+        const response = await apiFetch<UnreadSupportRequestCountResponse>(
+          "/support-requests/unread-count",
+        );
+
+        if (active) {
+          setSupportUnreadCount(response.data?.count ?? 0);
+        }
+      } catch (error) {
+        console.error("Okunmamış destek talebi sayısı alınamadı:", error);
+      }
+    };
+
+    // Sidebar ilk açıldığında sayıyı getir
+    void loadUnreadCount();
+
+    // Destek talebi okundu / okunmadı olduğunda anında yenile
+    const handleUnreadChanged = () => {
+      void loadUnreadCount();
+    };
+
+    window.addEventListener(
+      "support-request-unread-changed",
+      handleUnreadChanged,
+    );
+
+    // Kullanıcı sekmeye geri döndüğünde tekrar kontrol et
+    window.addEventListener("focus", handleUnreadChanged);
+
+    // Yeni talep geldiyse 15 saniyede bir kontrol et
+    const intervalId = window.setInterval(() => {
+      void loadUnreadCount();
+    }, 15000);
+
+    return () => {
+      active = false;
+
+      window.removeEventListener(
+        "support-request-unread-changed",
+        handleUnreadChanged,
+      );
+
+      window.removeEventListener("focus", handleUnreadChanged);
+
+      window.clearInterval(intervalId);
+    };
+  }, [role]);
+
   const showDocumentWarning = () => {
     setDocumentWarning(true);
 
@@ -204,6 +271,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
     setSelectedDocumentId(documentId);
     setDocumentWarning(false);
+
     setSelectedDocument(
       documentId,
       document.documentNumber,
@@ -222,6 +290,10 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     logoutMockUser();
     router.replace("/login");
   };
+
+  const isSupportRequestsActive =
+    pathname === "/support-requests" ||
+    pathname.startsWith("/support-requests/");
 
   return (
     <aside
@@ -312,6 +384,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       >
                         {document.documentNumber ??
                           `Belge ${document.externalDocumentId}`}
+
                         {document.status === "CLOSED"
                           ? " - Kapalı"
                           : document.status === "CANCELLED"
@@ -320,6 +393,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                       </option>
                     ))}
                   </select>
+
                   {documentWarning && (
                     <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
                       Önce belge seçimi yapınız.
@@ -354,7 +428,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                   } ${
                     active
                       ? "bg-gradient-to-r from-red-600 to-red-500 font-semibold text-white shadow-md shadow-red-600/30"
-                      : "text-blue-100 font-medium hover:bg-blue-700/60 hover:text-white"
+                      : "font-medium text-blue-100 hover:bg-blue-700/60 hover:text-white"
                   }`}
                 >
                   <Icon
@@ -381,46 +455,78 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
       {/* DESTEK TALEPLERİ - SABİT ALT MENÜ */}
       {(role === "COMPANY" || role === "OPERATION" || role === "ADMIN") && (
         <div className="shrink-0 border-t border-blue-700/60 px-3 pt-3">
-          <Link
-            href="/support-requests"
-            title={
-              collapsed
-                ? role === "COMPANY"
-                  ? "Destek Talebi"
-                  : "Destek Talepleri"
-                : undefined
-            }
-            className={`group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-150 ${
-              collapsed ? "justify-center" : ""
-            } ${
-              pathname === "/support-requests" ||
-              pathname.startsWith("/support-requests/")
-                ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
-                : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white"
-            }`}
-          >
-            <Headphones
-              size={19}
-              className={`shrink-0 ${
-                pathname === "/support-requests" ||
-                pathname.startsWith("/support-requests/")
-                  ? "text-white"
-                  : "text-blue-200 transition group-hover:text-white"
-              }`}
-            />
+          {(() => {
+            const canSeeBadge = role === "ADMIN" || role === "OPERATION";
+            const hasUnread = canSeeBadge && supportUnreadCount > 0;
+            const shouldAnimate = hasUnread && !isSupportRequestsActive;
 
-            {!collapsed && (
-              <span>
-                {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
-              </span>
-            )}
+            return (
+              <Link
+                href="/support-requests"
+                title={
+                  collapsed
+                    ? role === "COMPANY"
+                      ? "Destek Talebi"
+                      : "Destek Talepleri"
+                    : undefined
+                }
+                className={`group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-150 ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  isSupportRequestsActive
+                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
+                    : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white"
+                }`}
+              >
+                <Headphones
+                  size={19}
+                  className={`shrink-0 ${
+                    isSupportRequestsActive
+                      ? "text-white"
+                      : "text-blue-200 transition group-hover:text-white"
+                  } ${shouldAnimate ? "animate-ring-shake" : ""}`}
+                />
 
-            {(pathname === "/support-requests" ||
-              pathname.startsWith("/support-requests/")) &&
-              !collapsed && (
-                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
-              )}
-          </Link>
+                {!collapsed && (
+                  <span>
+                    {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
+                  </span>
+                )}
+
+                {!collapsed && (
+                  <div className="ml-auto flex items-center gap-2">
+                    {hasUnread && (
+                      <span
+                        className={`flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                          isSupportRequestsActive
+                            ? "bg-white text-red-600"
+                            : "bg-red-500 text-white"
+                        } ${shouldAnimate ? "animate-badge-bounce" : ""}`}
+                      >
+                        {supportUnreadCount > 99 ? "99+" : supportUnreadCount}
+                      </span>
+                    )}
+
+                    {isSupportRequestsActive && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                    )}
+                  </div>
+                )}
+
+                {collapsed && hasUnread && (
+                  <span
+                    className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full px-1 py-0.5 text-[9px] font-bold ${
+                      isSupportRequestsActive
+                        ? "bg-white text-red-600"
+                        : "bg-red-500 text-white"
+                    } ${shouldAnimate ? "animate-badge-bounce" : ""}`}
+                  >
+                    {supportUnreadCount > 9 ? "9+" : supportUnreadCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })()}
         </div>
       )}
 
