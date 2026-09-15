@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Loader2 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
@@ -46,6 +51,59 @@ type ImportedMachinesResponse = {
     documentNumber: string | null;
     items: ImportedMachine[];
   };
+};
+
+type ColumnKey =
+  | "sequence"
+  | "gtipCode"
+  | "name"
+  | "quantity"
+  | "unit"
+  | "originCurrency"
+  | "fobUsd"
+  | "customsTaxExemption"
+  | "vatExemption"
+  | "usedMachine"
+  | "fobTl"
+  | "cifTl"
+  | "gtipDescription"
+  | "machineId"
+  | "machineType"
+  | "vehicle"
+  | "ckd";
+
+type ColumnWidths = Record<ColumnKey, number>;
+
+type ResizeState = {
+  column: ColumnKey;
+  startX: number;
+  startWidth: number;
+  pointerId: number;
+};
+
+const COLUMN_STORAGE_KEY = "imported-machines-column-widths-v1";
+
+const MIN_COLUMN_WIDTH = 45;
+const MAX_COLUMN_WIDTH = 500;
+
+const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
+  sequence: 42,
+  gtipCode: 80,
+  name: 180,
+  quantity: 52,
+  unit: 70,
+  originCurrency: 105,
+  fobUsd: 90,
+  customsTaxExemption: 92,
+  vatExemption: 62,
+  usedMachine: 90,
+  fobTl: 72,
+  cifTl: 72,
+  gtipDescription: 105,
+  machineId: 65,
+  machineType: 72,
+  vehicle: 46,
+  ckd: 42,
 };
 
 function formatNumber(value: string | number | null | undefined): string {
@@ -128,6 +186,35 @@ export function AdminDocumentImportedMachines({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(
+    DEFAULT_COLUMN_WIDTHS,
+  );
+
+  const columnWidthsRef = useRef<ColumnWidths>(DEFAULT_COLUMN_WIDTHS);
+  const resizeStateRef = useRef<ResizeState | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(COLUMN_STORAGE_KEY);
+
+      if (!stored) {
+        return;
+      }
+
+      const parsed = JSON.parse(stored) as Partial<ColumnWidths>;
+
+      const nextWidths: ColumnWidths = {
+        ...DEFAULT_COLUMN_WIDTHS,
+        ...parsed,
+      };
+
+      columnWidthsRef.current = nextWidths;
+      setColumnWidths(nextWidths);
+    } catch {
+      // localStorage okunamazsa varsayılan genişlikler kullanılır.
+    }
+  }, []);
+
   useEffect(() => {
     async function loadMachines() {
       setIsLoading(true);
@@ -156,6 +243,109 @@ export function AdminDocumentImportedMachines({
 
     void loadMachines();
   }, [documentId, isClosed]);
+
+  const handleResizeStart = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    column: ColumnKey,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    resizeStateRef.current = {
+      column,
+      startX: event.clientX,
+      startWidth: columnWidthsRef.current[column],
+      pointerId: event.pointerId,
+    };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleResizeMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const resizeState = resizeStateRef.current;
+
+    if (!resizeState || resizeState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const difference = event.clientX - resizeState.startX;
+
+    const minimumWidth =
+      resizeState.column === "sequence" || resizeState.column === "ckd"
+        ? 42
+        : MIN_COLUMN_WIDTH;
+
+    const nextWidth = Math.min(
+      MAX_COLUMN_WIDTH,
+      Math.max(minimumWidth, resizeState.startWidth + difference),
+    );
+
+    setColumnWidths((current) => {
+      const next = {
+        ...current,
+        [resizeState.column]: nextWidth,
+      };
+
+      columnWidthsRef.current = next;
+
+      return next;
+    });
+  };
+
+  const handleResizeEnd = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const resizeState = resizeStateRef.current;
+
+    if (!resizeState || resizeState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // Pointer zaten bırakılmış olabilir.
+    }
+
+    resizeStateRef.current = null;
+
+    try {
+      window.localStorage.setItem(
+        COLUMN_STORAGE_KEY,
+        JSON.stringify(columnWidthsRef.current),
+      );
+    } catch {
+      // localStorage kullanılamıyorsa devam et.
+    }
+  };
+
+  const resizeHandle = (column: ColumnKey, label: string) => (
+    <button
+      type="button"
+      tabIndex={-1}
+      aria-label={`${label} sütun genişliğini değiştir`}
+      onPointerDown={(event) => handleResizeStart(event, column)}
+      onPointerMove={handleResizeMove}
+      onPointerUp={handleResizeEnd}
+      onPointerCancel={handleResizeEnd}
+      className="group absolute right-0 top-0 z-50 h-full w-2 cursor-col-resize touch-none select-none"
+    >
+      <span className="mx-auto block h-full w-px bg-transparent transition-colors group-hover:bg-blue-500" />
+    </button>
+  );
+
+  const sequenceLeft = 0;
+
+  const gtipLeft = columnWidths.sequence;
+
+  const nameLeft = columnWidths.sequence + columnWidths.gtipCode;
+
+  const totalTableWidth = Object.values(columnWidths).reduce(
+    (total, width) => total + width,
+    0,
+  );
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -200,134 +390,178 @@ export function AdminDocumentImportedMachines({
         </div>
       ) : (
         <div className="admin-table-scroll max-h-[70vh] overflow-auto pb-1">
-          <table className="w-max min-w-full border-separate border-spacing-0 text-left">
+          <table
+            className="table-fixed border-separate border-spacing-0 text-left"
+            style={{
+              width: `${totalTableWidth}px`,
+              minWidth: `${totalTableWidth}px`,
+            }}
+          >
+            <colgroup>
+              <col style={{ width: columnWidths.sequence }} />
+              <col style={{ width: columnWidths.gtipCode }} />
+              <col style={{ width: columnWidths.name }} />
+              <col style={{ width: columnWidths.quantity }} />
+              <col style={{ width: columnWidths.unit }} />
+              <col style={{ width: columnWidths.originCurrency }} />
+              <col style={{ width: columnWidths.fobUsd }} />
+              <col style={{ width: columnWidths.customsTaxExemption }} />
+              <col style={{ width: columnWidths.vatExemption }} />
+              <col style={{ width: columnWidths.usedMachine }} />
+              <col style={{ width: columnWidths.fobTl }} />
+              <col style={{ width: columnWidths.cifTl }} />
+              <col style={{ width: columnWidths.gtipDescription }} />
+              <col style={{ width: columnWidths.machineId }} />
+              <col style={{ width: columnWidths.machineType }} />
+              <col style={{ width: columnWidths.vehicle }} />
+              <col style={{ width: columnWidths.ckd }} />
+            </colgroup>
+
             <thead>
               <tr className="text-left">
-                {/* 1 - SIRA */}
+                {/* SIRA */}
                 <th
-                  className={`${HEAD_BASE} left-0 z-40 w-[42px] min-w-[42px] max-w-[42px] text-right`}
+                  className={`${HEAD_BASE} z-40 text-right`}
+                  style={{
+                    left: sequenceLeft,
+                    width: columnWidths.sequence,
+                  }}
                 >
                   Sıra
+                  {resizeHandle("sequence", "Sıra")}
                 </th>
 
-                {/* 2 - GTİP NO */}
+                {/* GTİP NO */}
                 <th
-                  className={`${HEAD_BASE} left-[42px] z-40 w-[80px] min-w-[80px] max-w-[80px]`}
+                  className={`${HEAD_BASE} z-40`}
+                  style={{
+                    left: gtipLeft,
+                    width: columnWidths.gtipCode,
+                  }}
                 >
                   GTİP No
+                  {resizeHandle("gtipCode", "GTİP No")}
                 </th>
 
-                {/* 3 - ADI VE ÖZELLİĞİ */}
+                {/* ADI VE ÖZELLİĞİ */}
                 <th
-                  className={`${HEAD_BASE} left-[122px] z-40 w-[180px] min-w-[180px] max-w-[180px]`}
+                  className={`${HEAD_BASE} z-40`}
+                  style={{
+                    left: nameLeft,
+                    width: columnWidths.name,
+                  }}
                 >
                   Adı ve Özelliği
+                  {resizeHandle("name", "Adı ve Özelliği")}
                 </th>
 
-                {/* 4 - MİKTARI */}
-                <th
-                  className={`${HEAD_BASE} w-[52px] min-w-[52px] max-w-[52px] text-right`}
-                >
+                {/* MİKTARI */}
+                <th className={`${HEAD_BASE} text-right`}>
                   Miktarı
+                  {resizeHandle("quantity", "Miktarı")}
                 </th>
 
-                {/* 5 - BİRİM */}
-                <th
-                  className={`${HEAD_BASE} w-[70px] min-w-[70px] max-w-[70px]`}
-                >
+                {/* BİRİM */}
+                <th className={HEAD_BASE}>
                   Birim
+                  {resizeHandle("unit", "Birim")}
                 </th>
 
-                {/* MENŞEİ ÜLKE DÖVİZ BİRİM FİYAT FOB */}
+                {/* MENŞEİ ÜLKE DÖVİZ BİRİM FİYAT */}
                 <th
-                  className={`${HEAD_BASE} w-[105px] min-w-[105px] max-w-[105px] whitespace-normal text-right text-[8px] leading-[1.15]`}
+                  className={`${HEAD_BASE} whitespace-normal text-right text-[8px] leading-[1.15]`}
                 >
                   Menşei Ülke Döviz
                   <br />
                   Birim Fiyat (FOB)
+                  {resizeHandle(
+                    "originCurrency",
+                    "Menşei Ülke Döviz Birim Fiyat FOB",
+                  )}
                 </th>
 
-                {/* TOPLAM TUTAR FOB $ */}
+                {/* TOPLAM FOB USD */}
                 <th
-                  className={`${HEAD_BASE} w-[90px] min-w-[90px] max-w-[90px] whitespace-normal text-right text-[8px] leading-[1.15]`}
+                  className={`${HEAD_BASE} whitespace-normal text-right text-[8px] leading-[1.15]`}
                 >
                   Toplam Tutar
                   <br />
                   (FOB $)
+                  {resizeHandle("fobUsd", "Toplam Tutar FOB USD")}
                 </th>
 
-                {/* GÜMRÜK VERGİSİ İSTİSNASI */}
+                {/* GÜMRÜK */}
                 <th
-                  className={`${HEAD_BASE} w-[92px] min-w-[92px] max-w-[92px] whitespace-normal text-center text-[8px] leading-[1.15]`}
+                  className={`${HEAD_BASE} whitespace-normal text-center text-[8px] leading-[1.15]`}
                 >
                   Gümrük Vergisi
                   <br />
                   İstisnası
+                  {resizeHandle(
+                    "customsTaxExemption",
+                    "Gümrük Vergisi İstisnası",
+                  )}
                 </th>
 
-                {/* KDV İSTİSNASI */}
+                {/* KDV */}
                 <th
-                  className={`${HEAD_BASE} w-[62px] min-w-[62px] max-w-[62px] whitespace-normal text-center text-[8px] leading-[1.15]`}
+                  className={`${HEAD_BASE} whitespace-normal text-center text-[8px] leading-[1.15]`}
                 >
                   KDV
                   <br />
                   İstisnası
+                  {resizeHandle("vatExemption", "KDV İstisnası")}
                 </th>
 
-                {/* 10 - KULLANILMIŞ MAKİNE */}
+                {/* KULLANILMIŞ MAKİNE */}
                 <th
-                  className={`${HEAD_BASE} w-[90px] min-w-[90px] max-w-[90px] whitespace-normal text-center leading-tight`}
+                  className={`${HEAD_BASE} whitespace-normal text-center leading-tight`}
                 >
                   Kullanılmış
                   <br />
                   Makine
+                  {resizeHandle("usedMachine", "Kullanılmış Makine")}
                 </th>
 
-                {/* BUNDAN SONRASI BİZİM EK ALANLAR */}
-                <th
-                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px] text-right`}
-                >
+                {/* FOB TL */}
+                <th className={`${HEAD_BASE} text-right`}>
                   FOB
                   <br />
                   TL
+                  {resizeHandle("fobTl", "FOB TL")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px] text-right`}
-                >
+                {/* CIF TL */}
+                <th className={`${HEAD_BASE} text-right`}>
                   CIF
                   <br />
                   TL
+                  {resizeHandle("cifTl", "CIF TL")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[105px] min-w-[105px] max-w-[105px]`}
-                >
+                <th className={HEAD_BASE}>
                   GTİP Açıklama
+                  {resizeHandle("gtipDescription", "GTİP Açıklama")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[65px] min-w-[65px] max-w-[65px]`}
-                >
+                <th className={HEAD_BASE}>
                   Makine ID
+                  {resizeHandle("machineId", "Makine ID")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[72px] min-w-[72px] max-w-[72px]`}
-                >
+                <th className={HEAD_BASE}>
                   Makine Tipi
+                  {resizeHandle("machineType", "Makine Tipi")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[46px] min-w-[46px] max-w-[46px] text-center`}
-                >
+                <th className={`${HEAD_BASE} text-center`}>
                   Araç
+                  {resizeHandle("vehicle", "Araç")}
                 </th>
 
-                <th
-                  className={`${HEAD_BASE} w-[42px] min-w-[42px] max-w-[42px] border-r-0 text-center`}
-                >
+                <th className={`${HEAD_BASE} border-r-0 text-center`}>
                   CKD
+                  {resizeHandle("ckd", "CKD")}
                 </th>
               </tr>
             </thead>
@@ -369,35 +603,47 @@ export function AdminDocumentImportedMachines({
                     {/* SIRA */}
                     <td
                       title={String(machine.sequenceNumber ?? "-")}
-                      className={`sticky left-0 z-10 w-[42px] min-w-[42px] max-w-[42px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-semibold text-slate-600 ${rowBackground}`}
+                      className={`sticky z-10 border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-semibold text-slate-600 ${rowBackground}`}
+                      style={{
+                        left: sequenceLeft,
+                        width: columnWidths.sequence,
+                      }}
                     >
                       {machine.sequenceNumber ?? "-"}
                     </td>
 
-                    {/* GTİP NO */}
+                    {/* GTİP */}
                     <td
                       title={machine.gtipCode ?? "-"}
-                      className={`sticky left-[42px] z-10 w-[80px] min-w-[80px] max-w-[80px] border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700 ${rowBackground}`}
+                      className={`sticky z-10 border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700 ${rowBackground}`}
+                      style={{
+                        left: gtipLeft,
+                        width: columnWidths.gtipCode,
+                      }}
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.gtipCode ?? "-"}
                       </div>
                     </td>
 
-                    {/* ADI / ÖZELLİĞİ */}
+                    {/* ADI */}
                     <td
                       title={machine.name ?? "-"}
-                      className={`sticky left-[122px] z-10 w-[180px] min-w-[180px] max-w-[180px] border-b border-r border-slate-200 px-1.5 py-1.5 text-[11px] font-semibold text-slate-900 ${rowBackground}`}
+                      className={`sticky z-10 border-b border-r border-slate-200 px-1.5 py-1.5 text-[11px] font-semibold text-slate-900 ${rowBackground}`}
+                      style={{
+                        left: nameLeft,
+                        width: columnWidths.name,
+                      }}
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.name ?? "-"}
                       </div>
                     </td>
 
-                    {/* MİKTARI */}
+                    {/* MİKTAR */}
                     <td
                       title={quantity}
-                      className="w-[52px] min-w-[52px] max-w-[52px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {quantity}
@@ -407,46 +653,47 @@ export function AdminDocumentImportedMachines({
                     {/* BİRİM */}
                     <td
                       title={machine.unit ?? "-"}
-                      className="w-[70px] min-w-[70px] max-w-[70px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.unit ?? "-"}
                       </div>
                     </td>
 
-                    {/* MENŞEİ ÜLKE DÖVİZ BİRİM FİYAT FOB */}
+                    {/* MENŞEİ DÖVİZ FOB */}
                     <td
                       title={originCurrency}
-                      className="w-[105px] min-w-[105px] max-w-[105px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {originCurrency}
                       </div>
                     </td>
 
-                    {/* TOPLAM TUTAR FOB $ */}
+                    {/* FOB USD */}
                     <td
                       title={fobUsd}
-                      className="w-[90px] min-w-[90px] max-w-[90px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-bold text-slate-900"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] font-bold text-slate-900"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {fobUsd}
                       </div>
                     </td>
 
-                    {/* GÜMRÜK VERGİSİ İSTİSNASI */}
-                    <td className="w-[92px] min-w-[92px] max-w-[92px] border-b border-r border-slate-200 px-1 py-1.5 text-center">
+                    {/* GÜMRÜK */}
+                    <td className="border-b border-r border-slate-200 px-1 py-1.5 text-center">
                       <CompactFlag value={machine.customsTaxExemption} />
                     </td>
 
-                    {/* KDV İSTİSNASI */}
-                    <td className="w-[62px] min-w-[62px] max-w-[62px] border-b border-r border-slate-200 px-1 py-1.5 text-center">
+                    {/* KDV */}
+                    <td className="border-b border-r border-slate-200 px-1 py-1.5 text-center">
                       <CompactFlag value={machine.vatExemption} />
                     </td>
+
                     {/* KULLANILMIŞ MAKİNE */}
                     <td
                       title={machine.usedMachine ?? "-"}
-                      className="w-[90px] min-w-[90px] max-w-[90px] border-b border-r border-slate-200 px-1 py-1.5 text-center text-[10px] font-semibold text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-center text-[10px] font-semibold text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.usedMachine ?? "-"}
@@ -456,7 +703,7 @@ export function AdminDocumentImportedMachines({
                     {/* FOB TL */}
                     <td
                       title={fobTl}
-                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {fobTl}
@@ -466,7 +713,7 @@ export function AdminDocumentImportedMachines({
                     {/* CIF TL */}
                     <td
                       title={cifTl}
-                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-right font-mono text-[10px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {cifTl}
@@ -476,7 +723,7 @@ export function AdminDocumentImportedMachines({
                     {/* GTİP AÇIKLAMA */}
                     <td
                       title={machine.gtipDescription ?? "-"}
-                      className="w-[105px] min-w-[105px] max-w-[105px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
+                      className="border-b border-r border-slate-200 px-1.5 py-1.5 text-[10px] text-slate-600"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.gtipDescription ?? "-"}
@@ -486,7 +733,7 @@ export function AdminDocumentImportedMachines({
                     {/* MAKİNE ID */}
                     <td
                       title={String(machine.externalMachineId ?? "-")}
-                      className="w-[65px] min-w-[65px] max-w-[65px] border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 font-mono text-[9px] text-slate-700"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.externalMachineId ?? "-"}
@@ -496,7 +743,7 @@ export function AdminDocumentImportedMachines({
                     {/* MAKİNE TİPİ */}
                     <td
                       title={machine.machineryEquipmentType ?? "-"}
-                      className="w-[72px] min-w-[72px] max-w-[72px] border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
+                      className="border-b border-r border-slate-200 px-1 py-1.5 text-[10px] text-slate-600"
                     >
                       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                         {machine.machineryEquipmentType ?? "-"}
@@ -504,12 +751,12 @@ export function AdminDocumentImportedMachines({
                     </td>
 
                     {/* ARAÇ */}
-                    <td className="w-[46px] min-w-[46px] max-w-[46px] border-b border-r border-slate-200 px-1 py-1.5 text-center">
+                    <td className="border-b border-r border-slate-200 px-1 py-1.5 text-center">
                       <CompactFlag value={machine.isVehicle} />
                     </td>
 
                     {/* CKD */}
-                    <td className="w-[42px] min-w-[42px] max-w-[42px] border-b border-slate-200 px-1 py-1.5 text-center">
+                    <td className="border-b border-slate-200 px-1 py-1.5 text-center">
                       <CompactFlag value={machine.isCkd} />
                     </td>
                   </tr>
