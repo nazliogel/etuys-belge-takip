@@ -31,6 +31,10 @@ const emailSendingEnabled = process.env.EMAIL_SENDING_ENABLED === "true";
 const emailTestSendingEnabled =
   process.env.EMAIL_TEST_SENDING_ENABLED === "true";
 
+const whatsappQueueEnabled = process.env.WHATSAPP_QUEUE_ENABLED === "true";
+
+const whatsappSendingEnabled = process.env.WHATSAPP_SENDING_ENABLED === "true";
+
 const emailTestRecipient = process.env.EMAIL_TEST_RECIPIENT;
 const emailMaxMessagesPerHour = parsePositiveInteger(
   process.env.EMAIL_MAX_MESSAGES_PER_HOUR,
@@ -103,6 +107,8 @@ export const env = {
   emailSendingEnabled,
   emailTestSendingEnabled,
   emailTestRecipient,
+  whatsappQueueEnabled,
+  whatsappSendingEnabled,
   emailMaxMessagesPerHour,
   emailMaxRecipientsPerHour,
   emailMaxMessagesPerDay,

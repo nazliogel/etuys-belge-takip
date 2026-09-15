@@ -109,6 +109,37 @@ export class DocumentReminderRepository {
     return result.count === 1;
   }
 
+  async enqueueWhatsApp(params: {
+    documentId: number;
+    companyId: number;
+    contactId?: number;
+    type: ReminderType;
+    reminderMonth: number;
+    targetDate: Date;
+    recipient: string;
+    message: string;
+  }): Promise<boolean> {
+    const result = await prisma.documentReminder.createMany({
+      data: [
+        {
+          documentId: params.documentId,
+          companyId: params.companyId,
+          contactId: params.contactId,
+          type: params.type,
+          channel: "WHATSAPP",
+          status: "PENDING",
+          reminderMonth: params.reminderMonth,
+          targetDate: params.targetDate,
+          recipient: params.recipient,
+          message: params.message,
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    return result.count === 1;
+  }
+
   async createConsultantNotification(params: {
     documentId: number;
     companyId: number;
