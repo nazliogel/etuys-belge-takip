@@ -68,13 +68,7 @@ const statusOptions: { key: StatusFilter; label: string }[] = [
   { key: "expired", label: "Süresi Dolmuş" },
 ];
 
-// Açık firma/belge sekmelerini artık sadece component state'inde değil,
-// URL query string'inde tutuyoruz. Böylece:
-//  - Next.js'in client-side router cache'i bu sayfayı yeniden mount etmeden
-//    geri getirse bile, "hangi firma/belge açık" bilgisi URL'den taze
-//    okunur; kullanıcı sade bir linkle bu sayfaya dönerse (query'siz)
-//    liste temiz açılır.
-//  - Tarayıcı geri/ileri tuşları ve link paylaşımı da doğru çalışır.
+
 const QUERY_KEYS = {
   activeFirma: "firma",
   firmaTabs: "firmaSekme",
@@ -120,7 +114,7 @@ export function CompaniesScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
+  const isDirectDetailView = searchParams.get("detay") === "1";
   const [firmalar, setFirmalar] = useState<Firma[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -365,6 +359,11 @@ export function CompaniesScreen() {
   }
 
   const handleClose = () => {
+    if (isDirectDetailView) {
+      router.replace("/companies");
+      return;
+    }
+
     if (activeFirmaId) {
       handleCloseTab(activeFirmaId);
     }
@@ -379,7 +378,11 @@ export function CompaniesScreen() {
   return (
     <div className="space-y-5 pb-5">
       {/* BAŞLIK */}
-      <section className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <section
+        className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${
+          isDirectDetailView ? "hidden" : ""
+        }`}
+      >
         <div className="flex items-center gap-2.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 shadow-sm">
             <Building2 size={20} />
@@ -397,7 +400,11 @@ export function CompaniesScreen() {
       </section>
 
       {/* ARAMA + FİLTRE */}
-      <section className="rounded-2xl bg-white p-3 shadow-sm border border-slate-200/80">
+      <section
+        className={`rounded-2xl bg-white p-3 shadow-sm border border-slate-200/80 ${
+          isDirectDetailView ? "hidden" : ""
+        }`}
+      >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search
@@ -481,7 +488,11 @@ export function CompaniesScreen() {
       </section>
 
       {/* TABLO */}
-      <section className="overflow-hidden rounded-2xl bg-white shadow-sm border border-slate-200/80">
+      <section
+        className={`overflow-hidden rounded-2xl bg-white shadow-sm border border-slate-200/80 ${
+          isDirectDetailView ? "hidden" : ""
+        }`}
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/60">

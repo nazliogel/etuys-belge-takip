@@ -110,7 +110,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
 
   if (remainingDays < 0) {
     return {
-      label: "Süresi Dolmuş",
+      label: "Kapatma Yapılacak",
       description: "Belge bitiş tarihi geçmiştir.",
       dot: "bg-red-500",
       className: "bg-red-50 text-red-700",

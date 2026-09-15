@@ -60,16 +60,19 @@ export default function LoginPage() {
         />
 
         <div className="relative z-10 flex flex-col items-center max-w-md text-center">
-          <div className="relative rounded-[2.5rem] bg-white/10 p-10 backdrop-blur-xl border border-white/10 shadow-[0_8px_40px_0_rgba(0,0,0,0.3)] transition hover:bg-white/[0.12]">
+          {/* Logo dosyası kendi beyaz kart tasarımını zaten içeriyor; arkasına tek, yumuşak bir
+              bulanık ışıltı katmanı koyuyoruz ve gölgeyi de sertlikten çıkarıp hafifletiyoruz */}
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 scale-125 rounded-[3rem] bg-gradient-to-br from-sky-300/25 via-blue-400/10 to-transparent blur-3xl" />
+
             <Image
-              src="/logos/360teşvikk.png"
+              src="/logos/2.png"
               alt="E-TUYS Belge Takip"
-              width={300}
-              height={85}
-              className="h-49 w-auto object-contain drop-shadow-md"
+              width={420}
+              height={252}
+              className="relative h-48 w-auto rounded-3xl object-contain shadow-[0_10px_26px_rgba(0,0,0,0.2)]"
               priority
             />
-            <div className="pointer-events-none absolute inset-0 rounded-[2.5rem] shadow-[inset_0_0_40px_20px_rgba(15,23,42,0.35)]" />
           </div>
 
           <p className="mt-8 text-sm font-medium tracking-wide text-slate-400">
@@ -86,18 +89,16 @@ export default function LoginPage() {
       {/* SAĞ PANEL - Modern Beyaz Form Kartı */}
       <section className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-[420px] rounded-2xl bg-white p-8 sm:p-10 shadow-xl shadow-slate-200/60 border border-slate-100">
-          {/* Mobil Logo */}
+          {/* Mobil Logo - dosya kendi beyaz kartını içeriyor, ekstra kutu eklemiyoruz */}
           <div className="mb-8 lg:hidden flex justify-center">
-            <div className="rounded-xl bg-slate-900 p-4 shadow-md">
-              <Image
-                src="/logos/360teşvikk.png"
-                alt="E-TUYS Belge Takip"
-                width={180}
-                height={50}
-                className="h-10 w-auto object-contain"
-                priority
-              />
-            </div>
+            <Image
+              src="/logos/2.png"
+              alt="E-TUYS Belge Takip"
+              width={220}
+              height={130}
+              className="h-20 w-auto object-contain drop-shadow-sm"
+              priority
+            />
           </div>
 
           {/* Form Başlığı */}

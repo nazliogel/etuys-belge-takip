@@ -59,6 +59,11 @@ export class ClosedDocumentRepository {
             name: true,
             taxNumber: true,
             consultant: true,
+            authorization: {
+              select: {
+                authorizationEndDate: true,
+              },
+            },
           },
         },
       },

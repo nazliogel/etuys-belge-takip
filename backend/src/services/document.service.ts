@@ -13,35 +13,63 @@ type DocumentListQuery = {
   isActive?: boolean;
   status?: CalculatedDocumentStatus;
 };
+function getEffectiveEndDate(document: {
+  documentEndDate: Date | null;
+  extensionDate: Date | null;
+}): Date | null {
+  if (!document.documentEndDate && !document.extensionDate) {
+    return null;
+  }
+
+  if (!document.documentEndDate) {
+    return document.extensionDate
+      ? normalizeDate(document.extensionDate)
+      : null;
+  }
+
+  const documentEndDate = normalizeDate(document.documentEndDate);
+
+  if (!document.extensionDate) {
+    return documentEndDate;
+  }
+
+  const extensionDate = normalizeDate(document.extensionDate);
+
+  // Tarihler farklıysa uzatma yapılmıştır.
+  // Bu durumda uzatılmış tarih esas alınır.
+  if (documentEndDate.getTime() !== extensionDate.getTime()) {
+    return extensionDate;
+  }
+
+  // Tarihler eşitse uzatma yapılmamıştır.
+  return documentEndDate;
+}
+
 function calculateDocumentStatus(document: {
   isActive: boolean;
   documentEndDate: Date | null;
+  extensionDate: Date | null;
 }): CalculatedDocumentStatus {
   if (!document.isActive) {
     return "INACTIVE";
   }
 
-  if (!document.documentEndDate) {
+  const effectiveEndDate = getEffectiveEndDate(document);
+
+  if (!effectiveEndDate) {
     return "ACTIVE";
   }
 
-  const endDate = new Date(document.documentEndDate);
-  const today = new Date();
+  const today = normalizeDate(new Date());
 
-  endDate.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  // Bitiş tarihi geçmişse
-  if (endDate < today) {
+  if (effectiveEndDate < today) {
     return "EXPIRED";
   }
 
-  // Bugünden tam 6 ay sonrası
   const sixMonthsLater = new Date(today);
   sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
 
-  // Bitiş tarihi önümüzdeki 6 ay içindeyse
-  if (endDate <= sixMonthsLater) {
+  if (effectiveEndDate <= sixMonthsLater) {
     return "EXPIRING";
   }
 
@@ -106,20 +134,69 @@ function canApplyForExtension(document: {
     return false;
   }
 
-  // Süre uzatma müracatı belge bitişinden 6 ay önce başlar.
+  // Süre uzatma müracaatı belge bitişinden 6 ay önce başlar.
   const applicationStartDate = subtractMonths(documentEndDate, 6);
 
-  // Henüz müracat zamanı gelmemiş.
+  // Henüz müracaat zamanı gelmemiş.
   if (today < applicationStartDate) {
     return false;
   }
 
-  // Süre uzatma için son tarih geçmiş.
-  if (today > extensionDate) {
+  // Bitiş tarihi ile süre uzatım tarihi eşitse uzatma yapılmamıştır.
+  // Belge OPEN ve aktif kaldığı sürece süre uzatma listesinde kalır.
+  return true;
+}
+
+function canApplyForClosure(document: {
+  isActive: boolean;
+  status: string;
+  documentEndDate: Date | null;
+  extensionDate: Date | null;
+}): boolean {
+  if (!document.isActive || document.status !== "OPEN") {
     return false;
   }
 
+  if (!document.documentEndDate || !document.extensionDate) {
+    return false;
+  }
+
+  const documentEndDate = normalizeDate(document.documentEndDate);
+  const extensionDate = normalizeDate(document.extensionDate);
+  const today = normalizeDate(new Date());
+
+  // Tarihler eşitse süre uzatımı yapılmamıştır.
+  if (documentEndDate.getTime() === extensionDate.getTime()) {
+    return false;
+  }
+
+  // Uzatılan süre henüz bitmediyse belge aktiftir.
+  if (extensionDate >= today) {
+    return false;
+  }
+
+  // Tarihler farklı ve uzatılan süre geçmişse kapatma yapılacaktır.
   return true;
+}
+
+function hasActiveCompanyAuthorization(document: {
+  company: {
+    authorization: {
+      authorizationEndDate: Date | null;
+    } | null;
+  };
+}): boolean {
+  const authorizationEndDate =
+    document.company.authorization?.authorizationEndDate;
+
+  if (!authorizationEndDate) {
+    return false;
+  }
+
+  const today = normalizeDate(new Date());
+  const normalizedAuthorizationEndDate = normalizeDate(authorizationEndDate);
+
+  return normalizedAuthorizationEndDate >= today;
 }
 
 export class DocumentService {
@@ -128,21 +205,38 @@ export class DocumentService {
     private readonly companyRepository: CompanyRepository,
   ) {}
 
+  private async getAuthorizedCompany(userId: number) {
+    const company = await this.companyRepository.findByUserId(userId);
+
+    if (!company) {
+      throw new AppError("Company is not assigned to this user.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "USER_COMPANY_NOT_FOUND",
+      });
+    }
+
+    const authorizationEndDate =
+      company.authorization?.authorizationEndDate ?? null;
+
+    const today = normalizeDate(new Date());
+
+    if (!authorizationEndDate || normalizeDate(authorizationEndDate) < today) {
+      throw new AppError("Firmanın yetki süresi dolmuştur.", {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        code: "COMPANY_AUTHORIZATION_EXPIRED",
+      });
+    }
+
+    return company;
+  }
+
   async getDocuments(query: DocumentListQuery, userId: number, role: UserRole) {
     let companyId: number | undefined;
 
     const consultantUserId = role === "OPERATION" ? userId : undefined;
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       companyId = company.id;
     }
 
@@ -155,7 +249,35 @@ export class DocumentService {
       companyId,
       consultantUserId,
     });
+    const authorizedDocumentIds = new Set(
+      documents
+        .filter((document) => hasActiveCompanyAuthorization(document))
+        .map((document) => document.id),
+    );
 
+    const extensionEligibleIds = new Set(
+      documents
+        .filter(
+          (document) =>
+            hasActiveCompanyAuthorization(document) &&
+            canApplyForExtension(document),
+        )
+        .map((document) => document.id),
+    );
+
+    const closureEligibleIds = new Set(
+      documents
+        .filter(
+          (document) =>
+            hasActiveCompanyAuthorization(document) &&
+            canApplyForClosure(document),
+        )
+        .map((document) => document.id),
+    );
+
+    const isEligibleElsewhere = (documentId: number) =>
+      extensionEligibleIds.has(documentId) ||
+      closureEligibleIds.has(documentId);
     const items = documents.map((document) => ({
       id: document.id,
       externalDocumentId: document.externalDocumentId,
@@ -175,6 +297,9 @@ export class DocumentService {
         name: document.company.name,
         taxNumber: document.company.taxNumber,
         consultant: document.company.consultant,
+        authorizationEndDate:
+          document.company.authorization?.authorizationEndDate?.toISOString() ??
+          null,
       },
 
       createdAt: document.createdAt.toISOString(),
@@ -182,23 +307,80 @@ export class DocumentService {
     }));
 
     const filteredItems = query.status
-      ? items.filter((item) => item.status === query.status)
+      ? items.filter((item) => {
+          const eligibleElsewhere = isEligibleElsewhere(item.id);
+
+          if (
+            item.status !== "INACTIVE" &&
+            !authorizedDocumentIds.has(item.id)
+          ) {
+            return false;
+          }
+          // Aktif:
+          // Süre Uzatma ve Kapatma listesine girmeyen,
+          // süresi dolmamış açık belgeler.
+          if (query.status === "ACTIVE") {
+            return (
+              authorizedDocumentIds.has(item.id) &&
+              (item.status === "ACTIVE" || item.status === "EXPIRING") &&
+              !eligibleElsewhere
+            );
+          }
+
+          if (query.status === "EXPIRING") {
+            return (
+              authorizedDocumentIds.has(item.id) &&
+              item.status === "EXPIRING" &&
+              !eligibleElsewhere
+            );
+          }
+          // Süresi dolmuş olsa bile Süre Uzatma veya Kapatma grubundaysa
+
+          if (query.status === "EXPIRED") {
+            return item.status === "EXPIRED" && !eligibleElsewhere;
+          }
+
+          return item.status === query.status;
+        })
       : items;
 
     filteredItems.sort((a, b) => {
-      const aTime = a.documentEndDate
-        ? new Date(a.documentEndDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
+      const getEffectiveTime = (item: {
+        documentEndDate: string | null;
+        extensionDate: string | null;
+      }) => {
+        if (!item.documentEndDate && !item.extensionDate) {
+          return Number.MAX_SAFE_INTEGER;
+        }
 
-      const bTime = b.documentEndDate
-        ? new Date(b.documentEndDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
+        if (!item.documentEndDate) {
+          return item.extensionDate
+            ? new Date(item.extensionDate).getTime()
+            : Number.MAX_SAFE_INTEGER;
+        }
+
+        if (!item.extensionDate) {
+          return new Date(item.documentEndDate).getTime();
+        }
+
+        const documentEndTime = new Date(item.documentEndDate).getTime();
+        const extensionTime = new Date(item.extensionDate).getTime();
+
+        return documentEndTime !== extensionTime
+          ? extensionTime
+          : documentEndTime;
+      };
+
+      const aTime = getEffectiveTime(a);
+      const bTime = getEffectiveTime(b);
 
       if (query.status === "EXPIRED") {
+        // En yakın zamanda süresi dolan üstte
         return bTime - aTime;
       }
 
       if (query.status === "ACTIVE" || query.status === "EXPIRING") {
+        // En yakın bitecek belge üstte
         return aTime - bTime;
       }
 
@@ -214,10 +396,29 @@ export class DocumentService {
       startIndex + query.limit,
     );
     const summary = {
-      total: items.length,
-      active: items.filter((item) => item.status === "ACTIVE").length,
-      expiring: items.filter((item) => item.status === "EXPIRING").length,
-      expired: items.filter((item) => item.status === "EXPIRED").length,
+      total: items.filter(
+        (item) =>
+          item.status === "INACTIVE" || authorizedDocumentIds.has(item.id),
+      ).length,
+
+      active: items.filter(
+        (item) =>
+          authorizedDocumentIds.has(item.id) &&
+          item.status === "ACTIVE" &&
+          !isEligibleElsewhere(item.id),
+      ).length,
+
+      expiring: items.filter(
+        (item) =>
+          authorizedDocumentIds.has(item.id) &&
+          item.status === "EXPIRING" &&
+          !isEligibleElsewhere(item.id),
+      ).length,
+
+      expired: items.filter(
+        (item) => item.status === "EXPIRED" && !isEligibleElsewhere(item.id),
+      ).length,
+
       inactive: items.filter((item) => item.status === "INACTIVE").length,
     };
 
@@ -235,20 +436,10 @@ export class DocumentService {
     let companyId: number | undefined;
 
     const consultantUserId = role === "OPERATION" ? userId : undefined;
-
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       companyId = company.id;
     }
-
     const documents = await this.documentRepository.findMany({
       isActive: true,
       status: "OPEN",
@@ -257,7 +448,11 @@ export class DocumentService {
     });
 
     const eligibleDocuments = documents
-      .filter((document) => canApplyForExtension(document))
+      .filter(
+        (document) =>
+          hasActiveCompanyAuthorization(document) &&
+          canApplyForExtension(document),
+      )
       .map((document) => {
         const documentEndDate = document.documentEndDate!;
         const extensionDate = document.extensionDate!;
@@ -285,6 +480,9 @@ export class DocumentService {
             name: document.company.name,
             taxNumber: document.company.taxNumber,
             consultant: document.company.consultant,
+            authorizationEndDate:
+              document.company.authorization?.authorizationEndDate?.toISOString() ??
+              null,
           },
         };
       });
@@ -306,6 +504,77 @@ export class DocumentService {
     };
   }
 
+  async getClosureEligibleDocuments(userId: number, role: UserRole) {
+    let companyId: number | undefined;
+
+    const consultantUserId = role === "OPERATION" ? userId : undefined;
+
+    if (role === "COMPANY") {
+      const company = await this.getAuthorizedCompany(userId);
+      companyId = company.id;
+    }
+
+    const documents = await this.documentRepository.findMany({
+      isActive: true,
+      status: "OPEN",
+      companyId,
+      consultantUserId,
+    });
+
+    const eligibleDocuments = documents
+      .filter(
+        (document) =>
+          hasActiveCompanyAuthorization(document) &&
+          canApplyForClosure(document),
+      )
+      .map((document) => {
+        const documentEndDate = document.documentEndDate!;
+        const extensionDate = document.extensionDate!;
+        const applicationStartDate = subtractMonths(extensionDate, 6);
+
+        return {
+          id: document.id,
+          externalDocumentId: document.externalDocumentId,
+          documentNumber: document.documentNumber,
+
+          documentStartDate: document.documentStartDate
+            ? formatDateOnly(document.documentStartDate)
+            : null,
+
+          documentEndDate: formatDateOnly(documentEndDate),
+          extensionDate: formatDateOnly(extensionDate),
+
+          closureApplicationStartDate: formatDateOnly(applicationStartDate),
+
+          supportClass: document.supportClass,
+          isActive: document.isActive,
+
+          company: {
+            id: document.company.id,
+            externalCompanyId: document.company.externalCompanyId,
+            name: document.company.name,
+            taxNumber: document.company.taxNumber,
+            consultant: document.company.consultant,
+            authorizationEndDate:
+              document.company.authorization?.authorizationEndDate?.toISOString() ??
+              null,
+          },
+        };
+      });
+
+    eligibleDocuments.sort((a, b) => {
+      const aTime = new Date(a.extensionDate).getTime();
+      const bTime = new Date(b.extensionDate).getTime();
+
+      return aTime - bTime;
+    });
+
+    return {
+      items: eligibleDocuments,
+      totalCount: eligibleDocuments.length,
+    };
+  }
+
   async getDocumentById(id: number, userId: number, role: UserRole) {
     const document = await this.documentRepository.findById(id);
 
@@ -317,14 +586,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -389,15 +651,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       if (document.companyId !== company.id) {
         throw new AppError(
           "You do not have permission to access this document.",
@@ -452,14 +706,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -510,14 +757,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -631,15 +871,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
-
+      const company = await this.getAuthorizedCompany(userId);
       if (document.companyId !== company.id) {
         throw new AppError(
           "You do not have permission to access this document.",
@@ -768,14 +1000,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
@@ -913,14 +1138,7 @@ export class DocumentService {
     }
 
     if (role === "COMPANY") {
-      const company = await this.companyRepository.findByUserId(userId);
-
-      if (!company) {
-        throw new AppError("Company is not assigned to this user.", {
-          statusCode: HTTP_STATUS.NOT_FOUND,
-          code: "USER_COMPANY_NOT_FOUND",
-        });
-      }
+      const company = await this.getAuthorizedCompany(userId);
 
       if (document.companyId !== company.id) {
         throw new AppError(
