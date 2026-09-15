@@ -3,7 +3,10 @@ import { prisma } from "../config/env.js";
 type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
 type ReminderChannel =
-  "EMAIL" | "WHATSAPP" | "CONSULTANT_IN_APP" | "ADMIN_EMAIL";
+  | "EMAIL"
+  | "WHATSAPP"
+  | "CONSULTANT_IN_APP"
+  | "ADMIN_EMAIL";
 
 type ReminderStatus = "PENDING" | "SENT" | "FAILED" | "SKIPPED";
 
@@ -24,6 +27,11 @@ export class DocumentReminderRepository {
         company: {
           include: {
             identity: true,
+            authorization: {
+              select: {
+                authorizationEndDate: true,
+              },
+            },
             consultantUser: {
               select: {
                 id: true,

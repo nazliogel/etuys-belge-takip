@@ -1,3 +1,4 @@
+import { CompanyRequestRepository } from "../repositories/company-request.repository.js";
 import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
 
 type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
@@ -49,21 +50,38 @@ export function resolveReminderMonth(
   const normalizedTarget = normalizeDate(targetDate);
   const normalizedToday = normalizeDate(today);
 
-  if (normalizedToday >= normalizedTarget) {
+  // Bitiş tarihinden önceki son 6 aylık dönem.
+  if (normalizedToday < normalizedTarget) {
+    for (let month = 6; month >= 1; month -= 1) {
+      const periodStart = subtractMonthsClamped(normalizedTarget, month);
+      const periodEnd = subtractMonthsClamped(normalizedTarget, month - 1);
+
+      if (normalizedToday >= periodStart && normalizedToday < periodEnd) {
+        return month;
+      }
+    }
+
     return null;
   }
 
-  for (let month = 6; month >= 1; month -= 1) {
-    const periodStart = subtractMonthsClamped(normalizedTarget, month);
+  // Bitiş tarihi ve sonrasındaki her ay için farklı bir değer üretir.
+  // Bitiş ayı: 0, sonraki aylar: -1, -2, -3...
+  let elapsedMonths =
+    (normalizedToday.getUTCFullYear() - normalizedTarget.getUTCFullYear()) *
+      12 +
+    normalizedToday.getUTCMonth() -
+    normalizedTarget.getUTCMonth();
 
-    const periodEnd = subtractMonthsClamped(normalizedTarget, month - 1);
+  const currentPeriodStart = subtractMonthsClamped(
+    normalizedTarget,
+    -elapsedMonths,
+  );
 
-    if (normalizedToday >= periodStart && normalizedToday < periodEnd) {
-      return month;
-    }
+  if (normalizedToday < currentPeriodStart) {
+    elapsedMonths -= 1;
   }
 
-  return null;
+  return -Math.max(elapsedMonths, 0);
 }
 
 export function resolveReminderDecision(
@@ -71,38 +89,73 @@ export function resolveReminderDecision(
   extensionDate: Date,
   today: Date = new Date(),
 ): ReminderDecision | null {
-  const type: ReminderType = isSameDate(documentEndDate, extensionDate)
-    ? "EXTENSION_APPLICATION"
-    : "CLOSURE_APPLICATION";
+  const normalizedDocumentEndDate = normalizeDate(documentEndDate);
+  const normalizedExtensionDate = normalizeDate(extensionDate);
+  const normalizedToday = normalizeDate(today);
 
-  const targetDate =
-    type === "EXTENSION_APPLICATION"
-      ? normalizeDate(documentEndDate)
-      : normalizeDate(extensionDate);
+  const isExtensionApplication = isSameDate(
+    normalizedDocumentEndDate,
+    normalizedExtensionDate,
+  );
 
-  const reminderMonth = resolveReminderMonth(targetDate, today);
+  // Süre uzatma mailinin mevcut 6 aylık kuralı korunur.
+  if (isExtensionApplication) {
+    const reminderMonth = resolveReminderMonth(
+      normalizedDocumentEndDate,
+      normalizedToday,
+    );
+
+    if (reminderMonth === null) {
+      return null;
+    }
+
+    return {
+      type: "EXTENSION_APPLICATION",
+      targetDate: normalizedDocumentEndDate,
+      reminderMonth,
+    };
+  }
+
+  // Kapatma için iki tarihin de bugünden eski olması gerekir.
+  const isClosureApplicationDue =
+    normalizedDocumentEndDate < normalizedToday &&
+    normalizedExtensionDate < normalizedToday;
+
+  if (!isClosureApplicationDue) {
+    return null;
+  }
+
+  const reminderMonth = resolveReminderMonth(
+    normalizedExtensionDate,
+    normalizedToday,
+  );
 
   if (reminderMonth === null) {
     return null;
   }
 
   return {
-    type,
-    targetDate,
+    type: "CLOSURE_APPLICATION",
+    targetDate: normalizedExtensionDate,
     reminderMonth,
   };
 }
 
 export class DocumentReminderService {
-  constructor(private readonly repository = new DocumentReminderRepository()) {}
+  constructor(
+    private readonly repository = new DocumentReminderRepository(),
+    private readonly companyRequestRepository = new CompanyRequestRepository(),
+  ) {}
 
   async findDueCandidates(today: Date = new Date()) {
     const documents = await this.repository.findActiveCandidates();
+    const candidates = [];
 
-    return documents.flatMap((document) => {
+    for (const document of documents) {
       if (!document.documentEndDate || !document.extensionDate) {
-        return [];
+        continue;
       }
+
       const decision = resolveReminderDecision(
         document.documentEndDate,
         document.extensionDate,
@@ -110,19 +163,53 @@ export class DocumentReminderService {
       );
 
       if (!decision) {
-        return [];
+        continue;
+      }
+
+      // Yetki kontrolü hem süre uzatma hem kapatma maili için geçerlidir.
+      const authorizationEndDate =
+        document.company.authorization?.authorizationEndDate ?? null;
+
+      const hasValidAuthorization =
+        authorizationEndDate !== null &&
+        normalizeDate(authorizationEndDate) >= normalizeDate(today);
+
+      if (!hasValidAuthorization) {
+        continue;
+      }
+
+      const closureRequest =
+        await this.companyRequestRepository.findLatestClosureRequest({
+          companyId: document.companyId,
+          externalDocumentId: document.externalDocumentId,
+        });
+
+      // Herhangi bir kapatma başvurusu varsa süre uzatma maili gönderilmez.
+      if (decision.type === "EXTENSION_APPLICATION" && closureRequest) {
+        continue;
+      }
+
+      if (decision.type === "CLOSURE_APPLICATION") {
+        const requestStatus = closureRequest?.requestStatus
+          ?.trim()
+          .toLocaleUpperCase("tr-TR");
+
+        // Kapatma maili, başvuru yoksa veya son başvuru reddedildiyse gönderilir.
+        if (closureRequest && requestStatus !== "REDDEDİLDİ") {
+          continue;
+        }
       }
 
       const contact = document.company.contacts[0];
 
-      return [
-        {
-          document,
-          company: document.company,
-          contact,
-          decision,
-        },
-      ];
-    });
+      candidates.push({
+        document,
+        company: document.company,
+        contact,
+        decision,
+      });
+    }
+
+    return candidates;
   }
 }
