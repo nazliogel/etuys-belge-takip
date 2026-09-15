@@ -221,7 +221,40 @@ export class CompanyRequestRepository {
       },
     });
   }
-
+  async findLatestClosureRequest(params: {
+    companyId: number;
+    externalDocumentId: number;
+  }) {
+    return prisma.companyRequest.findFirst({
+      where: {
+        companyId: params.companyId,
+        externalDocumentId: params.externalDocumentId,
+        requestType: {
+          equals: "Belge Kapatma Başvurusu",
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        requestNumber: true,
+        requestType: true,
+        requestStatus: true,
+        applicationDate: true,
+        completionDate: true,
+      },
+      orderBy: [
+        {
+          applicationDate: {
+            sort: "desc",
+            nulls: "last",
+          },
+        },
+        {
+          id: "desc",
+        },
+      ],
+    });
+  }
   async findMany(params: CompanyRequestListParams) {
     const where = this.createWhereInput(params);
 
@@ -241,7 +274,10 @@ export class CompanyRequestRepository {
       },
       orderBy: [
         {
-          applicationDate: "desc",
+          applicationDate: {
+            sort: "desc",
+            nulls: "last",
+          },
         },
         {
           id: "desc",
