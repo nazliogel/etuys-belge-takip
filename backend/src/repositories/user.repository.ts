@@ -11,6 +11,29 @@ export class UserRepository {
     });
   }
 
+  async findByIdentifier(identifier: string): Promise<User | null> {
+    const normalizedIdentifier = identifier.trim();
+
+    return prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            username: {
+              equals: normalizedIdentifier,
+              mode: "insensitive",
+            },
+          },
+          {
+            email: {
+              equals: normalizedIdentifier,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+    });
+  }
+
   async findById(id: number): Promise<User | null> {
     return prisma.user.findUnique({
       where: {

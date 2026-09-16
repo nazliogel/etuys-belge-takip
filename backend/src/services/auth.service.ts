@@ -50,9 +50,9 @@ export class AuthService {
   }
 
   async login(payload: LoginInput): Promise<AuthResponse> {
-    const normalizedEmail = payload.email.trim().toLowerCase();
+    const identifier = payload.identifier.trim();
 
-    const user = await this.userRepository.findByEmail(normalizedEmail);
+    const user = await this.userRepository.findByIdentifier(identifier);
 
     if (!user) {
       throw this.createInvalidCredentialsError();
@@ -68,7 +68,7 @@ export class AuthService {
     }
 
     if (!user.isActive) {
-      throw new AppError("User account is inactive.", {
+      throw new AppError("Kullanıcı hesabı pasif durumda.", {
         statusCode: HTTP_STATUS.FORBIDDEN,
         code: "USER_INACTIVE",
       });
@@ -103,7 +103,7 @@ export class AuthService {
   }
 
   private createInvalidCredentialsError(): AppError {
-    return new AppError("Invalid email or password.", {
+    return new AppError("Kullanıcı adı/e-posta veya şifre hatalı.", {
       statusCode: HTTP_STATUS.UNAUTHORIZED,
       code: "INVALID_CREDENTIALS",
     });
