@@ -109,6 +109,37 @@ export class DocumentReminderRepository {
     return result.count === 1;
   }
 
+  async enqueueWhatsApp(params: {
+    documentId: number;
+    companyId: number;
+    contactId?: number;
+    type: ReminderType;
+    reminderMonth: number;
+    targetDate: Date;
+    recipient: string;
+    message: string;
+  }): Promise<boolean> {
+    const result = await prisma.documentReminder.createMany({
+      data: [
+        {
+          documentId: params.documentId,
+          companyId: params.companyId,
+          contactId: params.contactId,
+          type: params.type,
+          channel: "WHATSAPP",
+          status: "PENDING",
+          reminderMonth: params.reminderMonth,
+          targetDate: params.targetDate,
+          recipient: params.recipient,
+          message: params.message,
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    return result.count === 1;
+  }
+
   async createConsultantNotification(params: {
     documentId: number;
     companyId: number;
@@ -241,6 +272,70 @@ export class DocumentReminderRepository {
       },
     });
   }
+
+  async findPendingWhatsApp(limit = 20) {
+    return prisma.documentReminder.findMany({
+      where: {
+        status: "PENDING",
+        channel: "WHATSAPP",
+      },
+      include: {
+        document: true,
+        company: {
+          include: {
+            authorization: {
+              select: {
+                authorizationEndDate: true,
+              },
+            },
+            consultantUser: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                isActive: true,
+              },
+            },
+          },
+        },
+        contact: true,
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: limit,
+    });
+  }
+
+  async countWhatsAppSentSince(date: Date): Promise<number> {
+    return prisma.documentReminder.count({
+      where: {
+        status: "SENT",
+        channel: "WHATSAPP",
+        sentAt: {
+          gte: date,
+        },
+      },
+    });
+  }
+
+  async findLatestAttemptedWhatsApp() {
+    return prisma.documentReminder.findFirst({
+      where: {
+        channel: "WHATSAPP",
+        attemptedAt: {
+          not: null,
+        },
+      },
+      orderBy: {
+        attemptedAt: "desc",
+      },
+      select: {
+        attemptedAt: true,
+      },
+    });
+  }
   async findPending(limit = 20) {
     return prisma.documentReminder.findMany({
       where: {
@@ -317,6 +412,17 @@ export class DocumentReminderRepository {
         sentAt: new Date(),
         providerId,
         errorMessage: null,
+      },
+    });
+  }
+
+  async markSkipped(id: number, reason: string) {
+    return prisma.documentReminder.update({
+      where: { id },
+      data: {
+        status: "SKIPPED",
+        attemptedAt: new Date(),
+        errorMessage: reason,
       },
     });
   }

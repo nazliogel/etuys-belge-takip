@@ -31,6 +31,32 @@ const emailSendingEnabled = process.env.EMAIL_SENDING_ENABLED === "true";
 const emailTestSendingEnabled =
   process.env.EMAIL_TEST_SENDING_ENABLED === "true";
 
+const whatsappQueueEnabled = process.env.WHATSAPP_QUEUE_ENABLED === "true";
+
+const whatsappSendingEnabled = process.env.WHATSAPP_SENDING_ENABLED === "true";
+
+const whatsappAccessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+const whatsappPhoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const whatsappApiVersion = process.env.WHATSAPP_API_VERSION;
+
+const whatsappMaxMessagesPerHour = parsePositiveInteger(
+  process.env.WHATSAPP_MAX_MESSAGES_PER_HOUR,
+  30,
+  "WHATSAPP_MAX_MESSAGES_PER_HOUR",
+);
+
+const whatsappMaxMessagesPerDay = parsePositiveInteger(
+  process.env.WHATSAPP_MAX_MESSAGES_PER_DAY,
+  200,
+  "WHATSAPP_MAX_MESSAGES_PER_DAY",
+);
+
+const whatsappDelaySeconds = parsePositiveInteger(
+  process.env.WHATSAPP_DELAY_SECONDS,
+  10,
+  "WHATSAPP_DELAY_SECONDS",
+);
+
 const emailTestRecipient = process.env.EMAIL_TEST_RECIPIENT;
 const emailMaxMessagesPerHour = parsePositiveInteger(
   process.env.EMAIL_MAX_MESSAGES_PER_HOUR,
@@ -103,6 +129,14 @@ export const env = {
   emailSendingEnabled,
   emailTestSendingEnabled,
   emailTestRecipient,
+  whatsappQueueEnabled,
+  whatsappSendingEnabled,
+  whatsappAccessToken,
+  whatsappPhoneNumberId,
+  whatsappApiVersion,
+  whatsappMaxMessagesPerHour,
+  whatsappMaxMessagesPerDay,
+  whatsappDelaySeconds,
   emailMaxMessagesPerHour,
   emailMaxRecipientsPerHour,
   emailMaxMessagesPerDay,
