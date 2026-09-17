@@ -42,11 +42,16 @@ type UnreadSupportRequestCountResponse = {
 interface AppSidebarProps {
   role: UserRole;
   userName?: string;
+  variant?: "desktop" | "mobile";
 }
 
 const SIDEBAR_COLLAPSE_KEY = "sidebar-collapsed";
 
-export function AppSidebar({ role, userName }: AppSidebarProps) {
+export function AppSidebar({
+  role,
+  userName,
+  variant = "desktop",
+}: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -58,6 +63,11 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const [supportUnreadCount, setSupportUnreadCount] = useState(0);
+
+  // Mobil drawer'da daralt/genişlet mantığı devre dışı — drawer'ın kendi genişliği var,
+  // içeride ayrıca daraltmak anlamsız. Sadece desktop varyantta `collapsed` görsel olarak
+  // uygulanır. Böylece localStorage'daki tercih desktop'ta yaşarken drawer temiz kalır.
+  const isCollapsed = variant === "desktop" && collapsed;
 
   const visibleItems = navigationItems.filter((item) =>
     hasPermission(role, item.permission),
@@ -295,38 +305,51 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     pathname === "/support-requests" ||
     pathname.startsWith("/support-requests/");
 
+  /*
+    <aside> className mantığı:
+    - variant === "mobile"  → Drawer içinde tam ekran (header'daki Sheet'e sığar).
+                              Border, sticky, hidden yok — sadece flex + gradient.
+    - variant === "desktop" → 1024px altında GİZLİ (hidden lg:flex).
+                              1024px ve üzerinde sticky, w-64 (açık) veya w-20 (kapalı).
+                              overflow-visible çünkü daralt/genişlet butonu sağa taşıyor.
+  */
+  const asideClassName =
+    variant === "mobile"
+      ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100"
+      : `sticky top-0 hidden h-screen ${
+          isCollapsed ? "w-20" : "w-64"
+        } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200 lg:flex`;
+
   return (
-    <aside
-      className={`sticky top-0 flex h-screen ${
-        collapsed ? "w-20" : "w-64"
-      } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200`}
-    >
-      {/* DARALTMA BUTONU - dikeyde ortalanmış */}
-      <button
-        type="button"
-        onClick={toggleCollapsed}
-        title={collapsed ? "Menüyü genişlet" : "Menüyü daralt"}
-        className="absolute -right-3 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-blue-900 bg-white text-blue-900 shadow-md transition hover:bg-blue-50"
-      >
-        {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
+    <aside className={asideClassName}>
+      {/* DARALTMA BUTONU - sadece desktop varyantta (mobil drawer'da anlamsız) */}
+      {variant === "desktop" && (
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          title={isCollapsed ? "Menüyü genişlet" : "Menüyü daralt"}
+          className="absolute -right-3 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-blue-900 bg-white text-blue-900 shadow-md transition hover:bg-blue-50"
+        >
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+      )}
 
       {/* LOGO - Beyaz kart içinde, kenarları yuvarlak */}
       <div
         className={`mx-2 mt-6 flex items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-200 ${
-          collapsed ? "px-2 py-2" : "px-3 py-3"
+          isCollapsed ? "px-2 py-2" : "px-3 py-3"
         }`}
       >
         <div
           className={`relative shrink-0 transition-all duration-200 ${
-            collapsed ? "h-10 w-10" : "h-24 w-60"
+            isCollapsed ? "h-10 w-10" : "h-24 w-60"
           }`}
         >
           <Image
             src="/logos/2.png"
             alt="Teşvik 360 logo"
             fill
-            sizes={collapsed ? "40px" : "240px"}
+            sizes={isCollapsed ? "40px" : "240px"}
             className="object-contain"
             priority
           />
@@ -350,7 +373,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
 
           return (
             <div key={`${item.label}-${item.href}`}>
-              {showDocumentSection && !collapsed && (
+              {showDocumentSection && !isCollapsed && (
                 <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4">
                   <div className="px-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200">
@@ -402,7 +425,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                 </div>
               )}
 
-              {showDocumentSection && collapsed && (
+              {showDocumentSection && isCollapsed && (
                 <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4" />
               )}
 
@@ -412,19 +435,19 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                   onClick={showDocumentWarning}
                   title="Önce bir belge seçiniz"
                   className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30 ${
-                    collapsed ? "justify-center" : ""
+                    isCollapsed ? "justify-center" : ""
                   }`}
                 >
                   <Icon size={18} className="shrink-0 text-blue-300/40" />
-                  {!collapsed && <span>{item.label}</span>}
+                  {!isCollapsed && <span>{item.label}</span>}
                 </button>
               ) : (
                 <Link
                   href={item.href}
                   onClick={(event) => handleNavigation(event, item.href)}
-                  title={collapsed ? item.label : undefined}
+                  title={isCollapsed ? item.label : undefined}
                   className={`group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-150 ${
-                    collapsed ? "justify-center" : ""
+                    isCollapsed ? "justify-center" : ""
                   } ${
                     active
                       ? "bg-gradient-to-r from-red-600 to-red-500 font-semibold text-white shadow-md shadow-red-600/30"
@@ -440,9 +463,9 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                     }`}
                   />
 
-                  {!collapsed && <span>{item.label}</span>}
+                  {!isCollapsed && <span>{item.label}</span>}
 
-                  {active && !collapsed && (
+                  {active && !isCollapsed && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
                   )}
                 </Link>
@@ -464,14 +487,14 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
               <Link
                 href="/support-requests"
                 title={
-                  collapsed
+                  isCollapsed
                     ? role === "COMPANY"
                       ? "Destek Talebi"
                       : "Destek Talepleri"
                     : undefined
                 }
                 className={`group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-150 ${
-                  collapsed ? "justify-center" : ""
+                  isCollapsed ? "justify-center" : ""
                 } ${
                   isSupportRequestsActive
                     ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
@@ -487,13 +510,13 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                   } ${shouldAnimate ? "animate-ring-shake" : ""}`}
                 />
 
-                {!collapsed && (
+                {!isCollapsed && (
                   <span>
                     {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
                   </span>
                 )}
 
-                {!collapsed && (
+                {!isCollapsed && (
                   <div className="ml-auto flex items-center gap-2">
                     {hasUnread && (
                       <span
@@ -513,7 +536,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
                   </div>
                 )}
 
-                {collapsed && hasUnread && (
+                {isCollapsed && hasUnread && (
                   <span
                     className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full px-1 py-0.5 text-[9px] font-bold ${
                       isSupportRequestsActive
@@ -534,16 +557,16 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
       <div className="shrink-0 border-t border-blue-900/60 p-3">
         <button
           onClick={handleLogout}
-          title={collapsed ? "Oturumu Kapat" : undefined}
-          className={`group flex w-full items-center gap-3 rounded-xl bg-blue-900/40 p-2.5 text-left text-sm border border-blue-900/60 transition hover:bg-red-500/20 hover:border-red-500/50 ${
-            collapsed ? "justify-center" : ""
+          title={isCollapsed ? "Oturumu Kapat" : undefined}
+          className={`group flex w-full items-center gap-3 rounded-xl border border-blue-900/60 bg-blue-900/40 p-2.5 text-left text-sm transition hover:border-red-500/50 hover:bg-red-500/20 ${
+            isCollapsed ? "justify-center" : ""
           }`}
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 text-xs font-bold text-white shadow-sm shadow-red-600/30">
             {userName?.charAt(0).toUpperCase() ?? "?"}
           </div>
 
-          {!collapsed && (
+          {!isCollapsed && (
             <>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold text-white transition group-hover:text-red-300">

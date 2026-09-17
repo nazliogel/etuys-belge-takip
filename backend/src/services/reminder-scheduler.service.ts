@@ -3,6 +3,8 @@ import { CompanyAuthorizationReminderQueueService } from "./company-authorizatio
 import { CompanyAuthorizationReminderWorkerService } from "./company-authorization-reminder-worker.service.js";
 import { DocumentReminderQueueService } from "./document-reminder-queue.service.js";
 import { DocumentReminderWorkerService } from "./document-reminder-worker.service.js";
+import { DocumentReminderWhatsAppQueueService } from "./document-reminder-whatsapp-queue.service.js";
+import { DocumentReminderWhatsAppWorkerService } from "./document-reminder-whatsapp-worker.service.js";
 
 type WorkerPriority = "DOCUMENT" | "AUTHORIZATION";
 
@@ -15,14 +17,12 @@ export class ReminderSchedulerService {
   private nextWorkerPriority: WorkerPriority = "DOCUMENT";
 
   constructor(
-    private readonly documentQueueService =
-      new DocumentReminderQueueService(),
-    private readonly authorizationQueueService =
-      new CompanyAuthorizationReminderQueueService(),
-    private readonly documentWorkerService =
-      new DocumentReminderWorkerService(),
-    private readonly authorizationWorkerService =
-      new CompanyAuthorizationReminderWorkerService(),
+    private readonly documentQueueService = new DocumentReminderQueueService(),
+    private readonly documentWhatsAppWorkerService = new DocumentReminderWhatsAppWorkerService(),
+    private readonly documentWhatsAppQueueService = new DocumentReminderWhatsAppQueueService(),
+    private readonly authorizationQueueService = new CompanyAuthorizationReminderQueueService(),
+    private readonly documentWorkerService = new DocumentReminderWorkerService(),
+    private readonly authorizationWorkerService = new CompanyAuthorizationReminderWorkerService(),
   ) {}
 
   start() {
@@ -36,8 +36,7 @@ export class ReminderSchedulerService {
     const queueIntervalMilliseconds =
       env.reminderQueueIntervalMinutes * 60 * 1000;
 
-    const workerIntervalMilliseconds =
-      env.reminderWorkerIntervalSeconds * 1000;
+    const workerIntervalMilliseconds = env.reminderWorkerIntervalSeconds * 1000;
 
     void this.runQueueCycle();
 
@@ -45,16 +44,14 @@ export class ReminderSchedulerService {
       void this.runQueueCycle();
     }, queueIntervalMilliseconds);
 
-    if (env.emailSendingEnabled) {
+    if (env.emailSendingEnabled || env.whatsappSendingEnabled) {
       void this.runWorkerCycle();
 
       this.workerTimer = setInterval(() => {
         void this.runWorkerCycle();
       }, workerIntervalMilliseconds);
     } else {
-      console.log(
-        "Reminder queues will be created, but email workers are disabled.",
-      );
+      console.log("Reminder queues will be created, but workers are disabled.");
     }
 
     console.log("Reminder scheduler started.");
@@ -80,17 +77,25 @@ export class ReminderSchedulerService {
     this.queueCycleRunning = true;
 
     try {
-      const [documentResult, authorizationResult] = await Promise.all([
-        this.documentQueueService.enqueueDueReminders(),
-        this.authorizationQueueService.enqueueDueReminders(),
-      ]);
+      const whatsAppQueuePromise = env.whatsappQueueEnabled
+        ? this.documentWhatsAppQueueService.enqueueDueReminders()
+        : Promise.resolve(null);
+
+      const [documentResult, authorizationResult, whatsAppResult] =
+        await Promise.all([
+          this.documentQueueService.enqueueDueReminders(),
+          this.authorizationQueueService.enqueueDueReminders(),
+          whatsAppQueuePromise,
+        ]);
 
       console.log("Reminder queue cycle completed.", {
         documentQueuedCount: documentResult.queuedCount,
         documentDuplicateCount: documentResult.duplicateCount,
         authorizationQueuedCount: authorizationResult.queuedCount,
-        authorizationDuplicateCount:
-          authorizationResult.duplicateCount,
+        authorizationDuplicateCount: authorizationResult.duplicateCount,
+        whatsAppQueuedCount: whatsAppResult?.queuedCount ?? 0,
+        whatsAppDuplicateCount: whatsAppResult?.duplicateCount ?? 0,
+        whatsAppBlockedCount: whatsAppResult?.blockedCount ?? 0,
       });
     } catch (error) {
       console.error("Reminder queue cycle failed.", error);
@@ -100,31 +105,32 @@ export class ReminderSchedulerService {
   }
 
   private async runWorkerCycle() {
-    if (this.workerCycleRunning || !env.emailSendingEnabled) {
+    if (
+      this.workerCycleRunning ||
+      (!env.emailSendingEnabled && !env.whatsappSendingEnabled)
+    ) {
       return;
     }
 
     this.workerCycleRunning = true;
 
     try {
-      /*
-       * İki kuyruktan birinin diğerini sürekli bekletmemesi için
-       * her çalışmada öncelik değiştirilir.
-       */
-      if (this.nextWorkerPriority === "DOCUMENT") {
-        await this.documentWorkerService.processPendingReminders(1);
-        await this.authorizationWorkerService.processPendingReminders(
-          1,
-        );
+      if (env.emailSendingEnabled) {
+        if (this.nextWorkerPriority === "DOCUMENT") {
+          await this.documentWorkerService.processPendingReminders(1);
+          await this.authorizationWorkerService.processPendingReminders(1);
 
-        this.nextWorkerPriority = "AUTHORIZATION";
-      } else {
-        await this.authorizationWorkerService.processPendingReminders(
-          1,
-        );
-        await this.documentWorkerService.processPendingReminders(1);
+          this.nextWorkerPriority = "AUTHORIZATION";
+        } else {
+          await this.authorizationWorkerService.processPendingReminders(1);
+          await this.documentWorkerService.processPendingReminders(1);
 
-        this.nextWorkerPriority = "DOCUMENT";
+          this.nextWorkerPriority = "DOCUMENT";
+        }
+      }
+
+      if (env.whatsappSendingEnabled) {
+        await this.documentWhatsAppWorkerService.processPendingReminders(1);
       }
     } catch (error) {
       console.error("Reminder worker cycle failed.", error);
@@ -134,5 +140,4 @@ export class ReminderSchedulerService {
   }
 }
 
-export const reminderSchedulerService =
-  new ReminderSchedulerService();
+export const reminderSchedulerService = new ReminderSchedulerService();

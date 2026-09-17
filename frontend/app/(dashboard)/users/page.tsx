@@ -69,8 +69,10 @@ const initialForm: FormState = {
   passwordConfirm: "",
 };
 
+// text-base (16px) mobilde iOS'un input'a zoom yapmasını engeller;
+// sm ve üstünde text-sm ile masaüstündeki kompakt görünüm korunur.
 const inputClass =
-  "h-11 w-full rounded-xl border border-blue-200 bg-white px-3.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-blue-300 focus:border-blue-700 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100";
+  "h-11 w-full rounded-xl border border-blue-200 bg-white px-3.5 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-blue-300 focus:border-blue-700 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 sm:text-sm";
 
 const errorInputClass =
   "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-100";
@@ -94,7 +96,6 @@ export default function UsersPage() {
   useEffect(() => {
     const query = companySearch.trim();
 
-    // Firma seçilmişse yeniden arama yapma
     if (selectedCompany && query === selectedCompany.name) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults([]);
@@ -341,7 +342,6 @@ export default function UsersPage() {
         message: `${form.firstName.trim()} ${form.lastName.trim()} başarıyla eklendi.`,
       });
 
-      // Firma seçimini koru, kullanıcı alanlarını temizle
       setForm({
         ...initialForm,
         companyId: form.companyId,
@@ -366,13 +366,13 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-5">
+    <div className="mx-auto max-w-[1400px] space-y-3 px-3 py-4 sm:space-y-4 sm:px-4 sm:py-5">
       {/* SAYFA BAŞLIĞI */}
-      <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+      <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6 sm:py-5">
         <span className="absolute inset-y-0 left-0 w-1 bg-red-600" />
-        <div className="flex flex-col justify-between gap-4 pl-2 sm:flex-row sm:items-center">
-          <div>
-            <div className="flex items-center gap-2">
+        <div className="flex flex-col justify-between gap-3 pl-2 sm:flex-row sm:items-center sm:gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">
                 Yönetim Paneli
               </span>
@@ -384,17 +384,17 @@ export default function UsersPage() {
               </span>
             </div>
 
-            <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="mt-1.5 text-lg font-extrabold tracking-tight text-slate-900 sm:text-2xl">
               Yeni Kullanıcı Oluştur
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 sm:text-sm">
               Bir firma seçin ve firmaya giriş yapabilecek kullanıcı hesabını
               tanımlayın.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="flex items-center gap-2 self-start rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 sm:self-auto">
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                 selectedCompany
@@ -454,36 +454,42 @@ export default function UsersPage() {
         className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
       >
         {/* ADIMLAR */}
-        <div className="border-b border-slate-100 bg-slate-50/70 px-6 py-4">
+        <div className="border-b border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center">
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <span
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold sm:h-7 sm:w-7 sm:text-xs ${
                   selectedCompany
                     ? "bg-emerald-600 text-white"
                     : "bg-red-600 text-white"
                 }`}
               >
-                {selectedCompany ? <CheckCircle2 className="h-4 w-4" /> : "1"}
+                {selectedCompany ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                ) : (
+                  "1"
+                )}
               </span>
 
-              <div>
-                <p className="text-xs font-bold text-slate-900">Firma seçimi</p>
-                <p className="text-[10px] text-slate-500">
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-slate-900 sm:text-xs">
+                  Firma seçimi
+                </p>
+                <p className="hidden text-[10px] text-slate-500 sm:block">
                   Kullanıcının bağlı olacağı firma
                 </p>
               </div>
             </div>
 
             <div
-              className={`mx-4 h-px flex-1 ${
+              className={`mx-2 h-px flex-1 sm:mx-4 ${
                 selectedCompany ? "bg-emerald-300" : "bg-slate-200"
               }`}
             />
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <span
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold sm:h-7 sm:w-7 sm:text-xs ${
                   selectedCompany
                     ? "bg-blue-800 text-white"
                     : "bg-slate-200 text-slate-500"
@@ -492,16 +498,16 @@ export default function UsersPage() {
                 2
               </span>
 
-              <div>
+              <div className="min-w-0">
                 <p
-                  className={`text-xs font-bold ${
+                  className={`text-[11px] font-bold sm:text-xs ${
                     selectedCompany ? "text-slate-900" : "text-slate-400"
                   }`}
                 >
                   Kullanıcı bilgileri
                 </p>
 
-                <p className="text-[10px] text-slate-500">
+                <p className="hidden text-[10px] text-slate-500 sm:block">
                   Giriş bilgilerinin oluşturulması
                 </p>
               </div>
@@ -510,18 +516,18 @@ export default function UsersPage() {
         </div>
 
         {/* FİRMA SEÇİMİ */}
-        <section className="border-b border-slate-100 bg-white px-6 py-5">
+        <section className="border-b border-slate-100 bg-white px-4 py-4 sm:px-6 sm:py-5">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800">
-              <Building2 className="h-5 w-5" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-800 sm:h-10 sm:w-10">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
 
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-slate-900 sm:text-base">
                 Firma Seçimi
               </h2>
 
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
                 Firma adı veya vergi numarası ile arama yapabilirsiniz.
               </p>
             </div>
@@ -542,7 +548,7 @@ export default function UsersPage() {
                   type="text"
                   value={companySearch}
                   onChange={handleCompanySearch}
-                  placeholder="Firma adı veya vergi numarası yazın..."
+                  placeholder="Firma adı veya vergi numarası..."
                   autoComplete="off"
                   aria-invalid={Boolean(errors.companyId)}
                   className={`${inputClass} pl-10 pr-10 ${
@@ -589,7 +595,7 @@ export default function UsersPage() {
                       key={company.id}
                       type="button"
                       onClick={() => selectCompany(company)}
-                      className="flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-blue-50"
+                      className="flex w-full items-center justify-between gap-3 border-b border-slate-100 px-3 py-3 text-left transition last:border-b-0 hover:bg-blue-50 sm:gap-4 sm:px-4"
                     >
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-900">
@@ -611,7 +617,7 @@ export default function UsersPage() {
                         </div>
                       </div>
 
-                      <span className="shrink-0 rounded-lg bg-blue-800 px-3 py-1.5 text-xs font-semibold text-white">
+                      <span className="shrink-0 rounded-lg bg-blue-800 px-2.5 py-1 text-xs font-semibold text-white sm:px-3 sm:py-1.5">
                         Seç
                       </span>
                     </button>
@@ -684,7 +690,7 @@ export default function UsersPage() {
                   <Building2 className="h-4 w-4" />
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-600">
                     Henüz firma seçilmedi
                   </p>
@@ -706,31 +712,31 @@ export default function UsersPage() {
               : "bg-slate-50/50 opacity-80"
           }`}
         >
-          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/40 px-6 py-4">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/40 px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex min-w-0 items-center gap-3">
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 ${
                   selectedCompany
                     ? "bg-red-600 text-white shadow-md shadow-red-600/20"
                     : "bg-slate-200 text-slate-500"
                 }`}
               >
-                <UserPlus className="h-5 w-5" />
+                <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
 
-              <div>
-                <h2 className="text-base font-bold text-slate-900">
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-slate-900 sm:text-base">
                   Kullanıcı Bilgileri
                 </h2>
 
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
                   Kullanıcının sisteme giriş yapacağı bilgileri girin.
                 </p>
               </div>
             </div>
 
             {!selectedCompany && (
-              <span className="hidden rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-500 sm:inline">
+              <span className="hidden shrink-0 rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-500 sm:inline">
                 Önce firma seçilmelidir
               </span>
             )}
@@ -738,7 +744,7 @@ export default function UsersPage() {
 
           <fieldset
             disabled={!selectedCompany || status.type === "loading"}
-            className="grid grid-cols-1 gap-4 px-6 py-5 md:grid-cols-2"
+            className="grid grid-cols-1 gap-4 px-4 py-4 sm:px-6 sm:py-5 md:grid-cols-2"
           >
             <div>
               <label htmlFor="firstName" className={labelClass}>
@@ -913,7 +919,7 @@ export default function UsersPage() {
         </section>
 
         {/* FORM ALT ALANI */}
-        <footer className="flex flex-col-reverse gap-3 border-t border-blue-100 bg-gradient-to-r from-blue-50/70 via-white to-red-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="flex flex-col-reverse gap-3 border-t border-blue-100 bg-gradient-to-r from-blue-50/70 via-white to-red-50/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p className="text-xs text-slate-500">
             <span className="font-semibold text-red-500">*</span> Zorunlu
             alanlar
@@ -924,7 +930,7 @@ export default function UsersPage() {
               type="button"
               onClick={clearUserFields}
               disabled={status.type === "loading"}
-              className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-10 flex-1 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             >
               Temizle
             </button>
@@ -932,7 +938,7 @@ export default function UsersPage() {
             <button
               type="submit"
               disabled={status.type === "loading" || !selectedCompany}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-red-600 px-5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+              className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 px-5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 sm:flex-none"
             >
               {status.type === "loading" ? (
                 <>

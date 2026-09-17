@@ -3,14 +3,15 @@
 
 import {
   Archive,
+  Check,
+  ChevronDown,
   ChevronRight,
   ChevronsUpDown,
   ChevronUp,
-  ChevronDown,
-  Filter,
   FileText,
-  ShieldAlert,
+  Filter,
   Search,
+  ShieldAlert,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -70,7 +71,6 @@ type CompanyDetailResponse = {
 
 /* =====================================================
    SIRALAMA (SORTING) YARDIMCI TİPLERİ
-   -- documents-screen.tsx ile BİREBİR aynı mantık --
 ===================================================== */
 
 type SortDirection = "asc" | "desc";
@@ -167,7 +167,6 @@ function getDocumentSortValue(
 
 /* =====================================================
    SÜTUN FİLTRE (checkbox) DROPDOWN'I
-   -- documents-screen.tsx ile BİREBİR aynı --
 ===================================================== */
 function ColumnFilterDropdown({
   title,
@@ -317,10 +316,8 @@ function hasValidAuthorization(authorizationEndDate: string | null): boolean {
 }
 
 // /closed-documents ucu sayfa sayfa gezilerek arama kriterine uyan TÜM
-// kayıtlar tek dizide toplanır (documents-screen.tsx'teki
-// fetchAllClosedDocuments ile birebir aynı yaklaşım). Böylece filtre /
-// sıralama, o an ekranda olan 20 kayıt değil eşleşen TÜM kayıtlar
-// üzerinde çalışır.
+// kayıtlar tek dizide toplanır. Böylece filtre / sıralama, o an ekranda
+// olan 20 kayıt değil eşleşen TÜM kayıtlar üzerinde çalışır.
 async function fetchAllClosedDocuments(
   extraParams?: URLSearchParams,
 ): Promise<ApiClosedDocument[]> {
@@ -361,7 +358,7 @@ const PAGE_SIZE = 20;
 
 export function ClosedDocumentsScreen() {
   const [documents, setDocuments] = useState<ApiClosedDocument[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -374,7 +371,7 @@ export function ClosedDocumentsScreen() {
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
-  // --- SIRALAMA / SÜTUN FİLTRE STATE'LERİ (documents-screen ile aynı) ---
+  // --- SIRALAMA / SÜTUN FİLTRE STATE'LERİ ---
   const [documentSortConfig, setDocumentSortConfig] =
     useState<SortConfig<DocumentSortKey>>(null);
   const [consultantFilter, setConsultantFilter] = useState<Set<string>>(
@@ -517,7 +514,6 @@ export function ClosedDocumentsScreen() {
   }, [searchQuery]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [searchQuery]);
 
@@ -545,9 +541,8 @@ export function ClosedDocumentsScreen() {
   const authorizationIsValid = hasValidAuthorization(authorizationEndDate);
 
   // Sütun başlığındaki filtre kutucuklarının seçenek listeleri, filtre
-  // uygulanmadan ÖNCEKİ veriden türetilir (documents-screen ile aynı
-  // mantık) — böylece bir filtre uygulandığında diğer sütunların
-  // seçenekleri daralmaz/kaybolmaz.
+  // uygulanmadan ÖNCEKİ veriden türetilir — böylece bir filtre
+  // uygulandığında diğer sütunların seçenekleri daralmaz/kaybolmaz.
   const consultantOptions = useMemo(() => {
     const values = new Set<string>();
     documents.forEach((doc) => {
@@ -627,7 +622,6 @@ export function ClosedDocumentsScreen() {
     Math.ceil(visibleDocuments.length / PAGE_SIZE),
   );
 
-  // documents-screen.tsx'teki documentHeadings ile BİREBİR aynı yapı.
   const documentHeadings: {
     label: string;
     key?: DocumentSortKey;
@@ -654,16 +648,24 @@ export function ClosedDocumentsScreen() {
     status: statusFilter.size,
   };
 
+  // Ortak boş / yükleme / hata durum bayrakları — hem mobil kart hem masaüstü
+  // tablo tarafından kullanılır.
+  const showLoader = isLoading || isAuthorizationLoading;
+  const showError = !showLoader && Boolean(loadError);
+  const showEmpty =
+    !showLoader && !loadError && paginatedVisibleDocuments.length === 0;
+  const showAuthWarning = showEmpty && isCompanyUser && !authorizationIsValid;
+
   return (
-    <div className="min-w-0 space-y-3">
+    <div className="min-w-0 space-y-3 sm:space-y-4">
       {/* BAŞLIK */}
-      <section className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex min-w-0 items-start gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
+      <section className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-start gap-3 sm:items-center sm:gap-3.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <Archive size={17} />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
               Kapalı Durumdaki Belgeler
             </h1>
@@ -678,8 +680,9 @@ export function ClosedDocumentsScreen() {
 
       {/* BELGE LİSTESİ */}
       <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
-        <div className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50/40 p-2.5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        {/* Başlık + arama */}
+        <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+          <div className="min-w-0">
             <h2 className="text-sm font-bold text-slate-900">
               Kapalı Belge Listesi
             </h2>
@@ -700,340 +703,484 @@ export function ClosedDocumentsScreen() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Belge numarası ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-1 pl-8 pr-2.5 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-9 text-base text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:py-1.5 sm:pl-8 sm:pr-2.5 sm:text-xs"
             />
+
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Aramayı temizle"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
-          <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
-            <colgroup>
-              <col className="w-[10%]" />
-              <col className="w-[14%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[10%]" />
-            </colgroup>
-
-            <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
-              <tr>
-                {documentHeadings.map((heading) => {
-                  const activeFilterCount = heading.filterType
-                    ? activeFilterCountByColumn[heading.filterType]
-                    : 0;
-
-                  return (
-                    <th
-                      key={heading.label}
-                      className="relative px-3 py-1.5 text-center"
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {heading.key ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDocumentSort(heading.key as DocumentSortKey)
-                            }
-                            className="inline-flex items-center gap-1 uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-800"
-                          >
-                            {heading.label}
-                            <SortIcon
-                              direction={
-                                documentSortConfig?.key === heading.key
-                                  ? documentSortConfig.direction
-                                  : undefined
-                              }
-                            />
-                          </button>
-                        ) : (
-                          heading.label
-                        )}
-
-                        {heading.filterType && (
-                          <button
-                            type="button"
-                            data-column-filter-button
-                            onClick={(event) => {
-                              const rect =
-                                event.currentTarget.getBoundingClientRect();
-
-                              setOpenFilterColumn((current) => {
-                                if (current === heading.filterType) {
-                                  setFilterAnchorRect(null);
-                                  return null;
-                                }
-
-                                setFilterAnchorRect(rect);
-                                return heading.filterType ?? null;
-                              });
-                            }}
-                            className={`relative rounded p-0.5 transition-colors ${
-                              activeFilterCount > 0
-                                ? "text-red-600"
-                                : "text-slate-400 hover:text-slate-700"
-                            }`}
-                            title="Filtrele"
-                          >
-                            <Filter size={12} />
-                            {activeFilterCount > 0 && (
-                              <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white">
-                                {activeFilterCount}
-                              </span>
-                            )}
-                          </button>
-                        )}
-                      </span>
-
-                      {heading.filterType === "consultant" &&
-                        openFilterColumn === "consultant" && (
-                          <ColumnFilterDropdown
-                            title="Uzman"
-                            options={consultantOptions}
-                            selected={consultantFilter}
-                            onToggle={(value) =>
-                              toggleFilterValue(setConsultantFilter, value)
-                            }
-                            onClear={() => setConsultantFilter(new Set())}
-                            onClose={() => {
-                              setOpenFilterColumn(null);
-                              setFilterAnchorRect(null);
-                            }}
-                            anchorRect={filterAnchorRect}
-                          />
-                        )}
-
-                      {heading.filterType === "supportClass" &&
-                        openFilterColumn === "supportClass" && (
-                          <ColumnFilterDropdown
-                            title="Destekleme Sınıfı"
-                            anchorRect={filterAnchorRect}
-                            options={supportClassOptions}
-                            selected={supportClassFilter}
-                            onToggle={(value) =>
-                              toggleFilterValue(setSupportClassFilter, value)
-                            }
-                            onClear={() => setSupportClassFilter(new Set())}
-                            onClose={() => {
-                              setOpenFilterColumn(null);
-                              setFilterAnchorRect(null);
-                            }}
-                          />
-                        )}
-
-                      {heading.filterType === "status" &&
-                        openFilterColumn === "status" && (
-                          <ColumnFilterDropdown
-                            title="Durum"
-                            anchorRect={filterAnchorRect}
-                            options={statusOptions}
-                            selected={statusFilter}
-                            onToggle={(value) =>
-                              toggleFilterValue(setStatusFilter, value)
-                            }
-                            onClear={() => setStatusFilter(new Set())}
-                            onClose={() => {
-                              setOpenFilterColumn(null);
-                              setFilterAnchorRect(null);
-                            }}
-                          />
-                        )}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {isLoading || isAuthorizationLoading ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center">
-                    <p className="text-sm font-medium text-slate-500">
-                      Belgeler yükleniyor...
-                    </p>
-                  </td>
-                </tr>
-              ) : loadError ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center">
-                    <p className="text-sm font-semibold text-red-700">
-                      Belgeler yüklenemedi
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
-                  </td>
-                </tr>
-              ) : paginatedVisibleDocuments.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center">
-                    {isCompanyUser && !authorizationIsValid ? (
-                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left">
-                        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-                          <div className="flex min-w-0 flex-1 items-start gap-2.5">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
-                              <ShieldAlert size={21} strokeWidth={1.8} />
-                            </div>
-
-                            <div className="min-w-0">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
-                                Yetkilendirme gerekli
-                              </span>
-
-                              <h3 className="mt-1 text-base font-bold text-slate-900">
-                                Yetki süreniz dolmuştur.
-                              </h3>
-
-                              <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                                Firmanın belge bilgilerinin görüntülenebilmesi
-                                için yeniden yetkilendirme yapılmalıdır.
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
-                            <p className="text-xs font-medium leading-5 text-slate-600">
-                              Yetkilendirme işlemi için lütfen uzmanınız ile
-                              iletişime geçiniz.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-medium text-slate-500">
-                        {documents.length > 0
-                          ? "Seçilen kritere uygun belge bulunamadı."
-                          : "Belge bulunamadı."}
-                      </p>
-                    )}
-                  </td>
-                </tr>
+        {/* MOBİL: KART GÖRÜNÜMÜ (md altında) */}
+        <div className="md:hidden">
+          {showLoader ? (
+            <div className="px-4 py-10 text-center">
+              <p className="text-sm font-medium text-slate-500">
+                Belgeler yükleniyor...
+              </p>
+            </div>
+          ) : showError ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-semibold text-red-700">
+                Belgeler yüklenemedi
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+            </div>
+          ) : showEmpty ? (
+            <div className="px-3 py-6 text-center">
+              {showAuthWarning ? (
+                <AuthorizationWarning />
               ) : (
-                paginatedVisibleDocuments.map((doc) => {
-                  const isSelected = activeDocumentId === String(doc.id);
+                <p className="text-sm font-medium text-slate-500">
+                  {documents.length > 0
+                    ? "Seçilen kritere uygun belge bulunamadı."
+                    : "Belge bulunamadı."}
+                </p>
+              )}
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {paginatedVisibleDocuments.map((doc) => {
+                const isSelected = activeDocumentId === String(doc.id);
 
-                  return (
-                    <tr
-                      key={doc.id}
-                      className={`transition-colors ${
-                        isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
-                      }`}
+                return (
+                  <li key={doc.id} className={isSelected ? "bg-red-50/40" : ""}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveDocumentId(isSelected ? null : String(doc.id))
+                      }
+                      className="w-full px-3 py-3 text-left transition active:bg-slate-50"
                     >
-                      <td className="px-3 py-1.5">
-                        <div className="flex items-center gap-1.5">
+                      {/* Üst satır: belge no + durum */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
                           <div
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
                                 ? "border-red-600 bg-red-600 text-white"
                                 : "border-slate-200 bg-slate-50 text-slate-600"
                             }`}
                           >
-                            <FileText size={16} />
+                            <FileText size={15} />
                           </div>
-
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">
                               {doc.documentNumber ?? "-"}
                             </p>
-
-                            <p className="font-mono text-[11px] text-slate-400">
+                            <p className="font-mono text-[10px] text-slate-400">
                               ID: {doc.externalDocumentId}
                             </p>
                           </div>
                         </div>
-                      </td>
+                        <StatusBadge status={doc.status} />
+                      </div>
 
-                      <td className="max-w-xs px-3 py-1.5">
-                        <p
-                          title={doc.company?.name ?? undefined}
-                          className="truncate text-xs font-semibold text-slate-800"
-                        >
+                      {/* Firma + uzman */}
+                      <div className="mt-2 rounded-lg bg-slate-50/70 px-2 py-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Firma
+                        </p>
+                        <p className="truncate text-xs font-semibold text-slate-800">
                           {doc.company?.name ?? "Firma bilgisi bulunamadı"}
                         </p>
-
-                        <p className="mt-1 text-left text-[11px] text-slate-400">
+                        <p className="mt-0.5 font-mono text-[10px] text-slate-500">
                           VKN: {doc.company?.taxNumber ?? "-"}
+                          {doc.company?.consultant && (
+                            <>
+                              {" • "}
+                              Uzman:{" "}
+                              <span className="font-semibold text-slate-700">
+                                {doc.company.consultant}
+                              </span>
+                            </>
+                          )}
                         </p>
-                      </td>
+                      </div>
 
-                      <td className="px-3 py-1.5 text-center">
-                        <p
-                          title={doc.company?.consultant ?? undefined}
-                          className="truncate text-xs font-semibold text-slate-700"
-                        >
-                          {doc.company?.consultant ?? "-"}
-                        </p>
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.documentStartDate)}
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.documentEndDate)}
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.extensionDate)}
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center">
-                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-                          {doc.supportClass ?? "-"}
-                        </span>
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center">
-                        <StatusBadge status={doc.status} />
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center">
-                        <div className="flex items-center justify-center px-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActiveDocumentId(
-                                isSelected ? null : String(doc.id),
-                              )
-                            }
-                            className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                              isSelected
-                                ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            }`}
-                          >
-                            {isSelected ? (
-                              "Görüntüleniyor"
-                            ) : (
-                              <>
-                                Görüntüle
-                                <ChevronRight size={14} />
-                              </>
-                            )}
-                          </button>
+                      {/* Tarihler + destek */}
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Başlangıç
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentStartDate)}
+                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Bitiş
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentEndDate)}
+                          </p>
+                        </div>
+                        {doc.extensionDate && (
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Süre Uzatım
+                            </p>
+                            <p className="font-medium text-slate-700">
+                              {formatDate(doc.extensionDate)}
+                            </p>
+                          </div>
+                        )}
+                        {doc.supportClass && (
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Destek Sınıfı
+                            </p>
+                            <p className="truncate font-medium text-slate-700">
+                              {doc.supportClass}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Aç butonu */}
+                      <div className="mt-2.5 flex justify-end">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
+                            isSelected
+                              ? "bg-red-600 text-white"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {isSelected ? (
+                            <>
+                              <Check size={12} />
+                              Görüntüleniyor
+                            </>
+                          ) : (
+                            <>
+                              Görüntüle
+                              <ChevronRight size={12} />
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* TABLET+ : TABLO GÖRÜNÜMÜ (sıralama + filtreleme dahil) */}
+        <div className="hidden md:block">
+          <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
+            <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
+              <colgroup>
+                <col className="w-[10%]" />
+                <col className="w-[14%]" />
+                <col className="w-[11%]" />
+                <col className="w-[11%]" />
+                <col className="w-[11%]" />
+                <col className="w-[11%]" />
+                <col className="w-[11%]" />
+                <col className="w-[11%]" />
+                <col className="w-[10%]" />
+              </colgroup>
+
+              <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
+                <tr>
+                  {documentHeadings.map((heading) => {
+                    const activeFilterCount = heading.filterType
+                      ? activeFilterCountByColumn[heading.filterType]
+                      : 0;
+
+                    return (
+                      <th
+                        key={heading.label}
+                        className="relative px-3 py-1.5 text-center"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {heading.key ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDocumentSort(
+                                  heading.key as DocumentSortKey,
+                                )
+                              }
+                              className="inline-flex items-center gap-1 uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-800"
+                            >
+                              {heading.label}
+                              <SortIcon
+                                direction={
+                                  documentSortConfig?.key === heading.key
+                                    ? documentSortConfig.direction
+                                    : undefined
+                                }
+                              />
+                            </button>
+                          ) : (
+                            heading.label
+                          )}
+
+                          {heading.filterType && (
+                            <button
+                              type="button"
+                              data-column-filter-button
+                              onClick={(event) => {
+                                const rect =
+                                  event.currentTarget.getBoundingClientRect();
+
+                                setOpenFilterColumn((current) => {
+                                  if (current === heading.filterType) {
+                                    setFilterAnchorRect(null);
+                                    return null;
+                                  }
+
+                                  setFilterAnchorRect(rect);
+                                  return heading.filterType ?? null;
+                                });
+                              }}
+                              className={`relative rounded p-0.5 transition-colors ${
+                                activeFilterCount > 0
+                                  ? "text-red-600"
+                                  : "text-slate-400 hover:text-slate-700"
+                              }`}
+                              title="Filtrele"
+                            >
+                              <Filter size={12} />
+                              {activeFilterCount > 0 && (
+                                <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white">
+                                  {activeFilterCount}
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </span>
+
+                        {heading.filterType === "consultant" &&
+                          openFilterColumn === "consultant" && (
+                            <ColumnFilterDropdown
+                              title="Uzman"
+                              options={consultantOptions}
+                              selected={consultantFilter}
+                              onToggle={(value) =>
+                                toggleFilterValue(setConsultantFilter, value)
+                              }
+                              onClear={() => setConsultantFilter(new Set())}
+                              onClose={() => {
+                                setOpenFilterColumn(null);
+                                setFilterAnchorRect(null);
+                              }}
+                              anchorRect={filterAnchorRect}
+                            />
+                          )}
+
+                        {heading.filterType === "supportClass" &&
+                          openFilterColumn === "supportClass" && (
+                            <ColumnFilterDropdown
+                              title="Destekleme Sınıfı"
+                              anchorRect={filterAnchorRect}
+                              options={supportClassOptions}
+                              selected={supportClassFilter}
+                              onToggle={(value) =>
+                                toggleFilterValue(setSupportClassFilter, value)
+                              }
+                              onClear={() => setSupportClassFilter(new Set())}
+                              onClose={() => {
+                                setOpenFilterColumn(null);
+                                setFilterAnchorRect(null);
+                              }}
+                            />
+                          )}
+
+                        {heading.filterType === "status" &&
+                          openFilterColumn === "status" && (
+                            <ColumnFilterDropdown
+                              title="Durum"
+                              anchorRect={filterAnchorRect}
+                              options={statusOptions}
+                              selected={statusFilter}
+                              onToggle={(value) =>
+                                toggleFilterValue(setStatusFilter, value)
+                              }
+                              onClear={() => setStatusFilter(new Set())}
+                              onClose={() => {
+                                setOpenFilterColumn(null);
+                                setFilterAnchorRect(null);
+                              }}
+                            />
+                          )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {showLoader ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center">
+                      <p className="text-sm font-medium text-slate-500">
+                        Belgeler yükleniyor...
+                      </p>
+                    </td>
+                  </tr>
+                ) : showError ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center">
+                      <p className="text-sm font-semibold text-red-700">
+                        Belgeler yüklenemedi
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                    </td>
+                  </tr>
+                ) : showEmpty ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center">
+                      {showAuthWarning ? (
+                        <AuthorizationWarning />
+                      ) : (
+                        <p className="text-sm font-medium text-slate-500">
+                          {documents.length > 0
+                            ? "Seçilen kritere uygun belge bulunamadı."
+                            : "Belge bulunamadı."}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedVisibleDocuments.map((doc) => {
+                    const isSelected = activeDocumentId === String(doc.id);
+
+                    return (
+                      <tr
+                        key={doc.id}
+                        className={`transition-colors ${
+                          isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                        }`}
+                      >
+                        <td className="px-3 py-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                                isSelected
+                                  ? "border-red-600 bg-red-600 text-white"
+                                  : "border-slate-200 bg-slate-50 text-slate-600"
+                              }`}
+                            >
+                              <FileText size={15} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-900">
+                                {doc.documentNumber ?? "-"}
+                              </p>
+                              <p className="font-mono text-[11px] text-slate-400">
+                                ID: {doc.externalDocumentId}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="max-w-xs px-3 py-1.5">
+                          <p
+                            title={doc.company?.name ?? undefined}
+                            className="truncate text-xs font-semibold text-slate-800"
+                          >
+                            {doc.company?.name ?? "Firma bilgisi bulunamadı"}
+                          </p>
+
+                          <p className="mt-1 text-left text-[11px] text-slate-400">
+                            VKN: {doc.company?.taxNumber ?? "-"}
+                          </p>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <p
+                            title={doc.company?.consultant ?? undefined}
+                            className="truncate text-xs font-semibold text-slate-700"
+                          >
+                            {doc.company?.consultant ?? "-"}
+                          </p>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(doc.documentStartDate)}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(doc.documentEndDate)}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(doc.extensionDate)}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                            {doc.supportClass ?? "-"}
+                          </span>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <StatusBadge status={doc.status} />
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <div className="flex items-center justify-center px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveDocumentId(
+                                  isSelected ? null : String(doc.id),
+                                )
+                              }
+                              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              {isSelected ? (
+                                <>
+                                  <Check size={14} />
+                                  Görüntüleniyor
+                                </>
+                              ) : (
+                                <>
+                                  Görüntüle
+                                  <ChevronRight size={14} />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* SAYFALAMA */}
-        <div className="flex flex-col gap-2 border-t border-slate-200 px-3 py-2 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between">
+        <div className="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/30 p-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-medium text-slate-500">
             Sayfa {currentPage} / {displayedTotalPages}
           </p>
 
-          <div className="flex w-full gap-1.5 min-[380px]:w-auto">
+          <div className="flex w-full items-center justify-center gap-1.5 sm:w-auto sm:justify-end">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Önceki
             </button>
@@ -1042,7 +1189,7 @@ export function ClosedDocumentsScreen() {
               type="button"
               disabled={currentPage >= displayedTotalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Sonraki
             </button>
@@ -1056,7 +1203,7 @@ export function ClosedDocumentsScreen() {
           ref={detailRef}
           className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Seçili Belge Detayı
             </p>
@@ -1064,7 +1211,7 @@ export function ClosedDocumentsScreen() {
             <button
               type="button"
               onClick={() => setActiveDocumentId(null)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
             >
               <X size={14} />
               Kapat
@@ -1081,6 +1228,45 @@ export function ClosedDocumentsScreen() {
           </div>
         </section>
       )}
+    </div>
+  );
+}
+
+/* =====================================================
+   ALT BİLEŞENLER
+===================================================== */
+
+function AuthorizationWarning() {
+  return (
+    <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-4 text-left sm:px-6 sm:py-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
+        <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 sm:h-11 sm:w-11">
+            <ShieldAlert size={20} strokeWidth={1.8} />
+          </div>
+
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+              Yetkilendirme gerekli
+            </span>
+
+            <h3 className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+              Yetki süreniz dolmuştur.
+            </h3>
+
+            <p className="mt-1.5 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+              Firmanın belge bilgilerinin görüntülenebilmesi için yeniden
+              yetkilendirme yapılmalıdır.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-200 pt-3 sm:pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
+          <p className="text-xs font-medium leading-5 text-slate-600">
+            Yetkilendirme işlemi için lütfen danışmanınız ile iletişime geçiniz.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -159,14 +159,14 @@ function getErrorMessage(error: unknown): string {
 
 function NotificationSkeletonRow() {
   return (
-    <div className="flex animate-pulse items-start gap-4 p-5">
-      <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100" />
+    <div className="flex animate-pulse items-start gap-3 p-3 sm:gap-4 sm:p-5">
+      <div className="h-9 w-9 shrink-0 rounded-xl bg-slate-100 sm:h-10 sm:w-10" />
       <div className="min-w-0 flex-1 space-y-2.5">
         <div className="h-3.5 w-1/3 rounded bg-slate-100" />
         <div className="h-3 w-2/3 rounded bg-slate-100" />
         <div className="h-2.5 w-24 rounded bg-slate-100" />
       </div>
-      <div className="h-7 w-20 shrink-0 rounded-lg bg-slate-100" />
+      <div className="hidden h-7 w-20 shrink-0 rounded-lg bg-slate-100 sm:block" />
     </div>
   );
 }
@@ -295,14 +295,14 @@ export function NotificationsScreen() {
   const activeEmptyState = emptyStateCopy[activeFilter];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-12">
-      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+    <div className="mx-auto max-w-7xl space-y-4 pb-8 sm:space-y-6 sm:pb-12">
+      <section className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold tracking-tight text-slate-900 sm:text-2xl">
             Bildirimler
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 sm:text-sm">
             Belge, yetki ve sistem işlemleriyle ilgili bildirimleri yönetin.
           </p>
         </div>
@@ -311,20 +311,20 @@ export function NotificationsScreen() {
           type="button"
           onClick={() => void markAllAsRead()}
           disabled={unreadCount === 0 || isUpdating}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-4 text-xs font-semibold text-white shadow-xs transition-all hover:from-red-700 hover:to-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-4 text-xs font-semibold text-white shadow-xs transition-all hover:from-red-700 hover:to-red-600 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
           <CheckCheck size={16} />
           Tümünü Okundu İşaretle
         </button>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-            <Bell size={20} />
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 sm:h-11 sm:w-11">
+            <Bell size={18} />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-medium text-slate-500">
               Toplam Bildirim
             </p>
@@ -334,23 +334,23 @@ export function NotificationsScreen() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600">
-            <Bell size={20} />
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 sm:h-11 sm:w-11">
+            <Bell size={18} />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-medium text-slate-500">Okunmamış</p>
             <p className="text-lg font-bold text-red-600">{unreadCount}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <CheckCheck size={20} />
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 sm:h-11 sm:w-11">
+            <CheckCheck size={18} />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-medium text-slate-500">Okundu</p>
             <p className="text-lg font-bold text-slate-900">
               {notifications.length - unreadCount}
@@ -366,8 +366,8 @@ export function NotificationsScreen() {
       )}
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center">
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {filterItems.map((filter) => {
               const active = activeFilter === filter.value;
 
@@ -376,7 +376,7 @@ export function NotificationsScreen() {
                   key={filter.value}
                   type="button"
                   onClick={() => setActiveFilter(filter.value)}
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:py-2 ${
                     active
                       ? "bg-red-600 text-white shadow-xs"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -397,7 +397,7 @@ export function NotificationsScreen() {
             })}
           </div>
 
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
             {filteredNotifications.length} bildirim gösteriliyor
           </p>
         </div>
@@ -418,55 +418,57 @@ export function NotificationsScreen() {
                 <article
                   key={notification.id}
                   onClick={() => void markAsRead(notification.id)}
-                  className={`group flex flex-col gap-4 p-5 transition-colors duration-300 sm:flex-row sm:items-start ${
+                  className={`group flex flex-col gap-3 p-3 transition-colors duration-300 sm:flex-row sm:items-start sm:gap-4 sm:p-5 ${
                     notification.isRead
                       ? "bg-white"
                       : "cursor-pointer bg-red-50/20 hover:bg-red-50/40"
                   }`}
                 >
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors duration-300 ${
-                      notification.isRead
-                        ? "border-slate-200 bg-slate-50 text-slate-400"
-                        : severityIconStyles[severity]
-                    }`}
-                  >
-                    <Icon size={18} />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    {notification.company && (
-                      <div className="mb-1 flex items-center gap-1.5">
-                        <Building2
-                          size={12}
-                          className="shrink-0 text-red-500"
-                        />
-                        <span className="truncate text-[11px] font-semibold text-red-600">
-                          {notification.company.name}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-bold text-slate-900">
-                        {notification.title}
-                      </h2>
-
-                      {!notification.isRead && (
-                        <span
-                          className={`h-2 w-2 shrink-0 rounded-full ${severityDotStyles[severity]}`}
-                          aria-label="Okunmamış bildirim"
-                        />
-                      )}
+                  <div className="flex items-start gap-3 sm:contents">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors duration-300 sm:h-10 sm:w-10 ${
+                        notification.isRead
+                          ? "border-slate-200 bg-slate-50 text-slate-400"
+                          : severityIconStyles[severity]
+                      }`}
+                    >
+                      <Icon size={17} />
                     </div>
 
-                    <p className="mt-1 text-xs leading-5 text-slate-600">
-                      {notification.description}
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      {notification.company && (
+                        <div className="mb-1 flex items-center gap-1.5">
+                          <Building2
+                            size={12}
+                            className="shrink-0 text-red-500"
+                          />
+                          <span className="truncate text-[11px] font-semibold text-red-600">
+                            {notification.company.name}
+                          </span>
+                        </div>
+                      )}
 
-                    <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
-                      <Clock3 size={12} />
-                      {formatNotificationDate(notification.createdAt)}
+                      <div className="flex items-start gap-2">
+                        <h2 className="text-sm font-bold leading-snug text-slate-900">
+                          {notification.title}
+                        </h2>
+
+                        {!notification.isRead && (
+                          <span
+                            className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${severityDotStyles[severity]}`}
+                            aria-label="Okunmamış bildirim"
+                          />
+                        )}
+                      </div>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-600">
+                        {notification.description}
+                      </p>
+
+                      <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                        <Clock3 size={12} />
+                        {formatNotificationDate(notification.createdAt)}
+                      </div>
                     </div>
                   </div>
 
@@ -483,7 +485,7 @@ export function NotificationsScreen() {
                         void markAsRead(notification.id);
                       }}
                       disabled={isUpdating}
-                      className="shrink-0 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-all group-hover:border-red-200 group-hover:text-red-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full shrink-0 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-all group-hover:border-red-200 group-hover:text-red-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       Okundu işaretle
                     </button>
@@ -493,7 +495,7 @@ export function NotificationsScreen() {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center px-5 py-16 text-center">
+          <div className="flex flex-col items-center px-5 py-12 text-center sm:py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
               <Bell size={24} />
             </div>

@@ -414,7 +414,6 @@ function calculateDocumentStatus(document: {
     return "EXPIRED";
   }
 
-
   return "ACTIVE";
 }
 
@@ -443,7 +442,7 @@ function getDocumentSortValue(
           ? doc.documentEndDate
           : key === "extensionDate"
             ? doc.extensionDate
-            : doc.company?.authorizationEndDate ?? null;
+            : (doc.company?.authorizationEndDate ?? null);
 
     if (!rawDate) return Infinity; // tarihi olmayanlar en sona
 
@@ -917,10 +916,6 @@ export function DocumentsScreen({
               },
             }));
 
-          /*
-           * Aynı belge hem açık listede hem kapalı listede bulunuyorsa
-           * kapalı/iptal kaydı esas alınır.
-           */
           const documentsByExternalId = new Map<number, ApiDocument>();
 
           openDocuments.forEach((document) => {
@@ -1192,8 +1187,6 @@ export function DocumentsScreen({
             }),
           );
 
-          // Kapalı / İptal belgelerin tamamını bellekte tutuyoruz.
-          // Filtreleme + sıralama bittikten SONRA 20'şer sayfalayacağız.
           setDocuments(mappedDocuments);
 
           setAuthorizationEndDate(null);
@@ -1204,10 +1197,6 @@ export function DocumentsScreen({
 
           return;
         }
-        /*
-         * Aktif, süresi yaklaşan ve süresi dolmuş belgeler
-         * normal documents endpointinden geliyor.
-         */
         if (status) {
           params.set("status", status);
         }
@@ -1383,10 +1372,7 @@ export function DocumentsScreen({
 
   const visibleDocumentsByStatusFilter = companyId
     ? documents.filter((document) => {
-        // Kapalı/İptal (INACTIVE) bir belge, /documents ile
-        // /closed-documents arasındaki olası id çakışması yüzünden
-        // "Süre Uzatma" ya da "Kapatma Yapılacaklar" kartlarına asla
-        // dahil edilmemeli; durumu yalnızca kapalı/iptal kaynağından gelir.
+        // Kapalı/İptal belge uzatma/kapatma kartlarına tekrar dahil edilmez.
         if (document.status === "INACTIVE") {
           return (
             !showCompanyExtensionEligible &&
@@ -1398,14 +1384,13 @@ export function DocumentsScreen({
         if (showCompanyExtensionEligible) {
           return companyExtensionEligibleIds.has(document.id);
         }
+
         if (showCompanyClosureEligible) {
           return companyClosureEligibleIds.has(document.id);
         }
 
         if (!companyStatusFilter) return true;
 
-        // "Aktif" filtresine tıklanınca, kendi kartı olan uzatma/kapatma
-        // yapılabilir belgeler burada tekrar görünmesin.
         const isEligibleElsewhere =
           companyExtensionEligibleIds.has(document.id) ||
           companyClosureEligibleIds.has(document.id);
@@ -1418,15 +1403,12 @@ export function DocumentsScreen({
       })
     : documents;
 
-  // Sütun başlığındaki filtre kutucuklarının (Uzman / Destekleme Sınıfı /
-  // Durum) seçenek listeleri; filtre uygulanmadan ÖNCEKİ veriden türetilir,
-  // böylece bir filtre uygulandığında diğer sütunların seçenekleri
-  // daralmaz/kaybolmaz.
   const consultantOptions = useMemo(() => {
     const values = new Set<string>();
     visibleDocumentsByStatusFilter.forEach((doc) => {
       values.add(doc.company?.consultant ?? "-");
     });
+
     return Array.from(values)
       .sort((a, b) => a.localeCompare(b, "tr-TR"))
       .map((value) => ({ value, label: value }));
@@ -1437,6 +1419,7 @@ export function DocumentsScreen({
     visibleDocumentsByStatusFilter.forEach((doc) => {
       values.add(doc.supportClass ?? "-");
     });
+
     return Array.from(values)
       .sort((a, b) => a.localeCompare(b, "tr-TR"))
       .map((value) => ({ value, label: value }));
@@ -1447,6 +1430,7 @@ export function DocumentsScreen({
     visibleDocumentsByStatusFilter.forEach((doc) => {
       values.add(getDisplayStatus(doc));
     });
+
     return Array.from(values)
       .sort((a, b) => a.localeCompare(b, "tr-TR"))
       .map((value) => ({
@@ -1455,9 +1439,6 @@ export function DocumentsScreen({
       }));
   }, [visibleDocumentsByStatusFilter]);
 
-  // Uzman / Destekleme Sınıfı / Durum filtreleri uygulanır (hepsi VE
-  // mantığıyla birleştirilir; bir filtre boşsa o sütun için hiçbir
-  // kısıtlama uygulanmaz).
   const visibleDocumentsFiltered = visibleDocumentsByStatusFilter.filter(
     (doc) => {
       if (
@@ -1482,9 +1463,6 @@ export function DocumentsScreen({
     },
   );
 
-  // Kullanıcının seçtiği sütuna göre belge listesi sıralanır. Sıralama
-  // seçilmemişse (documentSortConfig === null) filtrelenmiş liste sırası
-  // olduğu gibi korunur.
   const visibleDocuments = useMemo(() => {
     if (!documentSortConfig) return visibleDocumentsFiltered;
 
@@ -1493,13 +1471,13 @@ export function DocumentsScreen({
         getDocumentSortValue(a, documentSortConfig.key),
         getDocumentSortValue(b, documentSortConfig.key),
       );
+
       return documentSortConfig.direction === "asc" ? comparison : -comparison;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleDocumentsFiltered, documentSortConfig]);
 
   const CLOSED_PAGE_SIZE = 20;
-
   const isClosedDocumentsView = !companyId && status === "INACTIVE";
 
   const paginatedVisibleDocuments = useMemo(() => {
@@ -1508,18 +1486,13 @@ export function DocumentsScreen({
     }
 
     const startIndex = (currentPage - 1) * CLOSED_PAGE_SIZE;
-    const endIndex = startIndex + CLOSED_PAGE_SIZE;
-
-    return visibleDocuments.slice(startIndex, endIndex);
+    return visibleDocuments.slice(startIndex, startIndex + CLOSED_PAGE_SIZE);
   }, [visibleDocuments, currentPage, isClosedDocumentsView]);
 
   const displayedTotalPages = isClosedDocumentsView
     ? Math.max(1, Math.ceil(visibleDocuments.length / CLOSED_PAGE_SIZE))
     : totalPages;
-  // Belge tablosu başlıkları:
-  // - `key` verilmişse sütun başlığına tıklanarak sıralanabilir.
-  // - `filterType` verilmişse başlıktaki huni (funnel) ikonuyla checkbox'lı
-  //   filtre açılabilir.
+
   const documentHeadings: {
     label: string;
     key?: DocumentSortKey;
@@ -1557,16 +1530,24 @@ export function DocumentsScreen({
     status: statusFilter.size,
   };
 
+  const isCompanyView = variant === "company";
+
+  const showAuthWarning =
+    (companyId || variant === "company") &&
+    documents.length === 0 &&
+    !isAuthorizationLoading &&
+    !authorizationIsValid;
+
   return (
     <div className="min-w-0 space-y-3">
       {/* BAŞLIK */}
       <section className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 items-start gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <FileText size={17} />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
               Belgelerim
             </h1>
@@ -1686,14 +1667,18 @@ export function DocumentsScreen({
 
       {/* BELGE LİSTESİ */}
       <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
-        <div className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50/40 p-2.5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        {/* Başlık + arama */}
+        <div
+          className={`flex flex-col gap-2 border-b border-slate-100 bg-slate-50/40 p-3 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "sm:p-5" : "sm:gap-2 sm:p-2.5"
+          }`}
+        >
+          <div className="min-w-0">
             <h2 className="text-sm font-bold text-slate-900">
               {isAuthorizationRequiredView
                 ? "Yetkilendirme Yapılacak Firmalar"
                 : "Belge Listesi"}
             </h2>
-
             <p className="text-xs font-medium text-slate-500">
               {isAuthorizationRequiredView
                 ? "Yetkisi olmayan, süresi biten veya 6 ay içinde bitecek firmalar"
@@ -1706,7 +1691,6 @@ export function DocumentsScreen({
               size={17}
               className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
-
             <input
               type="text"
               value={searchQuery}
@@ -1716,10 +1700,11 @@ export function DocumentsScreen({
                   ? "Firma adı ile ara..."
                   : "Belge numarası ile ara..."
               }
-              className="w-full rounded-xl border border-slate-200 bg-white py-1 pl-8 pr-2.5 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-base text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:py-1.5 sm:pl-8 sm:pr-2.5 sm:text-xs"
             />
           </div>
         </div>
+
         {companyId && !isAuthorizationLoading && !authorizationIsValid && (
           <div className="flex items-center gap-2 border-b border-blue-100 bg-blue-50/60 px-3 py-1.5">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-100 text-blue-700">
@@ -1730,506 +1715,729 @@ export function DocumentsScreen({
             </p>
           </div>
         )}
-        <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
-          <table
-            className={`w-full table-fixed text-left text-sm ${
-              isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1150px]"
-            }`}
-          >
-            {isAuthorizationRequiredView ? (
-              <colgroup>
-                <col className="w-[13%]" />
-                <col className="w-[16%]" />
-                <col className="w-[13%]" />
-                <col className="w-[15%]" />
-                <col className="w-[13%]" />
-                <col className="w-[15%]" />
-                <col className="w-[15%]" />
-              </colgroup>
+
+        {/* MOBİL: KART GÖRÜNÜMÜ */}
+        <div className="md:hidden">
+          {isLoading ? (
+            <div className="px-4 py-10 text-center">
+              <p className="text-sm font-medium text-slate-500">
+                Belgeler yükleniyor...
+              </p>
+            </div>
+          ) : loadError ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-semibold text-red-700">
+                Belgeler yüklenemedi
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+            </div>
+          ) : isAuthorizationRequiredView ? (
+            visibleAuthorizationCompanies.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm font-medium text-slate-500">
+                Yetkilendirme yapılacak firma bulunamadı.
+              </div>
             ) : (
-              <colgroup>
-                <col className="w-[9%]" />
-                <col className="w-[13%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[13%]" />
-                <col className="w-[8%]" />
-              </colgroup>
-            )}
-            <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
-              <tr>
-                {(isAuthorizationRequiredView
-                  ? authHeadings
-                  : documentHeadings
-                ).map((heading) => {
-                  const filterType = !isAuthorizationRequiredView
-                    ? (
-                        heading as {
-                          filterType?: "consultant" | "supportClass" | "status";
-                        }
-                      ).filterType
-                    : undefined;
-
-                  const activeFilterCount = filterType
-                    ? activeFilterCountByColumn[filterType]
-                    : 0;
-
-                  return (
-                    <th
-                      key={heading.label}
-                      className="relative px-3 py-1.5 text-center"
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {heading.key ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              isAuthorizationRequiredView
-                                ? handleAuthSort(heading.key as AuthSortKey)
-                                : handleDocumentSort(
-                                    heading.key as DocumentSortKey,
-                                  )
-                            }
-                            className="inline-flex items-center gap-1 uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-800"
-                          >
-                            {heading.label}
-                            <SortIcon
-                              direction={
-                                isAuthorizationRequiredView
-                                  ? authSortConfig?.key === heading.key
-                                    ? authSortConfig.direction
-                                    : undefined
-                                  : documentSortConfig?.key === heading.key
-                                    ? documentSortConfig.direction
-                                    : undefined
-                              }
-                            />
-                          </button>
-                        ) : (
-                          heading.label
-                        )}
-
-                        {filterType && (
-                          <button
-                            type="button"
-                            data-column-filter-button
-                            onClick={(event) => {
-                              const rect =
-                                event.currentTarget.getBoundingClientRect();
-
-                              setOpenFilterColumn((current) => {
-                                if (current === filterType) {
-                                  setFilterAnchorRect(null);
-                                  return null;
-                                }
-
-                                setFilterAnchorRect(rect);
-                                return filterType;
-                              });
-                            }}
-                            className={`relative rounded p-0.5 transition-colors ${
-                              activeFilterCount > 0
-                                ? "text-red-600"
-                                : "text-slate-400 hover:text-slate-700"
-                            }`}
-                            title="Filtrele"
-                          >
-                            <Filter size={12} />
-                            {activeFilterCount > 0 && (
-                              <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white">
-                                {activeFilterCount}
-                              </span>
-                            )}
-                          </button>
-                        )}
-                      </span>
-
-                      {filterType === "consultant" &&
-                        openFilterColumn === "consultant" && (
-                          // eslint-disable-next-line react/jsx-no-undef
-                          <ColumnFilterDropdown
-                            title="Uzman"
-                            options={consultantOptions}
-                            selected={consultantFilter}
-                            onToggle={(value) =>
-                              toggleFilterValue(setConsultantFilter, value)
-                            }
-                            onClear={() => setConsultantFilter(new Set())}
-                            onClose={() => {
-                              setOpenFilterColumn(null);
-                              setFilterAnchorRect(null);
-                            }}
-                            anchorRect={filterAnchorRect}
-                          />
-                        )}
-
-                      {filterType === "supportClass" &&
-                        openFilterColumn === "supportClass" && (
-                          <ColumnFilterDropdown
-                            title="Destekleme Sınıfı"
-                            anchorRect={filterAnchorRect}
-                            options={supportClassOptions}
-                            selected={supportClassFilter}
-                            onToggle={(value) =>
-                              toggleFilterValue(setSupportClassFilter, value)
-                            }
-                            onClear={() => setSupportClassFilter(new Set())}
-                            onClose={() => {
-                              setOpenFilterColumn(null);
-                              setFilterAnchorRect(null);
-                            }}
-                          />
-                        )}
-
-                      {filterType === "status" &&
-                        openFilterColumn === "status" && (
-                          <ColumnFilterDropdown
-                            title="Durum"
-                            anchorRect={filterAnchorRect}
-                            options={statusOptions}
-                            selected={statusFilter}
-                            onToggle={(value) =>
-                              toggleFilterValue(setStatusFilter, value)
-                            }
-                            onClear={() => setStatusFilter(new Set())}
-                            onClose={() => {
-                              setOpenFilterColumn(null);
-                              setFilterAnchorRect(null);
-                            }}
-                          />
-                        )}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center">
-                    <p className="text-sm font-medium text-slate-500">
-                      Belgeler yükleniyor...
-                    </p>
-                  </td>
-                </tr>
-              ) : loadError ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center">
-                    <p className="text-sm font-semibold text-red-700">
-                      Belgeler yüklenemedi
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
-                  </td>
-                </tr>
-              ) : isAuthorizationRequiredView ? (
-                visibleAuthorizationCompanies.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-4 py-8 text-center text-sm font-medium text-slate-500"
-                    >
-                      Yetkilendirme yapılacak firma bulunamadı.
-                    </td>
-                  </tr>
-                ) : (
-                  visibleAuthorizationCompanies.map((company) => (
-                    <tr
-                      key={company.id}
-                      className="transition-colors hover:bg-slate-50/80"
-                    >
-                      <td className="px-3 py-2 text-center text-xs font-semibold text-slate-700">
-                        {company.externalCompanyId}
-                      </td>
-
-                      <td className="max-w-xs px-3 py-2">
-                        <p
-                          title={company.name}
-                          className="truncate text-xs font-semibold text-slate-800"
-                        >
+              <ul className="divide-y divide-slate-100">
+                {visibleAuthorizationCompanies.map((company) => (
+                  <li key={company.id} className="px-3 py-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">
                           {company.name}
                         </p>
-                      </td>
+                        <p className="mt-0.5 text-[10px] text-slate-500">
+                          Firma ID: {company.externalCompanyId} • VKN:{" "}
+                          {company.taxNumber || "-"}
+                        </p>
+                      </div>
+                      <AuthorizationStatusBadge
+                        status={company.authorizationStatus}
+                      />
+                    </div>
 
-                      <td className="px-3 py-2 text-center text-xs text-slate-600">
-                        {company.taxNumber || "-"}
-                      </td>
-
-                      <td className="px-3 py-2 text-center">
-                        <p
-                          title={company.consultant ?? undefined}
-                          className="truncate text-xs font-semibold text-slate-700"
-                        >
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          Uzman
+                        </p>
+                        <p className="mt-0.5 truncate font-medium text-slate-700">
                           {company.consultant ?? "-"}
                         </p>
-                      </td>
-
-                      <td className="px-3 py-2 text-center text-xs font-medium text-slate-600">
-                        {formatDate(company.authorizationEndDate)}
-                      </td>
-
-                      <td className="px-3 py-2 text-center">
-                        <AuthorizationStatusBadge
-                          status={company.authorizationStatus}
-                        />
-                      </td>
-
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            router.push(
-                              `/companies?firmaSekme=${company.id}&firma=${company.id}&detay=1`,
-                            )
-                          }
-                          className="inline-flex whitespace-nowrap items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-red-600 hover:text-white"
-                        >
-                          Firma Detayı
-                          <ChevronRight size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )
-              ) : paginatedVisibleDocuments.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center">
-                    {(companyId || variant === "company") &&
-                    documents.length === 0 &&
-                    !isAuthorizationLoading &&
-                    !authorizationIsValid ? (
-                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left">
-                        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-                          <div className="flex min-w-0 flex-1 items-start gap-2.5">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
-                              <ShieldAlert size={21} strokeWidth={1.8} />
-                            </div>
-
-                            <div className="min-w-0">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
-                                Yetkilendirme gerekli
-                              </span>
-
-                              <h3 className="mt-1 text-base font-bold text-slate-900">
-                                Yetki süreniz dolmuştur.
-                              </h3>
-
-                              <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                                Firmanın belge bilgilerinin görüntülenebilmesi
-                                için yeniden yetkilendirme yapılmalıdır.
-                              </p>
-                            </div>
-                          </div>
-
-                          {variant === "company" && (
-                            <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
-                              <p className="text-xs font-medium leading-5 text-slate-600">
-                                Yetkilendirme işlemi için lütfen uzmanınız ile
-                                iletişime geçiniz.
-                              </p>
-                            </div>
-                          )}
-                        </div>
                       </div>
-                    ) : (
-                      <p className="text-sm font-medium text-slate-500">
-                        {documents.length > 0
-                          ? "Seçilen kritere uygun belge bulunamadı."
-                          : "Belge bulunamadı."}
-                      </p>
-                    )}
-                  </td>
-                </tr>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          Yetki Bitiş
+                        </p>
+                        <p className="mt-0.5 font-medium text-slate-700">
+                          {formatDate(company.authorizationEndDate)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(
+                            `/companies?firmaSekme=${company.id}&firma=${company.id}&detay=1`,
+                          )
+                        }
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-red-600 hover:text-white"
+                      >
+                        Firma Detayı
+                        <ChevronRight size={12} />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : paginatedVisibleDocuments.length === 0 ? (
+            <div className="px-3 py-6 text-center">
+              {showAuthWarning ? (
+                <AuthorizationWarning variant={variant} />
               ) : (
-                paginatedVisibleDocuments.map((doc) => {
-                  const isClosedOrCancelled =
-                    doc.documentStatus === "CLOSED" ||
-                    doc.documentStatus === "CANCELLED";
+                <p className="text-sm font-medium text-slate-500">
+                  {documents.length > 0
+                    ? "Seçilen kritere uygun belge bulunamadı."
+                    : "Belge bulunamadı."}
+                </p>
+              )}
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {paginatedVisibleDocuments.map((doc) => {
+                const isClosedOrCancelled =
+                  doc.documentStatus === "CLOSED" ||
+                  doc.documentStatus === "CANCELLED";
 
-                  const documentAuthorizationIsValid = hasValidAuthorization(
-                    doc.company?.authorizationEndDate ?? null,
-                  );
+                const documentAuthorizationIsValid = hasValidAuthorization(
+                  doc.company?.authorizationEndDate ?? null,
+                );
 
-                  // Firma detay sayfasında (companyId varken) yetkilendirme
-                  // bilgisi ayrı bir istekle geldiği için isAuthorizationLoading
-                  // ile flicker önleniyor. Genel listede (companyId yokken) her
-                  // belge zaten kendi firmasının authorizationEndDate bilgisiyle
-                  // geldiği için doğrudan o değer kullanılıyor.
-                  const authorizationExpired =
-                    !isClosedOrCancelled &&
-                    (companyId
-                      ? !isAuthorizationLoading && !documentAuthorizationIsValid
-                      : !documentAuthorizationIsValid);
-                  const displayedStatus = authorizationExpired
-                    ? "AUTHORIZATION_EXPIRED"
-                    : getDisplayStatus(doc);
+                const authorizationExpired =
+                  !isClosedOrCancelled &&
+                  (companyId
+                    ? !isAuthorizationLoading && !documentAuthorizationIsValid
+                    : !documentAuthorizationIsValid);
 
-                  const documentKey = `${
-                    doc.status === "INACTIVE" ? "closed" : "open"
-                  }-${doc.id}`;
+                const displayedStatus = authorizationExpired
+                  ? "AUTHORIZATION_EXPIRED"
+                  : getDisplayStatus(doc);
 
-                  const isSelected = activeDocumentKey === documentKey;
+                const documentKey = `${
+                  doc.status === "INACTIVE" ? "closed" : "open"
+                }-${doc.id}`;
 
-                  return (
-                    <tr
-                      key={documentKey}
-                      className={`transition-colors ${
-                        isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
-                      }`}
+                const isSelected = activeDocumentKey === documentKey;
+
+                return (
+                  <li
+                    key={documentKey}
+                    className={isSelected ? "bg-red-50/40" : ""}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenDocument(
+                          String(doc.id),
+                          doc.documentNumber,
+                          doc.documentStatus ?? "OPEN",
+                        )
+                      }
+                      className="w-full px-3 py-3 text-left transition active:bg-slate-50"
                     >
-                      <td className="px-3 py-1.5">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
                           <div
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
                                 ? "border-red-600 bg-red-600 text-white"
                                 : "border-slate-200 bg-slate-50 text-slate-600"
                             }`}
                           >
-                            <FileText size={16} />
+                            <FileText size={15} />
                           </div>
-
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">
                               {doc.documentNumber ?? "-"}
                             </p>
-
-                            <p className="font-mono text-[11px] text-slate-400">
+                            <p className="font-mono text-[10px] text-slate-400">
                               ID: {doc.externalDocumentId}
                             </p>
                           </div>
                         </div>
-                      </td>
-                      {/* Firma */}
-                      <td className="max-w-xs px-3 py-1.5">
-                        <p
-                          title={
-                            doc.company?.name ?? "Firma bilgisi bulunamadı"
-                          }
-                          className="truncate text-xs font-semibold text-slate-800"
-                        >
-                          {doc.company?.name ?? "Firma bilgisi bulunamadı"}
-                        </p>
 
-                        <p className="mt-1 text-[11px] text-slate-400 text-left">
-                          VKN: {doc.company?.taxNumber ?? "-"}
-                        </p>
-                      </td>
-
-                      {/* Uzman */}
-                      <td className="px-3 py-1.5 text-center">
-                        <p
-                          title={doc.company?.consultant ?? undefined}
-                          className="truncate text-xs font-semibold text-slate-700"
-                        >
-                          {doc.company?.consultant ?? "-"}
-                        </p>
-                      </td>
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.documentStartDate)}
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.documentEndDate)}
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.extensionDate)}
-                      </td>
-
-                      {/* Yetki Bitiş */}
-                      <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
-                        {formatDate(doc.company?.authorizationEndDate ?? null)}
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center">
-                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-                          {doc.supportClass ?? "-"}
-                        </span>
-                      </td>
-
-                      <td className="px-3 py-1.5 text-center">
-                        {isClosedOrCancelled ? (
-                          <StatusBadge status={getDisplayStatus(doc)} />
-                        ) : authorizationExpired ? (
-                          <StatusBadge status="AUTHORIZATION_EXPIRED" />
-                        ) : isClosureEligibleView ||
-                          companyClosureEligibleIds.has(doc.id) ? (
-                          <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-bold text-red-700">
+                        {isClosureEligibleView ||
+                        companyClosureEligibleIds.has(doc.id) ? (
+                          <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                            Kapatma Yapılacak
+                            Kapatma
                           </span>
                         ) : isExtensionEligibleView ||
                           companyExtensionEligibleIds.has(doc.id) ? (
-                          <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+                          <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                            Uzatma Yapılabilir
+                            Uzatma
                           </span>
                         ) : (
-                          <StatusBadge status={getDisplayStatus(doc)} />
+                          <StatusBadge status={displayedStatus} />
                         )}
-                      </td>
+                      </div>
 
-                      <td className="px-3 py-1.5 text-center">
-                        <div className="flex items-center justify-center px-1">
+                      {!companyId && doc.company && (
+                        <div className="mt-2 rounded-lg bg-slate-50/70 px-2 py-1.5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Firma
+                          </p>
+                          <p className="truncate text-xs font-semibold text-slate-800">
+                            {doc.company.name}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-slate-500">
+                            VKN: {doc.company.taxNumber ?? "-"}
+                            {doc.company.consultant && (
+                              <>
+                                {" • "}
+                                Uzman:{" "}
+                                <span className="font-semibold text-slate-700">
+                                  {doc.company.consultant}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Başlangıç
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentStartDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Bitiş
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentEndDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Süre Uzatım
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.extensionDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Yetki Bitiş
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(
+                              doc.company?.authorizationEndDate ?? null,
+                            )}
+                          </p>
+                        </div>
+                        {doc.supportClass && (
+                          <div className="col-span-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Destek Sınıfı
+                            </p>
+                            <p className="truncate font-medium text-slate-700">
+                              {doc.supportClass}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-2.5 flex justify-end">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
+                            isSelected
+                              ? "bg-red-600 text-white"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {isSelected ? (
+                            "Görüntüleniyor"
+                          ) : (
+                            <>
+                              Görüntüle
+                              <ChevronRight size={12} />
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
+        <div className="hidden md:block">
+          <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
+            <table
+              className={`w-full table-fixed text-left text-sm ${
+                isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1150px]"
+              }`}
+            >
+              {isAuthorizationRequiredView ? (
+                <colgroup>
+                  <col className="w-[13%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[15%]" />
+                </colgroup>
+              ) : (
+                <colgroup>
+                  <col className="w-[9%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[8%]" />
+                </colgroup>
+              )}
+
+              <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
+                <tr>
+                  {(isAuthorizationRequiredView
+                    ? authHeadings
+                    : documentHeadings
+                  ).map((heading) => {
+                    const filterType = !isAuthorizationRequiredView
+                      ? (
+                          heading as {
+                            filterType?:
+                              | "consultant"
+                              | "supportClass"
+                              | "status";
+                          }
+                        ).filterType
+                      : undefined;
+
+                    const activeFilterCount = filterType
+                      ? activeFilterCountByColumn[filterType]
+                      : 0;
+
+                    return (
+                      <th
+                        key={heading.label}
+                        className="relative px-3 py-1.5 text-center"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {heading.key ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                isAuthorizationRequiredView
+                                  ? handleAuthSort(heading.key as AuthSortKey)
+                                  : handleDocumentSort(
+                                      heading.key as DocumentSortKey,
+                                    )
+                              }
+                              className="inline-flex items-center gap-1 uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-800"
+                            >
+                              {heading.label}
+                              <SortIcon
+                                direction={
+                                  isAuthorizationRequiredView
+                                    ? authSortConfig?.key === heading.key
+                                      ? authSortConfig.direction
+                                      : undefined
+                                    : documentSortConfig?.key === heading.key
+                                      ? documentSortConfig.direction
+                                      : undefined
+                                }
+                              />
+                            </button>
+                          ) : (
+                            heading.label
+                          )}
+
+                          {filterType && (
+                            <button
+                              type="button"
+                              data-column-filter-button
+                              onClick={(event) => {
+                                const rect =
+                                  event.currentTarget.getBoundingClientRect();
+
+                                setOpenFilterColumn((current) => {
+                                  if (current === filterType) {
+                                    setFilterAnchorRect(null);
+                                    return null;
+                                  }
+
+                                  setFilterAnchorRect(rect);
+                                  return filterType;
+                                });
+                              }}
+                              className={`relative rounded p-0.5 transition-colors ${
+                                activeFilterCount > 0
+                                  ? "text-red-600"
+                                  : "text-slate-400 hover:text-slate-700"
+                              }`}
+                              title="Filtrele"
+                            >
+                              <Filter size={12} />
+                              {activeFilterCount > 0 && (
+                                <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white">
+                                  {activeFilterCount}
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </span>
+
+                        {filterType === "consultant" &&
+                          openFilterColumn === "consultant" && (
+                            <ColumnFilterDropdown
+                              title="Uzman"
+                              options={consultantOptions}
+                              selected={consultantFilter}
+                              onToggle={(value) =>
+                                toggleFilterValue(setConsultantFilter, value)
+                              }
+                              onClear={() => setConsultantFilter(new Set())}
+                              onClose={() => {
+                                setOpenFilterColumn(null);
+                                setFilterAnchorRect(null);
+                              }}
+                              anchorRect={filterAnchorRect}
+                            />
+                          )}
+
+                        {filterType === "supportClass" &&
+                          openFilterColumn === "supportClass" && (
+                            <ColumnFilterDropdown
+                              title="Destekleme Sınıfı"
+                              anchorRect={filterAnchorRect}
+                              options={supportClassOptions}
+                              selected={supportClassFilter}
+                              onToggle={(value) =>
+                                toggleFilterValue(setSupportClassFilter, value)
+                              }
+                              onClear={() => setSupportClassFilter(new Set())}
+                              onClose={() => {
+                                setOpenFilterColumn(null);
+                                setFilterAnchorRect(null);
+                              }}
+                            />
+                          )}
+
+                        {filterType === "status" &&
+                          openFilterColumn === "status" && (
+                            <ColumnFilterDropdown
+                              title="Durum"
+                              anchorRect={filterAnchorRect}
+                              options={statusOptions}
+                              selected={statusFilter}
+                              onToggle={(value) =>
+                                toggleFilterValue(setStatusFilter, value)
+                              }
+                              onClear={() => setStatusFilter(new Set())}
+                              onClose={() => {
+                                setOpenFilterColumn(null);
+                                setFilterAnchorRect(null);
+                              }}
+                            />
+                          )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-8 text-center">
+                      <p className="text-sm font-medium text-slate-500">
+                        Belgeler yükleniyor...
+                      </p>
+                    </td>
+                  </tr>
+                ) : loadError ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-8 text-center">
+                      <p className="text-sm font-semibold text-red-700">
+                        Belgeler yüklenemedi
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                    </td>
+                  </tr>
+                ) : isAuthorizationRequiredView ? (
+                  visibleAuthorizationCompanies.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-4 py-8 text-center text-sm font-medium text-slate-500"
+                      >
+                        Yetkilendirme yapılacak firma bulunamadı.
+                      </td>
+                    </tr>
+                  ) : (
+                    visibleAuthorizationCompanies.map((company) => (
+                      <tr
+                        key={company.id}
+                        className="transition-colors hover:bg-slate-50/80"
+                      >
+                        <td className="px-3 py-2 text-center text-xs font-semibold text-slate-700">
+                          {company.externalCompanyId}
+                        </td>
+                        <td className="max-w-xs px-3 py-2">
+                          <p
+                            title={company.name}
+                            className="truncate text-xs font-semibold text-slate-800"
+                          >
+                            {company.name}
+                          </p>
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs text-slate-600">
+                          {company.taxNumber || "-"}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <p
+                            title={company.consultant ?? undefined}
+                            className="truncate text-xs font-semibold text-slate-700"
+                          >
+                            {company.consultant ?? "-"}
+                          </p>
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs font-medium text-slate-600">
+                          {formatDate(company.authorizationEndDate)}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <AuthorizationStatusBadge
+                            status={company.authorizationStatus}
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-center">
                           <button
                             type="button"
                             onClick={() =>
-                              handleOpenDocument(
-                                String(doc.id),
-                                doc.documentNumber,
-                                doc.documentStatus ?? "OPEN",
+                              router.push(
+                                `/companies?firmaSekme=${company.id}&firma=${company.id}&detay=1`,
                               )
                             }
-                            className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                              isSelected
-                                ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            }`}
+                            className="inline-flex whitespace-nowrap items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-red-600 hover:text-white"
                           >
-                            {isSelected ? (
-                              "Görüntüleniyor"
-                            ) : (
-                              <>
-                                Görüntüle
-                                <ChevronRight size={14} />
-                              </>
-                            )}
+                            Firma Detayı
+                            <ChevronRight size={14} />
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        </td>
+                      </tr>
+                    ))
+                  )
+                ) : paginatedVisibleDocuments.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-8 text-center">
+                      {showAuthWarning ? (
+                        <AuthorizationWarning variant={variant} />
+                      ) : (
+                        <p className="text-sm font-medium text-slate-500">
+                          {documents.length > 0
+                            ? "Seçilen kritere uygun belge bulunamadı."
+                            : "Belge bulunamadı."}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedVisibleDocuments.map((doc) => {
+                    const isClosedOrCancelled =
+                      doc.documentStatus === "CLOSED" ||
+                      doc.documentStatus === "CANCELLED";
+
+                    const documentAuthorizationIsValid = hasValidAuthorization(
+                      doc.company?.authorizationEndDate ?? null,
+                    );
+
+                    const authorizationExpired =
+                      !isClosedOrCancelled &&
+                      (companyId
+                        ? !isAuthorizationLoading &&
+                          !documentAuthorizationIsValid
+                        : !documentAuthorizationIsValid);
+
+                    const displayedStatus = authorizationExpired
+                      ? "AUTHORIZATION_EXPIRED"
+                      : getDisplayStatus(doc);
+
+                    const documentKey = `${
+                      doc.status === "INACTIVE" ? "closed" : "open"
+                    }-${doc.id}`;
+
+                    const isSelected = activeDocumentKey === documentKey;
+
+                    return (
+                      <tr
+                        key={documentKey}
+                        className={`transition-colors ${
+                          isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                        }`}
+                      >
+                        <td className="px-3 py-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                                isSelected
+                                  ? "border-red-600 bg-red-600 text-white"
+                                  : "border-slate-200 bg-slate-50 text-slate-600"
+                              }`}
+                            >
+                              <FileText size={16} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-900">
+                                {doc.documentNumber ?? "-"}
+                              </p>
+                              <p className="font-mono text-[11px] text-slate-400">
+                                ID: {doc.externalDocumentId}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="max-w-xs px-3 py-1.5">
+                          <p
+                            title={
+                              doc.company?.name ?? "Firma bilgisi bulunamadı"
+                            }
+                            className="truncate text-xs font-semibold text-slate-800"
+                          >
+                            {doc.company?.name ?? "Firma bilgisi bulunamadı"}
+                          </p>
+                          <p className="mt-1 text-left text-[11px] text-slate-400">
+                            VKN: {doc.company?.taxNumber ?? "-"}
+                          </p>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <p
+                            title={doc.company?.consultant ?? undefined}
+                            className="truncate text-xs font-semibold text-slate-700"
+                          >
+                            {doc.company?.consultant ?? "-"}
+                          </p>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(doc.documentStartDate)}
+                        </td>
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(doc.documentEndDate)}
+                        </td>
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(doc.extensionDate)}
+                        </td>
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                          {formatDate(
+                            doc.company?.authorizationEndDate ?? null,
+                          )}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                            {doc.supportClass ?? "-"}
+                          </span>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          {isClosureEligibleView ||
+                          companyClosureEligibleIds.has(doc.id) ? (
+                            <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-bold text-red-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                              Kapatma Yapılacak
+                            </span>
+                          ) : isExtensionEligibleView ||
+                            companyExtensionEligibleIds.has(doc.id) ? (
+                            <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                              Uzatma Yapılabilir
+                            </span>
+                          ) : (
+                            <StatusBadge status={displayedStatus} />
+                          )}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center">
+                          <div className="flex items-center justify-center px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenDocument(
+                                  String(doc.id),
+                                  doc.documentNumber,
+                                  doc.documentStatus ?? "OPEN",
+                                )
+                              }
+                              className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              {isSelected ? (
+                                "Görüntüleniyor"
+                              ) : (
+                                <>
+                                  Görüntüle
+                                  <ChevronRight size={14} />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="flex flex-col gap-2 border-t border-slate-200 px-3 py-2 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between">
+
+        {/* SAYFALAMA */}
+        <div
+          className={`flex flex-col gap-2 border-t border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "bg-slate-50/30 sm:p-4" : "sm:px-3 sm:py-2"
+          }`}
+        >
           <p className="text-xs font-medium text-slate-500">
             Sayfa {currentPage} / {displayedTotalPages}
           </p>
 
-          <div className="flex w-full gap-1.5 min-[380px]:w-auto">
+          <div className="flex w-full gap-1.5 sm:w-auto">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Önceki
             </button>
-
             <button
               type="button"
               disabled={currentPage >= displayedTotalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Sonraki
             </button>
@@ -2237,12 +2445,12 @@ export function DocumentsScreen({
         </div>
       </section>
 
+      {/* AÇIK BELGE SEKMELERİ + DETAY */}
       {openDocuments.length > 0 && (
         <section
           ref={documentTabsRef}
           className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
-          {/* BELGE TABLARI */}
           <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-2.5 pt-1.5">
             {openDocuments.map((document) => {
               const isActive = activeDocumentKey === document.key;
@@ -2267,7 +2475,6 @@ export function DocumentsScreen({
                   >
                     {label}
                   </button>
-
                   <button
                     type="button"
                     onClick={() => handleCloseDocument(document.key)}
@@ -2280,14 +2487,6 @@ export function DocumentsScreen({
             })}
           </div>
 
-          {/*
-            SEÇİLİ BELGENİN DETAYI
-            Açık tüm tab'lar burada aynı anda mount edilir; sadece aktif olan
-            görünür, diğerleri CSS ile gizlenir. Böylece tab değiştirirken
-            DocumentDetailScreen yeniden mount olup veriyi baştan çekmiyor
-            (tekrar "yükleniyor" durumuna düşüp içeriğin anlık kaybolması /
-            geri gelmesi - flicker - önlenmiş oluyor).
-          */}
           <div className="min-w-0 p-2 sm:p-3">
             {openDocuments.map((document) => (
               <div
@@ -2348,8 +2547,9 @@ function OperationStat({
         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
           {label}
         </p>
-
-        <p className={`mt-0.5 truncate text-lg font-extrabold ${valueClass}`}>
+        <p
+          className={`mt-0.5 truncate text-base font-extrabold sm:text-lg ${valueClass}`}
+        >
           {value}
         </p>
       </div>
@@ -2383,6 +2583,41 @@ function AuthorizationStatusBadge({ status }: { status: AuthorizationStatus }) {
     </span>
   );
 }
+
+function AuthorizationWarning({ variant }: { variant: "admin" | "company" }) {
+  return (
+    <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left">
+      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
+        <div className="flex min-w-0 flex-1 items-start gap-2.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 sm:h-11 sm:w-11">
+            <ShieldAlert size={21} strokeWidth={1.8} />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+              Yetkilendirme gerekli
+            </span>
+            <h3 className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+              Yetki süreniz dolmuştur.
+            </h3>
+            <p className="mt-1.5 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+              Firmanın belge bilgilerinin görüntülenebilmesi için yeniden
+              yetkilendirme yapılmalıdır.
+            </p>
+          </div>
+        </div>
+
+        {variant === "company" && (
+          <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
+            <p className="text-xs font-medium leading-5 text-slate-600">
+              Yetkilendirme işlemi için lütfen uzmanınız ile iletişime geçiniz.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   const config: Record<
     string,
@@ -2401,7 +2636,6 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-emerald-50",
       border: "border-emerald-200/60",
     },
-
     EXPIRED: {
       label: "Kapatma Yapılacak",
       dot: "bg-red-500",
@@ -2417,7 +2651,6 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-blue-50",
       border: "border-blue-200",
     },
-
     CANCELLED: {
       label: "İptal",
       dot: "bg-red-500",
@@ -2451,7 +2684,7 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-bold ${c.bg} ${c.text} ${c.border}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}
