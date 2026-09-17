@@ -336,8 +336,8 @@ export function DocumentDetailScreen({
     return (
       <div className="space-y-3">
         {/* ADMIN BELGE DETAY SEKMELERİ */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex w-full items-stretch">
+        <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex w-full items-stretch overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
             {[
               "Belge Künye Bilgileri",
               "Yatırım Cinsi",
@@ -351,7 +351,7 @@ export function DocumentDetailScreen({
               <button
                 key={item}
                 type="button"
-                className={`flex-1 whitespace-nowrap border-r border-slate-200 px-2 py-2.5 text-[11px] font-semibold transition last:border-r-0 ${
+                className={`shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2.5 text-[11px] font-semibold transition last:border-r-0 sm:flex-1 sm:px-2 ${
                   index === 0
                     ? "bg-red-50 text-red-700"
                     : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -361,6 +361,11 @@ export function DocumentDetailScreen({
               </button>
             ))}
           </div>
+          {/* Sağ tarafta "daha var" gölgesi — mobilde kullanıcıya kaydırılabilir olduğunu belli eder */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden"
+          />
         </div>
         {/* ÜST ŞERİT */}
         <section className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
