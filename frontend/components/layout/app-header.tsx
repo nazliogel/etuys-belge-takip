@@ -61,6 +61,43 @@ export function AppHeader({
 
   const isCompany = role === "COMPANY";
 
+  // Uzman bilgi kartı — mobil drawer'ın en üstünde gösterilir
+  const consultantMobileCard =
+    isCompany && consultantName ? (
+      <div className="border-b border-slate-200 bg-slate-50/70 px-4 py-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          Uzmanınız
+        </p>
+        <p className="mt-1 text-sm font-bold text-slate-800">
+          {consultantName}
+        </p>
+
+        <div className="mt-2 flex flex-col gap-1.5">
+          {consultantPhone ? (
+            <a
+              href={`https://wa.me/${normalizeWhatsappPhone(consultantPhone)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-green-600"
+            >
+              <Phone className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{consultantPhone}</span>
+            </a>
+          ) : null}
+
+          {consultantEmail ? (
+            <a
+              href={`mailto:${consultantEmail}`}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-blue-700"
+            >
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{consultantEmail}</span>
+            </a>
+          ) : null}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
       <div className="flex min-w-0 flex-1 items-center gap-4">
@@ -78,10 +115,13 @@ export function AppHeader({
             <Menu className="h-5 w-5" />
           </SheetTrigger>
 
-          <SheetContent side="left" className="w-[230px] p-0">
+          <SheetContent side="left" className="w-[260px] p-0">
             <SheetHeader className="sr-only">
               <SheetTitle>Ana menü</SheetTitle>
             </SheetHeader>
+
+            {/* Mobilde hamburger menü açıldığında uzman bilgileri en üstte */}
+            {consultantMobileCard}
 
             <AppSidebar />
           </SheetContent>
@@ -99,7 +139,7 @@ export function AppHeader({
           </div>
         )}
 
-        {isCompany && consultantName && (
+        {isCompany && consultantName ? (
           <div className="hidden min-w-0 items-center gap-4 md:flex">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
@@ -111,7 +151,7 @@ export function AppHeader({
               </p>
             </div>
 
-            {consultantPhone && (
+            {consultantPhone ? (
               <a
                 href={`https://wa.me/${normalizeWhatsappPhone(consultantPhone)}`}
                 target="_blank"
@@ -121,9 +161,9 @@ export function AppHeader({
                 <Phone className="h-4 w-4" />
                 {consultantPhone}
               </a>
-            )}
+            ) : null}
 
-            {consultantEmail && (
+            {consultantEmail ? (
               <a
                 href={`mailto:${consultantEmail}`}
                 className="flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-blue-700"
@@ -131,9 +171,9 @@ export function AppHeader({
                 <Mail className="h-4 w-4" />
                 {consultantEmail}
               </a>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="flex items-center gap-3">
