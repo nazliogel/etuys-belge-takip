@@ -25,6 +25,20 @@ interface NotificationCountResponse {
   };
 }
 
+function normalizeWhatsappPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+
+  if (digits.startsWith("90")) {
+    return digits;
+  }
+
+  if (digits.startsWith("0")) {
+    return `90${digits.slice(1)}`;
+  }
+
+  return `90${digits}`;
+}
+
 export function AppHeader({
   userName,
   role,
@@ -281,6 +295,77 @@ export function AppHeader({
           </div>
         </div>
       </header>
+
+      {/* ============================================================
+          MOBİL: Uzman + Genel İletişim bandı
+          Sadece firma kullanıcısında ve lg altında görünür.
+          Header'ın hemen altında sticky durur.
+          ============================================================ */}
+      {showConsultantInfo && (
+        <div className="sticky top-16 z-20 border-b border-blue-900 bg-blue-800 px-3 pb-2 pt-1.5 text-blue-100 lg:hidden">
+          {/* Uzman bilgisi + hızlı ikonlar */}
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-blue-200">
+                Uzmanınız
+              </p>
+              <p className="truncate text-xs font-bold text-white">
+                {displayedConsultantName}
+              </p>
+            </div>
+
+            {displayedConsultantPhone ? (
+              <a
+                href={`https://wa.me/${normalizeWhatsappPhone(displayedConsultantPhone)}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="WhatsApp ile ara"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-500/20 text-green-300 transition active:scale-95"
+              >
+                <FaWhatsapp size={16} />
+              </a>
+            ) : null}
+
+            {displayedConsultantEmail ? (
+              <a
+                href={`mailto:${displayedConsultantEmail}`}
+                aria-label="Uzmana e-posta gönder"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/20 text-blue-100 transition active:scale-95"
+              >
+                <Mail size={16} />
+              </a>
+            ) : null}
+          </div>
+
+          {/* Genel İletişim satırı */}
+          <div className="mt-2 flex items-center gap-2 border-t border-blue-700/50 pt-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-blue-200">
+                Genel İletişim
+              </p>
+              <p className="truncate text-[11px] font-medium text-blue-100">
+                yatirimtesvik@akkasgroup.com
+              </p>
+            </div>
+
+            <a
+              href="tel:+902164506007"
+              aria-label="Genel iletişim numarasını ara"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/20 text-white transition active:scale-95"
+            >
+              <Phone size={16} />
+            </a>
+
+            <a
+              href="mailto:yatirimtesvik@akkasgroup.com"
+              aria-label="Genel iletişim adresine mail gönder"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/20 text-blue-100 transition active:scale-95"
+            >
+              <Mail size={16} />
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* MOBİL DRAWER — sidebar'ın açılıp kapanan hali */}
       {mobileMenuOpen && (
