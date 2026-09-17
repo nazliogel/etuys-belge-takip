@@ -42,9 +42,14 @@ type UnreadSupportRequestCountResponse = {
 interface AppSidebarProps {
   role: UserRole;
   userName?: string;
+  variant?: "desktop" | "mobile";
 }
 
-export function AppSidebar({ role, userName }: AppSidebarProps) {
+export function AppSidebar({
+  role,
+  userName,
+  variant = "desktop",
+}: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -260,8 +265,13 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     pathname.startsWith("/support-requests/");
 
   return (
-    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100">
-      {/* LOGO */}
+    <aside
+      className={
+        variant === "mobile"
+          ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100"
+          : "sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 lg:flex"
+      }
+    >
       <div className="mx-2 mt-8 flex items-center justify-center rounded-2xl bg-white px-4 py-6 shadow-sm">
         <div className="relative h-18 w-52 shrink-0">
           <Image

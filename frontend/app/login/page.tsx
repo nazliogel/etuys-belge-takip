@@ -73,13 +73,13 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-8 text-sm font-medium tracking-wide text-slate-400">
-            Yatırım Teşvik Belge Sistemi
+            Yatırım Teşvik Yönetim Sistemi
           </p>
         </div>
 
         {/* Alt Telif */}
         <div className="absolute bottom-8 text-center text-xs text-slate-500 font-medium">
-          © {new Date().getFullYear()} E-TUYS Takip
+          © {new Date().getFullYear()} AKKAŞ TEKNOLOJİ
         </div>
       </section>
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
               Oturum Açın
             </h1>
             <p className="mt-1.5 text-sm text-slate-500">
-              E-TUYS yönetim paneline erişmek için bilgilerinizi girin.
+              Yatırım teşvik yönetim paneline erişmek için bilgilerinizi girin.
             </p>
           </div>
 
@@ -138,12 +138,6 @@ export default function LoginPage() {
                 <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Şifre
                 </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-semibold text-red-600 transition hover:text-red-700 hover:underline"
-                >
-                  Şifremi unuttum
-                </Link>
               </div>
               <div className="relative flex items-center">
                 <LockKeyhole

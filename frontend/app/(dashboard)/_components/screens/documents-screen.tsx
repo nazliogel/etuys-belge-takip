@@ -364,10 +364,6 @@ export function DocumentsScreen({
               documentStatus: document.status,
             }));
 
-          /*
-           * Aynı belge hem açık listede hem kapalı listede bulunuyorsa
-           * kapalı/iptal kaydı esas alınır.
-           */
           const documentsByExternalId = new Map<number, ApiDocument>();
 
           openDocuments.forEach((document) => {
@@ -483,34 +479,20 @@ export function DocumentsScreen({
             (document) => ({
               ...document,
               isActive: false,
-
-              // Liste filtresi için kullanılacak hesaplanan durum
               status: "INACTIVE",
-
-              // Excel/veritabanından gelen gerçek belge durumu
               documentStatus: document.status,
             }),
           );
 
-          /*
-           * Yalnızca alttaki tablo kapalı belgelerle değiştirilir.
-           */
           setDocuments(mappedDocuments);
           setTotalPages(Math.max(1, Math.ceil(totalCount / limit)));
           setAuthorizationEndDate(null);
 
-          /*
-           * Üst kartlarda genel belge sayıları korunur.
-           */
           setSummary(summaryResponse.data.summary);
           setClosedDocumentCount(totalCount);
           setExtensionEligibleCount(extensionResponse.data.totalCount);
           return;
         }
-        /*
-         * Aktif, süresi yaklaşan ve süresi dolmuş belgeler
-         * normal documents endpointinden geliyor.
-         */
         if (status) {
           params.set("status", status);
         }
@@ -633,23 +615,29 @@ export function DocumentsScreen({
           return companyExtensionEligibleIds.has(document.id);
         }
 
-        // Diğer durum kartlarının filtresi
         return companyStatusFilter
           ? document.status === companyStatusFilter
           : true;
       })
     : documents;
 
+  // Ortak durum kontrolleri — hem mobil kart hem masaüstü tablo için kullanılır
+  const showAuthWarning =
+    (companyId || variant === "company") &&
+    documents.length === 0 &&
+    !isAuthorizationLoading &&
+    !authorizationIsValid;
+
   return (
     <div className="min-w-0 space-y-3">
       {/* BAŞLIK */}
       <section className="flex flex-col gap-1.5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 items-start gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <FileText size={17} />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
               Belgelerim
             </h1>
@@ -665,7 +653,7 @@ export function DocumentsScreen({
       {/* OPERASYON ÖZETİ */}
       {variant === "admin" && (
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="grid grid-cols-1 divide-y divide-slate-200 min-[380px]:grid-cols-2 min-[380px]:divide-x sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
+          <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
             <OperationStat
               label="Toplam Belge"
               value={String(
@@ -762,14 +750,14 @@ export function DocumentsScreen({
 
       {/* BELGE LİSTESİ */}
       <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
+        {/* Başlık + arama */}
         <div
-          className={`flex flex-col border-b border-slate-100 bg-slate-50/40 sm:flex-row sm:items-center sm:justify-between ${
-            isCompanyView ? "gap-3 p-3 sm:p-5" : "gap-2 p-2.5"
+          className={`flex flex-col gap-2 border-b border-slate-100 bg-slate-50/40 p-3 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "sm:p-5" : "sm:gap-2 sm:p-2.5"
           }`}
         >
-          <div>
+          <div className="min-w-0">
             <h2 className="text-sm font-bold text-slate-900">Belge Listesi</h2>
-
             <p className="text-xs font-medium text-slate-500">
               Belge numarası, tarih ve durum bilgileri
             </p>
@@ -784,331 +772,462 @@ export function DocumentsScreen({
               size={17}
               className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
-
             <input
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Belge numarası ile ara..."
-              className={`w-full rounded-xl border border-slate-200 bg-white text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 ${
-                isCompanyView ? "py-2 pl-10 pr-3" : "py-1 pl-8 pr-2.5"
-              }`}
+              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-base text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:py-1.5 sm:pl-8 sm:pr-2.5 sm:text-xs"
             />
           </div>
         </div>
 
-        <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
-          <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
-            <colgroup>
-              <col className="w-[9%]" />
-              <col className="w-[18%]" />
-              <col className="w-[12%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
-              <col className="w-[10%]" />
-            </colgroup>
-            <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
-              <tr>
-                {[
-                  "Belge No",
-                  "Firma",
-                  "Uzman",
-                  "Belge Başlangıç",
-                  "Belge Bitiş",
-                  "Süre Uzatım",
-                  "Destekleme Sınıfı",
-                  "Durum",
-                  "Detay",
-                ].map((heading) => (
-                  <th
-                    key={heading}
-                    className={`text-center ${
-                      isCompanyView ? "px-6 py-3.5" : "px-3 py-1.5"
-                    }`}
-                  >
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className={`px-4 text-center ${
-                      isCompanyView ? "py-12" : "py-8"
-                    }`}
-                  >
-                    <p className="text-sm font-medium text-slate-500">
-                      Belgeler yükleniyor...
-                    </p>
-                  </td>
-                </tr>
-              ) : loadError ? (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className={`px-4 text-center ${
-                      isCompanyView ? "py-12" : "py-8"
-                    }`}
-                  >
-                    <p className="text-sm font-semibold text-red-700">
-                      Belgeler yüklenemedi
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
-                  </td>
-                </tr>
-              ) : visibleDocuments.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className={`px-4 text-center ${
-                      isCompanyView ? "py-12" : "py-8"
-                    }`}
-                  >
-                    {(companyId || variant === "company") &&
-                    documents.length === 0 &&
-                    !isAuthorizationLoading &&
-                    !authorizationIsValid ? (
-                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left">
-                        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-                          <div className="flex min-w-0 flex-1 items-start gap-2.5">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
-                              <ShieldAlert size={21} strokeWidth={1.8} />
-                            </div>
-
-                            <div className="min-w-0">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
-                                Yetkilendirme gerekli
-                              </span>
-
-                              <h3 className="mt-1 text-base font-bold text-slate-900">
-                                Yetki süreniz dolmuştur.
-                              </h3>
-
-                              <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                                Firmanın belge bilgilerinin görüntülenebilmesi
-                                için yeniden yetkilendirme yapılmalıdır.
-                              </p>
-                            </div>
-                          </div>
-
-                          {variant === "company" && (
-                            <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
-                              <p className="text-xs font-medium leading-5 text-slate-600">
-                                Yetkilendirme işlemi için lütfen uzmanınız ile
-                                iletişime geçiniz.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-medium text-slate-500">
-                        {documents.length > 0
-                          ? "Seçilen kritere uygun belge bulunamadı."
-                          : "Belge bulunamadı."}
-                      </p>
-                    )}
-                  </td>
-                </tr>
+        {/* MOBİL: KART GÖRÜNÜMÜ */}
+        <div className="md:hidden">
+          {isLoading ? (
+            <div className="px-4 py-10 text-center">
+              <p className="text-sm font-medium text-slate-500">
+                Belgeler yükleniyor...
+              </p>
+            </div>
+          ) : loadError ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-semibold text-red-700">
+                Belgeler yüklenemedi
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+            </div>
+          ) : visibleDocuments.length === 0 ? (
+            <div className="px-3 py-6 text-center">
+              {showAuthWarning ? (
+                <AuthorizationWarning variant={variant} />
               ) : (
-                visibleDocuments.map((doc) => {
-                  const documentKey = `${
-                    doc.status === "INACTIVE" ? "closed" : "open"
-                  }-${doc.id}`;
+                <p className="text-sm font-medium text-slate-500">
+                  {documents.length > 0
+                    ? "Seçilen kritere uygun belge bulunamadı."
+                    : "Belge bulunamadı."}
+                </p>
+              )}
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {visibleDocuments.map((doc) => {
+                const documentKey = `${
+                  doc.status === "INACTIVE" ? "closed" : "open"
+                }-${doc.id}`;
 
-                  const isSelected = activeDocumentKey === documentKey;
+                const isSelected = activeDocumentKey === documentKey;
 
-                  return (
-                    <tr
-                      key={documentKey}
-                      className={`transition-colors ${
-                        isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
-                      }`}
+                const statusForBadge = isExtensionEligibleView
+                  ? "ACTIVE"
+                  : doc.status === "INACTIVE"
+                    ? (doc.documentStatus ?? "INACTIVE")
+                    : doc.status;
+
+                return (
+                  <li
+                    key={documentKey}
+                    className={isSelected ? "bg-red-50/40" : ""}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenDocument(
+                          String(doc.id),
+                          doc.documentNumber,
+                          doc.documentStatus ?? "OPEN",
+                        )
+                      }
+                      className="w-full px-3 py-3 text-left transition active:bg-slate-50"
                     >
-                      <td
-                        className={isCompanyView ? "px-6 py-4" : "px-3 py-1.5"}
-                      >
-                        <div className="flex items-center gap-1.5">
+                      {/* Üst satır: belge no + durum */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
                           <div
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
                                 ? "border-red-600 bg-red-600 text-white"
                                 : "border-slate-200 bg-slate-50 text-slate-600"
                             }`}
                           >
-                            <FileText size={16} />
+                            <FileText size={15} />
                           </div>
-
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">
                               {doc.documentNumber ?? "-"}
                             </p>
-
-                            <p className="font-mono text-[11px] text-slate-400">
+                            <p className="font-mono text-[10px] text-slate-400">
                               ID: {doc.externalDocumentId}
                             </p>
                           </div>
                         </div>
-                      </td>
-                      {/* Firma */}
-                      <td
-                        className={`max-w-xs ${
-                          isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
-                        }`}
-                      >
-                        <p
-                          title={
-                            doc.company?.name ?? "Firma bilgisi bulunamadı"
-                          }
-                          className="truncate text-xs font-semibold text-slate-800"
-                        >
-                          {doc.company?.name ?? "Firma bilgisi bulunamadı"}
-                        </p>
+                        <StatusBadge status={statusForBadge} />
+                      </div>
 
-                        <p className="mt-1 text-[11px] text-slate-400 text-left">
-                          VKN: {doc.company?.taxNumber ?? "-"}
-                        </p>
-                      </td>
-
-                      {/* Uzman */}
-                      <td
-                        className={`${
-                          isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
-                        } text-center`}
-                      >
-                        <p
-                          title={doc.company?.consultant ?? undefined}
-                          className="truncate text-xs font-semibold text-slate-700"
-                        >
-                          {doc.company?.consultant ?? "-"}
-                        </p>
-                      </td>
-                      <td
-                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
-                      >
-                        {formatDate(doc.documentStartDate)}
-                      </td>
-
-                      <td
-                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
-                      >
-                        {formatDate(doc.documentEndDate)}
-                      </td>
-
-                      <td
-                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
-                      >
-                        {formatDate(doc.extensionDate)}
-                      </td>
-
-                      <td
-                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
-                      >
-                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-                          {doc.supportClass ?? "-"}
-                        </span>
-                      </td>
-
-                      <td
-                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
-                      >
-                        {isExtensionEligibleView ? (
-                          <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            Aktif
-                          </span>
-                        ) : (
-                          <StatusBadge
-                            status={
-                              doc.status === "INACTIVE"
-                                ? (doc.documentStatus ?? "INACTIVE")
-                                : doc.status
-                            }
-                          />
-                        )}
-                      </td>
-
-                      <td
-                        className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
-                      >
-                        <div className="flex items-center justify-center px-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleOpenDocument(
-                                String(doc.id),
-                                doc.documentNumber,
-                                doc.documentStatus ?? "OPEN",
-                              )
-                            }
-                            className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                              isSelected
-                                ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            }`}
-                          >
-                            {isSelected ? (
-                              "Görüntüleniyor"
-                            ) : (
+                      {/* Firma (sadece admin liste görünümünde) */}
+                      {!companyId && doc.company && (
+                        <div className="mt-2 rounded-lg bg-slate-50/70 px-2 py-1.5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Firma
+                          </p>
+                          <p className="truncate text-xs font-semibold text-slate-800">
+                            {doc.company.name}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-slate-500">
+                            VKN: {doc.company.taxNumber ?? "-"}
+                            {doc.company.consultant && (
                               <>
-                                Görüntüle
-                                <ChevronRight size={14} />
+                                {" • "}
+                                Uzman:{" "}
+                                <span className="font-semibold text-slate-700">
+                                  {doc.company.consultant}
+                                </span>
                               </>
                             )}
-                          </button>
+                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                      )}
+
+                      {/* Tarihler + destek sınıfı */}
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Başlangıç
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentStartDate)}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Bitiş
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentEndDate)}
+                          </p>
+                        </div>
+                        {doc.extensionDate && (
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Süre Uzatım
+                            </p>
+                            <p className="font-medium text-slate-700">
+                              {formatDate(doc.extensionDate)}
+                            </p>
+                          </div>
+                        )}
+                        {doc.supportClass && (
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Destek Sınıfı
+                            </p>
+                            <p className="truncate font-medium text-slate-700">
+                              {doc.supportClass}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Alt: aç butonu */}
+                      <div className="mt-2.5 flex justify-end">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
+                            isSelected
+                              ? "bg-red-600 text-white"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {isSelected ? (
+                            "Görüntüleniyor"
+                          ) : (
+                            <>
+                              Görüntüle
+                              <ChevronRight size={12} />
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
+
+        {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
+        <div className="hidden md:block">
+          <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
+            <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
+              <colgroup>
+                <col className="w-[9%]" />
+                <col className="w-[18%]" />
+                <col className="w-[12%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
+                <col className="w-[10%]" />
+              </colgroup>
+              <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
+                <tr>
+                  {[
+                    "Belge No",
+                    "Firma",
+                    "Uzman",
+                    "Belge Başlangıç",
+                    "Belge Bitiş",
+                    "Süre Uzatım",
+                    "Destekleme Sınıfı",
+                    "Durum",
+                    "Detay",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      className={`text-center ${
+                        isCompanyView ? "px-6 py-3.5" : "px-3 py-1.5"
+                      }`}
+                    >
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className={`px-4 text-center ${
+                        isCompanyView ? "py-12" : "py-8"
+                      }`}
+                    >
+                      <p className="text-sm font-medium text-slate-500">
+                        Belgeler yükleniyor...
+                      </p>
+                    </td>
+                  </tr>
+                ) : loadError ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className={`px-4 text-center ${
+                        isCompanyView ? "py-12" : "py-8"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-red-700">
+                        Belgeler yüklenemedi
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                    </td>
+                  </tr>
+                ) : visibleDocuments.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className={`px-4 text-center ${
+                        isCompanyView ? "py-12" : "py-8"
+                      }`}
+                    >
+                      {showAuthWarning ? (
+                        <AuthorizationWarning variant={variant} />
+                      ) : (
+                        <p className="text-sm font-medium text-slate-500">
+                          {documents.length > 0
+                            ? "Seçilen kritere uygun belge bulunamadı."
+                            : "Belge bulunamadı."}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  visibleDocuments.map((doc) => {
+                    const documentKey = `${
+                      doc.status === "INACTIVE" ? "closed" : "open"
+                    }-${doc.id}`;
+
+                    const isSelected = activeDocumentKey === documentKey;
+
+                    return (
+                      <tr
+                        key={documentKey}
+                        className={`transition-colors ${
+                          isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                        }`}
+                      >
+                        <td
+                          className={
+                            isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
+                          }
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                                isSelected
+                                  ? "border-red-600 bg-red-600 text-white"
+                                  : "border-slate-200 bg-slate-50 text-slate-600"
+                              }`}
+                            >
+                              <FileText size={16} />
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">
+                                {doc.documentNumber ?? "-"}
+                              </p>
+                              <p className="font-mono text-[11px] text-slate-400">
+                                ID: {doc.externalDocumentId}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td
+                          className={`max-w-xs ${
+                            isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
+                          }`}
+                        >
+                          <p
+                            title={
+                              doc.company?.name ?? "Firma bilgisi bulunamadı"
+                            }
+                            className="truncate text-xs font-semibold text-slate-800"
+                          >
+                            {doc.company?.name ?? "Firma bilgisi bulunamadı"}
+                          </p>
+                          <p className="mt-1 text-left text-[11px] text-slate-400">
+                            VKN: {doc.company?.taxNumber ?? "-"}
+                          </p>
+                        </td>
+                        <td
+                          className={`${
+                            isCompanyView ? "px-6 py-4" : "px-3 py-1.5"
+                          } text-center`}
+                        >
+                          <p
+                            title={doc.company?.consultant ?? undefined}
+                            className="truncate text-xs font-semibold text-slate-700"
+                          >
+                            {doc.company?.consultant ?? "-"}
+                          </p>
+                        </td>
+                        <td
+                          className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
+                        >
+                          {formatDate(doc.documentStartDate)}
+                        </td>
+                        <td
+                          className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
+                        >
+                          {formatDate(doc.documentEndDate)}
+                        </td>
+                        <td
+                          className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center text-xs font-medium text-slate-600`}
+                        >
+                          {formatDate(doc.extensionDate)}
+                        </td>
+                        <td
+                          className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
+                        >
+                          <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                            {doc.supportClass ?? "-"}
+                          </span>
+                        </td>
+                        <td
+                          className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
+                        >
+                          {isExtensionEligibleView ? (
+                            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              Aktif
+                            </span>
+                          ) : (
+                            <StatusBadge
+                              status={
+                                doc.status === "INACTIVE"
+                                  ? (doc.documentStatus ?? "INACTIVE")
+                                  : doc.status
+                              }
+                            />
+                          )}
+                        </td>
+                        <td
+                          className={`${isCompanyView ? "px-6 py-4" : "px-3 py-1.5"} text-center`}
+                        >
+                          <div className="flex items-center justify-center px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenDocument(
+                                  String(doc.id),
+                                  doc.documentNumber,
+                                  doc.documentStatus ?? "OPEN",
+                                )
+                              }
+                              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              {isSelected ? (
+                                "Görüntüleniyor"
+                              ) : (
+                                <>
+                                  Görüntüle
+                                  <ChevronRight size={14} />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SAYFALAMA — ortak */}
         <div
-          className={`flex flex-col gap-2 border-t border-slate-200 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between ${
-            isCompanyView ? "bg-slate-50/30 p-3 sm:p-4" : "px-3 py-2"
+          className={`flex flex-col gap-2 border-t border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "bg-slate-50/30 sm:p-4" : "sm:px-3 sm:py-2"
           }`}
         >
           <p className="text-xs font-medium text-slate-500">
             Sayfa {currentPage} / {totalPages}
           </p>
 
-          <div className="flex w-full gap-1.5 min-[380px]:w-auto">
+          <div className="flex w-full gap-1.5 sm:w-auto">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Önceki
             </button>
-
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 min-[380px]:flex-none"
+              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Sonraki
             </button>
           </div>
         </div>
       </section>
+
+      {/* AÇIK BELGE SEKMELERİ + DETAY */}
       {openDocuments.length > 0 && (
         <section
           ref={documentTabsRef}
           className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
-          {/* BELGE TABLARI */}
           <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-2.5 pt-1.5">
             {openDocuments.map((document) => {
               const isActive = activeDocumentKey === document.key;
@@ -1133,7 +1252,6 @@ export function DocumentsScreen({
                   >
                     {label}
                   </button>
-
                   <button
                     type="button"
                     onClick={() => handleCloseDocument(document.key)}
@@ -1146,14 +1264,6 @@ export function DocumentsScreen({
             })}
           </div>
 
-          {/*
-            SEÇİLİ BELGENİN DETAYI
-            Açık tüm tab'lar burada aynı anda mount edilir; sadece aktif olan
-            görünür, diğerleri CSS ile gizlenir. Böylece tab değiştirirken
-            DocumentDetailScreen yeniden mount olup veriyi baştan çekmiyor
-            (tekrar "yükleniyor" durumuna düşüp içeriğin anlık kaybolması /
-            geri gelmesi - flicker - önlenmiş oluyor).
-          */}
           <div className="min-w-0 p-2 sm:p-3">
             {openDocuments.map((document) => (
               <div
@@ -1214,12 +1324,47 @@ function OperationStat({
         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
           {label}
         </p>
-
-        <p className={`mt-0.5 truncate text-lg font-extrabold ${valueClass}`}>
+        <p
+          className={`mt-0.5 truncate text-base font-extrabold sm:text-lg ${valueClass}`}
+        >
           {value}
         </p>
       </div>
     </button>
+  );
+}
+
+function AuthorizationWarning({ variant }: { variant: "admin" | "company" }) {
+  return (
+    <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-left">
+      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
+        <div className="flex min-w-0 flex-1 items-start gap-2.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 sm:h-11 sm:w-11">
+            <ShieldAlert size={21} strokeWidth={1.8} />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+              Yetkilendirme gerekli
+            </span>
+            <h3 className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+              Yetki süreniz dolmuştur.
+            </h3>
+            <p className="mt-1.5 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+              Firmanın belge bilgilerinin görüntülenebilmesi için yeniden
+              yetkilendirme yapılmalıdır.
+            </p>
+          </div>
+        </div>
+
+        {variant === "company" && (
+          <div className="border-t border-slate-200 pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
+            <p className="text-xs font-medium leading-5 text-slate-600">
+              Yetkilendirme işlemi için lütfen uzmanınız ile iletişime geçiniz.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1241,7 +1386,6 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-emerald-50",
       border: "border-emerald-200/60",
     },
-
     EXPIRED: {
       label: "Süresi Dolmuş",
       dot: "bg-red-500",
@@ -1263,7 +1407,6 @@ function StatusBadge({ status }: { status: string }) {
       bg: "bg-blue-50",
       border: "border-blue-200",
     },
-
     CANCELLED: {
       label: "İptal",
       dot: "bg-red-500",
@@ -1290,7 +1433,7 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-bold ${c.bg} ${c.text} ${c.border}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}

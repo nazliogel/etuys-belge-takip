@@ -273,7 +273,6 @@ export default function SupportRequestsScreen() {
         ),
       );
 
-      // Sidebar bildirim sayısını hemen yenile.
       window.dispatchEvent(new Event("support-request-unread-changed"));
     } catch (error) {
       console.error("Destek talebi açılamadı:", error);
@@ -299,7 +298,6 @@ export default function SupportRequestsScreen() {
         ),
       );
 
-      // Tekrar okunmadı yapıldığı için sidebar sayısını yenile.
       window.dispatchEvent(new Event("support-request-unread-changed"));
     } catch (error) {
       console.error("Talep okunmadı olarak işaretlenemedi:", error);
@@ -516,7 +514,6 @@ export default function SupportRequestsScreen() {
       }
     >();
 
-    // Önce sistemdeki bütün uzmanları 0 değerlerle ekle.
     consultants.forEach((consultant) => {
       summary.set(String(consultant.id), {
         consultantId: consultant.id,
@@ -528,7 +525,6 @@ export default function SupportRequestsScreen() {
       });
     });
 
-    // Sonra destek taleplerini ilgili uzmanların üzerine işle.
     requests.forEach((request) => {
       const consultantId = request.assignedToId;
 
@@ -603,20 +599,20 @@ export default function SupportRequestsScreen() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <div className="mx-auto max-w-7xl space-y-8 p-6">
+      <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-4 lg:space-y-8 lg:p-6">
         {/* BAŞLIK */}
-        <div className="flex flex-col gap-5 pb-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-sm shadow-blue-700/20">
-              <Headphones size={20} strokeWidth={1.75} />
+        <div className="flex flex-col gap-3 pb-1 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:pb-2">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-sm shadow-blue-700/20 sm:h-11 sm:w-11">
+              <Headphones size={18} strokeWidth={1.75} />
             </div>
 
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold tracking-tight text-stone-900 sm:text-2xl">
                 {role === "COMPANY" ? "Destek Taleplerim" : "Destek Talepleri"}
               </h1>
 
-              <p className="mt-0.5 text-sm text-stone-500">
+              <p className="mt-0.5 text-xs text-stone-500 sm:text-sm">
                 {role === "COMPANY"
                   ? "Destek taleplerinizi oluşturun ve durumlarını takip edin."
                   : "Size atanan destek taleplerini yönetin."}
@@ -631,7 +627,7 @@ export default function SupportRequestsScreen() {
                 resetForm();
                 setIsCreateOpen(true);
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 active:bg-blue-900"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 active:bg-blue-900 sm:w-auto"
             >
               <Plus size={16} strokeWidth={2} />
               Yeni Talep
@@ -640,7 +636,7 @@ export default function SupportRequestsScreen() {
         </div>
 
         {/* İSTATİSTİKLER */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
           <StatCard
             label="Toplam Talep"
             value={stats.total}
@@ -679,18 +675,18 @@ export default function SupportRequestsScreen() {
 
         {role === "ADMIN" && consultantStats.length > 0 && (
           <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm shadow-stone-200/40">
-            <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
                   <User size={18} />
                 </div>
 
-                <div>
-                  <h2 className="text-base font-semibold text-stone-900">
+                <div className="min-w-0">
+                  <h2 className="text-sm font-semibold text-stone-900 sm:text-base">
                     Uzman Bazlı Talep Özeti
                   </h2>
 
-                  <p className="mt-0.5 text-xs text-stone-500">
+                  <p className="mt-0.5 text-[11px] text-stone-500 sm:text-xs">
                     Uzmanların talep ve çözüm durumlarını görüntüleyin.
                   </p>
                 </div>
@@ -811,13 +807,13 @@ export default function SupportRequestsScreen() {
         {/* TALEP LİSTESİ */}
         <div className="rounded-xl border border-stone-200 bg-white shadow-sm shadow-stone-200/40">
           {role === "ADMIN" && selectedConsultantName && (
-            <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50/60 px-4 py-3">
-              <div className="flex items-center gap-2 text-sm">
-                <Filter size={14} className="text-blue-600" />
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-100 bg-blue-50/60 px-4 py-3">
+              <div className="flex min-w-0 items-center gap-2 text-sm">
+                <Filter size={14} className="shrink-0 text-blue-600" />
 
-                <span className="text-stone-500">Uzman filtresi:</span>
+                <span className="text-stone-500">Uzman:</span>
 
-                <span className="font-semibold text-blue-700">
+                <span className="truncate font-semibold text-blue-700">
                   {selectedConsultantName}
                 </span>
               </div>
@@ -831,8 +827,9 @@ export default function SupportRequestsScreen() {
               </button>
             </div>
           )}
+
           {/* ARAMA VE FİLTRE */}
-          <div className="flex flex-col gap-3 border-b border-stone-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-b border-stone-100 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
             <div className="relative flex-1 sm:max-w-md">
               <Search
                 size={16}
@@ -848,14 +845,14 @@ export default function SupportRequestsScreen() {
                     ? "Bilet no veya açıklama ara..."
                     : "Bilet no, açıklama veya firma ara..."
                 }
-                className="w-full rounded-lg border border-stone-200 bg-stone-50 py-2 pl-9 pr-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-stone-200 bg-stone-50 py-2 pl-9 pr-3 text-base text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:text-sm"
               />
             </div>
 
             <div className="flex items-center gap-2">
               <Filter size={14} className="hidden text-stone-400 sm:block" />
 
-              <div className="flex gap-1 rounded-lg bg-stone-100 p-1">
+              <div className="flex w-full gap-1 rounded-lg bg-stone-100 p-1 sm:w-auto">
                 {[
                   {
                     key: "ALL" as const,
@@ -878,7 +875,7 @@ export default function SupportRequestsScreen() {
                     key={filter.key}
                     type="button"
                     onClick={() => setStatusFilter(filter.key)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                    className={`flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium transition sm:flex-none sm:px-3 sm:text-xs ${
                       statusFilter === filter.key
                         ? "bg-white text-blue-700 shadow-sm"
                         : "text-stone-500 hover:text-stone-800"
@@ -896,7 +893,7 @@ export default function SupportRequestsScreen() {
               <Loader2 size={26} className="animate-spin text-blue-700" />
             </div>
           ) : filteredRequests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="flex flex-col items-center justify-center px-6 py-12 text-center sm:py-16">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-stone-400">
                 <Inbox size={22} strokeWidth={1.75} />
               </div>
@@ -950,7 +947,7 @@ export default function SupportRequestsScreen() {
                     key={request.id}
                     type="button"
                     onClick={() => void openRequest(request)}
-                    className={`group flex w-full flex-col gap-3 border-l-[3px] px-5 py-4 text-left transition hover:bg-stone-50 lg:grid lg:items-center lg:gap-6 ${getAccentBorder(
+                    className={`group flex w-full flex-col gap-2 border-l-[3px] px-3 py-3 text-left transition hover:bg-stone-50 sm:gap-3 sm:px-5 sm:py-4 lg:grid lg:items-center lg:gap-6 ${getAccentBorder(
                       request,
                     )} ${
                       role === "ADMIN"
@@ -960,10 +957,26 @@ export default function SupportRequestsScreen() {
                           : "lg:grid-cols-[180px_minmax(300px,1fr)_140px_190px]"
                     }`}
                   >
-                    {/* BİLET */}
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-semibold text-stone-900">
-                        {request.ticketNumber ?? `#${request.id}`}
+                    {/* Mobil için üst satır: bilet no + durum */}
+                    <div className="flex items-center justify-between gap-2 lg:contents">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-semibold text-stone-900">
+                          {request.ticketNumber ?? `#${request.id}`}
+                        </span>
+                      </div>
+
+                      {/* Mobilde durum bileti burada; lg'de kendi kolonunda */}
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-medium sm:text-xs lg:hidden ${getStatusClass(
+                          request,
+                        )}`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${getStatusDot(
+                            request,
+                          )}`}
+                        />
+                        {getStatusLabel(request)}
                       </span>
                     </div>
 
@@ -973,7 +986,7 @@ export default function SupportRequestsScreen() {
                         {topicLabels[request.topic]}
                       </div>
 
-                      <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">
+                      <p className="mt-0.5 line-clamp-2 text-xs text-stone-500 lg:line-clamp-1">
                         {request.description}
                       </p>
                     </div>
@@ -1003,8 +1016,8 @@ export default function SupportRequestsScreen() {
                       </div>
                     )}
 
-                    {/* DURUM */}
-                    <div>
+                    {/* DURUM (sadece lg+, mobilde üstte gösteriliyor) */}
+                    <div className="hidden lg:block">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium ${getStatusClass(
                           request,
@@ -1020,7 +1033,7 @@ export default function SupportRequestsScreen() {
                     </div>
 
                     {/* TARİH */}
-                    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap text-xs text-stone-500">
+                    <div className="flex items-center gap-1.5 whitespace-nowrap text-xs text-stone-500 lg:justify-end">
                       <Calendar size={13} className="shrink-0 text-stone-400" />
 
                       <span>{formatDate(request.createdAt)}</span>
@@ -1031,7 +1044,7 @@ export default function SupportRequestsScreen() {
             </div>
           )}
           {!loading && filteredRequests.length > 0 && (
-            <div className="flex flex-col gap-3 border-t border-stone-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-stone-100 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
               <div className="text-xs text-stone-500">
                 <span className="font-medium text-stone-700">
                   {(currentPage - 1) * PAGE_SIZE + 1}
@@ -1052,7 +1065,7 @@ export default function SupportRequestsScreen() {
                 {" talep"}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2 sm:justify-end">
                 <button
                   type="button"
                   onClick={() =>
@@ -1065,7 +1078,7 @@ export default function SupportRequestsScreen() {
                   Önceki
                 </button>
 
-                <div className="min-w-20 text-center text-xs text-stone-500">
+                <div className="min-w-16 text-center text-xs text-stone-500 sm:min-w-20">
                   <span className="font-semibold text-stone-800">
                     {currentPage}
                   </span>
@@ -1094,21 +1107,21 @@ export default function SupportRequestsScreen() {
 
       {/* YENİ DESTEK TALEBİ */}
       {role === "COMPANY" && isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-stone-950/50 p-3 backdrop-blur-sm sm:p-4">
           <div className="w-full max-w-xl overflow-hidden rounded-xl bg-white shadow-2xl">
             {/* MODAL BAŞLIK */}
-            <div className="flex items-start justify-between border-b border-stone-100 px-6 py-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-700 text-white">
+            <div className="flex items-start justify-between border-b border-stone-100 px-4 py-4 sm:px-6 sm:py-5">
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white">
                   <Plus size={18} strokeWidth={2} />
                 </div>
 
-                <div>
-                  <h2 className="text-lg font-semibold text-stone-900">
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold text-stone-900 sm:text-lg">
                     Yeni Destek Talebi
                   </h2>
 
-                  <p className="mt-0.5 text-sm text-stone-500">
+                  <p className="mt-0.5 text-xs text-stone-500 sm:text-sm">
                     Belge işlemleriyle ilgili destek talebinizi açıklayın.
                   </p>
                 </div>
@@ -1117,14 +1130,14 @@ export default function SupportRequestsScreen() {
               <button
                 type="button"
                 onClick={closeCreateForm}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-400 transition hover:bg-stone-100 hover:text-stone-700"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-stone-100 hover:text-stone-700"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* FORM */}
-            <div className="space-y-5 p-6">
+            <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
               {errorMessage && (
                 <div className="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
                   <AlertCircle size={18} className="mt-0.5 shrink-0" />
@@ -1152,7 +1165,7 @@ export default function SupportRequestsScreen() {
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="Talebinizi açıklayınız..."
-                  className="w-full resize-none rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm leading-6 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full resize-none rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-base leading-6 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 sm:text-sm"
                 />
 
                 <div className="mt-1 text-right text-xs text-stone-400">
@@ -1162,12 +1175,12 @@ export default function SupportRequestsScreen() {
             </div>
 
             {/* FOOTER */}
-            <div className="flex items-center justify-end gap-3 border-t border-stone-100 bg-stone-50 px-6 py-4">
+            <div className="flex items-center justify-end gap-2 border-t border-stone-100 bg-stone-50 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
               <button
                 type="button"
                 onClick={closeCreateForm}
                 disabled={submitting}
-                className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:opacity-60"
+                className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:opacity-60 sm:flex-none"
               >
                 Vazgeç
               </button>
@@ -1176,7 +1189,7 @@ export default function SupportRequestsScreen() {
                 type="button"
                 onClick={() => void handleSubmit()}
                 disabled={submitting || !description.trim()}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none sm:px-5"
               >
                 {submitting ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -1201,16 +1214,16 @@ export default function SupportRequestsScreen() {
 
           <div className="relative flex h-full w-full max-w-xl flex-col bg-white shadow-2xl">
             {/* DRAWER BAŞLIK */}
-            <div className="border-b border-stone-100 px-6 py-5">
+            <div className="border-b border-stone-100 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-lg font-semibold text-stone-900">
+                    <span className="font-mono text-base font-semibold text-stone-900 sm:text-lg">
                       {selectedRequest.ticketNumber ?? `#${selectedRequest.id}`}
                     </span>
 
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium ${getStatusClass(
+                      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium sm:px-2.5 sm:text-xs ${getStatusClass(
                         selectedRequest,
                       )}`}
                     >
@@ -1224,8 +1237,8 @@ export default function SupportRequestsScreen() {
                     </span>
                   </div>
 
-                  <div className="mt-2 flex items-center gap-2 text-sm text-stone-600">
-                    <Tag size={14} className="text-stone-400" />
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-stone-600 sm:text-sm">
+                    <Tag size={14} className="shrink-0 text-stone-400" />
 
                     <span className="font-medium">
                       {topicLabels[selectedRequest.topic]}
@@ -1252,10 +1265,10 @@ export default function SupportRequestsScreen() {
             </div>
 
             {/* DRAWER İÇERİK */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="space-y-5 sm:space-y-6">
                 {/* META */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {(role === "OPERATION" || role === "ADMIN") && (
                     <MetaItem
                       icon={<Building2 size={14} />}
@@ -1272,7 +1285,6 @@ export default function SupportRequestsScreen() {
                     />
                   )}
 
-                  {/* ESKİ TALEPLERDE VARSA GÖSTER */}
                   {selectedRequest.documentNumber && (
                     <MetaItem
                       icon={<FileText size={14} />}
@@ -1297,7 +1309,7 @@ export default function SupportRequestsScreen() {
                     Açıklama
                   </div>
 
-                  <div className="whitespace-pre-wrap rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm leading-6 text-stone-700">
+                  <div className="whitespace-pre-wrap rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700 sm:p-4">
                     {selectedRequest.description}
                   </div>
                 </div>
@@ -1308,7 +1320,7 @@ export default function SupportRequestsScreen() {
                     Zaman Çizelgesi
                   </div>
 
-                  <div className="space-y-3 rounded-lg border border-stone-200 bg-white p-4">
+                  <div className="space-y-3 rounded-lg border border-stone-200 bg-white p-3 sm:p-4">
                     <TimelineItem
                       icon={<Send size={14} />}
                       iconClass="bg-blue-100 text-blue-700"
@@ -1350,15 +1362,14 @@ export default function SupportRequestsScreen() {
 
             {/* UZMAN AKSİYONLARI */}
             {(role === "OPERATION" || role === "ADMIN") && (
-              <div className="flex items-center gap-3 border-t border-stone-100 bg-stone-50 px-6 py-4">
-                {/* SADECE TALEBİN SAHİBİ TEKRAR OKUNMADI YAPABİLİR */}
+              <div className="flex flex-col gap-2 border-t border-stone-100 bg-stone-50 px-4 py-3 sm:flex-row sm:items-center sm:gap-3 sm:px-6 sm:py-4">
                 {selectedRequest.assignedToId === sessionUser?.id &&
                   selectedRequest.viewedAt && (
                     <button
                       type="button"
                       disabled={actionLoading === selectedRequest.id}
                       onClick={() => void markUnread(selectedRequest.id)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:opacity-60"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 disabled:opacity-60 sm:w-auto"
                     >
                       {actionLoading === selectedRequest.id ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -1370,13 +1381,13 @@ export default function SupportRequestsScreen() {
                   )}
 
                 {selectedRequest.status !== "RESOLVED" && (
-                  <div className="ml-auto flex items-center gap-3">
+                  <div className="flex flex-col gap-2 sm:ml-auto sm:flex-row sm:items-center sm:gap-3">
                     {selectedRequest.status === "SENT" && (
                       <button
                         type="button"
                         disabled={actionLoading === selectedRequest.id}
                         onClick={() => void markInProgress(selectedRequest.id)}
-                        className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-60"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-60 sm:w-auto"
                       >
                         {actionLoading === selectedRequest.id ? (
                           <Loader2 size={16} className="animate-spin" />
@@ -1391,7 +1402,7 @@ export default function SupportRequestsScreen() {
                       type="button"
                       disabled={actionLoading === selectedRequest.id}
                       onClick={() => void resolveRequest(selectedRequest.id)}
-                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60 sm:w-auto"
                     >
                       {actionLoading === selectedRequest.id ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -1426,14 +1437,14 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-lg border border-stone-200 border-l-[3px] bg-white px-4 py-3.5 ${accentClass}`}
+      className={`rounded-lg border border-stone-200 border-l-[3px] bg-white px-3 py-3 sm:px-4 sm:py-3.5 ${accentClass}`}
     >
       <div className="flex items-center gap-1.5 text-stone-500">
         {icon}
-        <p className="text-sm">{label}</p>
+        <p className="truncate text-xs sm:text-sm">{label}</p>
       </div>
 
-      <p className="mt-2 text-[28px] font-semibold leading-none tracking-tight text-stone-900 tabular-nums">
+      <p className="mt-1.5 text-xl font-semibold leading-none tracking-tight text-stone-900 tabular-nums sm:mt-2 sm:text-[28px]">
         {value}
       </p>
     </div>
@@ -1474,7 +1485,7 @@ function MetaItem({
   mono?: boolean;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex items-center gap-1.5 text-xs font-medium text-stone-500">
         <span className="text-stone-400">{icon}</span>
 
@@ -1482,7 +1493,7 @@ function MetaItem({
       </div>
 
       <p
-        className={`mt-1 text-sm font-medium text-stone-800 ${
+        className={`mt-1 truncate text-sm font-medium text-stone-800 ${
           mono ? "font-mono" : ""
         }`}
       >

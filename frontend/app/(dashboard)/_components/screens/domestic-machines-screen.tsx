@@ -274,11 +274,23 @@ export function DomesticMachinesScreen() {
           <table className="w-full min-w-[2200px] border-separate border-spacing-0 text-sm">
             <thead>
               <tr className="text-left">
-                <th className={`${HEAD_BASE} w-[80px] text-right`}>Sıra</th>
+                <th
+                  className={`${HEAD_BASE} left-0 z-40 w-[80px] min-w-[80px] text-right`}
+                >
+                  Sıra
+                </th>
 
-                <th className={`${HEAD_BASE} w-[130px]`}>Makine ID</th>
+                <th
+                  className={`${HEAD_BASE} left-[80px] z-40 w-[130px] min-w-[130px]`}
+                >
+                  Makine ID
+                </th>
 
-                <th className={`${HEAD_BASE} min-w-[260px]`}>Adı / Özelliği</th>
+                <th
+                  className={`${HEAD_BASE} left-[210px] z-40 w-[260px] min-w-[260px] max-w-[260px] shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)]`}
+                >
+                  Adı / Özelliği
+                </th>
 
                 <th className={`${HEAD_BASE} w-[110px] text-right`}>Miktar</th>
 
@@ -362,14 +374,22 @@ export function DomesticMachinesScreen() {
                     }`}
                   >
                     {/* Sıra */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-slate-500">
+                    <td
+                      className={`sticky left-0 z-10 w-[80px] min-w-[80px] border-b border-r border-slate-200 px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-slate-500 ${
+                        index % 2 === 1 ? "bg-slate-50" : "bg-white"
+                      } group-hover:bg-[#f8f9fb]`}
+                    >
                       {machine.sequenceNumber ?? (
                         <span className="text-slate-300">—</span>
                       )}
                     </td>
 
                     {/* Makine ID */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5">
+                    <td
+                      className={`sticky left-[80px] z-10 w-[130px] min-w-[130px] border-b border-r border-slate-200 px-4 py-2.5 ${
+                        index % 2 === 1 ? "bg-slate-50" : "bg-white"
+                      } group-hover:bg-[#f8f9fb]`}
+                    >
                       {machine.externalMachineId ? (
                         <span className="inline-flex rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-xs font-medium text-slate-700">
                           {machine.externalMachineId}
@@ -380,7 +400,11 @@ export function DomesticMachinesScreen() {
                     </td>
 
                     {/* Ad */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900">
+                    <td
+                      className={`sticky left-[210px] z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${
+                        index % 2 === 1 ? "bg-slate-50" : "bg-white"
+                      } group-hover:bg-[#f8f9fb]`}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
 

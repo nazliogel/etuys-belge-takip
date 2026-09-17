@@ -189,21 +189,26 @@ export function ClosedDocumentsScreen() {
 
   const authorizationIsValid = hasValidAuthorization(authorizationEndDate);
 
+  const showLoader = isLoading || isAuthorizationLoading;
+  const showError = !showLoader && Boolean(loadError);
+  const showEmpty = !showLoader && !loadError && documents.length === 0;
+  const showAuthWarning = showEmpty && isCompanyUser && !authorizationIsValid;
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {/* BAŞLIK */}
       <section className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
+        <div className="flex items-start gap-3 sm:items-center sm:gap-3.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
             <Archive size={17} />
           </div>
 
-          <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
+          <div className="min-w-0">
+            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
               Kapalı Durumdaki Belgeler
             </h1>
 
-            <p className="mt-0.5 text-xs font-medium text-slate-500">
+            <p className="mt-0.5 text-[11px] font-medium leading-5 text-slate-500 sm:text-xs">
               Süresi dolmuş, iptal edilmiş veya tamamlanmış tüm teşvik
               belgelerini görüntüleyin.
             </p>
@@ -212,9 +217,10 @@ export function ClosedDocumentsScreen() {
       </section>
 
       {/* BELGE LİSTESİ */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/40 p-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+      <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
+        {/* Başlık + arama */}
+        <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/40 p-3 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
             <h2 className="text-sm font-bold text-slate-900">
               Kapalı Belge Listesi
             </h2>
@@ -225,7 +231,6 @@ export function ClosedDocumentsScreen() {
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto">
-            {/* Arama */}
             <div className="relative w-full lg:w-72">
               <Search
                 size={17}
@@ -240,7 +245,7 @@ export function ClosedDocumentsScreen() {
                   setPage(1);
                 }}
                 placeholder="Belge no, firma veya vergi no ile ara..."
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-9 text-xs text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-9 text-base text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:text-xs"
               />
 
               {searchQuery && (
@@ -250,7 +255,7 @@ export function ClosedDocumentsScreen() {
                     setSearchQuery("");
                     setPage(1);
                   }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
                   aria-label="Aramayı temizle"
                 >
                   <X size={14} />
@@ -260,190 +265,312 @@ export function ClosedDocumentsScreen() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200/60 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              <tr>
-                <th className="px-6 py-3.5">Belge No</th>
-                <th className="px-6 py-3.5">Firma</th>
-                <th className="px-6 py-3.5">Belge Başlangıç</th>
-                <th className="px-6 py-3.5">Belge Bitiş</th>
-                <th className="px-6 py-3.5">Süre Uzatım</th>
-                <th className="px-6 py-3.5">Destekleme Sınıfı</th>
-                <th className="px-6 py-3.5">Durum</th>
-                <th className="px-6 py-3.5 text-right">Detay</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {isLoading || isAuthorizationLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
-                    <p className="text-sm font-medium text-slate-500">
-                      Belgeler yükleniyor...
-                    </p>
-                  </td>
-                </tr>
-              ) : loadError ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
-                    <p className="text-sm font-semibold text-red-700">
-                      Belgeler yüklenemedi
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
-                  </td>
-                </tr>
-              ) : documents.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12">
-                    {isCompanyUser && !authorizationIsValid ? (
-                      <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-6 py-5 text-left">
-                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
-                          <div className="flex min-w-0 flex-1 items-start gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700">
-                              <ShieldAlert size={21} strokeWidth={1.8} />
-                            </div>
-
-                            <div className="min-w-0">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
-                                Yetkilendirme gerekli
-                              </span>
-
-                              <h3 className="mt-1 text-base font-bold text-slate-900">
-                                Yetki süreniz dolmuştur.
-                              </h3>
-
-                              <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                                Firmanın belge bilgilerinin görüntülenebilmesi
-                                için yeniden yetkilendirme yapılmalıdır.
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-slate-200 pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
-                            <p className="text-xs font-medium leading-5 text-slate-600">
-                              Yetkilendirme işlemi için lütfen danışmanınız ile
-                              iletişime geçiniz.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-center text-sm font-medium text-slate-500">
-                        Belge bulunamadı.
-                      </p>
-                    )}
-                  </td>
-                </tr>
+        {/* MOBİL: KART GÖRÜNÜMÜ */}
+        <div className="md:hidden">
+          {showLoader ? (
+            <div className="px-4 py-10 text-center">
+              <p className="text-sm font-medium text-slate-500">
+                Belgeler yükleniyor...
+              </p>
+            </div>
+          ) : showError ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-semibold text-red-700">
+                Belgeler yüklenemedi
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+            </div>
+          ) : showEmpty ? (
+            <div className="px-3 py-6 text-center">
+              {showAuthWarning ? (
+                <AuthorizationWarning />
               ) : (
-                documents.map((doc) => {
-                  const isSelected = activeDocumentId === String(doc.id);
-                  return (
-                    <tr
-                      key={doc.id}
-                      className={`transition-colors ${
-                        isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
-                      }`}
+                <p className="text-sm font-medium text-slate-500">
+                  Belge bulunamadı.
+                </p>
+              )}
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {documents.map((doc) => {
+                const isSelected = activeDocumentId === String(doc.id);
+
+                return (
+                  <li key={doc.id} className={isSelected ? "bg-red-50/40" : ""}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveDocumentId(isSelected ? null : String(doc.id))
+                      }
+                      className="w-full px-3 py-3 text-left transition active:bg-slate-50"
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      {/* Üst satır: belge no + durum */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
                           <div
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
                                 ? "border-red-600 bg-red-600 text-white"
                                 : "border-slate-200 bg-slate-50 text-slate-600"
                             }`}
                           >
-                            <FileText size={16} />
+                            <FileText size={15} />
                           </div>
-
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">
                               {doc.documentNumber ?? "-"}
                             </p>
-                            <p className="font-mono text-[11px] text-slate-400">
+                            <p className="font-mono text-[10px] text-slate-400">
                               ID: {doc.externalDocumentId}
                             </p>
                           </div>
                         </div>
-                      </td>
-
-                      <td className="max-w-xs px-6 py-4">
-                        <p
-                          title={doc.company.name}
-                          className="truncate text-sm font-semibold text-slate-900"
-                        >
-                          {doc.company.name}
-                        </p>
-
-                        <p className="font-mono text-[11px] text-slate-500">
-                          VKN: {doc.company.taxNumber}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                        {formatDate(doc.documentStartDate)}
-                      </td>
-
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                        {formatDate(doc.documentEndDate)}
-                      </td>
-
-                      <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                        {formatDate(doc.extensionDate)}
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                          {doc.supportClass ?? "-"}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
                           <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                           Kapalı / İptal
                         </span>
-                      </td>
+                      </div>
 
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActiveDocumentId(
-                                isSelected ? null : String(doc.id),
-                              )
-                            }
-                            className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                              isSelected
-                                ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            }`}
-                          >
-                            {isSelected ? (
-                              <>
-                                <Check size={14} />
-                                Görüntüleniyor
-                              </>
-                            ) : (
-                              <>
-                                Görüntüle
-                                <ChevronRight size={14} />
-                              </>
-                            )}
-                          </button>
+                      {/* Firma */}
+                      <div className="mt-2 rounded-lg bg-slate-50/70 px-2 py-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Firma
+                        </p>
+                        <p className="truncate text-xs font-semibold text-slate-800">
+                          {doc.company.name}
+                        </p>
+                        <p className="mt-0.5 font-mono text-[10px] text-slate-500">
+                          VKN: {doc.company.taxNumber}
+                        </p>
+                      </div>
+
+                      {/* Tarihler + destek */}
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Başlangıç
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentStartDate)}
+                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Bitiş
+                          </p>
+                          <p className="font-medium text-slate-700">
+                            {formatDate(doc.documentEndDate)}
+                          </p>
+                        </div>
+                        {doc.extensionDate && (
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Süre Uzatım
+                            </p>
+                            <p className="font-medium text-slate-700">
+                              {formatDate(doc.extensionDate)}
+                            </p>
+                          </div>
+                        )}
+                        {doc.supportClass && (
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                              Destek Sınıfı
+                            </p>
+                            <p className="truncate font-medium text-slate-700">
+                              {doc.supportClass}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Aç butonu */}
+                      <div className="mt-2.5 flex justify-end">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
+                            isSelected
+                              ? "bg-red-600 text-white"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {isSelected ? (
+                            <>
+                              <Check size={12} />
+                              Görüntüleniyor
+                            </>
+                          ) : (
+                            <>
+                              Görüntüle
+                              <ChevronRight size={12} />
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
+        <div className="hidden md:block">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1050px] text-left text-sm">
+              <thead className="border-b border-slate-200/60 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th className="px-6 py-3.5">Belge No</th>
+                  <th className="px-6 py-3.5">Firma</th>
+                  <th className="px-6 py-3.5">Belge Başlangıç</th>
+                  <th className="px-6 py-3.5">Belge Bitiş</th>
+                  <th className="px-6 py-3.5">Süre Uzatım</th>
+                  <th className="px-6 py-3.5">Destekleme Sınıfı</th>
+                  <th className="px-6 py-3.5">Durum</th>
+                  <th className="px-6 py-3.5 text-right">Detay</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {showLoader ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12 text-center">
+                      <p className="text-sm font-medium text-slate-500">
+                        Belgeler yükleniyor...
+                      </p>
+                    </td>
+                  </tr>
+                ) : showError ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12 text-center">
+                      <p className="text-sm font-semibold text-red-700">
+                        Belgeler yüklenemedi
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                    </td>
+                  </tr>
+                ) : showEmpty ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12">
+                      {showAuthWarning ? (
+                        <AuthorizationWarning />
+                      ) : (
+                        <p className="text-center text-sm font-medium text-slate-500">
+                          Belge bulunamadı.
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  documents.map((doc) => {
+                    const isSelected = activeDocumentId === String(doc.id);
+                    return (
+                      <tr
+                        key={doc.id}
+                        className={`transition-colors ${
+                          isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                                isSelected
+                                  ? "border-red-600 bg-red-600 text-white"
+                                  : "border-slate-200 bg-slate-50 text-slate-600"
+                              }`}
+                            >
+                              <FileText size={16} />
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">
+                                {doc.documentNumber ?? "-"}
+                              </p>
+                              <p className="font-mono text-[11px] text-slate-400">
+                                ID: {doc.externalDocumentId}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="max-w-xs px-6 py-4">
+                          <p
+                            title={doc.company.name}
+                            className="truncate text-sm font-semibold text-slate-900"
+                          >
+                            {doc.company.name}
+                          </p>
+
+                          <p className="font-mono text-[11px] text-slate-500">
+                            VKN: {doc.company.taxNumber}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                          {formatDate(doc.documentStartDate)}
+                        </td>
+
+                        <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                          {formatDate(doc.documentEndDate)}
+                        </td>
+
+                        <td className="px-6 py-4 text-xs font-medium text-slate-600">
+                          {formatDate(doc.extensionDate)}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                            {doc.supportClass ?? "-"}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                            Kapalı / İptal
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveDocumentId(
+                                  isSelected ? null : String(doc.id),
+                                )
+                              }
+                              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              {isSelected ? (
+                                <>
+                                  <Check size={14} />
+                                  Görüntüleniyor
+                                </>
+                              ) : (
+                                <>
+                                  Görüntüle
+                                  <ChevronRight size={14} />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* SAYFALAMA */}
-        <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/30 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
           <p className="text-xs font-medium text-slate-500">
             <span className="font-bold text-slate-700">
               {firstRecord}-{lastRecord}
@@ -452,7 +579,7 @@ export function ClosedDocumentsScreen() {
             <span className="font-bold text-slate-700">{totalCount}</span> kayıt
           </p>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-center gap-1.5 sm:justify-end">
             <button
               type="button"
               disabled={page <= 1 || isLoading}
@@ -485,16 +612,16 @@ export function ClosedDocumentsScreen() {
       {activeDocumentId && (
         <section
           ref={detailRef}
-          className="scroll-mt-6 space-y-4 border-t border-dashed border-slate-200 pt-8"
+          className="scroll-mt-6 space-y-4 border-t border-dashed border-slate-200 pt-6 sm:pt-8"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Seçili Belge Detayı
             </p>
             <button
               type="button"
               onClick={() => setActiveDocumentId(null)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
             >
               <X size={14} />
               Kapat
@@ -516,6 +643,41 @@ export function ClosedDocumentsScreen() {
 /* =====================================================
    ALT BİLEŞENLER
 ===================================================== */
+
+function AuthorizationWarning() {
+  return (
+    <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-4 text-left sm:px-6 sm:py-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
+        <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 sm:h-11 sm:w-11">
+            <ShieldAlert size={20} strokeWidth={1.8} />
+          </div>
+
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+              Yetkilendirme gerekli
+            </span>
+
+            <h3 className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+              Yetki süreniz dolmuştur.
+            </h3>
+
+            <p className="mt-1.5 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+              Firmanın belge bilgilerinin görüntülenebilmesi için yeniden
+              yetkilendirme yapılmalıdır.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-200 pt-3 sm:pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
+          <p className="text-xs font-medium leading-5 text-slate-600">
+            Yetkilendirme işlemi için lütfen danışmanınız ile iletişime geçiniz.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ClosedStat({
