@@ -285,6 +285,7 @@ export function DocumentsScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const documentTabsRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToTabsRef = useRef(false);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpenDocuments([]);
@@ -586,20 +587,29 @@ export function DocumentsScreen({
     });
 
     setActiveDocumentKey(documentKey);
-
-    requestAnimationFrame(() => {
-      documentTabsRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
+    shouldScrollToTabsRef.current = true;
   }
+  useEffect(() => {
+    if (!shouldScrollToTabsRef.current) return;
+    if (!activeDocumentKey || openDocuments.length === 0) return;
+
+    const target = documentTabsRef.current;
+    if (!target) return;
+
+    shouldScrollToTabsRef.current = false;
+
+    const timeoutId = window.setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [activeDocumentKey, openDocuments.length]);
+
   function handleCloseDocument(documentKey: string) {
     setOpenDocuments((current) => {
       const remaining = current.filter(
         (document) => document.key !== documentKey,
       );
-
       if (activeDocumentKey === documentKey) {
         setActiveDocumentKey(remaining.at(-1)?.key ?? null);
       }
@@ -1226,20 +1236,24 @@ export function DocumentsScreen({
       {openDocuments.length > 0 && (
         <section
           ref={documentTabsRef}
-          className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+          className="scroll-mt-16 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:scroll-mt-24 sm:rounded-2xl"
         >
-          <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-2.5 pt-1.5">
+          <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-2 pt-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-2.5">
             {openDocuments.map((document) => {
               const isActive = activeDocumentKey === document.key;
 
-              const label = document.documentNumber
+              const fullLabel = document.documentNumber
                 ? `${document.documentNumber} No'lu Belge`
                 : `Belge #${document.id}`;
+
+              const shortLabel = document.documentNumber
+                ? `#${document.documentNumber}`
+                : `#${document.id}`;
 
               return (
                 <div
                   key={document.key}
-                  className={`flex shrink-0 items-center rounded-t-xl border border-b-0 ${
+                  className={`flex shrink-0 snap-start items-center rounded-t-xl border border-b-0 ${
                     isActive
                       ? "border-slate-200 bg-white font-semibold text-red-600"
                       : "border-transparent bg-slate-100 text-slate-500"
@@ -1248,14 +1262,17 @@ export function DocumentsScreen({
                   <button
                     type="button"
                     onClick={() => setActiveDocumentKey(document.key)}
-                    className="max-w-56 truncate px-2.5 py-1.5 text-xs"
+                    title={fullLabel}
+                    className="max-w-[8rem] truncate px-2 py-1.5 text-[11px] sm:max-w-56 sm:px-2.5 sm:text-xs"
                   >
-                    {label}
+                    <span className="sm:hidden">{shortLabel}</span>
+                    <span className="hidden sm:inline">{fullLabel}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleCloseDocument(document.key)}
-                    className="mr-1 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                    aria-label="Sekmeyi kapat"
+                    className="mr-1 rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 sm:p-1"
                   >
                     <X size={14} />
                   </button>
@@ -1264,7 +1281,7 @@ export function DocumentsScreen({
             })}
           </div>
 
-          <div className="min-w-0 p-2 sm:p-3">
+          <div className="min-w-0 overflow-x-hidden p-1.5 sm:p-3">
             {openDocuments.map((document) => (
               <div
                 key={document.key}
