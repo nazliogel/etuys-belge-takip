@@ -37,14 +37,14 @@ export function AdminDocumentDetailScreen({
   return (
     <div className="space-y-4">
       {/* SEKME BAŞLIKLARI */}
-      <div className="relative z-20 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex w-full items-stretch">
+      <div className="relative z-20 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex w-full items-stretch overflow-x-auto scroll-smooth rounded-xl [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`relative z-20 flex-1 cursor-pointer whitespace-nowrap border-r border-slate-300 px-2 py-2.5 text-[11px] font-semibold transition last:border-r-0 ${
+              className={`relative z-20 shrink-0 cursor-pointer whitespace-nowrap border-r border-slate-300 px-3 py-2.5 text-[11px] font-semibold transition last:border-r-0 lg:flex-1 lg:px-2 ${
                 activeTab === tab.key
                   ? "bg-red-50 text-red-700"
                   : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -54,6 +54,12 @@ export function AdminDocumentDetailScreen({
             </button>
           ))}
         </div>
+
+        {/* Mobilde "sağa kaydırılabilir" ipucu — sağ tarafa yumuşak fade */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-xl bg-gradient-to-l from-white to-transparent lg:hidden"
+        />
       </div>
 
       {activeTab === "identity" && (
