@@ -49,8 +49,6 @@ type CompanyListResponse = {
   };
 };
 
-// Sekmelerde/etkin firma olarak açık olan ama o an listede (mevcut sayfada)
-// bulunmayan bir firmayı göstermemiz gerektiğinde tek kayıt çekmek için.
 type CompanyDetailResponse = {
   success: boolean;
   message: string;
@@ -67,7 +65,6 @@ const statusOptions: { key: StatusFilter; label: string }[] = [
   { key: "expiring", label: "Süresi Yaklaşan" },
   { key: "expired", label: "Süresi Dolmuş" },
 ];
-
 
 const QUERY_KEYS = {
   activeFirma: "firma",
@@ -121,11 +118,8 @@ export function CompaniesScreen() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Şimdiye kadar görülmüş (listede gelmiş ya da tek tek çekilmiş) firmaların
-  // önbelleği. Sekme başlıklarını (firma adı vb.) göstermek için kullanılır.
   const [firmaCache, setFirmaCache] = useState<Record<string, Firma>>({});
 
-  // "Hangi firma/belge açık" artık URL'den okunuyor — component state değil.
   const activeFirmaId = searchParams.get(QUERY_KEYS.activeFirma);
   const openFirmaIds = useMemo(
     () => parseIdList(searchParams.get(QUERY_KEYS.firmaTabs)),
@@ -142,7 +136,6 @@ export function CompaniesScreen() {
     [openFirmaIds, firmaCache],
   );
 
-  // Arama + filtre
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -150,8 +143,6 @@ export function CompaniesScreen() {
 
   const detailRef = useRef<HTMLDivElement>(null);
 
-  // URL'deki firma/belge sekme parametrelerini güncelleyen tek merkezi
-  // fonksiyon. history'yi kirletmemek için push yerine replace kullanıyoruz.
   function updateQuery(updates: QueryUpdates) {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -210,8 +201,6 @@ export function CompaniesScreen() {
         setFirmalar(mappedFirmalar);
         setTotalCount(response.data.totalCount);
 
-        // Listede gelen firmaları önbelleğe de yazalım ki sekme/detay
-        // başlıklarında kullanılabilsin.
         setFirmaCache((prev) => {
           const next = { ...prev };
           for (const firma of mappedFirmalar) {
@@ -233,10 +222,6 @@ export function CompaniesScreen() {
     return () => window.clearTimeout(timer);
   }, [page, searchQuery]);
 
-  // URL'de açık olduğu belirtilen (activeFirmaId / openFirmaIds) ama henüz
-  // önbellekte olmayan firmalar için tek tek detay çekiyoruz. Bu, örneğin
-  // sayfa yenilendiğinde ya da doğrudan bu URL'e gelindiğinde (firma o an
-  // yüklü listede olmasa bile) sekme başlığının boş kalmamasını sağlıyor.
   useEffect(() => {
     const idsToLoad = Array.from(
       new Set([...(activeFirmaId ? [activeFirmaId] : []), ...openFirmaIds]),
@@ -293,13 +278,9 @@ export function CompaniesScreen() {
     return () => {
       cancelled = true;
     };
-    // firmaCache'i dependency'e almıyoruz: her cache güncellemesinde bu
-    // effect'in tekrar tetiklenmesini istemiyoruz, sadece URL'deki
-    // id'ler değiştiğinde tetiklensin.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFirmaId, openFirmaIds.join(",")]);
 
-  // Filtre dropdown'ı dışarı tıklanınca kapansın
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
       if (
@@ -370,28 +351,32 @@ export function CompaniesScreen() {
   };
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-
   const firstRecord = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-
   const lastRecord = Math.min(page * PAGE_SIZE, totalCount);
 
+  // Boş/hata/yükleme durumlarını hem tablo hem kart görünümü için tek yerde
+  // hesaplıyoruz.
+  const showInitialLoader = isLoading && firmalar.length === 0;
+  const showError = !isLoading && Boolean(loadError);
+  const showEmpty = !isLoading && !loadError && filteredFirmalar.length === 0;
+
   return (
-    <div className="space-y-5 pb-5">
+    <div className="space-y-4 pb-5 sm:space-y-5">
       {/* BAŞLIK */}
       <section
         className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${
           isDirectDetailView ? "hidden" : ""
         }`}
       >
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 shadow-sm">
+        <div className="flex items-start gap-2.5 sm:items-center">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600 shadow-sm sm:h-11 sm:w-11">
             <Building2 size={20} />
           </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+          <div className="min-w-0">
+            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-2xl">
               Yatırımcı Listesi
             </h1>
-            <p className="mt-0.5 text-xs text-slate-500 font-medium">
+            <p className="mt-0.5 text-[11px] font-medium text-slate-500 sm:text-xs">
               Sistemde kayıtlı tüm firmaları görüntüleyin ve detaylarını
               inceleyin.
             </p>
@@ -401,7 +386,7 @@ export function CompaniesScreen() {
 
       {/* ARAMA + FİLTRE */}
       <section
-        className={`rounded-2xl bg-white p-3 shadow-sm border border-slate-200/80 ${
+        className={`rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm ${
           isDirectDetailView ? "hidden" : ""
         }`}
       >
@@ -419,7 +404,7 @@ export function CompaniesScreen() {
                 setPage(1);
               }}
               placeholder="Firma adı, TC veya vergi no ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-8 text-base text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:text-sm"
             />
             {searchQuery && (
               <button
@@ -428,7 +413,7 @@ export function CompaniesScreen() {
                   setSearchQuery("");
                   setPage(1);
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
                 aria-label="Aramayı temizle"
               >
                 <X size={15} />
@@ -456,7 +441,7 @@ export function CompaniesScreen() {
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 z-20 mt-1.5 w-52 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+              <div className="absolute left-0 right-0 z-20 mt-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-lg sm:left-auto sm:w-52">
                 <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Yetki Durumu
                 </p>
@@ -487,132 +472,219 @@ export function CompaniesScreen() {
         </div>
       </section>
 
-      {/* TABLO */}
+      {/* LİSTE — mobilde kart, tabletten yukarı tablo */}
       <section
-        className={`overflow-hidden rounded-2xl bg-white shadow-sm border border-slate-200/80 ${
+        className={`overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm ${
           isDirectDetailView ? "hidden" : ""
         }`}
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/60">
-              <tr>
-                <th className="px-4 py-2">Firma Adı</th>
-                <th className="px-4 py-2">Uzman</th>
-                <th className="px-4 py-2">Vergi No</th>
-                <th className="px-4 py-2">Yetki Bitiş</th>
-                <th className="px-4 py-2 text-right">İşlemler</th>
-              </tr>
-            </thead>
-            <tbody
+        {/* MOBİL: KART GÖRÜNÜMÜ */}
+        <div className="md:hidden">
+          {showInitialLoader ? (
+            <div className="flex flex-col items-center gap-3 px-4 py-10">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-red-600" />
+              <p className="text-sm font-medium text-slate-500">
+                Firmalar yükleniyor...
+              </p>
+            </div>
+          ) : showError ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-semibold text-red-700">
+                Firmalar yüklenemedi
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+            </div>
+          ) : showEmpty ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-semibold text-slate-700">
+                Sonuç bulunamadı
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                Arama veya filtre kriterlerine uyan firma yok.
+              </p>
+            </div>
+          ) : (
+            <ul
               className={`divide-y divide-slate-100 transition-opacity ${
                 isLoading && firmalar.length > 0 ? "opacity-50" : ""
               }`}
             >
-              {isLoading && firmalar.length === 0 ? (
-                // Sadece ilk yüklemede (elimizde hiç veri yokken) tüm
-                // tabloyu tek satırlık bir spinnera çeviriyoruz. Sayfalama
-                // sırasında (2., 3. sayfa vs.) bunu yapmıyoruz — aksi halde
-                // tablo anlık olarak tek satıra küçülüp sayfanın toplam
-                // yüksekliği aniden düşüyor; altta "Seçili Firma Detayı"
-                // açıksa bu, içeriğin sanki oraya "atılmış" gibi görünmesine
-                // yol açıyordu. Eski satırları loading sırasında da
-                // (soluklaştırarak) ekranda tutmak bu ani zıplamayı önlüyor.
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-red-600" />
-                      <p className="text-sm font-medium text-slate-500">
-                        Firmalar yükleniyor...
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : loadError ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center">
-                    <p className="text-sm font-semibold text-red-700">
-                      Firmalar yüklenemedi
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">{loadError}</p>
-                  </td>
-                </tr>
-              ) : filteredFirmalar.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center">
-                    <p className="text-sm font-semibold text-slate-700">
-                      Sonuç bulunamadı
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Arama veya filtre kriterlerine uyan firma yok.
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                filteredFirmalar.map((firma) => {
-                  const isSelected = activeFirma?.id === firma.id;
+              {filteredFirmalar.map((firma) => {
+                const isSelected = activeFirma?.id === firma.id;
 
-                  return (
-                    <tr
-                      key={firma.id}
-                      className={`transition-colors ${
-                        isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
-                      }`}
+                return (
+                  <li
+                    key={firma.id}
+                    className={isSelected ? "bg-red-50/40" : ""}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleSelect(firma)}
+                      className="flex w-full flex-col items-stretch gap-2 px-3 py-3 text-left transition active:bg-slate-50"
                     >
-                      <td className="px-4 py-2">
-                        <p className="text-xs font-semibold text-slate-900">
-                          {firma.firmaAdi}
-                        </p>
-                      </td>
-
-                      <td className="px-4 py-2 text-xs font-medium text-slate-700">
-                        {firma.uzman || "-"}
-                      </td>
-
-                      <td className="px-4 py-2 font-mono text-xs font-medium text-slate-600">
-                        {firma.vergiNo}
-                      </td>
-
-                      <td className="px-4 py-2 text-xs font-medium text-slate-600">
-                        {formatDate(firma.yetkiBitisTarihi)}
-                      </td>
-
-                      <td className="px-4 py-2">
-                        <div className="flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={() => handleSelect(firma)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                              isSelected
-                                ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            }`}
-                          >
-                            {isSelected ? (
-                              <>
-                                <Check size={14} />
-                                Görüntüleniyor
-                              </>
-                            ) : (
-                              <>
-                                Görüntüle
-                                <ChevronRight size={14} />
-                              </>
-                            )}
-                          </button>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-900">
+                            {firma.firmaAdi}
+                          </p>
+                          <p className="mt-0.5 font-mono text-[11px] text-slate-500">
+                            VKN: {firma.vergiNo}
+                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        {isSelected ? (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-red-600 px-2 py-1 text-[10px] font-bold text-white">
+                            <Check size={12} />
+                            Açık
+                          </span>
+                        ) : (
+                          <ChevronRight
+                            size={16}
+                            className="mt-1 shrink-0 text-slate-400"
+                          />
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Uzman
+                          </p>
+                          <p className="mt-0.5 truncate font-medium text-slate-700">
+                            {firma.uzman || "-"}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Yetki Bitiş
+                          </p>
+                          <p className="mt-0.5 font-medium text-slate-700">
+                            {formatDate(firma.yetkiBitisTarihi)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
-        {/* SAYFALAMA */}
-        <div className="flex flex-col gap-2 border-t border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between bg-slate-50/30">
-          <p className="text-xs text-slate-500 font-medium">
+        {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
+        <div className="hidden md:block">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="border-b border-slate-200/60 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th className="px-4 py-2">Firma Adı</th>
+                  <th className="px-4 py-2">Uzman</th>
+                  <th className="px-4 py-2">Vergi No</th>
+                  <th className="px-4 py-2">Yetki Bitiş</th>
+                  <th className="px-4 py-2 text-right">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody
+                className={`divide-y divide-slate-100 transition-opacity ${
+                  isLoading && firmalar.length > 0 ? "opacity-50" : ""
+                }`}
+              >
+                {showInitialLoader ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-red-600" />
+                        <p className="text-sm font-medium text-slate-500">
+                          Firmalar yükleniyor...
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : showError ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center">
+                      <p className="text-sm font-semibold text-red-700">
+                        Firmalar yüklenemedi
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                    </td>
+                  </tr>
+                ) : showEmpty ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-6 text-center">
+                      <p className="text-sm font-semibold text-slate-700">
+                        Sonuç bulunamadı
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Arama veya filtre kriterlerine uyan firma yok.
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredFirmalar.map((firma) => {
+                    const isSelected = activeFirma?.id === firma.id;
+
+                    return (
+                      <tr
+                        key={firma.id}
+                        className={`transition-colors ${
+                          isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                        }`}
+                      >
+                        <td className="px-4 py-2">
+                          <p className="text-xs font-semibold text-slate-900">
+                            {firma.firmaAdi}
+                          </p>
+                        </td>
+
+                        <td className="px-4 py-2 text-xs font-medium text-slate-700">
+                          {firma.uzman || "-"}
+                        </td>
+
+                        <td className="px-4 py-2 font-mono text-xs font-medium text-slate-600">
+                          {firma.vergiNo}
+                        </td>
+
+                        <td className="px-4 py-2 text-xs font-medium text-slate-600">
+                          {formatDate(firma.yetkiBitisTarihi)}
+                        </td>
+
+                        <td className="px-4 py-2">
+                          <div className="flex items-center justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleSelect(firma)}
+                              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              {isSelected ? (
+                                <>
+                                  <Check size={14} />
+                                  Görüntüleniyor
+                                </>
+                              ) : (
+                                <>
+                                  Görüntüle
+                                  <ChevronRight size={14} />
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SAYFALAMA — hem mobil hem tablet için ortak */}
+        <div className="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-medium text-slate-500">
             <span className="font-bold text-slate-700">
               {firstRecord}-{lastRecord}
             </span>{" "}
@@ -620,7 +692,7 @@ export function CompaniesScreen() {
             <span className="font-bold text-slate-700">{totalCount}</span> kayıt
           </p>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-center gap-1.5 sm:justify-end">
             <button
               type="button"
               disabled={page <= 1 || isLoading}
@@ -649,18 +721,18 @@ export function CompaniesScreen() {
         </div>
       </section>
 
-      {/* AÇIK FİRMA SEKMELERİ */}
+      {/* AÇIK FİRMA SEKMELERİ — mobilde yatay kaydırma, tablet+ ızgara */}
       {openFirmalar.length > 0 && (
-        <div className="grid grid-cols-2 gap-1.5 border-b border-slate-200/80 pt-1.5 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-7">
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto border-b border-slate-200/80 px-1 pt-1.5 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5 2xl:grid-cols-7">
           {openFirmalar.map((firma) => {
             const isActive = firma.id === activeFirmaId;
 
             return (
               <div
                 key={firma.id}
-                className={`flex min-w-0 items-center rounded-t-xl border border-b-0 transition-all ${
+                className={`flex min-w-[160px] items-center rounded-t-xl border border-b-0 transition-all sm:min-w-0 ${
                   isActive
-                    ? "border-slate-200 bg-white text-red-600 font-semibold shadow-sm"
+                    ? "border-slate-200 bg-white font-semibold text-red-600 shadow-sm"
                     : "border-transparent bg-slate-100/70 text-slate-500 hover:bg-slate-100"
                 }`}
               >
@@ -677,7 +749,7 @@ export function CompaniesScreen() {
                     event.stopPropagation();
                     handleCloseTab(firma.id);
                   }}
-                  className="mr-1.5 rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                  className="mr-1.5 rounded-md p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                   aria-label={`${firma.firmaAdi} sekmesini kapat`}
                 >
                   <X size={13} />
@@ -691,10 +763,10 @@ export function CompaniesScreen() {
       {/* SEÇİLEN FİRMA DETAYI */}
       {activeFirma && (
         <section ref={detailRef} className="scroll-mt-6 space-y-4">
-          {/* Detay Başlık Kartı — scroll'da üstte kalır, hangi firmada olduğunuzu unutmazsınız */}
-          <div className="sticky top-20 z-30 -mx-1 bg-[#F1F5F9] px-1 pb-1.5 pt-1">
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-blue-800 px-3 py-2 text-white shadow-md ring-1 ring-blue-900/20">
-              <div className="flex min-w-0 items-center gap-3">
+          {/* Detay Başlık Kartı — sticky'yi mobil header (64px) altına oturttum */}
+          <div className="sticky top-16 z-30 -mx-1 bg-[#F1F5F9] px-1 pb-1.5 pt-1 sm:top-20">
+            <div className="flex items-center justify-between gap-2 rounded-xl bg-blue-800 px-3 py-2 text-white shadow-md ring-1 ring-blue-900/20 sm:gap-3">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm shadow-red-600/30">
                   <Building2 size={16} />
                 </div>
@@ -705,7 +777,7 @@ export function CompaniesScreen() {
                   <h2 className="truncate text-sm font-bold tracking-tight text-white">
                     {activeFirma.firmaAdi}
                   </h2>
-                  <p className="text-[11px] font-medium text-white/60">
+                  <p className="truncate text-[11px] font-medium text-white/60">
                     Vergi No:{" "}
                     <span className="font-semibold text-white/90">
                       {activeFirma.vergiNo}
@@ -717,26 +789,18 @@ export function CompaniesScreen() {
               <button
                 type="button"
                 onClick={handleClose}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-white/20 sm:px-2.5"
+                aria-label="Firma detayını kapat"
               >
                 <X size={14} />
-                Kapat
+                <span className="hidden sm:inline">Kapat</span>
               </button>
             </div>
           </div>
 
-          {/* Firma Künye + İletişim Bilgileri */}
           <CompanyIdentitySection companyId={activeFirma.id} />
-          {/* Gönderilmiş Talep Listesi */}
           <CompanyRequestList companyId={String(activeFirma.id)} />
-          {/* Belgeler */}
           <div className="space-y-3">
-            {/*
-              DocumentsScreen artık açık belge sekmelerini ve aktif belge
-              detayını tamamen kendi içinde yönetiyor (bkz. o dosyadaki
-              companyId-değişince-sıfırla düzeltmesi). Burada ayrıca bir
-              belge sekmesi/detay state'i tutmuyoruz.
-            */}
             <DocumentsScreen companyId={activeFirma.id} variant="admin" />
           </div>
         </section>

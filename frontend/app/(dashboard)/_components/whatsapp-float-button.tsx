@@ -59,7 +59,7 @@ export function WhatsAppFloatButton({
     return Math.min(Math.max(nextY, positionY + minY), positionY + maxY);
   }
 
-  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerDown(event: React.PointerEvent<HTMLButtonElement>) {
     isDraggingRef.current = true;
     hasDraggedRef.current = false;
 
@@ -71,7 +71,7 @@ export function WhatsAppFloatButton({
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
-  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
     if (!isDraggingRef.current) {
       return;
     }
@@ -87,7 +87,7 @@ export function WhatsAppFloatButton({
     setPositionY(clampY(nextY));
   }
 
-  function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
     isDraggingRef.current = false;
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -107,14 +107,10 @@ export function WhatsAppFloatButton({
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 right-6 z-50 flex touch-none select-none items-end gap-3"
+      className="fixed bottom-6 right-6 z-50 flex select-none items-end gap-3"
       style={{
         transform: `translateY(${positionY}px)`,
       }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
     >
       {/* AÇILAN KART */}
       {isOpen && (
@@ -170,13 +166,17 @@ export function WhatsAppFloatButton({
       {/* ANA BUTON */}
       <button
         type="button"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onClick={handleMainButtonClick}
         aria-label={
           isOpen
             ? "WhatsApp iletişim penceresini kapat"
             : "WhatsApp üzerinden iletişime geç"
         }
-        className="group relative flex h-16 w-16 shrink-0 cursor-grab items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-green-500/30 transition-all duration-200 hover:scale-105 hover:bg-[#1FB855] active:cursor-grabbing"
+        className="group relative flex h-16 w-16 shrink-0 touch-none cursor-grab items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-green-500/30 transition-all duration-200 hover:scale-105 hover:bg-[#1FB855] active:cursor-grabbing"
       >
         {isOpen ? (
           <X size={28} strokeWidth={2.4} aria-hidden="true" />

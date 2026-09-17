@@ -60,20 +60,16 @@ export class CompanyService {
     const limit = query.limit;
     const skip = (page - 1) * limit;
 
-    const consultantUserId = role === "OPERATION" ? userId : undefined;
-
     const [companies, totalCount] = await Promise.all([
       this.companyRepository.findMany({
         skip,
         take: limit,
         search: query.search,
         isActive: query.isActive,
-        consultantUserId,
       }),
       this.companyRepository.count({
         search: query.search,
         isActive: query.isActive,
-        consultantUserId,
       }),
     ]);
 
@@ -226,13 +222,6 @@ export class CompanyService {
           },
         );
       }
-    }
-
-    if (role === "OPERATION" && company.consultantUserId !== userId) {
-      throw new AppError("You do not have permission to access this company.", {
-        statusCode: HTTP_STATUS.FORBIDDEN,
-        code: "FORBIDDEN",
-      });
     }
 
     return {
