@@ -1756,7 +1756,7 @@ export function DocumentsScreen({
                 <col className="w-[10%]" />
                 <col className="w-[10%]" />
                 <col className="w-[10%]" />
-                <col className="w-[13%]" />
+                <col className="w-[14%]" />
                 <col className="w-[8%]" />
               </colgroup>
             )}
