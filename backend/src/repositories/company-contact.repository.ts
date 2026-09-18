@@ -7,7 +7,19 @@ export class CompanyContactRepository {
       orderBy: { createdAt: "desc" },
     });
   }
-
+  async findLatestByCompanyId(companyId: number) {
+    return prisma.companyContact.findFirst({
+      where: {
+        companyId,
+        email: {
+          not: "",
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
   async create(params: {
     companyId: number;
     fullName: string;

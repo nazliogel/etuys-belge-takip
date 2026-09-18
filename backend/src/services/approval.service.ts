@@ -287,21 +287,25 @@ export class ApprovalService {
               });
 
               if (!company) {
+                const companyName = row.companyName?.trim() ?? "";
+
+                if (!companyName) {
+                  throw new AppError("Firma adı zorunludur.", {
+                    statusCode: HTTP_STATUS.BAD_REQUEST,
+                    code: "COMPANY_NAME_REQUIRED",
+                  });
+                }
+
                 company = await tx.company.create({
                   data: {
                     externalCompanyId: row.externalCompanyId,
-
-                    name: row.companyName ?? "",
-
+                    name: companyName,
                     taxNumber: row.taxNumber ?? "",
-
                     processStatus: row.processStatus,
-
                     isActive: true,
                   },
                 });
               }
-
               companyId = company.id;
               entityId = company.id;
 

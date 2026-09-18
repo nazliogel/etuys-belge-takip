@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Headphones, LogOut } from "lucide-react";
-
+import { getAccessToken, logoutMockUser } from "@/lib/mock-auth";
 import { apiFetch } from "@/lib/api";
-import { logoutMockUser } from "@/lib/mock-auth";
+
 
 import { navigationItems } from "../_lib/navigation";
 import {
@@ -175,6 +175,7 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
   // Destek talebi okunmamış bildirim sayısı
   useEffect(() => {
     if (role !== "ADMIN" && role !== "OPERATION") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSupportUnreadCount(0);
       return;
     }
@@ -182,6 +183,16 @@ export function AppSidebar({ role, userName }: AppSidebarProps) {
     let active = true;
 
     const loadUnreadCount = async () => {
+      const token = getAccessToken();
+
+      if (!token) {
+        if (active) {
+          setSupportUnreadCount(0);
+        }
+
+        return;
+      }
+
       try {
         const response = await apiFetch<UnreadSupportRequestCountResponse>(
           "/support-requests/unread-count",

@@ -24,6 +24,7 @@ const excelParserService = new ExcelParserService();
 const closedExcelParserService = new ClosedExcelParserService();
 const compareRepository = new CompareRepository();
 const companyRepository = new CompanyRepository();
+
 const importProcessService = new ImportProcessService(
   importRepository,
   importRowRepository,
@@ -70,5 +71,6 @@ export const importProcessController = new ImportProcessController(
 
 export const compareController = new CompareController(compareService);
 
-export const companyRequestController =
-  new CompanyRequestController(companyRequestService);
+export const companyRequestController = new CompanyRequestController(
+  companyRequestService,
+);
