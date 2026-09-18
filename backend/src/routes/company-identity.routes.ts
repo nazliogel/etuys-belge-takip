@@ -4,6 +4,7 @@ import { importUpload } from "../config/upload.js";
 import { CompanyIdentityController } from "../controllers/company-identity.controller.js";
 import { CompanyContactController } from "../controllers/company-contact.controller.js";
 import { CompanyNoteController } from "../controllers/company-note.controller.js";
+import { CompanyCredentialController } from "../controllers/company-credential.controller.js";
 import { authenticate } from "../middlewares/auth.js";
 import { CompanyIdentityRepository } from "../repositories/company-identity.repository.js";
 import { CompanyRepository } from "../repositories/company.repository.js";
@@ -15,6 +16,7 @@ import { CompanyIdentityImportService } from "../services/company-identity-impor
 import { CompanyIdentityService } from "../services/company-identity.service.js";
 import { CompanyContactService } from "../services/company-contact.service.js";
 import { CompanyNoteService } from "../services/company-note.service.js";
+import { CompanyCredentialService } from "../services/company-credential.service.js";
 import { ImportRepository } from "../repositories/import.repository.js";
 
 const router = Router();
@@ -36,7 +38,11 @@ const companyContactService = new CompanyContactService(
   companyContactRepository,
   companyRepository,
 );
-
+const companyCredentialService = new CompanyCredentialService(
+  companyRepository,
+  companyContactRepository,
+  userRepository,
+);
 const companyNoteService = new CompanyNoteService(
   companyNoteRepository,
   companyRepository,
@@ -57,6 +63,10 @@ const companyIdentityController = new CompanyIdentityController(
 );
 const companyContactController = new CompanyContactController(
   companyContactService,
+);
+
+const companyCredentialController = new CompanyCredentialController(
+  companyCredentialService,
 );
 
 const companyNoteController = new CompanyNoteController(companyNoteService);
@@ -89,5 +99,15 @@ router.get("/:companyId/notes", companyNoteController.list);
 router.post("/:companyId/notes", companyNoteController.create);
 
 router.patch("/:companyId/notes/:noteId", companyNoteController.update);
+
+router.get(
+  "/:companyId/credentials/status",
+  companyCredentialController.checkStatus,
+);
+
+router.post(
+  "/:companyId/credentials/email-draft",
+  companyCredentialController.createEmailDraft,
+);
 
 export default router;

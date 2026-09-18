@@ -9,7 +9,7 @@ export type RegisterInput = {
 };
 
 export type LoginInput = {
-  email: string;
+  identifier: string;
   password: string;
 };
 
@@ -17,10 +17,12 @@ export type AuthUser = {
   id: number;
   firstName: string;
   lastName: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   role: UserRoleValue;
   companyId: number | null;
   isActive: boolean;
+  mustChangePassword: boolean;
   createdAt: string;
   updatedAt: string;
 };
