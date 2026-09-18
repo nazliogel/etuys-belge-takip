@@ -101,6 +101,8 @@ const STATUS_LABELS: Record<string, string> = {
   CLOSED: "Kapalı",
   CANCELLED: "İptal",
   INACTIVE: "Kapalı-İptal",
+  EXTENSION_ELIGIBLE: "Uzatma Yapılabilir",
+  CLOSURE_ELIGIBLE: "Kapatma Yapılacak",
 };
 
 type ApiDocument = {
@@ -236,17 +238,6 @@ type AuthorizationRequiredResponse = {
   data: {
     items: AuthorizationRequiredCompany[];
     totalCount: number;
-  };
-};
-
-type DocumentDetailResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    id: number;
-    company: {
-      authorizationEndDate: string | null;
-    };
   };
 };
 
@@ -414,7 +405,6 @@ function calculateDocumentStatus(document: {
     return "EXPIRED";
   }
 
-
   return "ACTIVE";
 }
 
@@ -425,6 +415,32 @@ function getDisplayStatus(doc: ApiDocument): string {
   return doc.status === "INACTIVE"
     ? (doc.documentStatus ?? "INACTIVE")
     : doc.status;
+}
+
+// Tabloda satırın rozetinde YAZAN metnin karşılığı — filtre de bunu kullanır.
+// Kapalı/iptal ve yetki bitmiş kontrollerinden sonra, uzatma/kapatma
+// yapılabilir belgeleri kendi etiketleriyle döner. Kart-view'i yakalayabilmek
+// için ekstra Set'ler dışarıdan geçilir.
+function getBadgeStatus(
+  doc: ApiDocument,
+  opts: {
+    isClosureEligibleView: boolean;
+    isExtensionEligibleView: boolean;
+    closureEligibleIds: Set<number>;
+    extensionEligibleIds: Set<number>;
+    authorizationExpired: boolean;
+  },
+): string {
+  const isClosedOrCancelled =
+    doc.documentStatus === "CLOSED" || doc.documentStatus === "CANCELLED";
+
+  if (isClosedOrCancelled) return getDisplayStatus(doc);
+
+  if (opts.isClosureEligibleView || opts.closureEligibleIds.has(doc.id))
+    return "CLOSURE_ELIGIBLE";
+  if (opts.isExtensionEligibleView || opts.extensionEligibleIds.has(doc.id))
+    return "EXTENSION_ELIGIBLE";
+  return getDisplayStatus(doc);
 }
 
 // Belge tablosu satırından, verilen sütun anahtarına göre karşılaştırılabilir
@@ -443,7 +459,7 @@ function getDocumentSortValue(
           ? doc.documentEndDate
           : key === "extensionDate"
             ? doc.extensionDate
-            : doc.company?.authorizationEndDate ?? null;
+            : (doc.company?.authorizationEndDate ?? null);
 
     if (!rawDate) return Infinity; // tarihi olmayanlar en sona
 
@@ -774,7 +790,6 @@ export function DocumentsScreen({
       );
       return authSortConfig.direction === "asc" ? comparison : -comparison;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleAuthorizationCompaniesUnsorted, authSortConfig]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -785,6 +800,14 @@ export function DocumentsScreen({
     setOpenDocuments([]);
     setActiveDocumentKey(null);
   }, [companyId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStatusFilter(new Set());
+    setConsultantFilter(new Set());
+    setSupportClassFilter(new Set());
+  }, [requestedView, requestedStatus]);
+
   useEffect(() => {
     async function loadCompanyAuthorization() {
       if (variant !== "company" || companyId) {
@@ -1078,16 +1101,25 @@ export function DocumentsScreen({
           return;
         }
         if (isExtensionEligibleView) {
-          const [extensionResponse, summaryResponse, closedResponse] =
-            await Promise.all([
-              apiFetch<ExtensionEligibleResponse>(
-                "/documents/extension-eligible",
-              ),
-              apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-              apiFetch<ClosedDocumentListResponse>(
-                "/closed-documents?page=1&limit=1",
-              ),
-            ]);
+          const [
+            extensionResponse,
+            summaryResponse,
+            closedResponse,
+            closureResponse,
+            authorizationResponse,
+          ] = await Promise.all([
+            apiFetch<ExtensionEligibleResponse>(
+              "/documents/extension-eligible",
+            ),
+            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+            apiFetch<ClosedDocumentListResponse>(
+              "/closed-documents?page=1&limit=1",
+            ),
+            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
+            apiFetch<AuthorizationRequiredResponse>(
+              "/companies/authorization-required",
+            ),
+          ]);
 
           const normalizedSearch = searchQuery
             .trim()
@@ -1096,7 +1128,6 @@ export function DocumentsScreen({
           const eligibleDocuments = extensionResponse.data.items
             .filter((document) => {
               if (!normalizedSearch) return true;
-
               return [
                 document.documentNumber,
                 document.company?.name,
@@ -1114,6 +1145,9 @@ export function DocumentsScreen({
           setSummary(summaryResponse.data.summary);
           setClosedDocumentCount(closedResponse.data.totalCount);
           setExtensionEligibleCount(extensionResponse.data.totalCount);
+          setClosureEligibleCount(closureResponse.data.totalCount);
+          setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
+          setAuthorizationRequiredCompanies(authorizationResponse.data.items);
           setTotalPages(1);
           setAuthorizationEndDate(null);
 
@@ -1174,14 +1208,27 @@ export function DocumentsScreen({
           return;
         }
         if (status === "INACTIVE") {
-          const [allClosedDocuments, summaryResponse, extensionResponse] =
-            await Promise.all([
-              fetchAllClosedDocuments(params),
-              apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-              apiFetch<ExtensionEligibleResponse>(
-                "/documents/extension-eligible",
-              ),
-            ]);
+          const [
+            allClosedDocuments,
+            summaryResponse,
+            closedResponse,
+            extensionResponse,
+            closureResponse,
+            authorizationResponse,
+          ] = await Promise.all([
+            fetchAllClosedDocuments(params),
+            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+            apiFetch<ClosedDocumentListResponse>(
+              "/closed-documents?page=1&limit=1",
+            ),
+            apiFetch<ExtensionEligibleResponse>(
+              "/documents/extension-eligible",
+            ),
+            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
+            apiFetch<AuthorizationRequiredResponse>(
+              "/companies/authorization-required",
+            ),
+          ]);
 
           const mappedDocuments: ApiDocument[] = allClosedDocuments.map(
             (document) => ({
@@ -1192,16 +1239,15 @@ export function DocumentsScreen({
             }),
           );
 
-          // Kapalı / İptal belgelerin tamamını bellekte tutuyoruz.
-          // Filtreleme + sıralama bittikten SONRA 20'şer sayfalayacağız.
           setDocuments(mappedDocuments);
-
           setAuthorizationEndDate(null);
 
           setSummary(summaryResponse.data.summary);
-          setClosedDocumentCount(mappedDocuments.length);
+          setClosedDocumentCount(closedResponse.data.totalCount); // ← ÖNEMLİ: mappedDocuments.length DEĞİL
           setExtensionEligibleCount(extensionResponse.data.totalCount);
-
+          setClosureEligibleCount(closureResponse.data.totalCount);
+          setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
+          setAuthorizationRequiredCompanies(authorizationResponse.data.items);
           return;
         }
         /*
@@ -1212,18 +1258,39 @@ export function DocumentsScreen({
           params.set("status", status);
         }
 
+        const isTotalView = !status;
+
         const [
-          response,
+          documentsData,
+          allClosedDocuments,
           summaryResponse,
           closedResponse,
           extensionResponse,
           closureResponse,
           authorizationResponse,
         ] = await Promise.all([
-          // Tablo: arama / durum / sayfalama uygulanır.
-          apiFetch<DocumentListResponse>(`/documents?${params.toString()}`),
+          isTotalView
+            ? fetchAllDocuments(
+                new URLSearchParams(
+                  searchQuery.trim() ? { search: searchQuery.trim() } : {},
+                ),
+              )
+            : apiFetch<DocumentListResponse>(
+                `/documents?${params.toString()}`,
+              ).then((r) => ({
+                items: r.data.items,
+                summary: r.data.summary,
+                totalPages: r.data.totalPages,
+              })),
 
-          // Kartlar: hiçbir arama veya filtre uygulanmadan genel sayılar alınır.
+          isTotalView
+            ? fetchAllClosedDocuments(
+                searchQuery.trim()
+                  ? new URLSearchParams({ search: searchQuery.trim() })
+                  : undefined,
+              )
+            : Promise.resolve<ClosedApiDocument[]>([]),
+
           apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
 
           apiFetch<ClosedDocumentListResponse>(
@@ -1241,10 +1308,7 @@ export function DocumentsScreen({
             : Promise.resolve<AuthorizationRequiredResponse>({
                 success: true,
                 message: "",
-                data: {
-                  items: [],
-                  totalCount: 0,
-                },
+                data: { items: [], totalCount: 0 },
               }),
         ]);
 
@@ -1257,17 +1321,47 @@ export function DocumentsScreen({
         setClosureEligibleCount(closureResponse.data.totalCount);
         setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
         setAuthorizationRequiredCompanies(authorizationResponse.data.items);
-        setTotalPages(response.data.totalPages);
-        setDocuments(
-          response.data.items.map((document) =>
+
+        if (isTotalView) {
+          const openItems = (
+            documentsData as { items: ApiDocument[] }
+          ).items.map((document) =>
             document.status === "EXPIRING"
-              ? { ...document, status: "ACTIVE" }
+              ? { ...document, status: "ACTIVE" as DocumentStatus }
               : document,
-          ),
-        );
+          );
+
+          const closedItems: ApiDocument[] = allClosedDocuments.map(
+            (document) => ({
+              ...document,
+              isActive: false,
+              status: "INACTIVE" as DocumentStatus,
+              documentStatus: document.status,
+            }),
+          );
+
+          const byId = new Map<number, ApiDocument>();
+          openItems.forEach((d) => byId.set(d.externalDocumentId, d));
+          closedItems.forEach((d) => byId.set(d.externalDocumentId, d));
+
+          setDocuments(Array.from(byId.values()));
+          setTotalPages(1);
+        } else {
+          const response = documentsData as unknown as {
+            items: ApiDocument[];
+            totalPages: number;
+          };
+          setTotalPages(response.totalPages);
+          setDocuments(
+            response.items.map((document) =>
+              document.status === "EXPIRING"
+                ? { ...document, status: "ACTIVE" }
+                : document,
+            ),
+          );
+        }
       } catch (error) {
         setDocuments([]);
-
         setLoadError(
           error instanceof Error ? error.message : "Belgeler yüklenemedi.",
         );
@@ -1445,7 +1539,20 @@ export function DocumentsScreen({
   const statusOptions = useMemo(() => {
     const values = new Set<string>();
     visibleDocumentsByStatusFilter.forEach((doc) => {
-      values.add(getDisplayStatus(doc));
+      const authorizationExpired = !companyId
+        ? !hasValidAuthorization(doc.company?.authorizationEndDate ?? null)
+        : !isAuthorizationLoading &&
+          !hasValidAuthorization(doc.company?.authorizationEndDate ?? null);
+
+      values.add(
+        getBadgeStatus(doc, {
+          isClosureEligibleView,
+          isExtensionEligibleView,
+          closureEligibleIds: companyClosureEligibleIds,
+          extensionEligibleIds: companyExtensionEligibleIds,
+          authorizationExpired,
+        }),
+      );
     });
     return Array.from(values)
       .sort((a, b) => a.localeCompare(b, "tr-TR"))
@@ -1453,7 +1560,15 @@ export function DocumentsScreen({
         value,
         label: STATUS_LABELS[value] ?? value,
       }));
-  }, [visibleDocumentsByStatusFilter]);
+  }, [
+    visibleDocumentsByStatusFilter,
+    companyId,
+    isAuthorizationLoading,
+    isClosureEligibleView,
+    isExtensionEligibleView,
+    companyClosureEligibleIds,
+    companyExtensionEligibleIds,
+  ]);
 
   // Uzman / Destekleme Sınıfı / Durum filtreleri uygulanır (hepsi VE
   // mantığıyla birleştirilir; bir filtre boşsa o sütun için hiçbir
@@ -1474,8 +1589,23 @@ export function DocumentsScreen({
         return false;
       }
 
-      if (statusFilter.size > 0 && !statusFilter.has(getDisplayStatus(doc))) {
-        return false;
+      if (statusFilter.size > 0) {
+        const authorizationExpired = !companyId
+          ? !hasValidAuthorization(doc.company?.authorizationEndDate ?? null)
+          : !isAuthorizationLoading &&
+            !hasValidAuthorization(doc.company?.authorizationEndDate ?? null);
+
+        const badge = getBadgeStatus(doc, {
+          isClosureEligibleView,
+          isExtensionEligibleView,
+          closureEligibleIds: companyClosureEligibleIds,
+          extensionEligibleIds: companyExtensionEligibleIds,
+          authorizationExpired,
+        });
+
+        if (!statusFilter.has(badge)) {
+          return false;
+        }
       }
 
       return true;
@@ -1495,31 +1625,46 @@ export function DocumentsScreen({
       );
       return documentSortConfig.direction === "asc" ? comparison : -comparison;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleDocumentsFiltered, documentSortConfig]);
 
   const CLOSED_PAGE_SIZE = 20;
 
   const isClosedDocumentsView = !companyId && status === "INACTIVE";
+  const isTotalDocumentsView =
+    !companyId &&
+    !status &&
+    !isExtensionEligibleView &&
+    !isClosureEligibleView &&
+    !isAuthorizationRequiredView;
+
+  const isClientPaginated = isClosedDocumentsView || isTotalDocumentsView;
 
   const paginatedVisibleDocuments = useMemo(() => {
-    if (!isClosedDocumentsView) {
+    if (!isClientPaginated) {
       return visibleDocuments;
     }
 
     const startIndex = (currentPage - 1) * CLOSED_PAGE_SIZE;
     const endIndex = startIndex + CLOSED_PAGE_SIZE;
-
     return visibleDocuments.slice(startIndex, endIndex);
-  }, [visibleDocuments, currentPage, isClosedDocumentsView]);
+  }, [visibleDocuments, currentPage, isClientPaginated]);
 
-  const displayedTotalPages = isClosedDocumentsView
+  const displayedTotalPages = isClientPaginated
     ? Math.max(1, Math.ceil(visibleDocuments.length / CLOSED_PAGE_SIZE))
     : totalPages;
   // Belge tablosu başlıkları:
   // - `key` verilmişse sütun başlığına tıklanarak sıralanabilir.
   // - `filterType` verilmişse başlıktaki huni (funnel) ikonuyla checkbox'lı
   //   filtre açılabilir.
+  // Filtre-görünümlerinde belgeler zaten tek tip, "Durum" filtresine gerek yok.
+  const hideStatusFilter =
+    isExtensionEligibleView ||
+    isClosureEligibleView ||
+    status === "INACTIVE" ||
+    showCompanyExtensionEligible ||
+    showCompanyClosureEligible ||
+    companyStatusFilter === "INACTIVE";
+
   const documentHeadings: {
     label: string;
     key?: DocumentSortKey;
@@ -1537,7 +1682,11 @@ export function DocumentsScreen({
       key: "supportClass",
       filterType: "supportClass",
     },
-    { label: "Durum", key: "status", filterType: "status" },
+    {
+      label: "Durum",
+      key: "status",
+      ...(hideStatusFilter ? {} : { filterType: "status" as const }),
+    },
     { label: "Detay" },
   ];
 
@@ -1590,7 +1739,9 @@ export function DocumentsScreen({
             <OperationStat
               label="Toplam Belge"
               value={String(
-                companyId ? summary.total : summary.total + closedDocumentCount,
+                companyId
+                  ? summary.total // firma detayında zaten mappedDocuments = açık + kapalı
+                  : summary.total + closedDocumentCount, // admin genel: açık + kapalı toplanır
               )}
               icon={<FileText size={15} />}
               onClick={() => {
@@ -1757,7 +1908,7 @@ export function DocumentsScreen({
                 <col className="w-[10%]" />
                 <col className="w-[10%]" />
                 <col className="w-[14%]" />
-                <col className="w-[8%]" />
+                <col className="w-[10%]" />
               </colgroup>
             )}
             <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
@@ -1850,7 +2001,6 @@ export function DocumentsScreen({
 
                       {filterType === "consultant" &&
                         openFilterColumn === "consultant" && (
-                          // eslint-disable-next-line react/jsx-no-undef
                           <ColumnFilterDropdown
                             title="Uzman"
                             options={consultantOptions}
@@ -2065,9 +2215,6 @@ export function DocumentsScreen({
                     (companyId
                       ? !isAuthorizationLoading && !documentAuthorizationIsValid
                       : !documentAuthorizationIsValid);
-                  const displayedStatus = authorizationExpired
-                    ? "AUTHORIZATION_EXPIRED"
-                    : getDisplayStatus(doc);
 
                   const documentKey = `${
                     doc.status === "INACTIVE" ? "closed" : "open"
