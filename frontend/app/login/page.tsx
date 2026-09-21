@@ -1,14 +1,24 @@
 "use client";
 
 import { Eye, EyeOff, LockKeyhole, Mail, ArrowRight } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { login } from "@/lib/mock-auth";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  // Login sayfasına her giriş light'a çekilir. Kullanıcı önceki oturumda dark
+  // yaptıysa, çıkıp geri geldiğinde bu useEffect temayı aydınlığa döndürür.
+  // Kullanıcı bunu görmez — zaten login sayfasındaki formla ilgilenir.
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme("light");
+  }, [setTheme]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

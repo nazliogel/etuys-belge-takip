@@ -74,7 +74,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
       label: "İptal",
       description: "Belge iptal edilmiştir.",
       dot: "bg-red-500",
-      className: "bg-red-50 text-red-700",
+      className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
     };
   }
 
@@ -83,7 +83,8 @@ function getDocumentStatus(document: ApiDocumentDetail) {
       label: "Kapalı",
       description: "Belge kapatılmıştır.",
       dot: "bg-blue-500",
-      className: "bg-blue-50 text-blue-700 border border-blue-200",
+      className:
+        "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30",
     };
   }
 
@@ -94,7 +95,8 @@ function getDocumentStatus(document: ApiDocumentDetail) {
       label: "Aktif",
       description: "Belge aktif durumda.",
       dot: "bg-emerald-500",
-      className: "bg-emerald-50 text-emerald-700",
+      className:
+        "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
     };
   }
 
@@ -113,7 +115,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
       label: "Kapatma Yapılacak",
       description: "Belge bitiş tarihi geçmiştir.",
       dot: "bg-red-500",
-      className: "bg-red-50 text-red-700",
+      className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
     };
   }
 
@@ -122,7 +124,8 @@ function getDocumentStatus(document: ApiDocumentDetail) {
       label: "Süresi Yaklaşıyor",
       description: `Belgenin bitmesine ${remainingDays} gün kaldı.`,
       dot: "bg-amber-500",
-      className: "bg-amber-50 text-amber-700",
+      className:
+        "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
     };
   }
 
@@ -130,7 +133,8 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     label: "Aktif",
     description: `Belgenin bitmesine ${remainingDays} gün kaldı.`,
     dot: "bg-emerald-500",
-    className: "bg-emerald-50 text-emerald-700",
+    className:
+      "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
   };
 }
 export function DocumentDetailScreen({
@@ -279,8 +283,8 @@ export function DocumentDetailScreen({
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-700" />
-          <p className="mt-4 text-sm font-medium text-slate-600">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground/70" />
+          <p className="mt-4 text-sm font-medium text-muted-foreground">
             Belge bilgileri yükleniyor...
           </p>
         </div>
@@ -291,17 +295,19 @@ export function DocumentDetailScreen({
   if (loadError) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400">
           <FileText size={24} />
         </div>
-        <h3 className="mt-4 text-base font-semibold text-slate-900">
+        <h3 className="mt-4 text-base font-semibold text-foreground">
           Belge yüklenemedi
         </h3>
-        <p className="mt-2 max-w-md text-sm text-slate-500">{loadError}</p>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          {loadError}
+        </p>
         {!inline && (
           <Link
             href="/documents"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 shadow-sm ring-1 ring-border transition hover:ring-foreground/30"
           >
             <ArrowLeft size={16} />
             Belgelere dön
@@ -314,13 +320,13 @@ export function DocumentDetailScreen({
   if (!document) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
           <FileText size={24} />
         </div>
-        <h3 className="mt-4 text-base font-semibold text-slate-900">
+        <h3 className="mt-4 text-base font-semibold text-foreground">
           Belge bulunamadı
         </h3>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           Aradığınız belge sistemde kayıtlı değil.
         </p>
       </div>
@@ -336,8 +342,8 @@ export function DocumentDetailScreen({
     return (
       <div className="space-y-3">
         {/* ADMIN BELGE DETAY SEKMELERİ */}
-        <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex w-full items-stretch overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300">
+        <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="flex w-full items-stretch overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border">
             {[
               "Belge Künye Bilgileri",
               "Yatırım Cinsi",
@@ -351,10 +357,10 @@ export function DocumentDetailScreen({
               <button
                 key={item}
                 type="button"
-                className={`shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2.5 text-[11px] font-semibold transition last:border-r-0 sm:flex-1 sm:px-2 ${
+                className={`shrink-0 whitespace-nowrap border-r border-border px-3 py-2.5 text-[11px] font-semibold transition last:border-r-0 sm:flex-1 sm:px-2 ${
                   index === 0
-                    ? "bg-red-50 text-red-700"
-                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+                    : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 {item}
@@ -364,22 +370,22 @@ export function DocumentDetailScreen({
           {/* Sağ tarafta "daha var" gölgesi — mobilde kullanıcıya kaydırılabilir olduğunu belli eder */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden"
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent sm:hidden"
           />
         </div>
         {/* ÜST ŞERİT */}
         <section className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-200/60 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
               <FileText size={16} />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Belge Detayı
               </p>
-              <h2 className="text-base font-extrabold tracking-tight text-slate-900">
+              <h2 className="text-base font-extrabold tracking-tight text-foreground">
                 {document.documentNumber ?? "-"}
-                <span className="ml-2 text-xs font-medium text-slate-400">
+                <span className="ml-2 text-xs font-medium text-muted-foreground">
                   Numaralı Belge
                 </span>
               </h2>
@@ -399,24 +405,24 @@ export function DocumentDetailScreen({
         </section>
 
         {/* KPI ŞERİDİ */}
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
+        <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="flex items-center justify-between border-b border-border bg-muted/60 px-3 py-2">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
 
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground/80">
                 Belge Bilgileri
               </h3>
             </div>
 
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-muted-foreground">
               Resmi kayıtlardan alınmıştır
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 <OperationRow
                   label1="Belge ID"
                   value1={String(document.externalDocumentId)}
@@ -483,7 +489,7 @@ export function DocumentDetailScreen({
       onClick={handleDownloadPdf}
       disabled={isGeneratingPdf}
       data-pdf-ignore="true"
-      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm"
     >
       {isGeneratingPdf ? (
         <>
@@ -506,7 +512,7 @@ export function DocumentDetailScreen({
           <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
             <Link
               href="/documents"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition hover:text-slate-900 sm:text-sm"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground sm:text-sm"
             >
               <ArrowLeft size={16} className="sm:h-[17px] sm:w-[17px]" />
               Belgelerime dön
@@ -517,13 +523,13 @@ export function DocumentDetailScreen({
 
           <div className="mt-4 flex flex-col justify-between gap-3 sm:mt-5 sm:gap-5 lg:flex-row lg:items-start">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
                 Belge detayı
               </p>
-              <h1 className="mt-1 break-words text-lg font-semibold tracking-tight text-slate-900 sm:text-2xl">
+              <h1 className="mt-1 break-words text-lg font-semibold tracking-tight text-foreground sm:text-2xl">
                 {document.documentNumber ?? "-"} Numaralı Belge
               </h1>
-              <p className="mt-1.5 text-xs text-slate-500 sm:mt-2 sm:text-sm">
+              <p className="mt-1.5 text-xs text-muted-foreground sm:mt-2 sm:text-sm">
                 Belgenizin tarih ve güncel durum bilgilerini görüntüleyin.
               </p>
             </div>
@@ -533,10 +539,10 @@ export function DocumentDetailScreen({
       ) : (
         <section className="flex flex-col justify-between gap-3 sm:gap-4 lg:flex-row lg:items-start">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
               Belge detayı
             </p>
-            <h2 className="mt-1 break-words text-base font-semibold tracking-tight text-slate-900 sm:text-xl">
+            <h2 className="mt-1 break-words text-base font-semibold tracking-tight text-foreground sm:text-xl">
               {document.documentNumber ?? "-"} Numaralı Belge
             </h2>
           </div>
@@ -574,13 +580,18 @@ export function DocumentDetailScreen({
           />
         </section>
 
-        {/* PDF çıktısına dahil edilecek alan buradan başlıyor */}
-        <section className="mt-4 overflow-hidden rounded-2xl bg-slate-50/70 p-2 sm:mt-6 sm:rounded-3xl sm:p-8">
+        {/*
+          PDF çıktısına dahil edilecek alan buradan başlıyor.
+          İç kısım (data-pdf-document) DAİMA beyaz zeminde ve siyah metinle basılır —
+          "gerçek bir belge" olduğu için dark mode olsa bile karanlıklaşmıyor. Sadece
+          etrafındaki sarmalayıcı (bg-muted/30) tema ile değişiyor.
+        */}
+        <section className="mt-4 overflow-hidden rounded-2xl bg-slate-50/70 p-2 dark:bg-muted/30 sm:mt-6 sm:rounded-3xl sm:p-8">
           <div className="flex justify-center">
             <div
               ref={printRef}
               data-pdf-document
-              className="relative w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 sm:rounded-2xl"
+              className="relative w-full max-w-3xl overflow-hidden rounded-xl bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 sm:rounded-2xl"
             >
               <Landmark
                 size={200}
@@ -719,14 +730,14 @@ interface InfoCardProps {
 
 function InfoCard({ label, value, icon }: InfoCardProps) {
   return (
-    <article className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 sm:rounded-2xl sm:p-5">
-      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 sm:mb-4 sm:h-10 sm:w-10 sm:rounded-xl">
+    <article className="rounded-xl bg-card p-3 shadow-sm ring-1 ring-border sm:rounded-2xl sm:p-5">
+      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground sm:mb-4 sm:h-10 sm:w-10 sm:rounded-xl">
         {icon}
       </div>
-      <p className="text-[10px] font-medium text-slate-500 sm:text-xs">
+      <p className="text-[10px] font-medium text-muted-foreground sm:text-xs">
         {label}
       </p>
-      <p className="mt-1 break-words text-sm font-semibold text-slate-900 sm:mt-1.5 sm:text-lg">
+      <p className="mt-1 break-words text-sm font-semibold text-foreground sm:mt-1.5 sm:text-lg">
         {value}
       </p>
     </article>
@@ -768,21 +779,25 @@ function KpiTile({
   return (
     <div
       className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-sm ${
-        accent ? "border-red-100 bg-red-50/40" : "border-slate-200 bg-white"
+        accent
+          ? "border-red-200/60 bg-red-50/40 dark:border-red-500/20 dark:bg-red-500/10"
+          : "border-border bg-card"
       }`}
     >
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-          accent ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600"
+          accent
+            ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300"
+            : "bg-muted text-muted-foreground"
         }`}
       >
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
           {label}
         </p>
-        <p className="truncate text-sm font-bold text-slate-900">{value}</p>
+        <p className="truncate text-sm font-bold text-foreground">{value}</p>
       </div>
     </div>
   );
@@ -799,20 +814,22 @@ function FieldGrid({
   }[];
 }) {
   return (
-    <div className="grid grid-cols-1 divide-y divide-slate-100 md:grid-cols-3 md:divide-x md:divide-y-0">
+    <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-3 md:divide-x md:divide-y-0">
       {items.map((item) => {
         const displayValue = item.value?.toString().trim() || "-";
         const isEmpty = displayValue === "-";
 
         return (
           <div key={item.label} className="flex flex-col gap-1 px-5 py-3.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {item.label}
             </span>
 
             <span
               className={`text-sm ${item.mono ? "font-mono" : ""} ${
-                isEmpty ? "text-slate-300" : "font-semibold text-slate-800"
+                isEmpty
+                  ? "text-muted-foreground/50"
+                  : "font-semibold text-foreground/90"
               }`}
             >
               {displayValue}
@@ -836,19 +853,19 @@ function OperationRow({
 }) {
   return (
     <tr>
-      <th className="w-[16%] bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <th className="w-[16%] bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {label1}
       </th>
 
-      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-slate-900">
+      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-foreground">
         {value1}
       </td>
 
-      <th className="w-[16%] border-l border-slate-100 bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <th className="w-[16%] border-l border-border bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {label2}
       </th>
 
-      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-slate-900">
+      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-foreground">
         {value2}
       </td>
     </tr>
