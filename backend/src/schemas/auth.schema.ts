@@ -21,7 +21,10 @@ export const registerSchema = requestEnvelopeSchema(
 
 export const loginSchema = requestEnvelopeSchema(
   z.object({
-    email: z.string().trim().min(1, "Email is required."),
-    password: z.string().min(1, "Password is required."),
+    identifier: z
+      .string()
+      .trim()
+      .min(1, "E-posta veya kullanıcı adı zorunludur."),
+    password: z.string().min(1, "Şifre zorunludur."),
   }),
 );

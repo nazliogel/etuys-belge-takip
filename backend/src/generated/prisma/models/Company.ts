@@ -681,10 +681,6 @@ export type CompanyUncheckedUpdateManyWithoutConsultantUserNestedInput = {
   deleteMany?: Prisma.CompanyScalarWhereInput | Prisma.CompanyScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type CompanyCreateNestedOneWithoutIdentityInput = {
   create?: Prisma.XOR<Prisma.CompanyCreateWithoutIdentityInput, Prisma.CompanyUncheckedCreateWithoutIdentityInput>
   connectOrCreate?: Prisma.CompanyCreateOrConnectWithoutIdentityInput

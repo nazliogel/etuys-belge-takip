@@ -1,21 +1,26 @@
 export type UserRole = "ADMIN" | "OPERATION" | "COMPANY";
+
 export interface SessionUser {
   id: number;
   name: string;
-  email: string;
+  username?: string | null;
+  email: string | null;
   role: UserRole;
   companyId?: number | null;
   companyName?: string | null;
+  mustChangePassword?: boolean;
 }
 
 interface BackendUser {
   id: number;
   firstName: string;
   lastName: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   role: UserRole;
   companyId?: number | null;
   companyName?: string | null;
+  mustChangePassword: boolean;
 }
 
 interface LoginResponse {
@@ -29,7 +34,7 @@ const ACCESS_TOKEN_KEY = "etuys-access-token";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export async function login(
-  email: string,
+  identifier: string,
   password: string,
 ): Promise<SessionUser> {
   const response = await fetch(`${API_URL}/auth/login`, {
@@ -38,7 +43,7 @@ export async function login(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email,
+      identifier,
       password,
     }),
   });
@@ -46,7 +51,9 @@ export async function login(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data?.message ?? "E-posta adresi veya şifre hatalı.");
+    throw new Error(
+      data?.message ?? "Kullanıcı adı/e-posta veya şifre hatalı.",
+    );
   }
 
   const result = data as LoginResponse;
@@ -54,14 +61,15 @@ export async function login(
   const sessionUser: SessionUser = {
     id: result.user.id,
     name: `${result.user.firstName} ${result.user.lastName}`.trim(),
+    username: result.user.username,
     email: result.user.email,
     role: result.user.role,
     companyId: result.user.companyId,
     companyName: result.user.companyName,
+    mustChangePassword: result.user.mustChangePassword,
   };
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
-
   localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken);
 
   return sessionUser;

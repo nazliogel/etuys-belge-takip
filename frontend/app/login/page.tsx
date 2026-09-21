@@ -10,7 +10,7 @@ import { login } from "@/lib/mock-auth";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +23,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const user = await login(email, password);
+      const user = await login(identifier, password);
 
       if (user.role === "ADMIN" || user.role === "OPERATION") {
         router.push("/dashboard");
@@ -115,7 +115,7 @@ export default function LoginPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                E-posta Adresi
+                E-posta veya Kullanıcı Adı
               </label>
               <div className="relative flex items-center">
                 <Mail
@@ -123,13 +123,13 @@ export default function LoginPage() {
                   className="absolute left-3.5 text-slate-400 pointer-events-none"
                 />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:bg-white focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
-                  placeholder="ornek@sirket.com"
+                  placeholder="ornek@sirket.com veya kullanıcı adı"
                   required
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </div>
             </div>
