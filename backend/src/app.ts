@@ -18,6 +18,7 @@ import { companyAuthorizationReminderRouter } from "./routes/company-authorizati
 import { supportRequestRouter } from "./routes/support-request.routes.js";
 import { authenticate } from "./middlewares/auth.js";
 import { requireActiveCompanyAuthorization } from "./middlewares/company-authorization.js";
+import { companyMeRouter } from "./routes/company-me.routes.js";
 
 const app = express();
 
@@ -49,6 +50,8 @@ app.get("/health", async (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+
+app.use("/api/companies/me", authenticate, companyMeRouter);
 
 app.use("/api", authenticate, requireActiveCompanyAuthorization);
 
