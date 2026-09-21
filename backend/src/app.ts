@@ -51,6 +51,10 @@ app.get("/health", async (_req, res) => {
 
 app.use("/api/auth", authRouter);
 
+// Yetki süresi dolmuş firmalar da destek talebi oluşturabilir ve görüntüleyebilir.
+// supportRequestRouter kendi içinde authenticate kullanıyor.
+app.use("/api/support-requests", supportRequestRouter);
+
 app.use("/api/companies/me", authenticate, companyMeRouter);
 
 app.use("/api", authenticate, requireActiveCompanyAuthorization);
@@ -69,7 +73,6 @@ app.use(
   companyAuthorizationReminderRouter,
 );
 app.use("/api/notifications", notificationRouter);
-app.use("/api/support-requests", supportRequestRouter);
 
 app.use(errorHandler);
 
