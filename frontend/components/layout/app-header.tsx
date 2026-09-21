@@ -61,113 +61,194 @@ export function AppHeader({
 
   const isCompany = role === "COMPANY";
 
+  // Uzman bilgi kartı — mobil drawer'ın en üstünde gösterilir
+  const consultantMobileCard =
+    isCompany && consultantName ? (
+      <div className="shrink-0 border-b border-slate-200 bg-slate-50/70 px-4 py-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          Uzmanınız
+        </p>
+        <p className="mt-1 text-sm font-bold text-slate-800">
+          {consultantName}
+        </p>
+
+        <div className="mt-2 flex flex-col gap-1.5">
+          {consultantPhone ? (
+            <a
+              href={`https://wa.me/${normalizeWhatsappPhone(consultantPhone)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-green-600"
+            >
+              <Phone className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{consultantPhone}</span>
+            </a>
+          ) : null}
+
+          {consultantEmail ? (
+            <a
+              href={`mailto:${consultantEmail}`}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-blue-700"
+            >
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{consultantEmail}</span>
+            </a>
+          ) : null}
+        </div>
+      </div>
+    ) : null;
+
   return (
-    <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
-      <div className="flex min-w-0 flex-1 items-center gap-4">
-        <Sheet>
-          <SheetTrigger
-            render={
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 lg:hidden"
-                aria-label="Menüyü aç"
+    <>
+      <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          <Sheet>
+            <SheetTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 lg:hidden"
+                  aria-label="Menüyü aç"
+                />
+              }
+            >
+              <Menu className="h-5 w-5" />
+            </SheetTrigger>
+
+            <SheetContent side="left" className="w-[260px] p-0">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Ana menü</SheetTitle>
+              </SheetHeader>
+
+              {/* Mobilde hamburger menü açıldığında uzman bilgileri en üstte */}
+              <div className="flex h-full flex-col">
+                {consultantMobileCard}
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                  <AppSidebar />
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {!isCompany && (
+            <div className="relative hidden w-full max-w-[460px] md:block">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+              <input
+                type="search"
+                placeholder="Global arama... (Firma, Belge No, VKN, Yetkili)"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
               />
-            }
+            </div>
+          )}
+
+          {isCompany && consultantName ? (
+            <div className="hidden min-w-0 items-center gap-4 md:flex">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Uzmanınız
+                </p>
+
+                <p className="text-sm font-bold text-slate-800">
+                  {consultantName}
+                </p>
+              </div>
+
+              {consultantPhone ? (
+                <a
+                  href={`https://wa.me/${normalizeWhatsappPhone(consultantPhone)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-green-600"
+                >
+                  <Phone className="h-4 w-4" />
+                  {consultantPhone}
+                </a>
+              ) : null}
+
+              {consultantEmail ? (
+                <a
+                  href={`mailto:${consultantEmail}`}
+                  className="flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-blue-700"
+                >
+                  <Mail className="h-4 w-4" />
+                  {consultantEmail}
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
           >
-            <Menu className="h-5 w-5" />
-          </SheetTrigger>
+            <Bell className="h-5 w-5" />
 
-          <SheetContent side="left" className="w-[230px] p-0">
-            <SheetHeader className="sr-only">
-              <SheetTitle>Ana menü</SheetTitle>
-            </SheetHeader>
+            <span className="absolute right-1.5 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+              12
+            </span>
+          </button>
 
-            <AppSidebar />
-          </SheetContent>
-        </Sheet>
+          <div className="hidden h-8 w-px bg-slate-200 sm:block" />
 
-        {!isCompany && (
-          <div className="relative hidden w-full max-w-[460px] md:block">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <button
+            type="button"
+            className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition hover:bg-slate-100"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-blue-100 text-xs font-bold text-blue-700">
+                {initials || "K"}
+              </AvatarFallback>
+            </Avatar>
 
-            <input
-              type="search"
-              placeholder="Global arama... (Firma, Belge No, VKN, Yetkili)"
-              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
-            />
-          </div>
-        )}
-
-        {isCompany && consultantName && (
-          <div className="hidden min-w-0 items-center gap-4 md:flex">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                Uzmanınız
-              </p>
-
-              <p className="text-sm font-bold text-slate-800">
-                {consultantName}
-              </p>
+            <div className="hidden text-left sm:block">
+              <p className="text-sm font-semibold text-slate-800">{userName}</p>
+              <p className="text-[11px] text-slate-500">{roleLabel}</p>
             </div>
 
-            {consultantPhone && (
-              <a
-                href={`https://wa.me/${normalizeWhatsappPhone(consultantPhone)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-green-600"
-              >
-                <Phone className="h-4 w-4" />
-                {consultantPhone}
-              </a>
-            )}
+            <MoreVertical className="hidden h-4 w-4 text-slate-400 sm:block" />
+          </button>
+        </div>
+      </header>
 
-            {consultantEmail && (
-              <a
-                href={`mailto:${consultantEmail}`}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 transition hover:text-blue-700"
-              >
-                <Mail className="h-4 w-4" />
-                {consultantEmail}
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-        >
-          <Bell className="h-5 w-5" />
-
-          <span className="absolute right-1.5 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-            12
-          </span>
-        </button>
-
-        <div className="hidden h-8 w-px bg-slate-200 sm:block" />
-
-        <button
-          type="button"
-          className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition hover:bg-slate-100"
-        >
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-blue-100 text-xs font-bold text-blue-700">
-              {initials || "K"}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="hidden text-left sm:block">
-            <p className="text-sm font-semibold text-slate-800">{userName}</p>
-            <p className="text-[11px] text-slate-500">{roleLabel}</p>
+      {/* MOBİL: Uzman iletişim bandı — sadece firma kullanıcısına, sadece mobilde görünür */}
+      {isCompany && consultantName ? (
+        <div className="sticky top-[76px] z-20 flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 md:hidden">
+          <div className="min-w-0 flex-1">
+            <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+              Uzmanınız
+            </p>
+            <p className="truncate text-xs font-bold text-slate-800">
+              {consultantName}
+            </p>
           </div>
 
-          <MoreVertical className="hidden h-4 w-4 text-slate-400 sm:block" />
-        </button>
-      </div>
-    </header>
+          {consultantPhone ? (
+            <a
+              href={`https://wa.me/${normalizeWhatsappPhone(consultantPhone)}`}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="WhatsApp ile ara"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-green-200 bg-green-50 text-green-600 transition active:scale-95"
+            >
+              <Phone className="h-4 w-4" />
+            </a>
+          ) : null}
+
+          {consultantEmail ? (
+            <a
+              href={`mailto:${consultantEmail}`}
+              aria-label="E-posta gönder"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 transition active:scale-95"
+            >
+              <Mail className="h-4 w-4" />
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+    </>
   );
 }

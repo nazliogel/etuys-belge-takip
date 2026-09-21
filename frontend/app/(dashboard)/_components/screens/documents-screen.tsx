@@ -103,6 +103,7 @@ const STATUS_LABELS: Record<string, string> = {
   INACTIVE: "Kapalı-İptal",
   EXTENSION_ELIGIBLE: "Uzatma Yapılabilir",
   CLOSURE_ELIGIBLE: "Kapatma Yapılacak",
+  AUTHORIZATION_EXPIRED: "Yetkisi Bitmiş",
 };
 
 type ApiDocument = {
@@ -435,6 +436,8 @@ function getBadgeStatus(
     doc.documentStatus === "CLOSED" || doc.documentStatus === "CANCELLED";
 
   if (isClosedOrCancelled) return getDisplayStatus(doc);
+
+  if (opts.authorizationExpired) return "AUTHORIZATION_EXPIRED";
 
   if (opts.isClosureEligibleView || opts.closureEligibleIds.has(doc.id))
     return "CLOSURE_ELIGIBLE";
@@ -1554,12 +1557,24 @@ export function DocumentsScreen({
         }),
       );
     });
-    return Array.from(values)
-      .sort((a, b) => a.localeCompare(b, "tr-TR"))
-      .map((value) => ({
-        value,
-        label: STATUS_LABELS[value] ?? value,
-      }));
+
+    // Aynı etikete sahip birden fazla değer (EXPIRED + CLOSURE_ELIGIBLE ikisi
+    // de "Kapatma Yapılacak") tek seçenek olarak listelensin.
+    const seenLabels = new Set<string>();
+    const options: { value: string; label: string }[] = [];
+
+    Array.from(values)
+      .sort((a, b) =>
+        (STATUS_LABELS[a] ?? a).localeCompare(STATUS_LABELS[b] ?? b, "tr-TR"),
+      )
+      .forEach((value) => {
+        const label = STATUS_LABELS[value] ?? value;
+        if (seenLabels.has(label)) return;
+        seenLabels.add(label);
+        options.push({ value, label });
+      });
+
+    return options;
   }, [
     visibleDocumentsByStatusFilter,
     companyId,
@@ -1603,7 +1618,14 @@ export function DocumentsScreen({
           authorizationExpired,
         });
 
-        if (!statusFilter.has(badge)) {
+        // Aynı etikete sahip farklı değerler (EXPIRED / CLOSURE_ELIGIBLE) tek
+        // bir seçenek gibi davransın: eşleşmeyi label bazlı yap.
+        const badgeLabel = STATUS_LABELS[badge] ?? badge;
+        const selectedLabels = new Set(
+          Array.from(statusFilter).map((v) => STATUS_LABELS[v] ?? v),
+        );
+
+        if (!selectedLabels.has(badgeLabel)) {
           return false;
         }
       }
