@@ -74,7 +74,44 @@ const QUERY_KEYS = {
 type QueryUpdates = Partial<
   Record<keyof typeof QUERY_KEYS, string | string[] | null>
 >;
+const STORAGE_KEY = "companies-screen:open-tabs";
 
+type PersistedTabs = {
+  activeFirma: string | null;
+  firmaTabs: string[];
+};
+
+function readPersistedTabs(): PersistedTabs | null {
+  try {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed?.firmaTabs)) return null;
+
+    return {
+      activeFirma:
+        typeof parsed.activeFirma === "string" ? parsed.activeFirma : null,
+      firmaTabs: parsed.firmaTabs.filter(
+        (id: unknown): id is string => typeof id === "string",
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writePersistedTabs(value: PersistedTabs) {
+  try {
+    if (value.firmaTabs.length === 0 && !value.activeFirma) {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    } else {
+      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    }
+  } catch {
+    // storage kapalı / dolu olabilir, sessizce geç
+  }
+}
 function parseIdList(value: string | null): string[] {
   if (!value) return [];
   return value.split(",").filter(Boolean);
@@ -163,12 +200,37 @@ export function CompaniesScreen() {
       }
     });
 
+    writePersistedTabs({
+      activeFirma: params.get(QUERY_KEYS.activeFirma),
+      firmaTabs: parseIdList(params.get(QUERY_KEYS.firmaTabs)),
+    });
+
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
     });
   }
+  useEffect(() => {
+    // Doğrudan detay linkiyle gelindiyse veya URL'de zaten sekme varsa dokunma
+    if (isDirectDetailView) return;
+    if (
+      searchParams.get(QUERY_KEYS.activeFirma) ||
+      searchParams.get(QUERY_KEYS.firmaTabs)
+    ) {
+      return;
+    }
 
+    const saved = readPersistedTabs();
+    if (!saved || saved.firmaTabs.length === 0) return;
+
+    const active =
+      saved.activeFirma && saved.firmaTabs.includes(saved.activeFirma)
+        ? saved.activeFirma
+        : saved.firmaTabs[0];
+
+    updateQuery({ firmaTabs: saved.firmaTabs, activeFirma: active });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     async function loadCompanies() {
       setIsLoading(true);

@@ -101,9 +101,11 @@ function getNotificationSeverity(type: string): NotificationSeverity {
 }
 
 const severityIconStyles: Record<NotificationSeverity, string> = {
-  critical: "border-red-100 bg-red-50 text-red-600",
-  warning: "border-amber-100 bg-amber-50 text-amber-600",
-  info: "border-sky-100 bg-sky-50 text-sky-600",
+  critical:
+    "border-red-100 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300",
+  warning:
+    "border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300",
+  info: "border-sky-100 bg-sky-50 text-sky-600 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300",
 };
 
 const severityDotStyles: Record<NotificationSeverity, string> = {
@@ -160,13 +162,13 @@ function getErrorMessage(error: unknown): string {
 function NotificationSkeletonRow() {
   return (
     <div className="flex animate-pulse items-start gap-3 p-3 sm:gap-4 sm:p-5">
-      <div className="h-9 w-9 shrink-0 rounded-xl bg-slate-100 sm:h-10 sm:w-10" />
+      <div className="h-9 w-9 shrink-0 rounded-xl bg-muted sm:h-10 sm:w-10" />
       <div className="min-w-0 flex-1 space-y-2.5">
-        <div className="h-3.5 w-1/3 rounded bg-slate-100" />
-        <div className="h-3 w-2/3 rounded bg-slate-100" />
-        <div className="h-2.5 w-24 rounded bg-slate-100" />
+        <div className="h-3.5 w-1/3 rounded bg-muted" />
+        <div className="h-3 w-2/3 rounded bg-muted" />
+        <div className="h-2.5 w-24 rounded bg-muted" />
       </div>
-      <div className="hidden h-7 w-20 shrink-0 rounded-lg bg-slate-100 sm:block" />
+      <div className="hidden h-7 w-20 shrink-0 rounded-lg bg-muted sm:block" />
     </div>
   );
 }
@@ -298,11 +300,11 @@ export function NotificationsScreen() {
     <div className="mx-auto max-w-7xl space-y-4 pb-8 sm:space-y-6 sm:pb-12">
       <section className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
         <div className="min-w-0">
-          <h1 className="text-lg font-bold tracking-tight text-slate-900 sm:text-2xl">
+          <h1 className="text-lg font-bold tracking-tight text-foreground sm:text-2xl">
             Bildirimler
           </h1>
 
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
             Belge, yetki ve sistem işlemleriyle ilgili bildirimleri yönetin.
           </p>
         </div>
@@ -319,40 +321,44 @@ export function NotificationsScreen() {
       </section>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 sm:h-11 sm:w-11">
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xs dark:shadow-none sm:gap-4 sm:p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground sm:h-11 sm:w-11">
             <Bell size={18} />
           </div>
 
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-muted-foreground">
               Toplam Bildirim
             </p>
-            <p className="text-lg font-bold text-slate-900">
+            <p className="text-lg font-bold text-foreground">
               {notifications.length}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 sm:h-11 sm:w-11">
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xs dark:shadow-none sm:gap-4 sm:p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 sm:h-11 sm:w-11">
             <Bell size={18} />
           </div>
 
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500">Okunmamış</p>
-            <p className="text-lg font-bold text-red-600">{unreadCount}</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              Okunmamış
+            </p>
+            <p className="text-lg font-bold text-red-600 dark:text-red-400">
+              {unreadCount}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 sm:h-11 sm:w-11">
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xs dark:shadow-none sm:gap-4 sm:p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300 sm:h-11 sm:w-11">
             <CheckCheck size={18} />
           </div>
 
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500">Okundu</p>
-            <p className="text-lg font-bold text-slate-900">
+            <p className="text-xs font-medium text-muted-foreground">Okundu</p>
+            <p className="text-lg font-bold text-foreground">
               {notifications.length - unreadCount}
             </p>
           </div>
@@ -360,13 +366,13 @@ export function NotificationsScreen() {
       </section>
 
       {errorMessage && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
           {errorMessage}
         </div>
       )}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs dark:shadow-none">
+        <div className="flex flex-col justify-between gap-3 border-b border-border p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {filterItems.map((filter) => {
               const active = activeFilter === filter.value;
@@ -379,7 +385,7 @@ export function NotificationsScreen() {
                   className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:py-2 ${
                     active
                       ? "bg-red-600 text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      : "bg-muted text-muted-foreground hover:bg-muted/70 dark:hover:bg-muted/60"
                   }`}
                 >
                   {filter.label}
@@ -387,7 +393,7 @@ export function NotificationsScreen() {
                     className={`rounded-md px-1.5 py-0.5 text-[10px] ${
                       active
                         ? "bg-white/20 text-white"
-                        : "bg-white text-slate-500"
+                        : "bg-card text-muted-foreground"
                     }`}
                   >
                     {filterCounts[filter.value]}
@@ -397,19 +403,19 @@ export function NotificationsScreen() {
             })}
           </div>
 
-          <p className="text-[11px] font-medium text-slate-500 sm:text-xs">
+          <p className="text-[11px] font-medium text-muted-foreground sm:text-xs">
             {filteredNotifications.length} bildirim gösteriliyor
           </p>
         </div>
 
         {isLoading ? (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {Array.from({ length: 5 }).map((_, index) => (
               <NotificationSkeletonRow key={index} />
             ))}
           </div>
         ) : filteredNotifications.length > 0 ? (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-border">
             {filteredNotifications.map((notification) => {
               const Icon = getNotificationIcon(notification.type);
               const severity = getNotificationSeverity(notification.type);
@@ -420,15 +426,15 @@ export function NotificationsScreen() {
                   onClick={() => void markAsRead(notification.id)}
                   className={`group flex flex-col gap-3 p-3 transition-colors duration-300 sm:flex-row sm:items-start sm:gap-4 sm:p-5 ${
                     notification.isRead
-                      ? "bg-white"
-                      : "cursor-pointer bg-red-50/20 hover:bg-red-50/40"
+                      ? "bg-card"
+                      : "cursor-pointer bg-red-50/20 hover:bg-red-50/40 dark:bg-red-500/[0.06] dark:hover:bg-red-500/10"
                   }`}
                 >
                   <div className="flex items-start gap-3 sm:contents">
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors duration-300 sm:h-10 sm:w-10 ${
                         notification.isRead
-                          ? "border-slate-200 bg-slate-50 text-slate-400"
+                          ? "border-border bg-muted text-muted-foreground"
                           : severityIconStyles[severity]
                       }`}
                     >
@@ -440,16 +446,16 @@ export function NotificationsScreen() {
                         <div className="mb-1 flex items-center gap-1.5">
                           <Building2
                             size={12}
-                            className="shrink-0 text-red-500"
+                            className="shrink-0 text-red-500 dark:text-red-400"
                           />
-                          <span className="truncate text-[11px] font-semibold text-red-600">
+                          <span className="truncate text-[11px] font-semibold text-red-600 dark:text-red-400">
                             {notification.company.name}
                           </span>
                         </div>
                       )}
 
                       <div className="flex items-start gap-2">
-                        <h2 className="text-sm font-bold leading-snug text-slate-900">
+                        <h2 className="text-sm font-bold leading-snug text-foreground">
                           {notification.title}
                         </h2>
 
@@ -461,11 +467,11 @@ export function NotificationsScreen() {
                         )}
                       </div>
 
-                      <p className="mt-1 text-xs leading-5 text-slate-600">
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
                         {notification.description}
                       </p>
 
-                      <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                      <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                         <Clock3 size={12} />
                         {formatNotificationDate(notification.createdAt)}
                       </div>
@@ -473,7 +479,7 @@ export function NotificationsScreen() {
                   </div>
 
                   {notification.isRead ? (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                    <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                       <Check size={14} />
                       Okundu
                     </span>
@@ -485,7 +491,7 @@ export function NotificationsScreen() {
                         void markAsRead(notification.id);
                       }}
                       disabled={isUpdating}
-                      className="w-full shrink-0 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-all group-hover:border-red-200 group-hover:text-red-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      className="w-full shrink-0 self-start rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/80 shadow-2xs transition-all group-hover:border-red-300 group-hover:text-red-600 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 dark:group-hover:border-red-500/40 dark:group-hover:text-red-400 dark:shadow-none sm:w-auto"
                     >
                       Okundu işaretle
                     </button>
@@ -496,15 +502,15 @@ export function NotificationsScreen() {
           </div>
         ) : (
           <div className="flex flex-col items-center px-5 py-12 text-center sm:py-16">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <Bell size={24} />
             </div>
 
-            <h2 className="mt-4 text-sm font-bold text-slate-800">
+            <h2 className="mt-4 text-sm font-bold text-foreground">
               {activeEmptyState.title}
             </h2>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {activeEmptyState.description}
             </p>
           </div>

@@ -4,7 +4,11 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSessionUser, getAccessToken, type SessionUser } from "@/lib/mock-auth";
+import {
+  getSessionUser,
+  getAccessToken,
+  type SessionUser,
+} from "@/lib/mock-auth";
 import { DashboardShell } from "./_components/dashboard-shell";
 
 interface MyCompanyInfo {
@@ -23,26 +27,16 @@ async function fetchMyCompany(): Promise<MyCompanyInfo | null> {
   }
 
   try {
-    const response = await fetch(`${API_URL}/companies`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const response = await fetch(`${API_URL}/companies/me/consultant`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
 
     const json = await response.json();
+    const company = json?.data;
 
-    // NOT: sendSuccessResponse'un tam olarak neyi hangi anahtar altında
-    // sardığını (data.data mı, doğrudan data mı) görmedim — utils/api-response.ts
-    // dosyanıza bakıp bu satırı gerekirse düzeltin.
-    const company = json?.data?.items?.[0];
-
-    if (!company) {
-      return null;
-    }
+    if (!company) return null;
 
     return {
       consultant: company.consultant ?? null,
