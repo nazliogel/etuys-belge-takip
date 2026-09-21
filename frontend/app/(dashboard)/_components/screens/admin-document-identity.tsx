@@ -207,15 +207,28 @@ export function AdminDocumentIdentity({
     document.company.authorizationEndDate,
   );
 
-const isClosedOrCancelled =
-  isClosed ||
-  document.status === "CLOSED" ||
-  document.status === "CANCELLED";
+  const isClosedOrCancelled =
+    isClosed || document.status === "CLOSED" || document.status === "CANCELLED";
 
   const status =
     !isClosedOrCancelled && authorizationExpired
       ? "Yetkisi Bitmiş"
       : getStatus(document);
+
+  const statusBadgeClass =
+    status === "İptal"
+      ? "bg-red-50 text-red-700 border border-red-200"
+      : status === "Kapalı"
+        ? "bg-blue-50 text-blue-700 border border-blue-200"
+        : status === "Yetkisi Bitmiş"
+          ? "bg-blue-50 text-blue-700 border border-blue-200"
+          : status === "Kapatma Yapılacak"
+            ? "bg-red-50 text-red-700 border border-red-200"
+            : status === "Uzatma Yapılabilir"
+              ? "bg-amber-50 text-amber-700 border border-amber-200"
+              : status === "Aktif"
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                : "bg-slate-100 text-slate-700 border border-slate-200";
   return (
     <div className="space-y-3">
       <section className="flex items-center justify-between">
@@ -238,7 +251,9 @@ const isClosedOrCancelled =
           </div>
         </div>
 
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-700">
+        <span
+          className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${statusBadgeClass}`}
+        >
           {status}
         </span>
       </section>

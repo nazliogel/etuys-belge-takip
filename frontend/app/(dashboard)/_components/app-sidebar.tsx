@@ -8,7 +8,6 @@ import { ChevronLeft, ChevronRight, Headphones, LogOut } from "lucide-react";
 import { getAccessToken, logoutMockUser } from "@/lib/mock-auth";
 import { apiFetch } from "@/lib/api";
 
-
 import { navigationItems } from "../_lib/navigation";
 import {
   clearSelectedDocument,
@@ -108,6 +107,16 @@ export function AppSidebar({
 
   useEffect(() => {
     const loadDocuments = async () => {
+      // Token yoksa (logout sonrası, ilk yükleme öncesi, login sayfasında)
+      // API'yi hiç çağırma. Aynı guard destek talebi sayacında da var.
+      const token = getAccessToken();
+      if (!token) {
+        setDocuments([]);
+        setSelectedDocumentId("");
+        setDocumentsLoading(false);
+        return;
+      }
+
       try {
         setDocumentsLoading(true);
 
@@ -165,7 +174,12 @@ export function AppSidebar({
         const message =
           error instanceof Error ? error.message : "Belgeler yüklenemedi.";
 
-        if (message.includes("yetki süresi dolmuştur")) {
+        // "Authentication token is required" hatasını da sessizce yut —
+        // logout ile eşzamanlı bir effect fire ise console'u kirletmesin.
+        if (
+          message.includes("yetki süresi dolmuştur") ||
+          message.includes("Authentication token is required")
+        ) {
           setDocuments([]);
           setSelectedDocumentId("");
           setDocumentWarning(false);
