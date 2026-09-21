@@ -328,16 +328,16 @@ export function FinancialInfoScreen() {
   return (
     <div className="space-y-6">
       {/* SAYFA BAŞLIĞI */}
-      <header className="border-b border-slate-200 pb-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <header className="border-b border-border pb-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Belge Detayları
         </p>
 
-        <h1 className="mt-1.5 text-[26px] font-semibold leading-tight tracking-tight text-slate-900">
+        <h1 className="mt-1.5 text-[26px] font-semibold leading-tight tracking-tight text-foreground">
           Finansal Bilgiler
         </h1>
 
-        <p className="mt-1.5 text-sm text-slate-500">
+        <p className="mt-1.5 text-sm text-muted-foreground">
           Seçili teşvik belgesine ait yatırım ve finansman bilgilerini
           görüntüleyebilirsiniz.
         </p>
@@ -346,21 +346,24 @@ export function FinancialInfoScreen() {
       {/* SEÇİLİ BELGE */}
       {selectedDocumentId && (
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 shadow-sm">
-            <FileText className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+          <div className="inline-flex items-center gap-2.5 rounded-md border border-border bg-card px-3.5 py-2 shadow-sm dark:shadow-none">
+            <FileText
+              className="h-4 w-4 text-muted-foreground"
+              strokeWidth={1.75}
+            />
 
-            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Belge No
             </span>
 
-            <span className="h-4 w-px bg-slate-200" />
+            <span className="h-4 w-px bg-border" />
 
-            <span className="text-sm font-semibold text-slate-900">
+            <span className="text-sm font-semibold text-foreground">
               {selectedDocumentNumber ?? `#${selectedDocumentId}`}
             </span>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Seçili
           </span>
@@ -369,50 +372,52 @@ export function FinancialInfoScreen() {
 
       {/* DURUM */}
       {!selectedDocumentId ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-          <p className="text-sm font-medium text-slate-700">
+        <div className="rounded-lg border border-border bg-card px-6 py-12 text-center shadow-sm dark:shadow-none">
+          <p className="text-sm font-medium text-foreground/80">
             Görüntülenecek belge seçilmedi
           </p>
 
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Lütfen sol menüden bir belge numarası seçin.
           </p>
         </div>
       ) : financialInfoLoading ? (
-        <div className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-12 shadow-sm">
-          <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e]" />
+        <div className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card py-12 shadow-sm dark:shadow-none">
+          <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
 
-          <span className="text-sm text-slate-500">Yükleniyor</span>
+          <span className="text-sm text-muted-foreground">Yükleniyor</span>
         </div>
       ) : !financialInfo ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-          <p className="text-sm font-medium text-slate-700">Kayıt bulunamadı</p>
+        <div className="rounded-lg border border-border bg-card px-6 py-12 text-center shadow-sm dark:shadow-none">
+          <p className="text-sm font-medium text-foreground/80">
+            Kayıt bulunamadı
+          </p>
 
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Bu belgeye ait finansal bilgi mevcut değil.
           </p>
         </div>
       ) : (
         <>
           {/* ÜST BİLGİ */}
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-2.5 shadow-sm dark:shadow-none">
             <div>
-              <h2 className="text-[12px] font-bold uppercase tracking-wider text-slate-700">
+              <h2 className="text-[12px] font-bold uppercase tracking-wider text-foreground/80">
                 Finansal Bilgi Cetveli
               </h2>
 
-              <p className="mt-0.5 text-[11px] text-slate-400">
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
                 Yatırım, harcama ve finansman kalemleri
               </p>
             </div>
 
             {financialInfo.externalFinancialInfoId && (
-              <div className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+              <div className="rounded border border-border bg-muted px-2.5 py-1">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Kayıt ID
                 </span>
 
-                <span className="ml-2 font-mono text-[11px] font-semibold text-slate-700">
+                <span className="ml-2 font-mono text-[11px] font-semibold text-foreground/80">
                   {financialInfo.externalFinancialInfoId}
                 </span>
               </div>
@@ -443,10 +448,10 @@ export function FinancialInfoScreen() {
 
 function FinancialCardView({ card }: { card: FinancialCard }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:shadow-none">
       {/* KART BAŞLIĞI */}
-      <div className="border-b border-slate-200 bg-slate-100 px-3 py-2">
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e]">
+      <div className="border-b border-border bg-muted px-3 py-2">
+        <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
           {card.title}
         </h3>
       </div>
@@ -477,17 +482,17 @@ function FinancialRowView({
 
   return (
     <div
-      className={`grid min-h-[34px] grid-cols-[minmax(0,1fr)_180px] items-center border-b border-slate-200 last:border-b-0 ${
-        isTotal ? "bg-amber-50/50" : "bg-white"
+      className={`grid min-h-[34px] grid-cols-[minmax(0,1fr)_180px] items-center border-b border-border last:border-b-0 ${
+        isTotal ? "bg-amber-50/50 dark:bg-amber-500/10" : "bg-card"
       }`}
     >
       {/* LABEL */}
-      <div className="border-r border-slate-200 px-3 py-2">
+      <div className="border-r border-border px-3 py-2">
         <span
           className={
             isTotal
-              ? "text-[11px] font-bold text-slate-800"
-              : "text-[11px] font-medium text-slate-600"
+              ? "text-[11px] font-bold text-foreground"
+              : "text-[11px] font-medium text-muted-foreground"
           }
         >
           {label}
@@ -500,8 +505,8 @@ function FinancialRowView({
           <span
             className={`font-mono tabular-nums ${
               isTotal
-                ? "text-[12px] font-bold text-slate-900"
-                : "text-[11px] font-semibold text-slate-700"
+                ? "text-[12px] font-bold text-foreground"
+                : "text-[11px] font-semibold text-foreground/80"
             }`}
           >
             {suffix === "%" ? (
@@ -511,7 +516,7 @@ function FinancialRowView({
                 {formattedValue}
 
                 {suffix && (
-                  <span className="ml-1.5 font-sans text-[9px] font-medium uppercase text-slate-400">
+                  <span className="ml-1.5 font-sans text-[9px] font-medium uppercase text-muted-foreground">
                     {suffix}
                   </span>
                 )}
@@ -519,7 +524,7 @@ function FinancialRowView({
             )}
           </span>
         ) : (
-          <span className="text-xs text-slate-300">—</span>
+          <span className="text-xs text-muted-foreground/50">—</span>
         )}
       </div>
     </div>

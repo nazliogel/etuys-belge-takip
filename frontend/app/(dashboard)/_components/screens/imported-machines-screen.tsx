@@ -138,9 +138,10 @@ function isPositiveFlag(value: string | null | undefined): boolean {
 }
 
 // Sabit başlık için ortak class'lar — her <th>'ye uygulanacak.
-// sticky top-0 + bg-slate-100 zorunlu, aksi halde scroll'da hücre içerikleri sızar.
+// sticky top-0 + opak arka plan zorunlu, aksi halde scroll'da hücre içerikleri sızar.
+// Light modda bg-slate-100, dark modda bg-muted; her ikisi de opak arka plan verir.
 const HEAD_BASE =
-  "sticky top-0 z-20 bg-slate-100 border-b-2 border-[#1e2a5e]/15 border-r border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
+  "sticky top-0 z-20 bg-slate-100 dark:bg-muted border-b-2 border-[#1e2a5e]/15 dark:border-blue-400/20 border-r border-border px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
 
 export function ImportedMachinesScreen() {
   const searchParams = useSearchParams();
@@ -214,16 +215,16 @@ export function ImportedMachinesScreen() {
   return (
     <div className="space-y-8">
       {/* SAYFA BAŞLIĞI */}
-      <header className="border-b border-slate-200 pb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <header className="border-b border-border pb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Belge Detayları
         </p>
 
-        <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-slate-900">
+        <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-foreground">
           İthal Makine ve Teçhizat Listesi
         </h1>
 
-        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Seçili yatırım teşvik belgesine ait ithal makine ve teçhizat
           bilgilerini görüntüleyebilirsiniz.
         </p>
@@ -232,21 +233,24 @@ export function ImportedMachinesScreen() {
       {/* SEÇİLİ BELGE ŞERİDİ */}
       {selectedDocumentId && (
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-            <FileText className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+          <div className="inline-flex items-center gap-2.5 rounded-md border border-border bg-card px-3.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none">
+            <FileText
+              className="h-4 w-4 text-muted-foreground"
+              strokeWidth={1.75}
+            />
 
-            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Belge No
             </span>
 
-            <span className="h-4 w-px bg-slate-200" />
+            <span className="h-4 w-px bg-border" />
 
-            <span className="text-sm font-semibold tracking-tight text-slate-900">
+            <span className="text-sm font-semibold tracking-tight text-foreground">
               {selectedDocumentNumber ?? `#${selectedDocumentId}`}
             </span>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
             <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
             Seçili
           </span>
@@ -255,32 +259,34 @@ export function ImportedMachinesScreen() {
 
       {/* HATA */}
       {error && (
-        <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+        <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500 dark:text-red-400" />
 
           <div className="flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-red-600">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
               Hata
             </p>
 
-            <p className="mt-0.5 text-sm text-red-700">{error}</p>
+            <p className="mt-0.5 text-sm text-red-700 dark:text-red-300">
+              {error}
+            </p>
           </div>
         </div>
       )}
 
       {/* İÇERİK KARTI */}
-      <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none">
         {/* Kart Alt Başlığı */}
-        <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border bg-gradient-to-b from-slate-50 to-white px-6 py-4 dark:from-muted/40 dark:to-card">
           <div className="flex items-center gap-3">
-            <span className="h-8 w-1 rounded-full bg-[#1e2a5e]" />
+            <span className="h-8 w-1 rounded-full bg-[#1e2a5e] dark:bg-blue-400" />
 
             <div>
-              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-slate-800">
+              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-foreground">
                 İthal Makine ve Teçhizat Kayıtları
               </h2>
 
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Belge kapsamında tanımlı ithal makineler, FOB tutarlar ve
                 muafiyet bilgileri.
               </p>
@@ -288,7 +294,7 @@ export function ImportedMachinesScreen() {
           </div>
 
           {!loadingMachines && selectedDocumentId && machines.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shadow-sm dark:shadow-none">
               <span className="h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
               {machines.length} Kayıt
             </span>
@@ -352,11 +358,11 @@ export function ImportedMachinesScreen() {
               {!selectedDocumentId ? (
                 <tr>
                   <td colSpan={15} className="px-5 py-14 text-center">
-                    <p className="text-sm font-medium text-slate-700">
+                    <p className="text-sm font-medium text-foreground/80">
                       Görüntülenecek belge seçilmedi
                     </p>
 
-                    <p className="mt-1.5 text-xs text-slate-500">
+                    <p className="mt-1.5 text-xs text-muted-foreground">
                       Lütfen sol menüden bir belge numarası seçin.
                     </p>
                   </td>
@@ -365,194 +371,202 @@ export function ImportedMachinesScreen() {
                 <tr>
                   <td colSpan={15} className="px-5 py-14">
                     <div className="flex items-center justify-center gap-2.5">
-                      <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e]" />
+                      <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
 
-                      <span className="text-sm text-slate-500">Yükleniyor</span>
+                      <span className="text-sm text-muted-foreground">
+                        Yükleniyor
+                      </span>
                     </div>
                   </td>
                 </tr>
               ) : machines.length === 0 ? (
                 <tr>
                   <td colSpan={15} className="px-5 py-14 text-center">
-                    <p className="text-sm font-medium text-slate-700">
+                    <p className="text-sm font-medium text-foreground/80">
                       Kayıt bulunamadı
                     </p>
 
-                    <p className="mt-1.5 text-xs text-slate-500">
+                    <p className="mt-1.5 text-xs text-muted-foreground">
                       Bu belgeye ait ithal makine kaydı mevcut değil.
                     </p>
                   </td>
                 </tr>
               ) : (
-                machines.map((machine, index) => (
-                  <tr
-                    key={machine.id}
-                    className={`group transition-colors hover:bg-[#1e2a5e]/[0.03] ${
-                      index % 2 === 1 ? "bg-slate-50/40" : "bg-white"
-                    }`}
-                  >
-                    {/* Sıra */}
-                    <td
-                      className={`sticky left-0 z-10 w-[80px] min-w-[80px] border-b border-r border-slate-200 px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-slate-500 ${
-                        index % 2 === 1 ? "bg-slate-50" : "bg-white"
-                      } group-hover:bg-[#f8f9fb]`}
+                machines.map((machine, index) => {
+                  // Sticky sütunların opak arka planı: zebra + hover ile eş güdümlü.
+                  const stickyBg =
+                    index % 2 === 1
+                      ? "bg-slate-50 dark:bg-muted/60"
+                      : "bg-white dark:bg-card";
+                  const stickyHover =
+                    "group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40";
+
+                  return (
+                    <tr
+                      key={machine.id}
+                      className={`group transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${
+                        index % 2 === 1 ? "bg-muted/40" : "bg-card"
+                      }`}
                     >
-                      {machine.sequenceNumber ?? (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
+                      {/* Sıra */}
+                      <td
+                        className={`sticky left-0 z-10 w-[80px] min-w-[80px] border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-muted-foreground ${stickyBg} ${stickyHover}`}
+                      >
+                        {machine.sequenceNumber ?? (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
 
-                    {/* Makine ID */}
-                    <td
-                      className={`sticky left-[80px] z-10 w-[130px] min-w-[130px] border-b border-r border-slate-200 px-4 py-2.5 ${
-                        index % 2 === 1 ? "bg-slate-50" : "bg-white"
-                      } group-hover:bg-[#f8f9fb]`}
-                    >
-                      {machine.externalMachineId ? (
-                        <span className="inline-flex rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-xs font-medium text-slate-700">
-                          {machine.externalMachineId}
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-
-                    {/* Ad */}
-                    <td
-                      className={`sticky left-[210px] z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${
-                        index % 2 === 1 ? "bg-slate-50" : "bg-white"
-                      } group-hover:bg-[#f8f9fb]`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
-
-                        <span className="whitespace-normal">
-                          {machine.name ?? (
-                            <span className="text-slate-300">—</span>
-                          )}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Miktar */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-right font-mono text-sm tabular-nums text-slate-700">
-                      {formatQuantity(machine.quantity) ?? (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-
-                    {/* Birim */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5">
-                      {machine.unit ? (
-                        <span className="inline-flex rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                          {machine.unit}
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-
-                    {/* GTİP Kodu */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5">
-                      {machine.gtipCode ? (
-                        <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-2 py-0.5 font-mono text-xs font-semibold text-[#1e2a5e]">
-                          {machine.gtipCode}
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-
-                    {/* GTİP Açıklama */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-sm text-slate-600">
-                      {machine.gtipDescription ?? (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-
-                    {/* Kullanılmış */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-center">
-                      <FlagBadge
-                        value={machine.usedMachine}
-                        positiveTone="amber"
-                      />
-                    </td>
-
-                    {/* Araç */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-center">
-                      <FlagBadge
-                        value={machine.isVehicle}
-                        positiveTone="slate"
-                      />
-                    </td>
-
-                    {/* CKD */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-center">
-                      <FlagBadge value={machine.isCkd} positiveTone="slate" />
-                    </td>
-
-                    {/* FOB USD */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-right">
-                      {formatNumber(machine.totalFobUsd) ? (
-                        <span className="font-mono text-sm font-bold tabular-nums text-[#1e2a5e]">
-                          {formatNumber(machine.totalFobUsd)}
-
-                          <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                            USD
+                      {/* Makine ID */}
+                      <td
+                        className={`sticky left-[80px] z-10 w-[130px] min-w-[130px] border-b border-r border-border px-4 py-2.5 ${stickyBg} ${stickyHover}`}
+                      >
+                        {machine.externalMachineId ? (
+                          <span className="inline-flex rounded border border-border bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground/80">
+                            {machine.externalMachineId}
                           </span>
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
 
-                    {/* FOB TL */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-right">
-                      {formatNumber(machine.totalFobTl) ? (
-                        <span className="font-mono text-sm tabular-nums text-slate-700">
-                          {formatNumber(machine.totalFobTl)}
+                      {/* Ad */}
+                      <td
+                        className={`sticky left-[210px] z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-border px-4 py-2.5 text-sm font-semibold text-foreground shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${stickyBg} ${stickyHover}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
 
-                          <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                            TL
+                          <span className="whitespace-normal">
+                            {machine.name ?? (
+                              <span className="text-muted-foreground/50">
+                                —
+                              </span>
+                            )}
                           </span>
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
+                        </div>
+                      </td>
 
-                    {/* Menşei Döviz Tutarı */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-right">
-                      {formatNumber(machine.originCurrencyFobAmount) ? (
-                        <span className="font-mono text-sm tabular-nums text-slate-700">
-                          {formatNumber(machine.originCurrencyFobAmount)}
+                      {/* Miktar */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm tabular-nums text-foreground/80">
+                        {formatQuantity(machine.quantity) ?? (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
 
-                          {machine.originCurrencyFob && (
-                            <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                              {machine.originCurrencyFob}
+                      {/* Birim */}
+                      <td className="border-b border-r border-border px-4 py-2.5">
+                        {machine.unit ? (
+                          <span className="inline-flex rounded bg-muted px-2 py-0.5 text-xs font-medium text-foreground/80">
+                            {machine.unit}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+
+                      {/* GTİP Kodu */}
+                      <td className="border-b border-r border-border px-4 py-2.5">
+                        {machine.gtipCode ? (
+                          <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-2 py-0.5 font-mono text-xs font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
+                            {machine.gtipCode}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+
+                      {/* GTİP Açıklama */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-sm text-muted-foreground">
+                        {machine.gtipDescription ?? (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+
+                      {/* Kullanılmış */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                        <FlagBadge
+                          value={machine.usedMachine}
+                          positiveTone="amber"
+                        />
+                      </td>
+
+                      {/* Araç */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                        <FlagBadge
+                          value={machine.isVehicle}
+                          positiveTone="slate"
+                        />
+                      </td>
+
+                      {/* CKD */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                        <FlagBadge value={machine.isCkd} positiveTone="slate" />
+                      </td>
+
+                      {/* FOB USD */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-right">
+                        {formatNumber(machine.totalFobUsd) ? (
+                          <span className="font-mono text-sm font-bold tabular-nums text-[#1e2a5e] dark:text-blue-300">
+                            {formatNumber(machine.totalFobUsd)}
+
+                            <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              USD
                             </span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
 
-                    {/* KDV İstisnası */}
-                    <td className="border-b border-r border-slate-200 px-4 py-2.5 text-sm text-slate-600">
-                      {machine.vatExemptionDescription ?? (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
+                      {/* FOB TL */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-right">
+                        {formatNumber(machine.totalFobTl) ? (
+                          <span className="font-mono text-sm tabular-nums text-foreground/80">
+                            {formatNumber(machine.totalFobTl)}
 
-                    {/* Gümrük Vergisi İstisnası */}
-                    <td className="border-b border-slate-200 px-4 py-2.5 text-sm text-slate-600">
-                      {machine.customsTaxExemptionDescription ?? (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                            <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                              TL
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+
+                      {/* Menşei Döviz Tutarı */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-right">
+                        {formatNumber(machine.originCurrencyFobAmount) ? (
+                          <span className="font-mono text-sm tabular-nums text-foreground/80">
+                            {formatNumber(machine.originCurrencyFobAmount)}
+
+                            {machine.originCurrencyFob && (
+                              <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                                {machine.originCurrencyFob}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+
+                      {/* KDV İstisnası */}
+                      <td className="border-b border-r border-border px-4 py-2.5 text-sm text-muted-foreground">
+                        {machine.vatExemptionDescription ?? (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+
+                      {/* Gümrük Vergisi İstisnası */}
+                      <td className="border-b border-border px-4 py-2.5 text-sm text-muted-foreground">
+                        {machine.customsTaxExemptionDescription ?? (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -570,23 +584,26 @@ function FlagBadge({
   positiveTone?: "emerald" | "amber" | "slate";
 }) {
   if (!value) {
-    return <span className="text-slate-300">—</span>;
+    return <span className="text-muted-foreground/50">—</span>;
   }
 
   const isPositive = isPositiveFlag(value);
 
   if (!isPositive) {
     return (
-      <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+      <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         {value}
       </span>
     );
   }
 
   const toneStyles = {
-    emerald: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    amber: "bg-amber-50 text-amber-700 ring-amber-200",
-    slate: "bg-slate-100 text-slate-700 ring-slate-200",
+    emerald:
+      "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30",
+    amber:
+      "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30",
+    slate:
+      "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-muted dark:text-foreground/80 dark:ring-border",
   }[positiveTone];
 
   return (
@@ -599,7 +616,7 @@ function FlagBadge({
             ? "bg-emerald-500"
             : positiveTone === "amber"
               ? "bg-amber-500"
-              : "bg-slate-500"
+              : "bg-slate-500 dark:bg-slate-400"
         }`}
       />
 

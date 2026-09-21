@@ -337,13 +337,16 @@ export function AppSidebar({
     - variant === "desktop" → 1024px altında GİZLİ (hidden lg:flex).
                               1024px ve üzerinde sticky, w-64 (açık) veya w-20 (kapalı).
                               overflow-visible çünkü daralt/genişlet butonu sağa taşıyor.
+
+    Dark mode: mavi gradient → daha koyu slate gradient'e iniyor. Böylece marka mavisi
+    light mode'da korunuyor, dark mode'da ana zeminle uyumlu koyu bir yüzeye dönüşüyor.
   */
   const asideClassName =
     variant === "mobile"
-      ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100"
+      ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200"
       : `sticky top-0 hidden h-screen ${
           isCollapsed ? "w-20" : "w-64"
-        } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200 lg:flex`;
+        } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200 lg:flex`;
 
   return (
     <aside className={asideClassName}>
@@ -353,7 +356,7 @@ export function AppSidebar({
           type="button"
           onClick={toggleCollapsed}
           title={isCollapsed ? "Menüyü genişlet" : "Menüyü daralt"}
-          className="absolute -right-3 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-blue-900 bg-white text-blue-900 shadow-md transition hover:bg-blue-50"
+          className="absolute -right-3 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-blue-900 bg-white text-blue-900 shadow-md transition hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
@@ -361,7 +364,7 @@ export function AppSidebar({
 
       {/* LOGO - Beyaz kart içinde, kenarları yuvarlak */}
       <div
-        className={`mx-2 mt-6 flex items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-200 ${
+        className={`mx-2 mt-6 flex items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-200 dark:bg-slate-100 ${
           isCollapsed ? "px-2 py-2" : "px-3 py-3"
         }`}
       >
@@ -382,7 +385,7 @@ export function AppSidebar({
       </div>
 
       {/* NAVİGASYON */}
-      <nav className="mt-2 flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden p-3 [scrollbar-color:rgba(147,197,253,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-300/40 hover:[&::-webkit-scrollbar-thumb]:bg-blue-200/60">
+      <nav className="mt-2 flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden p-3 [scrollbar-color:rgba(147,197,253,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-300/40 hover:[&::-webkit-scrollbar-thumb]:bg-blue-200/60 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/40 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500/60">
         {visibleItems.map((item) => {
           const Icon = item.icon;
 
@@ -399,13 +402,13 @@ export function AppSidebar({
           return (
             <div key={`${item.label}-${item.href}`}>
               {showDocumentSection && !isCollapsed && (
-                <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4">
+                <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4 dark:border-slate-700/70">
                   <div className="px-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200 dark:text-slate-400">
                       Belge Detayları
                     </p>
 
-                    <p className="mt-1 text-[11px] leading-4 text-blue-200/80">
+                    <p className="mt-1 text-[11px] leading-4 text-blue-200/80 dark:text-slate-400/80">
                       Detaylarını görüntülemek için belge seçin.
                     </p>
                   </div>
@@ -414,7 +417,7 @@ export function AppSidebar({
                     value={selectedDocumentId}
                     onChange={handleDocumentChange}
                     disabled={documentsLoading || documents.length === 0}
-                    className="mt-2.5 w-full rounded-lg border border-blue-700 bg-blue-900/60 px-3 py-2.5 text-xs font-semibold text-white outline-none transition focus:border-white/50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-2.5 w-full rounded-lg border border-blue-700 bg-blue-900/60 px-3 py-2.5 text-xs font-semibold text-white outline-none transition focus:border-white/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800/70 dark:focus:border-slate-500"
                   >
                     <option value="">
                       {documentsLoading
@@ -443,7 +446,7 @@ export function AppSidebar({
                   </select>
 
                   {documentWarning && (
-                    <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                    <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                       Önce belge seçimi yapınız.
                     </div>
                   )}
@@ -451,7 +454,7 @@ export function AppSidebar({
               )}
 
               {showDocumentSection && isCollapsed && (
-                <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4" />
+                <div className="mb-2 mt-4 border-t border-blue-700/70 pt-4 dark:border-slate-700/70" />
               )}
 
               {isDocumentDetailItem && !selectedDocumentId ? (
@@ -459,11 +462,14 @@ export function AppSidebar({
                   type="button"
                   onClick={showDocumentWarning}
                   title="Önce bir belge seçiniz"
-                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30 ${
+                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30 dark:text-slate-500 dark:hover:bg-slate-800/60 ${
                     isCollapsed ? "justify-center" : ""
                   }`}
                 >
-                  <Icon size={18} className="shrink-0 text-blue-300/40" />
+                  <Icon
+                    size={18}
+                    className="shrink-0 text-blue-300/40 dark:text-slate-500"
+                  />
                   {!isCollapsed && <span>{item.label}</span>}
                 </button>
               ) : (
@@ -476,7 +482,7 @@ export function AppSidebar({
                   } ${
                     active
                       ? "bg-gradient-to-r from-red-600 to-red-500 font-semibold text-white shadow-md shadow-red-600/30"
-                      : "font-medium text-blue-100 hover:bg-blue-700/60 hover:text-white"
+                      : "font-medium text-blue-100 hover:bg-blue-700/60 hover:text-white dark:text-slate-200 dark:hover:bg-slate-800/60 dark:hover:text-white"
                   }`}
                 >
                   <Icon
@@ -484,7 +490,7 @@ export function AppSidebar({
                     className={`shrink-0 ${
                       active
                         ? "text-white"
-                        : "text-blue-200 transition group-hover:text-white"
+                        : "text-blue-200 transition group-hover:text-white dark:text-slate-400 dark:group-hover:text-white"
                     }`}
                   />
 
@@ -502,7 +508,7 @@ export function AppSidebar({
 
       {/* DESTEK TALEPLERİ - SABİT ALT MENÜ */}
       {(role === "COMPANY" || role === "OPERATION" || role === "ADMIN") && (
-        <div className="shrink-0 border-t border-blue-700/60 px-3 pt-3">
+        <div className="shrink-0 border-t border-blue-700/60 px-3 pt-3 dark:border-slate-700/60">
           {(() => {
             const canSeeBadge = role === "ADMIN" || role === "OPERATION";
             const hasUnread = canSeeBadge && supportUnreadCount > 0;
@@ -523,7 +529,7 @@ export function AppSidebar({
                 } ${
                   isSupportRequestsActive
                     ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-600/30"
-                    : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white"
+                    : "bg-blue-900/35 text-blue-100 hover:bg-blue-700/60 hover:text-white dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                 }`}
               >
                 <Headphones
@@ -531,7 +537,7 @@ export function AppSidebar({
                   className={`shrink-0 ${
                     isSupportRequestsActive
                       ? "text-white"
-                      : "text-blue-200 transition group-hover:text-white"
+                      : "text-blue-200 transition group-hover:text-white dark:text-slate-400 dark:group-hover:text-white"
                   } ${shouldAnimate ? "animate-ring-shake" : ""}`}
                 />
 
@@ -579,11 +585,11 @@ export function AppSidebar({
       )}
 
       {/* KULLANICI / ÇIKIŞ */}
-      <div className="shrink-0 border-t border-blue-900/60 p-3">
+      <div className="shrink-0 border-t border-blue-900/60 p-3 dark:border-slate-800/70">
         <button
           onClick={handleLogout}
           title={isCollapsed ? "Oturumu Kapat" : undefined}
-          className={`group flex w-full items-center gap-3 rounded-xl border border-blue-900/60 bg-blue-900/40 p-2.5 text-left text-sm transition hover:border-red-500/50 hover:bg-red-500/20 ${
+          className={`group flex w-full items-center gap-3 rounded-xl border border-blue-900/60 bg-blue-900/40 p-2.5 text-left text-sm transition hover:border-red-500/50 hover:bg-red-500/20 dark:border-slate-700/60 dark:bg-slate-800/50 dark:hover:border-red-500/40 dark:hover:bg-red-500/15 ${
             isCollapsed ? "justify-center" : ""
           }`}
         >
@@ -597,12 +603,14 @@ export function AppSidebar({
                 <p className="truncate text-xs font-semibold text-white transition group-hover:text-red-300">
                   {userName ?? "Kullanıcı"}
                 </p>
-                <p className="text-[11px] text-blue-200">Oturumu Kapat</p>
+                <p className="text-[11px] text-blue-200 dark:text-slate-400">
+                  Oturumu Kapat
+                </p>
               </div>
 
               <LogOut
                 size={16}
-                className="shrink-0 text-blue-200 transition group-hover:text-red-300"
+                className="shrink-0 text-blue-200 transition group-hover:text-red-300 dark:text-slate-400"
               />
             </>
           )}

@@ -24,7 +24,7 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <AppSidebar role={role} userName={userName} />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -36,7 +36,9 @@ export function DashboardShell({
           consultantEmail={consultantEmail}
         />
 
-        <main className="flex-1 p-3 sm:p-4 md:p-6">{children}</main>
+        <main className="flex-1 bg-slate-50 p-3 transition-colors dark:bg-slate-950 sm:p-4 md:p-6">
+          {children}
+        </main>
       </div>
 
       {role === "COMPANY" && (
