@@ -35,6 +35,7 @@ type StoredDocumentStatus = "OPEN" | "CLOSED" | "CANCELLED";
 
 type SortDirection = "asc" | "desc";
 
+// Belge tablosu için sıralanabilir sütunlar
 type DocumentSortKey =
   | "documentNumber"
   | "companyName"
@@ -46,6 +47,7 @@ type DocumentSortKey =
   | "supportClass"
   | "status";
 
+// Tarih sütunları: sıralama "bugüne en yakın -> en uzak" mantığıyla çalışır.
 const DATE_SORT_KEYS: ReadonlySet<DocumentSortKey> = new Set([
   "documentStartDate",
   "documentEndDate",
@@ -53,6 +55,7 @@ const DATE_SORT_KEYS: ReadonlySet<DocumentSortKey> = new Set([
   "authorizationEndDate",
 ]);
 
+// Yetkilendirme (authorization-required) tablosu için sıralanabilir sütunlar
 type AuthSortKey =
   | "externalCompanyId"
   | "name"
@@ -71,6 +74,7 @@ function toggleSort<K extends string>(
   key: K,
 ): SortConfig<K> {
   if (current?.key === key) {
+    // asc -> desc -> sıralama yok
     return current.direction === "asc" ? { key, direction: "desc" } : null;
   }
   return { key, direction: "asc" };
@@ -89,6 +93,8 @@ function SortIcon({ direction }: { direction?: SortDirection }) {
   return <ChevronsUpDown size={12} className="opacity-40" />;
 }
 
+// Belirtilen durum değeri için Türkçe görünen etiket (filtre listesinde ve
+// StatusBadge'de kullanılan aynı sözlük).
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Aktif",
   EXPIRED: "Kapatma Yapılacak",
@@ -246,6 +252,10 @@ interface DocumentsScreenProps {
   ) => void;
 }
 
+// `extraParams` ile (ör. search) filtrelenmiş kapalı/iptal belgelerin
+// TÜMÜ, sayfa sayfa gezilerek tek dizide toplanır. Böylece "İptal" gibi bir
+// filtre uygulandığında sadece o an ekranda olan 20 kayıt değil, eşleşen
+// TÜM kayıtlar arasında arama/filtreleme/sıralama yapılabilir.
 async function fetchAllClosedDocuments(
   extraParams?: URLSearchParams,
 ): Promise<ClosedApiDocument[]> {
@@ -282,6 +292,9 @@ async function fetchAllClosedDocuments(
   ];
 }
 
+// Aynı mantık: /documents endpointinin TÜM sayfaları tek seferde çekilir.
+// `summary` ilk sayfadan alınır (backend zaten toplam/aktif/vb. sayıları
+// sayfadan bağımsız, tüm filtrelenmiş küme için döndürür).
 async function fetchAllDocuments(baseParams: URLSearchParams): Promise<{
   items: ApiDocument[];
   summary: DocumentListResponse["data"]["summary"];
@@ -380,6 +393,7 @@ function calculateDocumentStatus(document: {
     const extensionDate = new Date(document.extensionDate);
     extensionDate.setHours(0, 0, 0, 0);
 
+    // Tarihler farklıysa süre uzatımı yapılmıştır.
     if (
       !Number.isNaN(extensionDate.getTime()) &&
       extensionDate.getTime() !== documentEndDate.getTime()
@@ -395,6 +409,9 @@ function calculateDocumentStatus(document: {
   return "ACTIVE";
 }
 
+// Belgenin, o an tablo satırında gösterilen "gerçek" durum değeri. Filtre ve
+// StatusBadge aynı değeri kullanır (INACTIVE ise ham CLOSED/CANCELLED
+// değerine düşülür).
 function getDisplayStatus(doc: ApiDocument): string {
   return doc.status === "INACTIVE"
     ? (doc.documentStatus ?? "INACTIVE")
@@ -402,9 +419,10 @@ function getDisplayStatus(doc: ApiDocument): string {
 }
 
 // Tabloda satırın rozetinde YAZAN metnin karşılığı — filtre de bunu kullanır.
-// Kapalı/iptal ve yetki bitmiş kontrollerinden sonra, uzatma/kapatma
-// yapılabilir belgeleri kendi etiketleriyle döner. Kart-view'i yakalayabilmek
-// için ekstra Set'ler dışarıdan geçilir.
+// Öncelik sırası: Kapalı/İptal -> Yetkisi Bitmiş -> Kapatma Yapılacak ->
+// Uzatma Yapılabilir -> normal durum. Hem masaüstü tablo hem mobil kart
+// hem de filtre AYNI fonksiyonu kullanır; böylece ekranda görünen rozet ile
+// filtre sonucu her zaman birbirini tutar.
 function getBadgeStatus(
   doc: ApiDocument,
   opts: {
@@ -447,7 +465,7 @@ function getDocumentSortValue(
             ? doc.extensionDate
             : (doc.company?.authorizationEndDate ?? null);
 
-    if (!rawDate) return Infinity;
+    if (!rawDate) return Infinity; // tarihi olmayanlar en sona
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -500,6 +518,7 @@ function getAuthSortValue(
 
       if (Number.isNaN(target.getTime())) return Infinity;
 
+      // Yetkilendirme bitişi de bugüne en yakından en uzağa sıralanır.
       return Math.abs(target.getTime() - today.getTime());
     }
     case "authorizationStatus":
@@ -511,6 +530,10 @@ function getAuthSortValue(
 
 /* =====================================================
    SÜTUN FİLTRE (checkbox) DROPDOWN'I
+   Uzman / Destekleme Sınıfı / Durum gibi az sayıda farklı
+   değer alabilen sütunlarda, "sırala" yerine "filtrele"
+   kullanımı çok daha kullanışlı: kullanıcı istediği kadar
+   değeri aynı anda seçip listeyi daraltabiliyor.
 ===================================================== */
 function ColumnFilterDropdown({
   title,
@@ -707,6 +730,7 @@ export function DocumentsScreen({
     };
   }, [openFilterColumn]);
 
+  // --- SIRALAMA STATE'LERİ ---
   const [documentSortConfig, setDocumentSortConfig] =
     useState<SortConfig<DocumentSortKey>>(null);
   const [authSortConfig, setAuthSortConfig] =
@@ -720,6 +744,7 @@ export function DocumentsScreen({
     setAuthSortConfig((current) => toggleSort(current, key));
   }
 
+  // --- SÜTUN FİLTRE STATE'LERİ (Uzman / Destekleme Sınıfı / Durum) ---
   const [consultantFilter, setConsultantFilter] = useState<Set<string>>(
     new Set(),
   );
@@ -834,6 +859,7 @@ export function DocumentsScreen({
   }, [companyId, variant]);
   useEffect(() => {
     async function loadDocuments() {
+      // Firma yetkisi kontrol edilirken belge isteği gönderme.
       if (variant === "company" && !companyId && isAuthorizationLoading) {
         return;
       }
@@ -841,6 +867,7 @@ export function DocumentsScreen({
       setIsLoading(true);
       setLoadError("");
 
+      // Firma yetkisi yoksa belge API'lerini hiç çağırma.
       if (
         variant === "company" &&
         !companyId &&
@@ -974,6 +1001,10 @@ export function DocumentsScreen({
               : new Set(),
           );
 
+          // Uzatma/kapatma yapılabilir olarak işaretlenmiş belgeler kendi
+          // kartlarında (Süre Uzatma / Kapatma Yapılacaklar) sayıldığı için
+          // "Aktif" sayısına ayrıca dahil edilmiyor; aksi halde bir belge aynı
+          // anda hem Aktif hem Uzatma Yapılabilir kartında görünüyordu.
           const activeMappedDocuments = companyAuthorizationIsValid
             ? mappedDocuments.filter(
                 (document) =>
@@ -984,6 +1015,8 @@ export function DocumentsScreen({
             : [];
 
           setSummary({
+            // Toplam belge sayısı, yetki durumundan bağımsız olarak firmanın
+            // sahip olduğu TÜM belgeleri sayar (açık + kapalı/iptal).
             total: mappedDocuments.length,
 
             active: activeMappedDocuments.length,
@@ -1006,6 +1039,7 @@ export function DocumentsScreen({
                 ).length
               : 0,
 
+            // Kapalı/İptal belgeler yalnızca kendi kategorisinde kalır.
             inactive: mappedDocuments.filter(
               (document) => document.status === "INACTIVE",
             ).length,
@@ -1354,6 +1388,7 @@ export function DocumentsScreen({
     isAuthorizationLoading,
   ]);
   useEffect(() => {
+    // Liste/kategori değiştiğinde ilk sayfaya dön.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [
@@ -1365,6 +1400,8 @@ export function DocumentsScreen({
   ]);
 
   useEffect(() => {
+    // Başka bir belge kategorisine geçildiğinde
+    // önceki kategorinin filtre ve sıralamasını taşımıyoruz.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsultantFilter(new Set());
     setSupportClassFilter(new Set());
@@ -1437,6 +1474,9 @@ export function DocumentsScreen({
 
   const authorizationIsValid = hasValidAuthorization(authorizationEndDate);
 
+  // "Süresi yaklaşan" artık Aktif'e dahil olduğu için summary.expiring
+  // her zaman 0 ya da backend'in henüz ayırdığı sayı olabilir; ikisini
+  // toplayınca tablo ile kart birbirini tutuyor.
   const activeCount = summary.active + summary.expiring;
 
   const visibleDocumentsByStatusFilter = companyId
@@ -1635,6 +1675,23 @@ export function DocumentsScreen({
   const displayedTotalPages = isClientPaginated
     ? Math.max(1, Math.ceil(visibleDocuments.length / CLOSED_PAGE_SIZE))
     : totalPages;
+
+  // Bir belge satırının (hem mobil kart hem masaüstü tablo) rozet değeri.
+  // Filtre ile aynı `getBadgeStatus` fonksiyonunu kullanır; böylece ekranda
+  // yazan rozet ile filtre seçenekleri her zaman aynı kalır.
+  function getRowBadgeStatus(
+    doc: ApiDocument,
+    authorizationExpired: boolean,
+  ): string {
+    return getBadgeStatus(doc, {
+      isClosureEligibleView,
+      isExtensionEligibleView,
+      closureEligibleIds: companyClosureEligibleIds,
+      extensionEligibleIds: companyExtensionEligibleIds,
+      authorizationExpired,
+    });
+  }
+
   // Belge tablosu başlıkları:
   // - `key` verilmişse sütun başlığına tıklanarak sıralanabilir.
   // - `filterType` verilmişse başlıktaki huni (funnel) ikonuyla checkbox'lı
@@ -1980,11 +2037,21 @@ export function DocumentsScreen({
                   doc.company?.authorizationEndDate ?? null,
                 );
 
+                // Firma detay sayfasında (companyId varken) yetkilendirme
+                // bilgisi ayrı bir istekle geldiği için isAuthorizationLoading
+                // ile flicker önleniyor. Genel listede (companyId yokken) her
+                // belge zaten kendi firmasının authorizationEndDate bilgisiyle
+                // geldiği için doğrudan o değer kullanılıyor.
                 const authorizationExpired =
                   !isClosedOrCancelled &&
                   (companyId
                     ? !isAuthorizationLoading && !documentAuthorizationIsValid
                     : !documentAuthorizationIsValid);
+
+                const badgeStatus = getRowBadgeStatus(
+                  doc,
+                  authorizationExpired,
+                );
 
                 const documentKey = `${
                   doc.status === "INACTIVE" ? "closed" : "open"
@@ -2020,7 +2087,8 @@ export function DocumentsScreen({
                         >
                           <FileText size={16} />
                         </div>
-                        <div className="min-w-0">
+
+                        <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-foreground">
                             {doc.documentNumber ?? "-"}
                           </p>
@@ -2029,21 +2097,7 @@ export function DocumentsScreen({
                           </p>
                         </div>
 
-                        {isClosureEligibleView ||
-                        companyClosureEligibleIds.has(doc.id) ? (
-                          <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                            Kapatma Yapılacak
-                          </span>
-                        ) : isExtensionEligibleView ||
-                          companyExtensionEligibleIds.has(doc.id) ? (
-                          <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                            Uzatma Yapılabilir
-                          </span>
-                        ) : (
-                          <StatusBadge status={getDisplayStatus(doc)} />
-                        )}
+                        <StatusBadge status={badgeStatus} />
                       </div>
 
                       {!companyId && doc.company && (
@@ -2147,7 +2201,7 @@ export function DocumentsScreen({
           <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
             <table
               className={`w-full table-fixed text-left text-sm ${
-                isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1150px]"
+                isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1250px]"
               }`}
             >
               {isAuthorizationRequiredView ? (
@@ -2161,17 +2215,19 @@ export function DocumentsScreen({
                   <col className="w-[15%]" />
                 </colgroup>
               ) : (
+                // Toplam %100. "Durum" sütunu rozetler ("Kapatma Yapılacak",
+                // "Uzatma Yapılabilir") tek satırda sığsın diye geniş tutuldu.
                 <colgroup>
-                  <col className="w-[9%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[8%]" />
+                  <col className="w-[9%]" /> {/* Belge No */}
+                  <col className="w-[13%]" /> {/* Firma */}
+                  <col className="w-[9%]" /> {/* Uzman */}
+                  <col className="w-[9%]" /> {/* Belge Başlangıç */}
+                  <col className="w-[9%]" /> {/* Belge Bitiş */}
+                  <col className="w-[9%]" /> {/* Süre Uzatım */}
+                  <col className="w-[9%]" /> {/* Yetki Bitiş */}
+                  <col className="w-[9%]" /> {/* Destekleme Sınıfı */}
+                  <col className="w-[14%]" /> {/* Durum */}
+                  <col className="w-[10%]" /> {/* Detay */}
                 </colgroup>
               )}
 
@@ -2432,6 +2488,11 @@ export function DocumentsScreen({
                       doc.company?.authorizationEndDate ?? null,
                     );
 
+                    // Firma detay sayfasında (companyId varken) yetkilendirme
+                    // bilgisi ayrı bir istekle geldiği için isAuthorizationLoading
+                    // ile flicker önleniyor. Genel listede (companyId yokken) her
+                    // belge zaten kendi firmasının authorizationEndDate bilgisiyle
+                    // geldiği için doğrudan o değer kullanılıyor.
                     const authorizationExpired =
                       !isClosedOrCancelled &&
                       (companyId
@@ -2439,9 +2500,10 @@ export function DocumentsScreen({
                           !documentAuthorizationIsValid
                         : !documentAuthorizationIsValid);
 
-                    const displayedStatus = authorizationExpired
-                      ? "AUTHORIZATION_EXPIRED"
-                      : getDisplayStatus(doc);
+                    const badgeStatus = getRowBadgeStatus(
+                      doc,
+                      authorizationExpired,
+                    );
 
                     const documentKey = `${
                       doc.status === "INACTIVE" ? "closed" : "open"
@@ -2480,6 +2542,7 @@ export function DocumentsScreen({
                           </div>
                         </td>
 
+                        {/* Firma */}
                         <td className="max-w-xs px-3 py-1.5">
                           <p
                             title={
@@ -2494,6 +2557,7 @@ export function DocumentsScreen({
                           </p>
                         </td>
 
+                        {/* Uzman */}
                         <td className="px-3 py-1.5 text-center">
                           <p
                             title={doc.company?.consultant ?? undefined}
@@ -2512,6 +2576,8 @@ export function DocumentsScreen({
                         <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
                           {formatDate(doc.extensionDate)}
                         </td>
+
+                        {/* Yetki Bitiş */}
                         <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
                           {formatDate(
                             doc.company?.authorizationEndDate ?? null,
@@ -2524,22 +2590,9 @@ export function DocumentsScreen({
                           </span>
                         </td>
 
+                        {/* Durum */}
                         <td className="px-3 py-1.5 text-center">
-                          {isClosureEligibleView ||
-                          companyClosureEligibleIds.has(doc.id) ? (
-                            <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-bold text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-                              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                              Kapatma Yapılacak
-                            </span>
-                          ) : isExtensionEligibleView ||
-                            companyExtensionEligibleIds.has(doc.id) ? (
-                            <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                              Uzatma Yapılabilir
-                            </span>
-                          ) : (
-                            <StatusBadge status={displayedStatus} />
-                          )}
+                          <StatusBadge status={badgeStatus} />
                         </td>
 
                         <td className="px-3 py-1.5 text-center">
@@ -2616,6 +2669,7 @@ export function DocumentsScreen({
           ref={documentTabsRef}
           className="scroll-mt-16 overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:scroll-mt-24 sm:rounded-2xl"
         >
+          {/* BELGE TABLARI */}
           <div className="flex gap-1 overflow-x-auto border-b border-border bg-muted/60 px-2 pt-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-2.5">
             {openDocuments.map((document) => {
               const isActive = activeDocumentKey === document.key;
@@ -2822,6 +2876,24 @@ function StatusBadge({ status }: { status: string }) {
       border: "border-red-200/60 dark:border-red-500/30",
     },
 
+    // getBadgeStatus'un döndürdüğü "Kapatma Yapılacak" görünümü
+    CLOSURE_ELIGIBLE: {
+      label: "Kapatma Yapılacak",
+      dot: "bg-red-500",
+      text: "text-red-700 dark:text-red-300",
+      bg: "bg-red-50 dark:bg-red-500/10",
+      border: "border-red-200 dark:border-red-500/30",
+    },
+
+    // getBadgeStatus'un döndürdüğü "Uzatma Yapılabilir" görünümü
+    EXTENSION_ELIGIBLE: {
+      label: "Uzatma Yapılabilir",
+      dot: "bg-amber-500",
+      text: "text-amber-700 dark:text-amber-300",
+      bg: "bg-amber-50 dark:bg-amber-500/10",
+      border: "border-amber-200 dark:border-amber-500/30",
+    },
+
     CLOSED: {
       label: "Kapalı",
       dot: "bg-blue-500",
@@ -2863,7 +2935,7 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex whitespace-nowrap items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
+      className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}
