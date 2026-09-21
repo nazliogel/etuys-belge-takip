@@ -84,16 +84,16 @@ export function InvestmentTypeScreen() {
   return (
     <div className="space-y-8">
       {/* SAYFA BAŞLIĞI */}
-      <header className="border-b border-slate-200 pb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <header className="border-b border-border pb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Belge Detayları
         </p>
 
-        <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-slate-900">
+        <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight text-foreground">
           Yatırım Cinsi
         </h1>
 
-        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Seçili teşvik belgesine ait yatırım cinsi bilgisini
           görüntüleyebilirsiniz.
         </p>
@@ -102,21 +102,24 @@ export function InvestmentTypeScreen() {
       {/* SEÇİLİ BELGE ŞERİDİ */}
       {selectedDocumentId && (
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-            <FileText className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+          <div className="inline-flex items-center gap-2.5 rounded-md border border-border bg-card px-3.5 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none">
+            <FileText
+              className="h-4 w-4 text-muted-foreground"
+              strokeWidth={1.75}
+            />
 
-            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Belge No
             </span>
 
-            <span className="h-4 w-px bg-slate-200" />
+            <span className="h-4 w-px bg-border" />
 
-            <span className="text-sm font-semibold tracking-tight text-slate-900">
+            <span className="text-sm font-semibold tracking-tight text-foreground">
               {selectedDocumentNumber ?? `#${selectedDocumentId}`}
             </span>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
             <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
             Seçili
           </span>
@@ -124,32 +127,32 @@ export function InvestmentTypeScreen() {
       )}
 
       {/* İÇERİK KARTI */}
-      <section className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <section className="rounded-lg border border-border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none">
         {!selectedDocumentId ? (
           <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-foreground/80">
               Görüntülenecek belge seçilmedi
             </p>
 
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-xs text-muted-foreground">
               Lütfen sol menüden bir belge numarası seçin.
             </p>
           </div>
         ) : detailLoading ? (
           <div className="flex items-center justify-center gap-2.5 px-6 py-16">
-            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-            <span className="text-sm text-slate-500">Yükleniyor</span>
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Yükleniyor</span>
           </div>
         ) : (
-          <dl className="divide-y divide-slate-100">
+          <dl className="divide-y divide-border">
             <div className="grid grid-cols-1 gap-2 px-6 py-5 sm:grid-cols-[220px_1fr] sm:gap-6 sm:py-4">
-              <dt className="text-sm font-medium text-slate-500">
+              <dt className="text-sm font-medium text-muted-foreground">
                 Yatırım Cinsi
               </dt>
 
-              <dd className="text-sm font-semibold text-slate-900">
+              <dd className="text-sm font-semibold text-foreground">
                 {investmentType ?? (
-                  <span className="font-normal italic text-slate-400">
+                  <span className="font-normal italic text-muted-foreground/70">
                     Kayıt bulunamadı
                   </span>
                 )}
