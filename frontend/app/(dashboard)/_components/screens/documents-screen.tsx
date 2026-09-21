@@ -2215,19 +2215,17 @@ export function DocumentsScreen({
                   <col className="w-[15%]" />
                 </colgroup>
               ) : (
-                // Toplam %100. "Durum" sütunu rozetler ("Kapatma Yapılacak",
-                // "Uzatma Yapılabilir") tek satırda sığsın diye geniş tutuldu.
                 <colgroup>
-                  <col className="w-[9%]" /> {/* Belge No */}
-                  <col className="w-[13%]" /> {/* Firma */}
-                  <col className="w-[9%]" /> {/* Uzman */}
-                  <col className="w-[9%]" /> {/* Belge Başlangıç */}
-                  <col className="w-[9%]" /> {/* Belge Bitiş */}
-                  <col className="w-[9%]" /> {/* Süre Uzatım */}
-                  <col className="w-[9%]" /> {/* Yetki Bitiş */}
-                  <col className="w-[9%]" /> {/* Destekleme Sınıfı */}
-                  <col className="w-[14%]" /> {/* Durum */}
-                  <col className="w-[10%]" /> {/* Detay */}
+                  <col className="w-[9%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[10%]" />
                 </colgroup>
               )}
 
