@@ -28,6 +28,7 @@ const smtpPort = process.env.SMTP_PORT
   : undefined;
 
 const emailSendingEnabled = process.env.EMAIL_SENDING_ENABLED === "true";
+const adminFallbackEmail = process.env.ADMIN_FALLBACK_EMAIL;
 const emailTestSendingEnabled =
   process.env.EMAIL_TEST_SENDING_ENABLED === "true";
 
@@ -112,6 +113,18 @@ if (smtpPort !== undefined && Number.isNaN(smtpPort)) {
   throw new Error("SMTP_PORT must be a valid number.");
 }
 
+if (emailSendingEnabled && emailTestSendingEnabled) {
+  throw new Error(
+    "EMAIL_SENDING_ENABLED and EMAIL_TEST_SENDING_ENABLED cannot both be true.",
+  );
+}
+
+if (emailTestSendingEnabled && !emailTestRecipient) {
+  throw new Error(
+    "EMAIL_TEST_RECIPIENT must be defined when EMAIL_TEST_SENDING_ENABLED is true.",
+  );
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port,
@@ -129,6 +142,7 @@ export const env = {
   emailSendingEnabled,
   emailTestSendingEnabled,
   emailTestRecipient,
+  adminFallbackEmail,
   whatsappQueueEnabled,
   whatsappSendingEnabled,
   whatsappAccessToken,

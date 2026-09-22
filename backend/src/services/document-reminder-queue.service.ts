@@ -1,6 +1,7 @@
 import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
 import { DocumentReminderPreviewService } from "./document-reminder-preview.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
+import { env } from "../config/env.js";
 
 interface BlockedReminder {
   documentId: number;
@@ -75,6 +76,14 @@ export class DocumentReminderQueueService {
         } else {
           missingConsultantCount += 1;
 
+          if (!env.adminFallbackEmail) {
+            console.error(
+              `ADMIN_FALLBACK_EMAIL tanımlı değil. Admin bildirimi oluşturulamadı. Firma: ${preview.companyName}`,
+            );
+
+            continue;
+          }
+
           const adminEmailReminderId =
             await this.repository.createAdminEmailReminder({
               documentId: preview.documentId,
@@ -83,7 +92,7 @@ export class DocumentReminderQueueService {
               type: preview.type,
               reminderMonth: preview.reminderMonth,
               targetDate: preview.targetDate,
-              recipient: "salihsahin@akkasgroup.com",
+              recipient: env.adminFallbackEmail,
               subject: `${preview.companyName} - Danışman Bilgisi Eksik`,
               message: [
                 `${preview.companyName} firmasına ait bildirim işlemi sırasında aktif bir danışman bulunamadı.`,
