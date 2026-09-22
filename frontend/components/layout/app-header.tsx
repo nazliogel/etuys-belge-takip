@@ -14,6 +14,7 @@ import {
 
 import type { UserRole } from "@/lib/mock-auth";
 import { AppSidebar } from "./app-sidebar";
+import { CompanyThemeToggle } from "./company-theme-toggle";
 
 interface AppHeaderProps {
   userName: string;
@@ -100,7 +101,7 @@ export function AppHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
+      <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white px-4 transition-colors dark:border-slate-800 dark:bg-slate-900 lg:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <Sheet>
             <SheetTrigger
@@ -181,9 +182,12 @@ export function AppHeader({
         </div>
 
         <div className="flex items-center gap-3">
+          {isCompany ? <CompanyThemeToggle /> : null}
+
           <button
             type="button"
-            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            aria-label="Bildirimler"
           >
             <Bell className="h-5 w-5" />
 
@@ -192,24 +196,29 @@ export function AppHeader({
             </span>
           </button>
 
-          <div className="hidden h-8 w-px bg-slate-200 sm:block" />
+          <div className="hidden h-8 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
 
           <button
             type="button"
-            className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition hover:bg-slate-100"
+            className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-blue-100 text-xs font-bold text-blue-700">
+              <AvatarFallback className="bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 {initials || "K"}
               </AvatarFallback>
             </Avatar>
 
             <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold text-slate-800">{userName}</p>
-              <p className="text-[11px] text-slate-500">{roleLabel}</p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                {userName}
+              </p>
+
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {roleLabel}
+              </p>
             </div>
 
-            <MoreVertical className="hidden h-4 w-4 text-slate-400 sm:block" />
+            <MoreVertical className="hidden h-4 w-4 text-slate-400 dark:text-slate-500 sm:block" />
           </button>
         </div>
       </header>

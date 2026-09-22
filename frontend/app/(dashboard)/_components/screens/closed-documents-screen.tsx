@@ -202,14 +202,14 @@ function ColumnFilterDropdown({
   return createPortal(
     <div
       data-column-filter
-      className="fixed z-[9999] w-56 rounded-xl border border-slate-200 bg-white p-2 text-left normal-case shadow-xl"
+      className="fixed z-[9999] w-56 rounded-xl border border-border bg-popover p-2 text-left normal-case text-popover-foreground shadow-xl"
       style={{
         top: anchorRect.bottom + 6,
         left,
       }}
     >
       <div className="mb-1.5 flex items-center justify-between px-1">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           {title}
         </span>
 
@@ -218,7 +218,7 @@ function ColumnFilterDropdown({
             <button
               type="button"
               onClick={onClear}
-              className="text-[11px] font-semibold text-red-600 hover:underline"
+              className="text-[11px] font-semibold text-red-600 hover:underline dark:text-red-400"
             >
               Temizle
             </button>
@@ -227,7 +227,7 @@ function ColumnFilterDropdown({
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label="Filtreyi kapat"
           >
             <X size={13} />
@@ -237,20 +237,20 @@ function ColumnFilterDropdown({
 
       <div className="max-h-64 space-y-0.5 overflow-y-auto">
         {options.length === 0 ? (
-          <p className="px-1.5 py-1 text-xs font-medium text-slate-400">
+          <p className="px-1.5 py-1 text-xs font-medium text-muted-foreground">
             Seçenek yok
           </p>
         ) : (
           options.map((option) => (
             <label
               key={option.value}
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
             >
               <input
                 type="checkbox"
                 checked={selected.has(option.value)}
                 onChange={() => onToggle(option.value)}
-                className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 text-red-600 focus:ring-2 focus:ring-red-500/20"
+                className="h-3.5 w-3.5 shrink-0 rounded border-border text-red-600 focus:ring-2 focus:ring-red-500/20"
               />
 
               <span className="truncate">{option.label}</span>
@@ -269,16 +269,16 @@ function StatusBadge({ status }: { status: "CLOSED" | "CANCELLED" }) {
       ? {
           label: "Kapalı",
           dot: "bg-blue-500",
-          text: "text-blue-700",
-          bg: "bg-blue-50",
-          border: "border-blue-200",
+          text: "text-blue-700 dark:text-blue-300",
+          bg: "bg-blue-50 dark:bg-blue-500/10",
+          border: "border-blue-200 dark:border-blue-500/30",
         }
       : {
           label: "İptal",
           dot: "bg-red-500",
-          text: "text-red-700",
-          bg: "bg-red-50",
-          border: "border-red-200/60",
+          text: "text-red-700 dark:text-red-300",
+          bg: "bg-red-50 dark:bg-red-500/10",
+          border: "border-red-200/60 dark:border-red-500/30",
         };
 
   return (
@@ -661,16 +661,16 @@ export function ClosedDocumentsScreen() {
       {/* BAŞLIK */}
       <section className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-3 sm:items-center sm:gap-3.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-600 shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200/60 bg-red-50 text-red-600 shadow-sm dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
             <Archive size={17} />
           </div>
 
           <div className="min-w-0">
-            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
+            <h1 className="text-lg font-extrabold tracking-tight text-foreground sm:text-xl">
               Kapalı Durumdaki Belgeler
             </h1>
 
-            <p className="mt-0.5 text-[11px] font-medium leading-5 text-slate-500 sm:text-xs">
+            <p className="mt-0.5 text-[11px] font-medium leading-5 text-muted-foreground sm:text-xs">
               Süresi dolmuş, iptal edilmiş veya tamamlanmış tüm teşvik
               belgelerini görüntüleyin.
             </p>
@@ -679,15 +679,15 @@ export function ClosedDocumentsScreen() {
       </section>
 
       {/* BELGE LİSTESİ */}
-      <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
+      <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:rounded-2xl">
         {/* Başlık + arama */}
-        <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+        <div className="flex flex-col gap-3 border-b border-border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
           <div className="min-w-0">
-            <h2 className="text-sm font-bold text-slate-900">
+            <h2 className="text-sm font-bold text-foreground">
               Kapalı Belge Listesi
             </h2>
 
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-medium text-muted-foreground">
               Belge numarası, tarih ve durum bilgileri
             </p>
           </div>
@@ -695,7 +695,7 @@ export function ClosedDocumentsScreen() {
           <div className="relative w-full sm:w-64 sm:shrink-0">
             <Search
               size={17}
-              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
 
             <input
@@ -703,14 +703,14 @@ export function ClosedDocumentsScreen() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Belge numarası ile ara..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-9 text-base text-slate-900 transition-all placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:py-1.5 sm:pl-8 sm:pr-2.5 sm:text-xs"
+              className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-9 text-base text-foreground transition-all placeholder:text-muted-foreground focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/15 sm:py-1.5 sm:pl-8 sm:pr-2.5 sm:text-xs"
             />
 
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 aria-label="Aramayı temizle"
               >
                 <X size={14} />
@@ -723,23 +723,23 @@ export function ClosedDocumentsScreen() {
         <div className="md:hidden">
           {showLoader ? (
             <div className="px-4 py-10 text-center">
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-muted-foreground">
                 Belgeler yükleniyor...
               </p>
             </div>
           ) : showError ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-red-700">
+              <p className="text-sm font-semibold text-red-700 dark:text-red-400">
                 Belgeler yüklenemedi
               </p>
-              <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{loadError}</p>
             </div>
           ) : showEmpty ? (
             <div className="px-3 py-6 text-center">
               {showAuthWarning ? (
                 <AuthorizationWarning />
               ) : (
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-muted-foreground">
                   {documents.length > 0
                     ? "Seçilen kritere uygun belge bulunamadı."
                     : "Belge bulunamadı."}
@@ -747,18 +747,23 @@ export function ClosedDocumentsScreen() {
               )}
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-border">
               {paginatedVisibleDocuments.map((doc) => {
                 const isSelected = activeDocumentId === String(doc.id);
 
                 return (
-                  <li key={doc.id} className={isSelected ? "bg-red-50/40" : ""}>
+                  <li
+                    key={doc.id}
+                    className={
+                      isSelected ? "bg-red-500/5 dark:bg-red-500/10" : ""
+                    }
+                  >
                     <button
                       type="button"
                       onClick={() =>
                         setActiveDocumentId(isSelected ? null : String(doc.id))
                       }
-                      className="w-full px-3 py-3 text-left transition active:bg-slate-50"
+                      className="w-full px-3 py-3 text-left transition active:bg-muted"
                     >
                       {/* Üst satır: belge no + durum */}
                       <div className="flex items-start justify-between gap-2">
@@ -767,16 +772,16 @@ export function ClosedDocumentsScreen() {
                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                               isSelected
                                 ? "border-red-600 bg-red-600 text-white"
-                                : "border-slate-200 bg-slate-50 text-slate-600"
+                                : "border-border bg-muted text-muted-foreground"
                             }`}
                           >
                             <FileText size={15} />
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900">
+                            <p className="truncate text-sm font-semibold text-foreground">
                               {doc.documentNumber ?? "-"}
                             </p>
-                            <p className="font-mono text-[10px] text-slate-400">
+                            <p className="font-mono text-[10px] text-muted-foreground">
                               ID: {doc.externalDocumentId}
                             </p>
                           </div>
@@ -785,20 +790,20 @@ export function ClosedDocumentsScreen() {
                       </div>
 
                       {/* Firma + uzman */}
-                      <div className="mt-2 rounded-lg bg-slate-50/70 px-2 py-1.5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <div className="mt-2 rounded-lg bg-muted/60 px-2 py-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                           Firma
                         </p>
-                        <p className="truncate text-xs font-semibold text-slate-800">
+                        <p className="truncate text-xs font-semibold text-foreground">
                           {doc.company?.name ?? "Firma bilgisi bulunamadı"}
                         </p>
-                        <p className="mt-0.5 font-mono text-[10px] text-slate-500">
+                        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
                           VKN: {doc.company?.taxNumber ?? "-"}
                           {doc.company?.consultant && (
                             <>
                               {" • "}
                               Uzman:{" "}
-                              <span className="font-semibold text-slate-700">
+                              <span className="font-semibold text-foreground/80">
                                 {doc.company.consultant}
                               </span>
                             </>
@@ -809,37 +814,37 @@ export function ClosedDocumentsScreen() {
                       {/* Tarihler + destek */}
                       <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
                         <div className="min-w-0">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Başlangıç
                           </p>
-                          <p className="font-medium text-slate-700">
+                          <p className="font-medium text-foreground/80">
                             {formatDate(doc.documentStartDate)}
                           </p>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Bitiş
                           </p>
-                          <p className="font-medium text-slate-700">
+                          <p className="font-medium text-foreground/80">
                             {formatDate(doc.documentEndDate)}
                           </p>
                         </div>
                         {doc.extensionDate && (
                           <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                               Süre Uzatım
                             </p>
-                            <p className="font-medium text-slate-700">
+                            <p className="font-medium text-foreground/80">
                               {formatDate(doc.extensionDate)}
                             </p>
                           </div>
                         )}
                         {doc.supportClass && (
                           <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                               Destek Sınıfı
                             </p>
-                            <p className="truncate font-medium text-slate-700">
+                            <p className="truncate font-medium text-foreground/80">
                               {doc.supportClass}
                             </p>
                           </div>
@@ -852,7 +857,7 @@ export function ClosedDocumentsScreen() {
                           className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                             isSelected
                               ? "bg-red-600 text-white"
-                              : "bg-slate-100 text-slate-700"
+                              : "bg-muted text-foreground/80"
                           }`}
                         >
                           {isSelected ? (
@@ -892,7 +897,7 @@ export function ClosedDocumentsScreen() {
                 <col className="w-[10%]" />
               </colgroup>
 
-              <thead className="sticky top-0 z-10 border-b border-slate-200/60 bg-slate-50/95 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm">
+              <thead className="sticky top-0 z-10 border-b border-border bg-muted/60 text-[11px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
                 <tr>
                   {documentHeadings.map((heading) => {
                     const activeFilterCount = heading.filterType
@@ -913,7 +918,7 @@ export function ClosedDocumentsScreen() {
                                   heading.key as DocumentSortKey,
                                 )
                               }
-                              className="inline-flex items-center gap-1 uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-800"
+                              className="inline-flex items-center gap-1 uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
                             >
                               {heading.label}
                               <SortIcon
@@ -948,8 +953,8 @@ export function ClosedDocumentsScreen() {
                               }}
                               className={`relative rounded p-0.5 transition-colors ${
                                 activeFilterCount > 0
-                                  ? "text-red-600"
-                                  : "text-slate-400 hover:text-slate-700"
+                                  ? "text-red-600 dark:text-red-400"
+                                  : "text-muted-foreground hover:text-foreground"
                               }`}
                               title="Filtrele"
                             >
@@ -1022,11 +1027,11 @@ export function ClosedDocumentsScreen() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {showLoader ? (
                   <tr>
                     <td colSpan={9} className="px-4 py-8 text-center">
-                      <p className="text-sm font-medium text-slate-500">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Belgeler yükleniyor...
                       </p>
                     </td>
@@ -1034,10 +1039,12 @@ export function ClosedDocumentsScreen() {
                 ) : showError ? (
                   <tr>
                     <td colSpan={9} className="px-4 py-8 text-center">
-                      <p className="text-sm font-semibold text-red-700">
+                      <p className="text-sm font-semibold text-red-700 dark:text-red-400">
                         Belgeler yüklenemedi
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">{loadError}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {loadError}
+                      </p>
                     </td>
                   </tr>
                 ) : showEmpty ? (
@@ -1046,7 +1053,7 @@ export function ClosedDocumentsScreen() {
                       {showAuthWarning ? (
                         <AuthorizationWarning />
                       ) : (
-                        <p className="text-sm font-medium text-slate-500">
+                        <p className="text-sm font-medium text-muted-foreground">
                           {documents.length > 0
                             ? "Seçilen kritere uygun belge bulunamadı."
                             : "Belge bulunamadı."}
@@ -1062,7 +1069,9 @@ export function ClosedDocumentsScreen() {
                       <tr
                         key={doc.id}
                         className={`transition-colors ${
-                          isSelected ? "bg-red-50/40" : "hover:bg-slate-50/80"
+                          isSelected
+                            ? "bg-red-500/5 dark:bg-red-500/10"
+                            : "hover:bg-muted/60"
                         }`}
                       >
                         <td className="px-3 py-1.5">
@@ -1071,16 +1080,16 @@ export function ClosedDocumentsScreen() {
                               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                                 isSelected
                                   ? "border-red-600 bg-red-600 text-white"
-                                  : "border-slate-200 bg-slate-50 text-slate-600"
+                                  : "border-border bg-muted text-muted-foreground"
                               }`}
                             >
                               <FileText size={15} />
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-900">
+                              <p className="truncate text-sm font-semibold text-foreground">
                                 {doc.documentNumber ?? "-"}
                               </p>
-                              <p className="font-mono text-[11px] text-slate-400">
+                              <p className="font-mono text-[11px] text-muted-foreground">
                                 ID: {doc.externalDocumentId}
                               </p>
                             </div>
@@ -1090,12 +1099,12 @@ export function ClosedDocumentsScreen() {
                         <td className="max-w-xs px-3 py-1.5">
                           <p
                             title={doc.company?.name ?? undefined}
-                            className="truncate text-xs font-semibold text-slate-800"
+                            className="truncate text-xs font-semibold text-foreground"
                           >
                             {doc.company?.name ?? "Firma bilgisi bulunamadı"}
                           </p>
 
-                          <p className="mt-1 text-left text-[11px] text-slate-400">
+                          <p className="mt-1 text-left text-[11px] text-muted-foreground">
                             VKN: {doc.company?.taxNumber ?? "-"}
                           </p>
                         </td>
@@ -1103,26 +1112,26 @@ export function ClosedDocumentsScreen() {
                         <td className="px-3 py-1.5 text-center">
                           <p
                             title={doc.company?.consultant ?? undefined}
-                            className="truncate text-xs font-semibold text-slate-700"
+                            className="truncate text-xs font-semibold text-foreground/80"
                           >
                             {doc.company?.consultant ?? "-"}
                           </p>
                         </td>
 
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
                           {formatDate(doc.documentStartDate)}
                         </td>
 
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
                           {formatDate(doc.documentEndDate)}
                         </td>
 
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-slate-600">
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
                           {formatDate(doc.extensionDate)}
                         </td>
 
                         <td className="px-3 py-1.5 text-center">
-                          <span className="inline-flex items-center rounded-md border border-slate-200/60 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                          <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold text-foreground/80">
                             {doc.supportClass ?? "-"}
                           </span>
                         </td>
@@ -1143,7 +1152,7 @@ export function ClosedDocumentsScreen() {
                               className={`inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
                                 isSelected
                                   ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                  : "bg-muted text-foreground/80 hover:bg-muted/80"
                               }`}
                             >
                               {isSelected ? (
@@ -1170,8 +1179,8 @@ export function ClosedDocumentsScreen() {
         </div>
 
         {/* SAYFALAMA */}
-        <div className="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/30 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-medium text-slate-500">
+        <div className="flex flex-col gap-2 border-t border-border bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-medium text-muted-foreground">
             Sayfa {currentPage} / {displayedTotalPages}
           </p>
 
@@ -1180,7 +1189,7 @@ export function ClosedDocumentsScreen() {
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((page) => page - 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
+              className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground/80 transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Önceki
             </button>
@@ -1189,7 +1198,7 @@ export function ClosedDocumentsScreen() {
               type="button"
               disabled={currentPage >= displayedTotalPages}
               onClick={() => setCurrentPage((page) => page + 1)}
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
+              className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground/80 transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
             >
               Sonraki
             </button>
@@ -1201,17 +1210,17 @@ export function ClosedDocumentsScreen() {
       {activeDocumentId && (
         <section
           ref={detailRef}
-          className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+          className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
         >
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/60 px-3 py-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Seçili Belge Detayı
             </p>
 
             <button
               type="button"
               onClick={() => setActiveDocumentId(null)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
             >
               <X size={14} />
               Kapat
@@ -1238,31 +1247,31 @@ export function ClosedDocumentsScreen() {
 
 function AuthorizationWarning() {
   return (
-    <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-4 text-left sm:px-6 sm:py-5">
+    <div className="mx-auto max-w-4xl rounded-xl border border-border bg-muted/40 px-4 py-4 text-left sm:px-6 sm:py-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
         <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 sm:h-11 sm:w-11">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300 sm:h-11 sm:w-11">
             <ShieldAlert size={20} strokeWidth={1.8} />
           </div>
 
           <div className="min-w-0">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">
               Yetkilendirme gerekli
             </span>
 
-            <h3 className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
+            <h3 className="mt-1 text-sm font-bold text-foreground sm:text-base">
               Yetki süreniz dolmuştur.
             </h3>
 
-            <p className="mt-1.5 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+            <p className="mt-1.5 text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
               Firmanın belge bilgilerinin görüntülenebilmesi için yeniden
               yetkilendirme yapılmalıdır.
             </p>
           </div>
         </div>
 
-        <div className="border-t border-slate-200 pt-3 sm:pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
-          <p className="text-xs font-medium leading-5 text-slate-600">
+        <div className="border-t border-border pt-3 sm:pt-4 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-5 lg:pt-0">
+          <p className="text-xs font-medium leading-5 text-muted-foreground">
             Yetkilendirme işlemi için lütfen danışmanınız ile iletişime geçiniz.
           </p>
         </div>
