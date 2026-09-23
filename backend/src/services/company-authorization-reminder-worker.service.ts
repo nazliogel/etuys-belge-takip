@@ -329,48 +329,56 @@ export class CompanyAuthorizationReminderWorkerService {
                   : "Danışman bildirimi oluşturulamadı.";
             }
           } else {
-            const adminEmailReminderId =
-              await this.repository.createAdminEmailReminder({
-                authorizationId: reminder.authorizationId,
-                companyId: reminder.companyId,
-                contactId: reminder.contactId ?? undefined,
-                reminderMonth: reminder.reminderMonth,
-                targetDate: reminder.targetDate,
-                recipient: "salihsahin@akkasgroup.com",
-                subject: `${reminder.company.name} - Danışman Bilgisi Eksik`,
-                message: [
-                  `${reminder.company.name} firmasına ait bildirim işlemi sırasında aktif bir danışman bulunamadı.`,
-                  "Lütfen firma danışman bilgilerini kontrol ederek gerekli danışman atamasını yapınız.",
-                  `Firma: ${reminder.company.name}`,
-                  `Firma ID: ${reminder.companyId}`,
-                  `Hata: ${errorMessage}`,
-                ].join("\n"),
-              });
-
-            if (adminEmailReminderId) {
-              try {
-                await this.reminderNotificationService.notifyMissingConsultant({
-                  companyName: reminder.company.name,
+            if (!env.adminFallbackEmail) {
+              consultantNotificationError =
+                "ADMIN_FALLBACK_EMAIL tanımlı değil. Admin bildirimi gönderilemedi.";
+            } else {
+              const adminEmailReminderId =
+                await this.repository.createAdminEmailReminder({
+                  authorizationId: reminder.authorizationId,
                   companyId: reminder.companyId,
-                  errorMessage,
+                  contactId: reminder.contactId ?? undefined,
+                  reminderMonth: reminder.reminderMonth,
+                  targetDate: reminder.targetDate,
+                  recipient: env.adminFallbackEmail,
+                  subject: `${reminder.company.name} - Danışman Bilgisi Eksik`,
+                  message: [
+                    `${reminder.company.name} firmasına ait bildirim işlemi sırasında aktif bir danışman bulunamadı.`,
+                    "Lütfen firma danışman bilgilerini kontrol ederek gerekli danışman atamasını yapınız.",
+                    `Firma: ${reminder.company.name}`,
+                    `Firma ID: ${reminder.companyId}`,
+                    `Hata: ${errorMessage}`,
+                  ].join("\n"),
                 });
 
-                await this.repository.markSent(adminEmailReminderId);
-              } catch (notificationError) {
-                const adminErrorMessage =
-                  notificationError instanceof Error
-                    ? notificationError.message
-                    : "Eksik danışman bildirimi gönderilemedi.";
+              if (adminEmailReminderId) {
+                try {
+                  await this.reminderNotificationService.notifyMissingConsultant(
+                    {
+                      companyName: reminder.company.name,
+                      companyId: reminder.companyId,
+                      errorMessage,
+                    },
+                  );
 
-                consultantNotificationError = adminErrorMessage;
+                  await this.repository.markSent(adminEmailReminderId);
+                } catch (notificationError) {
+                  const adminErrorMessage =
+                    notificationError instanceof Error
+                      ? notificationError.message
+                      : "Eksik danışman bildirimi gönderilemedi.";
 
-                await this.repository.markFailed(
-                  adminEmailReminderId,
-                  adminErrorMessage,
-                );
+                  consultantNotificationError = adminErrorMessage;
+
+                  await this.repository.markFailed(
+                    adminEmailReminderId,
+                    adminErrorMessage,
+                  );
+                }
               }
             }
           }
+
           failedCount += 1;
 
           results.push({

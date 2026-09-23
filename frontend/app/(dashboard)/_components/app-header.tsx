@@ -69,6 +69,7 @@ export function AppHeader({
 
   // Menüden bir sayfa seçilince mobil drawer otomatik kapansın
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileMenuOpen(false);
   }, [pathname]);
 

@@ -60,7 +60,9 @@ export async function login(
 
   const sessionUser: SessionUser = {
     id: result.user.id,
-    name: `${result.user.firstName} ${result.user.lastName}`.trim(),
+    name:
+      result.user.username ??
+      `${result.user.firstName} ${result.user.lastName}`.trim(),
     username: result.user.username,
     email: result.user.email,
     role: result.user.role,

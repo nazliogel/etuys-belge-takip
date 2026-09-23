@@ -1,48 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api";
-import { getSessionUser } from "@/lib/mock-auth";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpRight,
+  Ban,
   Building2,
   CalendarClock,
   Clock3,
   FileCheck2,
   Pencil,
-  ArrowUpRight,
-  Ban,
+  type LucideIcon,
 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { getSessionUser } from "@/lib/mock-auth";
 
-type ApiCompany = {
-  id: number;
-  externalCompanyId: number;
-  name: string;
-  taxNumber: string;
-  processStatus: string | null;
-  isActive: boolean;
-};
+/* -------------------------------------------------------------------------- */
+/* Tipler                                                                     */
+/* -------------------------------------------------------------------------- */
 
-type CompanyListResponse = {
+type SortDirection = "asc" | "desc";
+type SessionUser = ReturnType<typeof getSessionUser>;
+
+type ItemsResponse<T> = {
   success: boolean;
   message: string;
   data: {
-    items: ApiCompany[];
-    totalCount: number;
-  };
-};
-
-type AuthorizationRequiredResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiCompany[];
+    items: T[];
     totalCount: number;
   };
 };
 
 type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
+
+type CompanyRef = {
+  id: number;
+  externalCompanyId: number;
+  name: string;
+  taxNumber: string;
+};
+
+type ApiCompany = CompanyRef & {
+  processStatus: string | null;
+  isActive: boolean;
+};
 
 type ApiDocument = {
   id: number;
@@ -54,20 +58,24 @@ type ApiDocument = {
   supportClass: string | null;
   isActive: boolean;
   status: DocumentStatus;
-  company: {
-    id: number;
-    externalCompanyId: number;
-    name: string;
-    taxNumber: string;
-  };
+  company: CompanyRef;
 };
 
-type DocumentListResponse = {
-  success: boolean;
-  message: string;
+type ExtensionEligibleDocument = {
+  id: number;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  documentStartDate: string | null;
+  documentEndDate: string;
+  extensionDate: string;
+  extensionApplicationStartDate: string;
+  supportClass: string | null;
+  isActive: boolean;
+  company: CompanyRef;
+};
+
+type DocumentListResponse = ItemsResponse<ApiDocument> & {
   data: {
-    items: ApiDocument[];
-    totalCount: number;
     page: number;
     limit: number;
     totalPages: number;
@@ -80,680 +88,443 @@ type DocumentListResponse = {
     };
   };
 };
-type ClosedDocumentListResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiDocument[];
-    totalCount: number;
-  };
+
+type DashboardData = {
+  totalCompanies: number;
+  totalDocuments: number;
+  /** ACTIVE + EXPIRING */
+  activeDocuments: number;
+  expiredDocuments: number;
+  authorizationRequiredCount: number;
+  closureEligibleCount: number;
+  closedCancelledCount: number;
+  extensionEligibleCount: number;
+  activeDocumentItems: ApiDocument[];
+  closureEligibleItems: ApiDocument[];
+  closedCancelledItems: ApiDocument[];
+  extensionEligibleItems: ExtensionEligibleDocument[];
 };
-type ExtensionEligibleDocument = {
-  id: number;
-  externalDocumentId: number;
-  documentNumber: string | null;
-  documentStartDate: string | null;
-  documentEndDate: string;
-  extensionDate: string;
-  extensionApplicationStartDate: string;
-  supportClass: string | null;
-  isActive: boolean;
-  company: {
-    id: number;
-    externalCompanyId: number;
-    name: string;
-    taxNumber: string;
-  };
-};
-
-type ExtensionEligibleResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ExtensionEligibleDocument[];
-    totalCount: number;
-  };
-};
-type ClosureEligibleResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiDocument[];
-    totalCount: number;
-  };
-};
-type ImportBatchStatus =
-  | "UPLOADED"
-  | "PROCESSING"
-  | "WAITING_APPROVAL"
-  | "COMPLETED"
-  | "FAILED"
-  | "CANCELLED";
-
-type ApiImportBatch = {
-  id: number;
-  fileName: string;
-  status: ImportBatchStatus;
-  uploadedAt: string;
-  uploadedBy: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  } | null;
-};
-
-type ImportBatchListApiResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiImportBatch[];
-    totalCount: number;
-  };
-};
-
-type ApiImportChange = {
-  id: number;
-  importRowId: number;
-  entityType: string;
-  changeType: string;
-  fieldName: string;
-  oldValue: string | null;
-  newValue: string | null;
-  status: string;
-  companyId: number | null;
-  documentId: number | null;
-  company: {
-    id: number;
-    externalCompanyId: number;
-    name: string;
-    taxNumber: string;
-  } | null;
-  document: {
-    id: number;
-    externalDocumentId: number;
-    documentNumber: string | null;
-  } | null;
-};
-type RecentImportChange = ApiImportChange & {
-  importBatch: {
-    id: number;
-    fileName: string;
-    uploadedAt: string;
-    status: ImportBatchStatus;
-  };
-};
-type ImportChangesApiResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    totalChangeCount: number;
-    fieldSummary: { fieldName: string; count: number }[];
-    changes: ApiImportChange[];
-  };
-};
-
-const CHANGE_FIELD_LABELS: Record<string, string> = {
-  documentStartDate: "Belge Başlangıç Tarihi",
-  documentEndDate: "Belge Bitiş Tarihi",
-  extensionDate: "Uzatma Tarihi",
-  documentNumber: "Belge Numarası",
-  supportClass: "Destek Sınıfı",
-  isActive: "Aktiflik Durumu",
-  authorizationEndDate: "Yetki Bitiş Tarihi",
-  name: "Firma Adı",
-  taxNumber: "Vergi Kimlik No",
-  processStatus: "İşlem Durumu",
-};
-
-function getChangeFieldLabel(fieldName: string): string {
-  return CHANGE_FIELD_LABELS[fieldName] ?? fieldName;
-}
-
-function formatChangeValue(value: string | null): string {
-  if (!value) {
-    return "—";
-  }
-
-  const isoDatePattern = /^\d{4}-\d{2}-\d{2}/;
-
-  if (isoDatePattern.test(value)) {
-    const date = new Date(value);
-
-    if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleDateString("tr-TR");
-    }
-  }
-
-  return value;
-}
-
-function formatEventDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-
-  const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
-
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const time = date.toLocaleTimeString("tr-TR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  if (isSameDay(date, now)) {
-    return `Bugün, ${time}`;
-  }
-
-  if (isSameDay(date, yesterday)) {
-    return `Dün, ${time}`;
-  }
-
-  const dateLabel = date.toLocaleDateString("tr-TR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  return `${dateLabel}, ${time}`;
-}
-
-function getBatchStatusBadge(status: ImportBatchStatus): {
-  label: string;
-  className: string;
-} {
-  switch (status) {
-    case "UPLOADED":
-      return {
-        label: "Yüklendi",
-        className: "bg-slate-100 text-slate-600",
-      };
-    case "PROCESSING":
-      return {
-        label: "İşleniyor",
-        className: "bg-blue-50 text-blue-700 border border-blue-200/60",
-      };
-    case "WAITING_APPROVAL":
-      return {
-        label: "Onay Bekliyor",
-        className: "bg-amber-50 text-amber-700 border border-amber-200/60",
-      };
-    case "COMPLETED":
-      return {
-        label: "Tamamlandı",
-        className:
-          "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
-      };
-    case "FAILED":
-      return {
-        label: "Başarısız",
-        className: "bg-red-50 text-red-700 border border-red-200/60",
-      };
-    case "CANCELLED":
-      return {
-        label: "İptal Edildi",
-        className: "bg-slate-100 text-slate-500",
-      };
-    default:
-      return { label: status, className: "bg-slate-100 text-slate-600" };
-  }
-}
 
 type SummaryItem = {
   title: string;
   value: string;
   description: string;
-  icon: typeof Building2;
+  icon: LucideIcon;
   href: string;
-  clickable: boolean;
 };
 
-function getDashboardCacheKey() {
-  const user = getSessionUser();
+/* -------------------------------------------------------------------------- */
+/* Yardımcı fonksiyonlar                                                      */
+/* -------------------------------------------------------------------------- */
 
+const EMPTY_DASHBOARD: DashboardData = {
+  totalCompanies: 0,
+  totalDocuments: 0,
+  activeDocuments: 0,
+  expiredDocuments: 0,
+  authorizationRequiredCount: 0,
+  closureEligibleCount: 0,
+  closedCancelledCount: 0,
+  extensionEligibleCount: 0,
+  activeDocumentItems: [],
+  closureEligibleItems: [],
+  closedCancelledItems: [],
+  extensionEligibleItems: [],
+};
+
+// Cache şekli değiştiği için sürüm v6'ya yükseltildi (eski v5 verisi okunmaz).
+function getDashboardCacheKey(user: SessionUser): string {
   if (!user) {
-    return "dashboard-overview-cache-v5-guest";
+    return "dashboard-overview-cache-v6-guest";
   }
 
-  return `dashboard-overview-cache-v5-${user.role}-${user.id}`;
+  return `dashboard-overview-cache-v6-${user.role}-${user.id}`;
 }
 
-type DashboardCache = {
-  totalCompanies: number;
-  totalDocuments: number;
-  activeDocumentItems: ApiDocument[];
-  activeDocuments: number;
-  expiredDocuments: number;
-  expiredDocumentItems: ApiDocument[];
-  authorizationRequiredDocuments: number;
-  closureEligibleDocuments: number;
-  closedCancelledDocuments: number;
-  closedCancelledItems: ApiDocument[];
-  extensionEligibleDocuments: number;
-  extensionEligibleItems: ExtensionEligibleDocument[];
-  closureEligibleItems: ApiDocument[];
-  recentImports: ApiImportBatch[];
-  recentChanges: RecentImportChange[];
-};
-
-function readDashboardCache(): DashboardCache | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
+function readDashboardCache(key: string): DashboardData | null {
   try {
-    const raw = localStorage.getItem(getDashboardCacheKey());
-    return raw ? (JSON.parse(raw) as DashboardCache) : null;
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as DashboardData) : null;
   } catch (error) {
     console.error("Dashboard önbelleği okunamadı:", error);
     return null;
   }
 }
 
+function writeDashboardCache(key: string, data: DashboardData) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error("Dashboard önbelleği yazılamadı:", error);
+  }
+}
+
+function formatDate(value: string | null | undefined): string {
+  return value ? new Date(value).toLocaleDateString("tr-TR") : "—";
+}
+
+function displayCount(value: number | undefined): string {
+  return value === undefined ? "..." : String(value);
+}
+
+/** Tarihe göre sıralar; boş tarihler yönden bağımsız olarak en sona gider. */
+function sortByDate<T>(
+  items: T[],
+  getDate: (item: T) => string | null | undefined,
+  direction: SortDirection,
+): T[] {
+  return [...items].sort((a, b) => {
+    const rawA = getDate(a);
+    const rawB = getDate(b);
+
+    if (!rawA && !rawB) return 0;
+    if (!rawA) return 1;
+    if (!rawB) return -1;
+
+    const diff = new Date(rawA).getTime() - new Date(rawB).getTime();
+    return direction === "asc" ? diff : -diff;
+  });
+}
+
+async function fetchDashboardData(): Promise<DashboardData> {
+  const [
+    companyResponse,
+    activeDocumentResponse,
+    documentSummaryResponse,
+    closedDocumentResponse,
+    extensionEligibleResponse,
+    closureEligibleResponse,
+    authorizationRequiredResponse,
+  ] = await Promise.all([
+    apiFetch<ItemsResponse<ApiCompany>>("/companies?page=1&limit=1"),
+    apiFetch<DocumentListResponse>("/documents?status=ACTIVE&page=1&limit=20"),
+    apiFetch<DocumentListResponse>("/documents"),
+    apiFetch<ItemsResponse<ApiDocument>>("/closed-documents?page=1&limit=20"),
+    apiFetch<ItemsResponse<ExtensionEligibleDocument>>(
+      "/documents/extension-eligible",
+    ),
+    apiFetch<ItemsResponse<ApiDocument>>("/documents/closure-eligible"),
+    apiFetch<ItemsResponse<ApiCompany>>("/companies/authorization-required"),
+  ]);
+
+  const { summary } = documentSummaryResponse.data;
+
+  return {
+    totalCompanies: companyResponse.data.totalCount,
+    totalDocuments: summary.total,
+    activeDocuments: summary.active + summary.expiring,
+    expiredDocuments: summary.expired,
+    authorizationRequiredCount: authorizationRequiredResponse.data.totalCount,
+    closureEligibleCount: closureEligibleResponse.data.totalCount,
+    closedCancelledCount: closedDocumentResponse.data.totalCount,
+    extensionEligibleCount: extensionEligibleResponse.data.totalCount,
+    activeDocumentItems: activeDocumentResponse.data.items,
+    closureEligibleItems: closureEligibleResponse.data.items,
+    closedCancelledItems: closedDocumentResponse.data.items,
+    extensionEligibleItems: extensionEligibleResponse.data.items,
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Küçük UI parçaları                                                         */
+/* -------------------------------------------------------------------------- */
+
+function SortButton({
+  direction,
+  label,
+  onToggle,
+}: {
+  direction: SortDirection;
+  label: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+      title="Tarihe göre sırala"
+    >
+      {direction === "asc" ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function ViewAllLink({ href }: { href: string }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
+    >
+      Tümünü Gör
+    </Link>
+  );
+}
+
+function CountBadge({
+  children,
+  tone = "slate",
+}: {
+  children: ReactNode;
+  tone?: "slate" | "emerald";
+}) {
+  const toneClass =
+    tone === "emerald"
+      ? "bg-emerald-50 text-emerald-700"
+      : "bg-slate-100 text-slate-600";
+
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-semibold ${toneClass}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function SectionCard({
+  icon: Icon,
+  title,
+  description,
+  actions,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  actions: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+      <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-3 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+            <Icon size={16} />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-900">{title}</h2>
+            <p className="mt-0.5 text-xs text-slate-500">{description}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">{actions}</div>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+function ListMessage({ children }: { children: ReactNode }) {
+  return (
+    <p className="py-6 text-center text-xs text-slate-400">{children}</p>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Ana ekran                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export function DashboardScreen() {
   const router = useRouter();
 
-  // Lazy initializer: component ilk render'ında localStorage'daki son
-  // veriyle doluyor, böylece sayfa geçişinde "Yükleniyor..." beklemeden
-  // önceki veri anında görünür.
-  const [totalCompanies, setTotalCompanies] = useState<number | null>(
-    () => readDashboardCache()?.totalCompanies ?? null,
-  );
-  const [activeDocumentItems, setActiveDocumentItems] = useState<ApiDocument[]>(
-    () => readDashboardCache()?.activeDocumentItems ?? [],
-  );
-  const [totalDocuments, setTotalDocuments] = useState<number | null>(
-    () => readDashboardCache()?.totalDocuments ?? null,
-  );
+  // localStorage / oturum bilgisi yalnızca istemcide okunabilir. Bunları ilk
+  // render'da okumak sunucu HTML'i ile uyuşmazlığa (hydration hatası) yol
+  // açtığı için mount sonrasında okuyoruz.
+  const [hydrated, setHydrated] = useState(false);
+  const [user, setUser] = useState<SessionUser>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  const [activeDocuments, setActiveDocuments] = useState<number | null>(
-    () => readDashboardCache()?.activeDocuments ?? null,
-  );
-
-  const [expiredDocuments, setExpiredDocuments] = useState<number | null>(
-    () => readDashboardCache()?.expiredDocuments ?? null,
-  );
-
-  const [authorizationRequiredDocuments, setAuthorizationRequiredDocuments] =
-    useState<number | null>(
-      () => readDashboardCache()?.authorizationRequiredDocuments ?? null,
-    );
-  const [expiredDocumentItems, setExpiredDocumentItems] = useState<
-    ApiDocument[]
-  >(() => readDashboardCache()?.expiredDocumentItems ?? []);
-
-
-  const [closureEligibleDocuments, setClosureEligibleDocuments] = useState<
-    number | null
-  >(() => readDashboardCache()?.closureEligibleDocuments ?? null);
-  const [closedCancelledDocuments, setClosedCancelledDocuments] = useState<
-    number | null
-  >(() => readDashboardCache()?.closedCancelledDocuments ?? null);
-  const [closedCancelledItems, setClosedCancelledItems] = useState<
-    ApiDocument[]
-  >(() => readDashboardCache()?.closedCancelledItems ?? []);
-  const [extensionEligibleDocuments, setExtensionEligibleDocuments] = useState<
-    number | null
-  >(() => readDashboardCache()?.extensionEligibleDocuments ?? null);
-  const [extensionEligibleItems, setExtensionEligibleItems] = useState<
-    ExtensionEligibleDocument[]
-  >(() => readDashboardCache()?.extensionEligibleItems ?? []);
-  const [closureEligibleItems, setClosureEligibleItems] = useState<
-    ApiDocument[]
-  >(() => readDashboardCache()?.closureEligibleItems ?? []);
-  const [recentImports, setRecentImports] = useState<ApiImportBatch[]>(
-    () => readDashboardCache()?.recentImports ?? [],
-  );
-
-  const [recentChanges, setRecentChanges] = useState<RecentImportChange[]>(
-    () => readDashboardCache()?.recentChanges ?? [],
-  );
-
-  // Sadece hiç cache yoksa (ör. ilk ziyaret) "Yükleniyor..." göster.
-  // Cache varsa, veri zaten ekranda; bu flag arka plandaki yenilemeyi
-  // kullanıcıya spinner olarak yansıtmaz.
-  const [isInitialLoading, setIsInitialLoading] = useState(
-    () => readDashboardCache() === null,
-  );
+  // En yakın tarih en üstte gelsin (asc)
+  const [closureSortDir, setClosureSortDir] = useState<SortDirection>("asc");
+  const [extensionSortDir, setExtensionSortDir] =
+    useState<SortDirection>("asc");
+  // Aktif: bitişi en yakın olan üstte (asc). Kapalı: en son biten üstte (desc).
+  const [activeSortDir, setActiveSortDir] = useState<SortDirection>("asc");
+  const [closedSortDir, setClosedSortDir] = useState<SortDirection>("desc");
 
   useEffect(() => {
-    const hadCachedData = readDashboardCache() !== null;
+    const sessionUser = getSessionUser();
+    const cacheKey = getDashboardCacheKey(sessionUser);
+    const cached = readDashboardCache(cacheKey);
 
-    async function loadDashboardData() {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUser(sessionUser);
+
+    if (cached) {
+      // Cache varsa veri anında görünür; arka plandaki yenileme spinner göstermez.
+      setData(cached);
+      setIsInitialLoading(false);
+    }
+
+    setHydrated(true);
+
+    let cancelled = false;
+
+    async function load() {
       try {
-        const currentUser = getSessionUser();
-        const isOperation = currentUser?.role === "OPERATION";
-        const [
-          companyResponse,
-          activeDocumentResponse,
-          documentResponse,
+        const fresh = await fetchDashboardData();
 
-          expiredDocumentResponse,
-          closedDocumentResponse,
-          extensionEligibleResponse,
-          closureEligibleResponse,
-          authorizationRequiredResponse,
-          importResponse,
-        ] = await Promise.all([
-          apiFetch<CompanyListResponse>("/companies?page=1&limit=1"),
+        if (cancelled) return;
 
-          apiFetch<DocumentListResponse>(
-            "/documents?status=ACTIVE&page=1&limit=20",
-          ),
-
-          apiFetch<DocumentListResponse>("/documents"),
-
-          apiFetch<DocumentListResponse>(
-            "/documents?status=EXPIRED&page=1&limit=20",
-          ),
-          apiFetch<ClosedDocumentListResponse>(
-            "/closed-documents?page=1&limit=20",
-          ),
-          apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
-
-          apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-          apiFetch<AuthorizationRequiredResponse>(
-            "/companies/authorization-required",
-          ),
-
-          isOperation
-            ? Promise.resolve<ImportBatchListApiResponse>({
-                success: true,
-                message: "",
-                data: {
-                  items: [],
-                  totalCount: 0,
-                },
-              })
-            : apiFetch<ImportBatchListApiResponse>("/imports?page=1&limit=3"),
-        ]);
-        const sortedClosureEligibleItems = [
-          ...closureEligibleResponse.data.items,
-        ].sort((a, b) => {
-          if (!a.documentEndDate && !b.documentEndDate) {
-            return 0;
-          }
-
-          if (!a.documentEndDate) {
-            return 1;
-          }
-
-          if (!b.documentEndDate) {
-            return -1;
-          }
-
-          return (
-            new Date(a.documentEndDate).getTime() -
-            new Date(b.documentEndDate).getTime()
-          );
-        });
-
-        const sortedClosedCancelledItems = [
-          ...closedDocumentResponse.data.items,
-        ].sort((a, b) => {
-          if (!a.documentEndDate && !b.documentEndDate) {
-            return 0;
-          }
-
-          if (!a.documentEndDate) {
-            return 1;
-          }
-
-          if (!b.documentEndDate) {
-            return -1;
-          }
-
-          return (
-            new Date(b.documentEndDate).getTime() -
-            new Date(a.documentEndDate).getTime()
-          );
-        });
-
-        const sortedExpiredItems = [...expiredDocumentResponse.data.items].sort(
-          (a, b) => {
-            if (!a.documentEndDate && !b.documentEndDate) {
-              return 0;
-            }
-            if (!a.documentEndDate) {
-              return 1;
-            }
-            if (!b.documentEndDate) {
-              return -1;
-            }
-
-            // En son süresi dolan en üstte gösterilsin.
-            return (
-              new Date(b.documentEndDate).getTime() -
-              new Date(a.documentEndDate).getTime()
-            );
-          },
-        );
-
-        const sortedExtensionEligibleItems = [
-          ...extensionEligibleResponse.data.items,
-        ].sort(
-          (a, b) =>
-            new Date(a.extensionApplicationStartDate).getTime() -
-            new Date(b.extensionApplicationStartDate).getTime(),
-        );
-
-        const lastThreeImports = importResponse.data.items.slice(0, 3);
-
-        const changeResponses = await Promise.all(
-          lastThreeImports.map(async (importBatch) => {
-            const changesResponse = await apiFetch<ImportChangesApiResponse>(
-              `/imports/${importBatch.id}/changes`,
-            );
-
-            return changesResponse.data.changes.map((change) => ({
-              ...change,
-              importBatch: {
-                id: importBatch.id,
-                fileName: importBatch.fileName,
-                uploadedAt: importBatch.uploadedAt,
-                status: importBatch.status,
-              },
-            }));
-          }),
-        );
-
-        const changes: RecentImportChange[] = changeResponses.flat();
-
-        const adjustedActiveDocuments =
-          documentResponse.data.summary.active +
-          documentResponse.data.summary.expiring;
-
-        const cache: DashboardCache = {
-          totalCompanies: companyResponse.data.totalCount,
-          totalDocuments: documentResponse.data.summary.total,
-          activeDocumentItems: activeDocumentResponse.data.items,
-          activeDocuments: adjustedActiveDocuments,
-          expiredDocuments: documentResponse.data.summary.expired,
-          expiredDocumentItems: sortedExpiredItems,
-          authorizationRequiredDocuments:
-            authorizationRequiredResponse.data.totalCount,
-          closureEligibleDocuments: closureEligibleResponse.data.totalCount,
-          closedCancelledDocuments: closedDocumentResponse.data.totalCount,
-          closedCancelledItems: sortedClosedCancelledItems,
-          extensionEligibleDocuments: extensionEligibleResponse.data.totalCount,
-          extensionEligibleItems: sortedExtensionEligibleItems,
-          closureEligibleItems: sortedClosureEligibleItems,
-          recentImports: lastThreeImports,
-          recentChanges: changes,
-        };
-
-        setTotalCompanies(cache.totalCompanies);
-        setTotalDocuments(cache.totalDocuments);
-        setActiveDocumentItems(cache.activeDocumentItems);
-        setActiveDocuments(cache.activeDocuments);
-        setExpiredDocuments(cache.expiredDocuments);
-        setExpiredDocumentItems(cache.expiredDocumentItems);
-        setAuthorizationRequiredDocuments(cache.authorizationRequiredDocuments);
-        setClosureEligibleDocuments(cache.closureEligibleDocuments);
-        setClosedCancelledDocuments(cache.closedCancelledDocuments);
-        setClosedCancelledItems(cache.closedCancelledItems);
-        setExtensionEligibleDocuments(cache.extensionEligibleDocuments);
-        setExtensionEligibleItems(cache.extensionEligibleItems);
-        setClosureEligibleItems(cache.closureEligibleItems);
-        setRecentImports(cache.recentImports);
-        setRecentChanges(cache.recentChanges);
-
-        try {
-          localStorage.setItem(getDashboardCacheKey(), JSON.stringify(cache));
-        } catch (error) {
-          console.error("Dashboard önbelleği yazılamadı:", error);
-        }
+        setData(fresh);
+        writeDashboardCache(cacheKey, fresh);
       } catch (error) {
         console.error("Dashboard istatistikleri alınamadı:", error);
 
-        // Cache'ten gelen veri zaten ekranda gösteriliyorsa, geçici bir
-        // ağ hatası yüzünden ekranı sıfırlama; sadece cache hiç yoksa
-        // boş/0 durumuna düş.
-        if (!hadCachedData) {
-          setTotalCompanies(0);
-          setTotalDocuments(0);
-          setActiveDocumentItems([]);
-          setActiveDocuments(0);
-          setExpiredDocuments(0);
-          setExpiredDocumentItems([]);
-          setAuthorizationRequiredDocuments(0);
-          setClosureEligibleDocuments(0);
-          setClosedCancelledDocuments(0);
-          setExtensionEligibleDocuments(0);
-          setExtensionEligibleItems([]);
-          setClosureEligibleItems([]);
-          setRecentImports([]);
-
-          setRecentChanges([]);
+        // Cache zaten ekrandaysa geçici bir ağ hatası yüzünden sıfırlama.
+        if (!cancelled && !cached) {
+          setData(EMPTY_DASHBOARD);
         }
       } finally {
-        setIsInitialLoading(false);
+        if (!cancelled) {
+          setIsInitialLoading(false);
+        }
       }
     }
 
-    loadDashboardData();
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const user = getSessionUser();
+  const sortedClosureItems = useMemo(
+    () =>
+      sortByDate(
+        data?.closureEligibleItems ?? [],
+        (item) => item.documentEndDate,
+        closureSortDir,
+      ),
+    [data?.closureEligibleItems, closureSortDir],
+  );
+
+  const sortedExtensionItems = useMemo(
+    () =>
+      sortByDate(
+        data?.extensionEligibleItems ?? [],
+        (item) => item.extensionApplicationStartDate,
+        extensionSortDir,
+      ),
+    [data?.extensionEligibleItems, extensionSortDir],
+  );
+
+  const sortedActiveItems = useMemo(
+    () =>
+      sortByDate(
+        data?.activeDocumentItems ?? [],
+        (item) => item.documentEndDate,
+        activeSortDir,
+      ),
+    [data?.activeDocumentItems, activeSortDir],
+  );
+
+  const sortedClosedItems = useMemo(
+    () =>
+      sortByDate(
+        data?.closedCancelledItems ?? [],
+        (item) => item.documentEndDate,
+        closedSortDir,
+      ),
+    [data?.closedCancelledItems, closedSortDir],
+  );
+
+  // Oturum bilgisi okunana kadar yanlış (admin) düzen göstermemek için bekle.
+  if (!hydrated) {
+    return <div className="space-y-6 pb-8" aria-busy="true" />;
+  }
+
   const isCompany = user?.role === "COMPANY";
 
   const adminSummaryItems: SummaryItem[] = [
     {
       title: "Toplam Firma",
-      value: totalCompanies === null ? "..." : String(totalCompanies),
+      value: displayCount(data?.totalCompanies),
       description: "Sistemde kayıtlı firma",
       icon: Building2,
       href: "/companies",
-      clickable: true,
     },
     {
       title: "Aktif Belge",
-      value: activeDocuments === null ? "..." : String(activeDocuments),
+      value: displayCount(data?.activeDocuments),
       description: "Aktif durumda bulunan belge",
       icon: FileCheck2,
       href: "/documents?status=ACTIVE",
-      clickable: true,
     },
     {
       title: "Kapatma Yapılacaklar",
-      value:
-        closureEligibleDocuments === null
-          ? "..."
-          : String(closureEligibleDocuments),
+      value: displayCount(data?.closureEligibleCount),
       description: "Tamamlama vizesi/kapatma işlemi yapılacak belgeler",
       icon: Clock3,
       href: "/documents?view=closure-eligible",
-      clickable: true,
     },
     {
-      title: "Süre Uzatma ",
-      value:
-        extensionEligibleDocuments === null
-          ? "..."
-          : String(extensionEligibleDocuments),
+      title: "Süre Uzatma",
+      value: displayCount(data?.extensionEligibleCount),
       description: "Süre uzatma başvurusu yapılabilecek belgeler",
       icon: CalendarClock,
       href: "/documents?view=extension-eligible",
-      clickable: true,
     },
     {
       title: "Kapalı / İptal",
-      value:
-        closedCancelledDocuments === null
-          ? "..."
-          : String(closedCancelledDocuments),
+      value: displayCount(data?.closedCancelledCount),
       description: "Kapatılmış veya iptal edilmiş belge",
       icon: Ban,
       href: "/documents?status=INACTIVE",
-      clickable: true,
     },
     {
       title: "Yetkilendirme Yapılacaklar",
-      value:
-        authorizationRequiredDocuments === null
-          ? "..."
-          : String(authorizationRequiredDocuments),
+      value: displayCount(data?.authorizationRequiredCount),
       description: "Yetkilendirme işlemi yapılması gereken firmalar",
       icon: Pencil,
       href: "/documents?view=authorization-required",
-      clickable: true,
     },
   ];
 
   const companySummaryItems: SummaryItem[] = [
     {
       title: "Toplam Belge",
-      value: totalDocuments === null ? "..." : String(totalDocuments),
+      value: displayCount(data?.totalDocuments),
       description: "Firmanıza ait toplam belge",
       icon: FileCheck2,
       href: "/documents",
-      clickable: true,
     },
     {
       title: "Aktif",
-      value: activeDocuments === null ? "..." : String(activeDocuments),
+      value: displayCount(data?.activeDocuments),
       description: "Aktif durumda bulunan belge",
       icon: FileCheck2,
       href: "/documents?status=ACTIVE",
-      clickable: true,
     },
     {
       title: "Süresi Dolmuş",
-      value: expiredDocuments === null ? "..." : String(expiredDocuments),
+      value: displayCount(data?.expiredDocuments),
       description: "Süresi dolmuş belge",
       icon: Clock3,
       href: "/documents?status=EXPIRED",
-      clickable: true,
     },
     {
       title: "Kapatma Yapılacaklar",
-      value:
-        closureEligibleDocuments === null
-          ? "..."
-          : String(closureEligibleDocuments),
+      value: displayCount(data?.closureEligibleCount),
       description: "Tamamlama vizesi/kapatma işlemi yapılacak belge",
       icon: Clock3,
       href: "/documents?view=closure-eligible",
-      clickable: true,
     },
     {
       title: "Süre Uzatma Müracatı",
-      value:
-        extensionEligibleDocuments === null
-          ? "..."
-          : String(extensionEligibleDocuments),
+      value: displayCount(data?.extensionEligibleCount),
       description: "Süre uzatma başvurusu yapılabilecek belge",
       icon: CalendarClock,
       href: "/documents?view=extension-eligible",
-      clickable: true,
     },
   ];
 
   const summaryItems = isCompany ? companySummaryItems : adminSummaryItems;
+
   return (
     <div className="space-y-6 pb-8">
       {/* SAYFA BAŞLIĞI */}
@@ -781,45 +552,24 @@ export function DashboardScreen() {
           return (
             <article
               key={item.title}
-              onClick={
-                item.clickable ? () => router.push(item.href) : undefined
-              }
-              onKeyDown={
-                item.clickable
-                  ? (event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        router.push(item.href);
-                      }
-                    }
-                  : undefined
-              }
-              role={item.clickable ? "link" : undefined}
-              tabIndex={item.clickable ? 0 : undefined}
-              className={`group relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-200
-  before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-red-600
-  ${
-    item.clickable
-      ? "cursor-pointer hover:-translate-y-0.5 hover:border-red-600 hover:shadow-md focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/40"
-      : ""
-  }
-`}
+              onClick={() => router.push(item.href)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  router.push(item.href);
+                }
+              }}
+              role="link"
+              tabIndex={0}
+              className="group relative cursor-pointer overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-200 before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-red-600 hover:-translate-y-0.5 hover:border-red-600 hover:shadow-md focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/40"
             >
               <div className="flex items-center justify-between">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 transition ${
-                    item.clickable
-                      ? "group-hover:bg-red-600 group-hover:text-white"
-                      : ""
-                  }`}
-                >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 transition group-hover:bg-red-600 group-hover:text-white">
                   <Icon size={16} />
                 </div>
-                {item.clickable && (
-                  <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-400 transition group-hover:text-red-600">
-                    <ArrowUpRight size={13} />
-                  </span>
-                )}
+                <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-400 transition group-hover:text-red-600">
+                  <ArrowUpRight size={13} />
+                </span>
               </div>
 
               <div className="mt-2">
@@ -829,7 +579,7 @@ export function DashboardScreen() {
                 <p className="mt-0.5 text-xl font-extrabold tracking-tight text-slate-900">
                   {item.value}
                 </p>
-                <p className="mt-1 text-[11px] text-slate-500 font-medium">
+                <p className="mt-1 text-[11px] font-medium text-slate-500">
                   {item.description}
                 </p>
               </div>
@@ -838,64 +588,46 @@ export function DashboardScreen() {
         })}
       </section>
 
-      {/* KAPATMA YAPILACAKLAR & SÜRE UZATMA GRID */}
+      {/* KAPATMA YAPILACAKLAR & SÜRE UZATMA */}
       <section
         className={`grid gap-6 ${isCompany ? "grid-cols-1" : "xl:grid-cols-2"}`}
       >
-        {/* KAPATMA YAPILACAK FİRMALAR */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                <Clock3 size={16} />
-              </div>
-
-              <div>
-                <h2 className="text-base font-bold text-slate-900">
-                  Kapatma Yapılacak Firmalar
-                </h2>
-
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Tamamlama vizesi / kapatma işlemi yapılacak belgeler.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                {closureEligibleItems.length} Kayıt
-              </span>
-
-              <button
-                type="button"
-                onClick={() => router.push("/documents?view=closure-eligible")}
-                className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
-              >
-                Tümünü Gör
-              </button>
-            </div>
-          </div>
-
+        <SectionCard
+          icon={Clock3}
+          title="Kapatma Yapılacak Firmalar"
+          description="Tamamlama vizesi / kapatma işlemi yapılacak belgeler."
+          actions={
+            <>
+              <SortButton
+                direction={closureSortDir}
+                label="Bitiş Tarihi"
+                onToggle={() =>
+                  setClosureSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
+                }
+              />
+              
+              <ViewAllLink href="/documents?view=closure-eligible" />
+            </>
+          }
+        >
           <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
             {isInitialLoading ? (
-              <p className="py-6 text-center text-xs text-slate-400">
-                Yükleniyor...
-              </p>
-            ) : closureEligibleItems.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400">
+              <ListMessage>Yükleniyor...</ListMessage>
+            ) : sortedClosureItems.length === 0 ? (
+              <ListMessage>
                 Kapatma işlemi yapılacak belge bulunmuyor.
-              </p>
+              </ListMessage>
             ) : (
-              closureEligibleItems.map((document) => (
+              sortedClosureItems.map((document) => (
                 <div
                   key={document.id}
-                  className="flex items-start justify-between gap-4 py-3 first:pt-3 last:pb-3"
+                  className="flex items-start justify-between gap-4 py-3"
                 >
                   <div className="flex min-w-0 items-start gap-3">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-500" />
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
 
-                    <div>
-                      <p className="font-semibold text-sm text-slate-900">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-900">
                         {document.company.name}
                       </p>
 
@@ -904,83 +636,63 @@ export function DashboardScreen() {
                         <strong className="text-slate-700">
                           {document.documentNumber || "—"}
                         </strong>
-                        {" · "}Bitiş:{" "}
-                        <strong className="text-orange-600">
-                          {document.documentEndDate
-                            ? new Date(
-                                document.documentEndDate,
-                              ).toLocaleDateString("tr-TR")
-                            : "—"}
+                        {" · "}
+                        Bitiş tarihi:{" "}
+                        <strong className="text-red-600">
+                          {formatDate(document.documentEndDate)}
                         </strong>
                       </p>
                     </div>
                   </div>
 
-                  <span className="shrink-0 rounded-lg border border-orange-200/60 bg-orange-50 px-2.5 py-1 text-[11px] font-semibold text-orange-700">
-                    Kapatma Yapılacak
+                  <span className="shrink-0 rounded-lg border border-red-200/60 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">
+                    Kapatılacak
                   </span>
                 </div>
               ))
             )}
           </div>
-        </div>
-        {/* SÜRE UZATMA */}
+        </SectionCard>
+
         {!isCompany && (
-          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                  <CalendarClock size={16} />
-                </div>
-
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
-                    Süre Uzatma
-                  </h2>
-
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Süre uzatma başvurusu yapılabilecek belgeler.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                  {extensionEligibleItems.length} Kayıt
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    router.push("/documents?view=extension-eligible")
+          <SectionCard
+            icon={CalendarClock}
+            title="Süre Uzatma"
+            description="Süre uzatma başvurusu yapılabilecek belgeler."
+            actions={
+              <>
+                <SortButton
+                  direction={extensionSortDir}
+                  label="Başvuru Tarihi"
+                  onToggle={() =>
+                    setExtensionSortDir((prev) =>
+                      prev === "asc" ? "desc" : "asc",
+                    )
                   }
-                  className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
-                >
-                  Tümünü Gör
-                </button>
-              </div>
-            </div>
-
+                />
+                
+                <ViewAllLink href="/documents?view=extension-eligible" />
+              </>
+            }
+          >
             <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
               {isInitialLoading ? (
-                <p className="py-6 text-center text-xs text-slate-400">
-                  Yükleniyor...
-                </p>
-              ) : extensionEligibleItems.length === 0 ? (
-                <p className="py-6 text-center text-xs text-slate-400">
+                <ListMessage>Yükleniyor...</ListMessage>
+              ) : sortedExtensionItems.length === 0 ? (
+                <ListMessage>
                   Süre uzatma başvurusu yapılabilecek belge bulunmuyor.
-                </p>
+                </ListMessage>
               ) : (
-                extensionEligibleItems.map((document) => (
+                sortedExtensionItems.map((document) => (
                   <div
                     key={document.id}
-                    className="flex items-start justify-between gap-4 py-3 first:pt-3 last:pb-3"
+                    className="flex items-start justify-between gap-4 py-3"
                   >
                     <div className="flex min-w-0 items-start gap-3">
                       <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
 
-                      <div>
-                        <p className="font-semibold text-sm text-slate-900">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">
                           {document.company.name}
                         </p>
 
@@ -988,12 +700,16 @@ export function DashboardScreen() {
                           Belge No:{" "}
                           <strong className="text-slate-700">
                             {document.documentNumber || "—"}
-                          </strong>{" "}
-                          · Uzatma tarihi:{" "}
+                          </strong>
+                          {" · "}
+                          Başvuru:{" "}
+                          <strong className="text-slate-700">
+                            {formatDate(document.extensionApplicationStartDate)}
+                          </strong>
+                          {" · "}
+                          Uzatma tarihi:{" "}
                           <strong className="text-blue-600">
-                            {new Date(
-                              document.extensionDate,
-                            ).toLocaleDateString("tr-TR")}
+                            {formatDate(document.extensionDate)}
                           </strong>
                         </p>
                       </div>
@@ -1006,57 +722,42 @@ export function DashboardScreen() {
                 ))
               )}
             </div>
-          </div>
+          </SectionCard>
         )}
       </section>
-      {/* AKTİF BELGELER & TAMAMLAMA VİZESİ YAPILACAKLAR GRID */}
+
+      {/* AKTİF BELGELER & KAPALI / İPTAL BELGELER */}
       {!isCompany && (
         <section className="grid gap-6 xl:grid-cols-2">
-          {/* AKTİF BELGELER (küçültülmüş) */}
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-3 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                  <FileCheck2 size={16} />
-                </div>
-
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
-                    Aktif Belgeler
-                  </h2>
-
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Sistemde aktif durumda bulunan teşvik belgeleri.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  {activeDocuments ?? 0} Belge
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => router.push("/documents?status=ACTIVE")}
-                  className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
-                >
-                  Tümünü Gör
-                </button>
-              </div>
-            </div>
-
+          <SectionCard
+            icon={FileCheck2}
+            title="Aktif Belgeler"
+            description="Sistemde aktif durumda bulunan teşvik belgeleri."
+            actions={
+              <>
+                <SortButton
+                  direction={activeSortDir}
+                  label="Bitiş Tarihi"
+                  onToggle={() =>
+                    setActiveSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
+                  }
+                />
+               
+                <ViewAllLink href="/documents?status=ACTIVE" />
+              </>
+            }
+          >
             <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
               {isInitialLoading ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Aktif belgeler yükleniyor...
                 </p>
-              ) : activeDocumentItems.length === 0 ? (
+              ) : sortedActiveItems.length === 0 ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Aktif belge bulunmuyor.
                 </p>
               ) : (
-                activeDocumentItems.map((document) => (
+                sortedActiveItems.map((document) => (
                   <article
                     key={document.id}
                     className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
@@ -1082,12 +783,7 @@ export function DashboardScreen() {
 
                     <div className="flex shrink-0 items-center gap-2">
                       <span className="text-xs text-slate-500">
-                        Bitiş:{" "}
-                        {document.documentEndDate
-                          ? new Date(
-                              document.documentEndDate,
-                            ).toLocaleDateString("tr-TR")
-                          : "—"}
+                        Bitiş: {formatDate(document.documentEndDate)}
                       </span>
 
                       <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
@@ -1098,53 +794,37 @@ export function DashboardScreen() {
                 ))
               )}
             </div>
-          </section>
+          </SectionCard>
 
-          {/* KAPALI / İPTAL BELGELER */}
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-3 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                  <Ban size={16} />
-                </div>
-
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
-                    Kapalı / İptal Belgeler
-                  </h2>
-
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Kapatılmış veya iptal edilmiş teşvik belgeleri.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                  {closedCancelledDocuments ?? 0} Belge
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => router.push("/documents?status=INACTIVE")}
-                  className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-red-600 hover:text-red-600"
-                >
-                  Tümünü Gör
-                </button>
-              </div>
-            </div>
-
+          <SectionCard
+            icon={Ban}
+            title="Kapalı / İptal Belgeler"
+            description="Kapatılmış veya iptal edilmiş teşvik belgeleri."
+            actions={
+              <>
+                <SortButton
+                  direction={closedSortDir}
+                  label="Bitiş Tarihi"
+                  onToggle={() =>
+                    setClosedSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
+                  }
+                />
+                
+                <ViewAllLink href="/documents?status=INACTIVE" />
+              </>
+            }
+          >
             <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
               {isInitialLoading ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Kapalı belgeler yükleniyor...
                 </p>
-              ) : closedCancelledItems.length === 0 ? (
+              ) : sortedClosedItems.length === 0 ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Kapalı veya iptal edilmiş belge bulunmuyor.
                 </p>
               ) : (
-                closedCancelledItems.map((document) => (
+                sortedClosedItems.map((document) => (
                   <article
                     key={document.id}
                     className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
@@ -1170,12 +850,7 @@ export function DashboardScreen() {
 
                     <div className="flex shrink-0 items-center gap-2">
                       <span className="text-xs text-slate-500">
-                        Bitiş:{" "}
-                        {document.documentEndDate
-                          ? new Date(
-                              document.documentEndDate,
-                            ).toLocaleDateString("tr-TR")
-                          : "—"}
+                        Bitiş: {formatDate(document.documentEndDate)}
                       </span>
 
                       <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
@@ -1186,7 +861,7 @@ export function DashboardScreen() {
                 ))
               )}
             </div>
-          </section>
+          </SectionCard>
         </section>
       )}
     </div>

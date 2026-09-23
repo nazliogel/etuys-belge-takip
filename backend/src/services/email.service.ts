@@ -48,9 +48,8 @@ export class EmailService {
       transporter: nodemailer.createTransport({
         host: config.host,
         port: config.port,
-        secure: config.secure,
-        requireTLS: false,
-        ignoreTLS: true,
+        secure: config.secure, 
+        requireTLS: !config.secure,
         auth: {
           user: config.user,
           pass: config.password,
@@ -88,7 +87,6 @@ export class EmailService {
     const result = await transporter.sendMail({
       from,
       to: testRecipient,
-      cc: params.cc,
       subject: `[TEST] ${params.subject}`,
       text: [
         "BU BİR TEST E-POSTASIDIR.",

@@ -1,6 +1,5 @@
-﻿import { EmailService } from "./email.service.js";
-
-const ADMIN_FALLBACK_EMAIL = "salihsahin@akkasgroup.com";
+﻿import { env } from "../config/env.js";
+import { EmailService } from "./email.service.js";
 
 export class ReminderNotificationService {
   constructor(private readonly emailService = new EmailService()) {}
@@ -10,8 +9,12 @@ export class ReminderNotificationService {
     companyId: number;
     errorMessage?: string;
   }) {
+    if (!env.adminFallbackEmail) {
+      throw new Error("ADMIN_FALLBACK_EMAIL tanımlı değil.");
+    }
+
     await this.emailService.send({
-      to: ADMIN_FALLBACK_EMAIL,
+      to: env.adminFallbackEmail,
       subject: `${params.companyName} - Danışman Bilgisi Eksik`,
       text: `Merhaba Salih Bey,
 
