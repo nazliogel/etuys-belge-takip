@@ -554,11 +554,6 @@ export function DocumentDetailScreen({
                   <FormRow label="Firma Ünvanı" value={document.company.name} />
 
                   <FormRow
-                    label="İşlem Durumu"
-                    value={document.company.processStatus ?? "-"}
-                  />
-
-                  <FormRow
                     label="Yetki Bitiş Tarihi"
                     value={formatDate(document.company.authorizationEndDate)}
                   />
