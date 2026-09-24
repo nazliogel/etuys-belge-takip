@@ -366,3 +366,64 @@ export function getAuthSortValue(
       return "";
   }
 }
+
+/* ---------- Belge detay ekranları için ortak durum ---------- */
+
+export type DocumentStatusKey =
+  | "CANCELLED"
+  | "CLOSED"
+  | "AUTHORIZATION_EXPIRED"
+  | "CLOSURE_ELIGIBLE"
+  | "EXTENSION_ELIGIBLE"
+  | "EXPIRED"
+  | "ACTIVE";
+
+// Rozet rengi: her ekran bu tonu kendi stiline çevirir.
+export type StatusTone = "green" | "amber" | "red" | "blue";
+
+const STATUS_TONES: Record<DocumentStatusKey, StatusTone> = {
+  CANCELLED: "red",
+  CLOSED: "blue",
+  AUTHORIZATION_EXPIRED: "blue",
+  CLOSURE_ELIGIBLE: "red",
+  EXTENSION_ELIGIBLE: "amber",
+  EXPIRED: "red",
+  ACTIVE: "green",
+};
+
+// Tek bir belgenin durumu (detay ekranı ve admin künye ekranı ortak kullanır).
+// Açık belgelerde backend'in hesapladığı displayStatus esas alınır; kapalı
+// belgeler ayrı endpoint'ten geldiği için status/isActive'e bakılır.
+// Süresi yaklaşan (EXPIRING) belgeler, listedeki gibi "Aktif" görünür.
+export function getDocumentStatusInfo(document: {
+  status?: string;
+  displayStatus?: string;
+  isActive?: boolean;
+}): { key: DocumentStatusKey; label: string; tone: StatusTone } {
+  let key: DocumentStatusKey;
+
+  if (
+    document.status === "CANCELLED" ||
+    document.displayStatus === "CANCELLED"
+  ) {
+    key = "CANCELLED";
+  } else if (
+    document.status === "CLOSED" ||
+    document.displayStatus === "CLOSED" ||
+    document.displayStatus === "INACTIVE" ||
+    document.isActive === false
+  ) {
+    key = "CLOSED";
+  } else if (
+    document.displayStatus === "AUTHORIZATION_EXPIRED" ||
+    document.displayStatus === "CLOSURE_ELIGIBLE" ||
+    document.displayStatus === "EXTENSION_ELIGIBLE" ||
+    document.displayStatus === "EXPIRED"
+  ) {
+    key = document.displayStatus;
+  } else {
+    key = "ACTIVE";
+  }
+
+  return { key, label: STATUS_LABELS[key], tone: STATUS_TONES[key] };
+}

@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { FileText, Loader2 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import {
+  formatDate,
+  getDocumentStatusInfo,
+  type StatusTone,
+} from "./documents/lib";
 
 interface AdminDocumentIdentityProps {
   documentId: string;
@@ -46,69 +51,13 @@ type DocumentDetailResponse = {
   data: ApiDocumentDetail;
 };
 
-function formatDate(date: string | null): string {
-  if (!date) {
-    return "-";
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("tr-TR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsedDate);
-}
-
-// Durum artık backend'den geliyor (displayStatus). Kapalı belgeler ayrı
-// endpoint'ten gelir ve displayStatus taşımaz; onlar için status/isClosed kullanılır.
-function getStatusLabel(
-  document: ApiDocumentDetail,
-  isClosed: boolean,
-): string {
-  if (
-    document.status === "CANCELLED" ||
-    document.displayStatus === "CANCELLED"
-  ) {
-    return "İptal";
-  }
-
-  if (
-    isClosed ||
-    document.status === "CLOSED" ||
-    document.displayStatus === "CLOSED" ||
-    document.displayStatus === "INACTIVE" ||
-    document.isActive === false
-  ) {
-    return "Kapalı";
-  }
-
-  switch (document.displayStatus) {
-    case "AUTHORIZATION_EXPIRED":
-      return "Yetkisi Bitmiş";
-    case "CLOSURE_ELIGIBLE":
-      return "Kapatma Yapılacak";
-    case "EXTENSION_ELIGIBLE":
-      return "Uzatma Yapılabilir";
-    case "EXPIRED":
-      return "Kapatma Yapılacak";
-
-    default:
-      return "Aktif";
-  }
-}
-
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  İptal: "bg-red-50 text-red-700 border border-red-200",
-  Kapalı: "bg-blue-50 text-blue-700 border border-blue-200",
-  "Yetkisi Bitmiş": "bg-blue-50 text-blue-700 border border-blue-200",
-  "Kapatma Yapılacak": "bg-red-50 text-red-700 border border-red-200",
-  "Uzatma Yapılabilir": "bg-amber-50 text-amber-700 border border-amber-200",
-  Aktif: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+// Durum etiketi ortak fonksiyondan (documents/lib.ts) gelir; burada sadece
+// rengin bu ekrandaki karşılığı var.
+const STATUS_BADGE_CLASSES: Record<StatusTone, string> = {
+  red: "bg-red-50 text-red-700 border border-red-200",
+  blue: "bg-blue-50 text-blue-700 border border-blue-200",
+  amber: "bg-amber-50 text-amber-700 border border-amber-200",
+  green: "bg-emerald-50 text-emerald-700 border border-emerald-200",
 };
 
 export function AdminDocumentIdentity({
@@ -179,11 +128,9 @@ export function AdminDocumentIdentity({
     );
   }
 
-  const status = getStatusLabel(document, isClosed);
-
-  const statusBadgeClass =
-    STATUS_BADGE_CLASSES[status] ??
-    "bg-slate-100 text-slate-700 border border-slate-200";
+  // isClosed ise yukarıda isActive=false yapıldığı için "Kapalı" çıkar.
+  const { label: status, tone } = getDocumentStatusInfo(document);
+  const statusBadgeClass = STATUS_BADGE_CLASSES[tone];
   return (
     <div className="space-y-3">
       <section className="flex items-center justify-between">

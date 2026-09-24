@@ -16,10 +16,13 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { formatDate, getDocumentStatusInfo } from "./documents/lib";
 
 interface DocumentDetailScreenProps {
   documentId: string;
   inline?: boolean;
+  // Eski çağrılar bozulmasın diye duruyor; ekran artık sadece firma görünümü.
+  // (Admin belge detayı AdminDocumentDetailScreen ile açılıyor.)
   variant?: "admin" | "company";
   isClosed?: boolean;
 }
@@ -63,24 +66,6 @@ type DocumentDetailResponse = {
   data: ApiDocumentDetail;
 };
 
-function formatDate(date: string | null): string {
-  if (!date) {
-    return "-";
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("tr-TR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsedDate);
-}
-
 const STATUS_STYLES = {
   green: {
     dot: "bg-emerald-500",
@@ -117,77 +102,32 @@ function daysUntil(dateOnly: string | null | undefined): number | null {
   return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }
 
-// Durum artık backend'den geliyor (displayStatus); uzatım tarihi de hesaba katılıyor.
+// Durum etiketi ve rengi ortak fonksiyondan (documents/lib.ts) gelir;
+// burada sadece altındaki açıklama cümlesi eklenir.
 function getDocumentStatus(document: ApiDocumentDetail) {
+  const { key, label, tone } = getDocumentStatusInfo(document);
+
   const remainingDays = daysUntil(document.effectiveEndDate);
-  const remainingText =
-    remainingDays !== null && remainingDays >= 0
-      ? `Belgenin bitmesine ${remainingDays} gün kaldı.`
-      : "Belge aktif durumda.";
 
-  // Kapalı belgeler ayrı endpoint'ten gelir ve displayStatus taşımaz.
-  if (
-    document.status === "CANCELLED" ||
-    document.displayStatus === "CANCELLED"
-  ) {
-    return {
-      label: "İptal",
-      description: "Belge iptal edilmiştir.",
-      ...STATUS_STYLES.red,
-    };
-  }
+  const descriptions: Record<typeof key, string> = {
+    CANCELLED: "Belge iptal edilmiştir.",
+    CLOSED: "Belge kapatılmıştır.",
+    AUTHORIZATION_EXPIRED: "Firmanın yetki süresi dolmuştur.",
+    CLOSURE_ELIGIBLE: "Uzatılan süre sona ermiştir.",
+    EXTENSION_ELIGIBLE: "Süre uzatma müracaatı yapılabilir.",
+    EXPIRED: "Belge bitiş tarihi geçmiştir.",
+    ACTIVE:
+      remainingDays !== null && remainingDays >= 0
+        ? `Belgenin bitmesine ${remainingDays} gün kaldı.`
+        : "Belge aktif durumda.",
+  };
 
-  if (
-    document.status === "CLOSED" ||
-    document.displayStatus === "CLOSED" ||
-    document.displayStatus === "INACTIVE" ||
-    document.isActive === false
-  ) {
-    return {
-      label: "Kapalı",
-      description: "Belge kapatılmıştır.",
-      ...STATUS_STYLES.blue,
-    };
-  }
-
-  switch (document.displayStatus) {
-    case "AUTHORIZATION_EXPIRED":
-      return {
-        label: "Yetkisi Bitmiş",
-        description: "Firmanın yetki süresi dolmuştur.",
-        ...STATUS_STYLES.blue,
-      };
-    case "CLOSURE_ELIGIBLE":
-      return {
-        label: "Kapatma Yapılacak",
-        description: "Uzatılan süre sona ermiştir.",
-        ...STATUS_STYLES.red,
-      };
-    case "EXTENSION_ELIGIBLE":
-      return {
-        label: "Uzatma Yapılabilir",
-        description: "Süre uzatma müracaatı yapılabilir.",
-        ...STATUS_STYLES.amber,
-      };
-    case "EXPIRED":
-      return {
-        label: "Kapatma Yapılacak",
-        description: "Belge bitiş tarihi geçmiştir.",
-        ...STATUS_STYLES.red,
-      };
-
-    default:
-      return {
-        label: "Aktif",
-        description: remainingText,
-        ...STATUS_STYLES.green,
-      };
-  }
+  return { label, description: descriptions[key], ...STATUS_STYLES[tone] };
 }
+
 export function DocumentDetailScreen({
   documentId,
   inline = false,
-  variant = "company",
   isClosed = false,
 }: DocumentDetailScreenProps) {
   const [document, setDocument] = useState<ApiDocumentDetail | null>(null);
@@ -381,133 +321,6 @@ export function DocumentDetailScreen({
   }
 
   const status = getDocumentStatus(document);
-
-  // ============================================
-  // ADMIN VARIANT
-  // ============================================
-  if (variant === "admin") {
-    return (
-      <div className="space-y-3">
-        {/* ADMIN BELGE DETAY SEKMELERİ */}
-        <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex w-full items-stretch overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border">
-            {[
-              "Belge Künye Bilgileri",
-              "Yatırım Cinsi",
-              "Ürün Bilgileri",
-              "Yerli Liste",
-              "İthal Liste",
-              "Finansal Bilgiler",
-              "Özel Şartlar",
-              "Destek Unsurları",
-            ].map((item, index) => (
-              <button
-                key={item}
-                type="button"
-                className={`shrink-0 whitespace-nowrap border-r border-border px-3 py-2.5 text-[11px] font-semibold transition last:border-r-0 sm:flex-1 sm:px-2 ${
-                  index === 0
-                    ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
-                    : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-          {/* Sağ tarafta "daha var" gölgesi — mobilde kullanıcıya kaydırılabilir olduğunu belli eder */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent sm:hidden"
-          />
-        </div>
-        {/* ÜST ŞERİT */}
-        <section className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-200/60 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-              <FileText size={16} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Belge Detayı
-              </p>
-              <h2 className="text-base font-extrabold tracking-tight text-foreground">
-                {document.documentNumber ?? "-"}
-                <span className="ml-2 text-xs font-medium text-muted-foreground">
-                  Numaralı Belge
-                </span>
-              </h2>
-            </div>
-          </div>
-
-          <div
-            className={`inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 ${status.className}`}
-          >
-            <span
-              className={`h-1.5 w-1.5 shrink-0 rounded-full ${status.dot}`}
-            />
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              {status.label}
-            </span>
-          </div>
-        </section>
-
-        {/* KPI ŞERİDİ */}
-        <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex items-center justify-between border-b border-border bg-muted/60 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground/80">
-                Belge Bilgileri
-              </h3>
-            </div>
-
-            <span className="text-[10px] text-muted-foreground">
-              Resmi kayıtlardan alınmıştır
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <tbody className="divide-y divide-border">
-                <OperationRow
-                  label1="Belge ID"
-                  value1={String(document.externalDocumentId)}
-                  label2="Belge No"
-                  value2={document.documentNumber ?? "-"}
-                />
-
-                <OperationRow
-                  label1="Başlangıç Tarihi"
-                  value1={formatDate(document.documentStartDate)}
-                  label2="Bitiş Tarihi"
-                  value2={formatDate(document.documentEndDate)}
-                />
-
-                <OperationRow
-                  label1="Süre Uzatım Tarihi"
-                  value1={formatDate(document.extensionDate)}
-                  label2="Destekleme Sınıfı"
-                  value2={document.supportClass ?? "-"}
-                />
-
-                <OperationRow
-                  label1="Yetki Bitiş Tarihi"
-                  value1={formatDate(document.company.authorizationEndDate)}
-                  label2="Belge Durumu"
-                  value2={status.label}
-                />
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  // ============================================
-  // COMPANY VARIANT (mevcut görünüm)
-  // ============================================
 
   const today = new Date().toLocaleDateString("tr-TR", {
     day: "2-digit",
@@ -814,114 +627,5 @@ function FormRow({ label, value }: FormRowProps) {
         {value}
       </dd>
     </div>
-  );
-}
-
-/* ---- ADMIN VARIANT ALT BİLEŞENLERİ ---- */
-
-function KpiTile({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-sm ${
-        accent
-          ? "border-red-200/60 bg-red-50/40 dark:border-red-500/20 dark:bg-red-500/10"
-          : "border-border bg-card"
-      }`}
-    >
-      <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-          accent
-            ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300"
-            : "bg-muted text-muted-foreground"
-        }`}
-      >
-        {icon}
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-        <p className="truncate text-sm font-bold text-foreground">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function FieldGrid({
-  items,
-}: {
-  groupLabel?: string;
-  items: {
-    label: string;
-    value?: string | null;
-    mono?: boolean;
-  }[];
-}) {
-  return (
-    <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-3 md:divide-x md:divide-y-0">
-      {items.map((item) => {
-        const displayValue = item.value?.toString().trim() || "-";
-        const isEmpty = displayValue === "-";
-
-        return (
-          <div key={item.label} className="flex flex-col gap-1 px-5 py-3.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {item.label}
-            </span>
-
-            <span
-              className={`text-sm ${item.mono ? "font-mono" : ""} ${
-                isEmpty
-                  ? "text-muted-foreground/50"
-                  : "font-semibold text-foreground/90"
-              }`}
-            >
-              {displayValue}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-function OperationRow({
-  label1,
-  value1,
-  label2,
-  value2,
-}: {
-  label1: string;
-  value1: string;
-  label2: string;
-  value2: string;
-}) {
-  return (
-    <tr>
-      <th className="w-[16%] bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-        {label1}
-      </th>
-
-      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-foreground">
-        {value1}
-      </td>
-
-      <th className="w-[16%] border-l border-border bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-        {label2}
-      </th>
-
-      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-foreground">
-        {value2}
-      </td>
-    </tr>
   );
 }
