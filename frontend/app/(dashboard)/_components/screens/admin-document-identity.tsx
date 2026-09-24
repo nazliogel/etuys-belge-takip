@@ -19,7 +19,19 @@ type ApiDocumentDetail = {
   extensionDate: string | null;
   supportClass: string | null;
   isActive?: boolean;
-  status?: "OPEN" | "CLOSED" | "CANCELLED";
+  status?: string;
+
+  // Backend'in hesapladığı durum (liste ekranıyla aynı kaynak)
+  displayStatus?:
+    | "CLOSED"
+    | "CANCELLED"
+    | "INACTIVE"
+    | "AUTHORIZATION_EXPIRED"
+    | "CLOSURE_ELIGIBLE"
+    | "EXTENSION_ELIGIBLE"
+    | "EXPIRED"
+    | "EXPIRING"
+    | "ACTIVE";
 
   company: {
     name: string;
@@ -52,88 +64,52 @@ function formatDate(date: string | null): string {
   }).format(parsedDate);
 }
 
-function normalizeDate(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
-}
-
-function subtractMonths(date: Date, months: number): Date {
-  const result = new Date(date);
-  const originalDay = result.getDate();
-
-  result.setDate(1);
-  result.setMonth(result.getMonth() - months);
-
-  const lastDayOfMonth = new Date(
-    result.getFullYear(),
-    result.getMonth() + 1,
-    0,
-  ).getDate();
-
-  result.setDate(Math.min(originalDay, lastDayOfMonth));
-
-  return normalizeDate(result);
-}
-function hasExpiredAuthorization(authorizationEndDate: string | null): boolean {
-  if (!authorizationEndDate) {
-    return true;
-  }
-
-  const endDate = normalizeDate(new Date(authorizationEndDate));
-
-  if (Number.isNaN(endDate.getTime())) {
-    return true;
-  }
-
-  const today = normalizeDate(new Date());
-
-  return endDate < today;
-}
-function getStatus(document: ApiDocumentDetail): string {
-  if (document.status === "CANCELLED") {
+// Durum artık backend'den geliyor (displayStatus). Kapalı belgeler ayrı
+// endpoint'ten gelir ve displayStatus taşımaz; onlar için status/isClosed kullanılır.
+function getStatusLabel(
+  document: ApiDocumentDetail,
+  isClosed: boolean,
+): string {
+  if (
+    document.status === "CANCELLED" ||
+    document.displayStatus === "CANCELLED"
+  ) {
     return "İptal";
   }
 
-  if (document.status === "CLOSED" || document.isActive === false) {
+  if (
+    isClosed ||
+    document.status === "CLOSED" ||
+    document.displayStatus === "CLOSED" ||
+    document.displayStatus === "INACTIVE" ||
+    document.isActive === false
+  ) {
     return "Kapalı";
   }
 
-  if (!document.documentEndDate || !document.extensionDate) {
-    return "Aktif";
-  }
-
-  const documentEndDate = normalizeDate(new Date(document.documentEndDate));
-
-  const extensionDate = normalizeDate(new Date(document.extensionDate));
-
-  if (
-    Number.isNaN(documentEndDate.getTime()) ||
-    Number.isNaN(extensionDate.getTime())
-  ) {
-    return "Aktif";
-  }
-
-  const today = normalizeDate(new Date());
-
-  const datesAreEqual = documentEndDate.getTime() === extensionDate.getTime();
-
-  if (datesAreEqual) {
-    const extensionApplicationStartDate = subtractMonths(documentEndDate, 6);
-
-    if (today >= extensionApplicationStartDate) {
+  switch (document.displayStatus) {
+    case "AUTHORIZATION_EXPIRED":
+      return "Yetkisi Bitmiş";
+    case "CLOSURE_ELIGIBLE":
+      return "Kapatma Yapılacak";
+    case "EXTENSION_ELIGIBLE":
       return "Uzatma Yapılabilir";
-    }
+    case "EXPIRED":
+      return "Kapatma Yapılacak";
 
-    return "Aktif";
+    default:
+      return "Aktif";
   }
-
-  if (extensionDate < today) {
-    return "Kapatma Yapılacak";
-  }
-
-  return "Aktif";
 }
+
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  İptal: "bg-red-50 text-red-700 border border-red-200",
+  Kapalı: "bg-blue-50 text-blue-700 border border-blue-200",
+  "Yetkisi Bitmiş": "bg-blue-50 text-blue-700 border border-blue-200",
+  "Kapatma Yapılacak": "bg-red-50 text-red-700 border border-red-200",
+  "Uzatma Yapılabilir": "bg-amber-50 text-amber-700 border border-amber-200",
+  Aktif: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+};
 
 export function AdminDocumentIdentity({
   documentId,
@@ -203,32 +179,11 @@ export function AdminDocumentIdentity({
     );
   }
 
-  const authorizationExpired = hasExpiredAuthorization(
-    document.company.authorizationEndDate,
-  );
-
-  const isClosedOrCancelled =
-    isClosed || document.status === "CLOSED" || document.status === "CANCELLED";
-
-  const status =
-    !isClosedOrCancelled && authorizationExpired
-      ? "Yetkisi Bitmiş"
-      : getStatus(document);
+  const status = getStatusLabel(document, isClosed);
 
   const statusBadgeClass =
-    status === "İptal"
-      ? "bg-red-50 text-red-700 border border-red-200"
-      : status === "Kapalı"
-        ? "bg-blue-50 text-blue-700 border border-blue-200"
-        : status === "Yetkisi Bitmiş"
-          ? "bg-blue-50 text-blue-700 border border-blue-200"
-          : status === "Kapatma Yapılacak"
-            ? "bg-red-50 text-red-700 border border-red-200"
-            : status === "Uzatma Yapılabilir"
-              ? "bg-amber-50 text-amber-700 border border-amber-200"
-              : status === "Aktif"
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                : "bg-slate-100 text-slate-700 border border-slate-200";
+    STATUS_BADGE_CLASSES[status] ??
+    "bg-slate-100 text-slate-700 border border-slate-200";
   return (
     <div className="space-y-3">
       <section className="flex items-center justify-between">

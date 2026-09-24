@@ -8,6 +8,7 @@ type ClosedDocumentListQuery = {
   page: number;
   limit: number;
   search?: string;
+  companyId?: number;
 };
 
 export class ClosedDocumentService {
@@ -57,14 +58,17 @@ export class ClosedDocumentService {
     role: UserRole,
   ) {
     const page = Math.max(query.page, 1);
-    const limit = Math.min(Math.max(query.limit, 1), 100);
+    const limit = Math.min(Math.max(query.limit, 1), 1000);
     const skip = (page - 1) * limit;
 
-    let companyId: number | undefined;
+    // Admin/uzman belirli bir firmayı isteyebilir.
+    let companyId: number | undefined = query.companyId;
 
+    // Uzman için filtre her zaman geçerli: başka uzmanın firmasını isterse boş döner.
     const consultantUserId = role === "OPERATION" ? userId : undefined;
 
     if (role === "COMPANY") {
+      // Firma kullanıcısı her zaman sadece kendi firmasını görür, isteği yok sayılır.
       const company = await this.getAuthorizedCompany(userId);
 
       companyId = company.id;

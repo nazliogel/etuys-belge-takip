@@ -17,7 +17,13 @@ export class DocumentController {
       });
     }
     const page = Math.max(Number(req.query.page) || 1, 1);
-    const limit = 20;
+
+    const requestedLimit = Number(req.query.limit);
+    const limit =
+      Number.isInteger(requestedLimit) && requestedLimit > 0
+        ? Math.min(requestedLimit, 1000)
+        : 20;
+
     const search =
       typeof req.query.search === "string" ? req.query.search : undefined;
 
@@ -26,7 +32,15 @@ export class DocumentController {
         ? true
         : req.query.isActive === "false"
           ? false
-          : undefined;
+          : req.query.isActive === "all"
+            ? ("all" as const)
+            : undefined;
+
+    const requestedCompanyId = Number(req.query.companyId);
+    const companyId =
+      Number.isInteger(requestedCompanyId) && requestedCompanyId > 0
+        ? requestedCompanyId
+        : undefined;
 
     const allowedStatuses = [
       "ACTIVE",
@@ -55,6 +69,7 @@ export class DocumentController {
         search,
         isActive,
         status,
+        companyId,
       },
       req.user.id,
       req.user.role,
@@ -89,7 +104,7 @@ export class DocumentController {
       data,
     });
   };
-  
+
   closureEligible = async (
     req: Request,
     res: Response<ApiResponse<unknown>>,

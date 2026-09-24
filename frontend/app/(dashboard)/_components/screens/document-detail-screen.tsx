@@ -2,11 +2,11 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
   CalendarDays,
+  CalendarClock,
   Clock3,
   Download,
   FileText,
@@ -33,7 +33,20 @@ type ApiDocumentDetail = {
   extensionDate: string | null;
   supportClass: string | null;
   isActive?: boolean;
-  status?: "OPEN" | "CLOSED" | "CANCELLED";
+  status?: string;
+
+  // Backend'in hesapladığı durum (liste ekranıyla aynı kaynak)
+  displayStatus?:
+    | "CLOSED"
+    | "CANCELLED"
+    | "INACTIVE"
+    | "AUTHORIZATION_EXPIRED"
+    | "CLOSURE_ELIGIBLE"
+    | "EXTENSION_ELIGIBLE"
+    | "EXPIRED"
+    | "EXPIRING"
+    | "ACTIVE";
+  effectiveEndDate?: string | null;
 
   company: {
     id?: number;
@@ -68,74 +81,108 @@ function formatDate(date: string | null): string {
   }).format(parsedDate);
 }
 
-function getDocumentStatus(document: ApiDocumentDetail) {
-  if (document.status === "CANCELLED") {
-    return {
-      label: "İptal",
-      description: "Belge iptal edilmiştir.",
-      dot: "bg-red-500",
-      className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
-    };
-  }
-
-  if (document.status === "CLOSED" || document.isActive === false) {
-    return {
-      label: "Kapalı",
-      description: "Belge kapatılmıştır.",
-      dot: "bg-blue-500",
-      className:
-        "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30",
-    };
-  }
-
-  const documentEndDate = document.documentEndDate;
-
-  if (!documentEndDate) {
-    return {
-      label: "Aktif",
-      description: "Belge aktif durumda.",
-      dot: "bg-emerald-500",
-      className:
-        "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-    };
-  }
-
-  const end = new Date(documentEndDate);
-  const today = new Date();
-
-  today.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-
-  const remainingDays = Math.ceil(
-    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (remainingDays < 0) {
-    return {
-      label: "Kapatma Yapılacak",
-      description: "Belge bitiş tarihi geçmiştir.",
-      dot: "bg-red-500",
-      className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
-    };
-  }
-
-  if (remainingDays <= 180) {
-    return {
-      label: "Süresi Yaklaşıyor",
-      description: `Belgenin bitmesine ${remainingDays} gün kaldı.`,
-      dot: "bg-amber-500",
-      className:
-        "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-    };
-  }
-
-  return {
-    label: "Aktif",
-    description: `Belgenin bitmesine ${remainingDays} gün kaldı.`,
+const STATUS_STYLES = {
+  green: {
     dot: "bg-emerald-500",
     className:
       "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-  };
+  },
+  amber: {
+    dot: "bg-amber-500",
+    className:
+      "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  },
+  red: {
+    dot: "bg-red-500",
+    className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  },
+  blue: {
+    dot: "bg-blue-500",
+    className:
+      "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30",
+  },
+};
+
+// "YYYY-MM-DD" tarihine bugünden kaç gün kaldığını hesaplar
+function daysUntil(dateOnly: string | null | undefined): number | null {
+  if (!dateOnly) return null;
+
+  const [year, month, day] = dateOnly.slice(0, 10).split("-").map(Number);
+  if (!year || !month || !day) return null;
+
+  const target = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
+}
+
+// Durum artık backend'den geliyor (displayStatus); uzatım tarihi de hesaba katılıyor.
+function getDocumentStatus(document: ApiDocumentDetail) {
+  const remainingDays = daysUntil(document.effectiveEndDate);
+  const remainingText =
+    remainingDays !== null && remainingDays >= 0
+      ? `Belgenin bitmesine ${remainingDays} gün kaldı.`
+      : "Belge aktif durumda.";
+
+  // Kapalı belgeler ayrı endpoint'ten gelir ve displayStatus taşımaz.
+  if (
+    document.status === "CANCELLED" ||
+    document.displayStatus === "CANCELLED"
+  ) {
+    return {
+      label: "İptal",
+      description: "Belge iptal edilmiştir.",
+      ...STATUS_STYLES.red,
+    };
+  }
+
+  if (
+    document.status === "CLOSED" ||
+    document.displayStatus === "CLOSED" ||
+    document.displayStatus === "INACTIVE" ||
+    document.isActive === false
+  ) {
+    return {
+      label: "Kapalı",
+      description: "Belge kapatılmıştır.",
+      ...STATUS_STYLES.blue,
+    };
+  }
+
+  switch (document.displayStatus) {
+    case "AUTHORIZATION_EXPIRED":
+      return {
+        label: "Yetkisi Bitmiş",
+        description: "Firmanın yetki süresi dolmuştur.",
+        ...STATUS_STYLES.blue,
+      };
+    case "CLOSURE_ELIGIBLE":
+      return {
+        label: "Kapatma Yapılacak",
+        description: "Uzatılan süre sona ermiştir.",
+        ...STATUS_STYLES.red,
+      };
+    case "EXTENSION_ELIGIBLE":
+      return {
+        label: "Uzatma Yapılabilir",
+        description: "Süre uzatma müracaatı yapılabilir.",
+        ...STATUS_STYLES.amber,
+      };
+    case "EXPIRED":
+      return {
+        label: "Kapatma Yapılacak",
+        description: "Belge bitiş tarihi geçmiştir.",
+        ...STATUS_STYLES.red,
+      };
+
+    default:
+      return {
+        label: "Aktif",
+        description: remainingText,
+        ...STATUS_STYLES.green,
+      };
+  }
 }
 export function DocumentDetailScreen({
   documentId,
@@ -555,7 +602,7 @@ export function DocumentDetailScreen({
 
       {/* Bilgi kartları — mobilde 2 sütun, tablette 2, xl'de 4 */}
       <div>
-        <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
           <InfoCard
             label="Belge Numarası"
             value={document.documentNumber ?? "-"}
@@ -572,6 +619,13 @@ export function DocumentDetailScreen({
             label="Belge Bitiş"
             value={formatDate(document.documentEndDate)}
             icon={<Clock3 size={16} className="sm:h-[19px] sm:w-[19px]" />}
+          />
+          <InfoCard
+            label="Süre Uzatım"
+            value={formatDate(document.extensionDate)}
+            icon={
+              <CalendarClock size={16} className="sm:h-[19px] sm:w-[19px]" />
+            }
           />
           <InfoCard
             label="Destekleme Sınıfı"

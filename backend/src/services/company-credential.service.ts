@@ -90,19 +90,15 @@ export class CompanyCredentialService {
       username = initial.username;
       plainPassword = initial.plainPassword;
     } else {
-      if (!existingCompanyUser.username) {
-        throw new AppError(
-          "Mevcut firma kullanıcısının kullanıcı adı bulunamadı.",
-          {
-            statusCode: HTTP_STATUS.BAD_REQUEST,
-            code: "COMPANY_USERNAME_MISSING",
-          },
-        );
-      }
+      // Elle eklenmiş eski kullanıcılarda kullanıcı adı boş olabilir.
+      // Bu durumda hata vermek yerine firma adından yeni bir kullanıcı adı üretilir.
+      const usernameToUse =
+        existingCompanyUser.username ??
+        (await this.generateUniqueUsername(company.name, prisma));
 
       const reset = await this.resetPasswordAndEmail(
         existingCompanyUser.id,
-        existingCompanyUser.username, // username'i koru
+        usernameToUse,
         email,
       );
 
@@ -206,7 +202,7 @@ export class CompanyCredentialService {
     };
   }
 
-    async checkCredentialStatus(
+  async checkCredentialStatus(
     companyId: number,
     requesterUserId: number,
     requesterRole: UserRole,
@@ -243,12 +239,11 @@ export class CompanyCredentialService {
       );
     }
 
-    const hasCredentials =
-      await this.userRepository.companyHasUser(companyId);
+    const hasCredentials = await this.userRepository.companyHasUser(companyId);
 
     return { hasCredentials };
   }
-  
+
   private async resetPasswordAndEmail(
     userId: number,
     username: string,
