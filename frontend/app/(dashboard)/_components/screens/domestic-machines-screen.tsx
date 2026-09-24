@@ -125,6 +125,9 @@ function formatQuantity(
 // Sabit başlık için ortak class'lar — her <th>'ye uygulanacak.
 // sticky top-0 + opak arka plan zorunlu, aksi halde scroll'da hücre içerikleri sızar.
 // Light modda bg-slate-100, dark modda bg-muted; her ikisi de opak arka plan verir.
+// Not: sticky top-0 tüm ekranlarda geçerli (dikey scroll'da başlık sabit kalır).
+// Soldaki ilk 3 sütunun yatay sabitlemesi (left-*) yalnızca md ve üstünde uygulanır;
+// mobilde bu 3 sütun toplam 470px tuttuğu için ekranı kaplıyor ve yatay kaydırmayı engelliyordu.
 const HEAD_BASE =
   "sticky top-0 z-20 bg-slate-100 dark:bg-muted border-b-2 border-[#1e2a5e]/15 dark:border-blue-400/20 border-r border-border px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
 
@@ -281,19 +284,19 @@ export function DomesticMachinesScreen() {
             <thead>
               <tr className="text-left">
                 <th
-                  className={`${HEAD_BASE} left-0 z-40 w-[80px] min-w-[80px] text-right`}
+                  className={`${HEAD_BASE} md:left-0 md:z-40 w-[80px] min-w-[80px] text-right`}
                 >
                   Sıra
                 </th>
 
                 <th
-                  className={`${HEAD_BASE} left-[80px] z-40 w-[130px] min-w-[130px]`}
+                  className={`${HEAD_BASE} md:left-[80px] md:z-40 w-[130px] min-w-[130px]`}
                 >
                   Makine ID
                 </th>
 
                 <th
-                  className={`${HEAD_BASE} left-[210px] z-40 w-[260px] min-w-[260px] max-w-[260px] shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)]`}
+                  className={`${HEAD_BASE} md:left-[210px] md:z-40 w-[260px] min-w-[260px] max-w-[260px] md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)]`}
                 >
                   Adı / Özelliği
                 </th>
@@ -394,7 +397,7 @@ export function DomesticMachinesScreen() {
                     >
                       {/* Sıra */}
                       <td
-                        className={`sticky left-0 z-10 w-[80px] min-w-[80px] border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-muted-foreground ${stickyBg} ${stickyHover}`}
+                        className={`md:sticky md:left-0 md:z-10 w-[80px] min-w-[80px] border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-muted-foreground ${stickyBg} ${stickyHover}`}
                       >
                         {machine.sequenceNumber ?? (
                           <span className="text-muted-foreground/50">—</span>
@@ -403,7 +406,7 @@ export function DomesticMachinesScreen() {
 
                       {/* Makine ID */}
                       <td
-                        className={`sticky left-[80px] z-10 w-[130px] min-w-[130px] border-b border-r border-border px-4 py-2.5 ${stickyBg} ${stickyHover}`}
+                        className={`md:sticky md:left-[80px] md:z-10 w-[130px] min-w-[130px] border-b border-r border-border px-4 py-2.5 ${stickyBg} ${stickyHover}`}
                       >
                         {machine.externalMachineId ? (
                           <span className="inline-flex rounded border border-border bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground/80">
@@ -416,7 +419,7 @@ export function DomesticMachinesScreen() {
 
                       {/* Ad */}
                       <td
-                        className={`sticky left-[210px] z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-border px-4 py-2.5 text-sm font-semibold text-foreground shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${stickyBg} ${stickyHover}`}
+                        className={`md:sticky md:left-[210px] md:z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-border px-4 py-2.5 text-sm font-semibold text-foreground md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${stickyBg} ${stickyHover}`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
