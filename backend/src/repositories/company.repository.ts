@@ -12,22 +12,31 @@ export class CompanyRepository {
   }) {
     const where: Prisma.CompanyWhereInput = {};
 
-    if (params.search) {
+    if (params.search?.trim()) {
+      const search = params.search.trim();
+      const turkishUpper = search.toLocaleUpperCase("tr-TR");
+
       where.OR = [
         {
           name: {
-            contains: params.search,
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          name: {
+            contains: turkishUpper,
             mode: "insensitive",
           },
         },
         {
           taxNumber: {
-            contains: params.search,
+            contains: search,
           },
         },
         {
           externalCompanyId: {
-            equals: Number(params.search) || undefined,
+            equals: /^\d+$/.test(search) ? Number(search) : undefined,
           },
         },
       ];
@@ -66,22 +75,31 @@ export class CompanyRepository {
   }): Promise<number> {
     const where: Prisma.CompanyWhereInput = {};
 
-    if (params.search) {
+    if (params.search?.trim()) {
+      const search = params.search.trim();
+      const turkishUpper = search.toLocaleUpperCase("tr-TR");
+
       where.OR = [
         {
           name: {
-            contains: params.search,
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          name: {
+            contains: turkishUpper,
             mode: "insensitive",
           },
         },
         {
           taxNumber: {
-            contains: params.search,
+            contains: search,
           },
         },
         {
           externalCompanyId: {
-            equals: Number(params.search) || undefined,
+            equals: /^\d+$/.test(search) ? Number(search) : undefined,
           },
         },
       ];
@@ -191,7 +209,6 @@ export class CompanyRepository {
       },
     });
   }
-
 
   async findByUserId(userId: number) {
     return prisma.company.findFirst({
