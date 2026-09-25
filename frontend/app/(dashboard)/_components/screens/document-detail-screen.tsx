@@ -2,11 +2,11 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
   CalendarDays,
+  CalendarClock,
   Clock3,
   Download,
   FileText,
@@ -16,10 +16,13 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { formatDate, getDocumentStatusInfo } from "./documents/lib";
 
 interface DocumentDetailScreenProps {
   documentId: string;
   inline?: boolean;
+  // Eski çağrılar bozulmasın diye duruyor; ekran artık sadece firma görünümü.
+  // (Admin belge detayı AdminDocumentDetailScreen ile açılıyor.)
   variant?: "admin" | "company";
   isClosed?: boolean;
 }
@@ -33,7 +36,20 @@ type ApiDocumentDetail = {
   extensionDate: string | null;
   supportClass: string | null;
   isActive?: boolean;
-  status?: "OPEN" | "CLOSED" | "CANCELLED";
+  status?: string;
+
+  // Backend'in hesapladığı durum (liste ekranıyla aynı kaynak)
+  displayStatus?:
+    | "CLOSED"
+    | "CANCELLED"
+    | "INACTIVE"
+    | "AUTHORIZATION_EXPIRED"
+    | "CLOSURE_ELIGIBLE"
+    | "EXTENSION_ELIGIBLE"
+    | "EXPIRED"
+    | "EXPIRING"
+    | "ACTIVE";
+  effectiveEndDate?: string | null;
 
   company: {
     id?: number;
@@ -50,97 +66,68 @@ type DocumentDetailResponse = {
   data: ApiDocumentDetail;
 };
 
-function formatDate(date: string | null): string {
-  if (!date) {
-    return "-";
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("tr-TR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsedDate);
-}
-
-function getDocumentStatus(document: ApiDocumentDetail) {
-  if (document.status === "CANCELLED") {
-    return {
-      label: "İptal",
-      description: "Belge iptal edilmiştir.",
-      dot: "bg-red-500",
-      className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
-    };
-  }
-
-  if (document.status === "CLOSED" || document.isActive === false) {
-    return {
-      label: "Kapalı",
-      description: "Belge kapatılmıştır.",
-      dot: "bg-blue-500",
-      className:
-        "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30",
-    };
-  }
-
-  const documentEndDate = document.documentEndDate;
-
-  if (!documentEndDate) {
-    return {
-      label: "Aktif",
-      description: "Belge aktif durumda.",
-      dot: "bg-emerald-500",
-      className:
-        "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-    };
-  }
-
-  const end = new Date(documentEndDate);
-  const today = new Date();
-
-  today.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-
-  const remainingDays = Math.ceil(
-    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (remainingDays < 0) {
-    return {
-      label: "Kapatma Yapılacak",
-      description: "Belge bitiş tarihi geçmiştir.",
-      dot: "bg-red-500",
-      className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
-    };
-  }
-
-  if (remainingDays <= 180) {
-    return {
-      label: "Süresi Yaklaşıyor",
-      description: `Belgenin bitmesine ${remainingDays} gün kaldı.`,
-      dot: "bg-amber-500",
-      className:
-        "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-    };
-  }
-
-  return {
-    label: "Aktif",
-    description: `Belgenin bitmesine ${remainingDays} gün kaldı.`,
+const STATUS_STYLES = {
+  green: {
     dot: "bg-emerald-500",
     className:
       "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-  };
+  },
+  amber: {
+    dot: "bg-amber-500",
+    className:
+      "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  },
+  red: {
+    dot: "bg-red-500",
+    className: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
+  },
+  blue: {
+    dot: "bg-blue-500",
+    className:
+      "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30",
+  },
+};
+
+// "YYYY-MM-DD" tarihine bugünden kaç gün kaldığını hesaplar
+function daysUntil(dateOnly: string | null | undefined): number | null {
+  if (!dateOnly) return null;
+
+  const [year, month, day] = dateOnly.slice(0, 10).split("-").map(Number);
+  if (!year || !month || !day) return null;
+
+  const target = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }
+
+// Durum etiketi ve rengi ortak fonksiyondan (documents/lib.ts) gelir;
+// burada sadece altındaki açıklama cümlesi eklenir.
+function getDocumentStatus(document: ApiDocumentDetail) {
+  const { key, label, tone } = getDocumentStatusInfo(document);
+
+  const remainingDays = daysUntil(document.effectiveEndDate);
+
+  const descriptions: Record<typeof key, string> = {
+    CANCELLED: "Belge iptal edilmiştir.",
+    CLOSED: "Belge kapatılmıştır.",
+    AUTHORIZATION_EXPIRED: "Firmanın yetki süresi dolmuştur.",
+    CLOSURE_ELIGIBLE: "Uzatılan süre sona ermiştir.",
+    EXTENSION_ELIGIBLE: "Süre uzatma müracaatı yapılabilir.",
+    EXPIRED: "Belge bitiş tarihi geçmiştir.",
+    ACTIVE:
+      remainingDays !== null && remainingDays >= 0
+        ? `Belgenin bitmesine ${remainingDays} gün kaldı.`
+        : "Belge aktif durumda.",
+  };
+
+  return { label, description: descriptions[key], ...STATUS_STYLES[tone] };
+}
+
 export function DocumentDetailScreen({
   documentId,
   inline = false,
-  variant = "company",
   isClosed = false,
 }: DocumentDetailScreenProps) {
   const [document, setDocument] = useState<ApiDocumentDetail | null>(null);
@@ -335,133 +322,6 @@ export function DocumentDetailScreen({
 
   const status = getDocumentStatus(document);
 
-  // ============================================
-  // ADMIN VARIANT
-  // ============================================
-  if (variant === "admin") {
-    return (
-      <div className="space-y-3">
-        {/* ADMIN BELGE DETAY SEKMELERİ */}
-        <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex w-full items-stretch overflow-x-auto scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border">
-            {[
-              "Belge Künye Bilgileri",
-              "Yatırım Cinsi",
-              "Ürün Bilgileri",
-              "Yerli Liste",
-              "İthal Liste",
-              "Finansal Bilgiler",
-              "Özel Şartlar",
-              "Destek Unsurları",
-            ].map((item, index) => (
-              <button
-                key={item}
-                type="button"
-                className={`shrink-0 whitespace-nowrap border-r border-border px-3 py-2.5 text-[11px] font-semibold transition last:border-r-0 sm:flex-1 sm:px-2 ${
-                  index === 0
-                    ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
-                    : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-          {/* Sağ tarafta "daha var" gölgesi — mobilde kullanıcıya kaydırılabilir olduğunu belli eder */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent sm:hidden"
-          />
-        </div>
-        {/* ÜST ŞERİT */}
-        <section className="flex flex-col justify-between gap-2 lg:flex-row lg:items-center">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-200/60 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-              <FileText size={16} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Belge Detayı
-              </p>
-              <h2 className="text-base font-extrabold tracking-tight text-foreground">
-                {document.documentNumber ?? "-"}
-                <span className="ml-2 text-xs font-medium text-muted-foreground">
-                  Numaralı Belge
-                </span>
-              </h2>
-            </div>
-          </div>
-
-          <div
-            className={`inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 ${status.className}`}
-          >
-            <span
-              className={`h-1.5 w-1.5 shrink-0 rounded-full ${status.dot}`}
-            />
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              {status.label}
-            </span>
-          </div>
-        </section>
-
-        {/* KPI ŞERİDİ */}
-        <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex items-center justify-between border-b border-border bg-muted/60 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground/80">
-                Belge Bilgileri
-              </h3>
-            </div>
-
-            <span className="text-[10px] text-muted-foreground">
-              Resmi kayıtlardan alınmıştır
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <tbody className="divide-y divide-border">
-                <OperationRow
-                  label1="Belge ID"
-                  value1={String(document.externalDocumentId)}
-                  label2="Belge No"
-                  value2={document.documentNumber ?? "-"}
-                />
-
-                <OperationRow
-                  label1="Başlangıç Tarihi"
-                  value1={formatDate(document.documentStartDate)}
-                  label2="Bitiş Tarihi"
-                  value2={formatDate(document.documentEndDate)}
-                />
-
-                <OperationRow
-                  label1="Süre Uzatım Tarihi"
-                  value1={formatDate(document.extensionDate)}
-                  label2="Destekleme Sınıfı"
-                  value2={document.supportClass ?? "-"}
-                />
-
-                <OperationRow
-                  label1="Yetki Bitiş Tarihi"
-                  value1={formatDate(document.company.authorizationEndDate)}
-                  label2="Belge Durumu"
-                  value2={status.label}
-                />
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  // ============================================
-  // COMPANY VARIANT (mevcut görünüm)
-  // ============================================
-
   const today = new Date().toLocaleDateString("tr-TR", {
     day: "2-digit",
     month: "2-digit",
@@ -555,7 +415,7 @@ export function DocumentDetailScreen({
 
       {/* Bilgi kartları — mobilde 2 sütun, tablette 2, xl'de 4 */}
       <div>
-        <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
           <InfoCard
             label="Belge Numarası"
             value={document.documentNumber ?? "-"}
@@ -572,6 +432,13 @@ export function DocumentDetailScreen({
             label="Belge Bitiş"
             value={formatDate(document.documentEndDate)}
             icon={<Clock3 size={16} className="sm:h-[19px] sm:w-[19px]" />}
+          />
+          <InfoCard
+            label="Süre Uzatım"
+            value={formatDate(document.extensionDate)}
+            icon={
+              <CalendarClock size={16} className="sm:h-[19px] sm:w-[19px]" />
+            }
           />
           <InfoCard
             label="Destekleme Sınıfı"
@@ -687,11 +554,6 @@ export function DocumentDetailScreen({
                   <FormRow label="Firma Ünvanı" value={document.company.name} />
 
                   <FormRow
-                    label="İşlem Durumu"
-                    value={document.company.processStatus ?? "-"}
-                  />
-
-                  <FormRow
                     label="Yetki Bitiş Tarihi"
                     value={formatDate(document.company.authorizationEndDate)}
                   />
@@ -760,114 +622,5 @@ function FormRow({ label, value }: FormRowProps) {
         {value}
       </dd>
     </div>
-  );
-}
-
-/* ---- ADMIN VARIANT ALT BİLEŞENLERİ ---- */
-
-function KpiTile({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-sm ${
-        accent
-          ? "border-red-200/60 bg-red-50/40 dark:border-red-500/20 dark:bg-red-500/10"
-          : "border-border bg-card"
-      }`}
-    >
-      <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-          accent
-            ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300"
-            : "bg-muted text-muted-foreground"
-        }`}
-      >
-        {icon}
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-        <p className="truncate text-sm font-bold text-foreground">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function FieldGrid({
-  items,
-}: {
-  groupLabel?: string;
-  items: {
-    label: string;
-    value?: string | null;
-    mono?: boolean;
-  }[];
-}) {
-  return (
-    <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-3 md:divide-x md:divide-y-0">
-      {items.map((item) => {
-        const displayValue = item.value?.toString().trim() || "-";
-        const isEmpty = displayValue === "-";
-
-        return (
-          <div key={item.label} className="flex flex-col gap-1 px-5 py-3.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {item.label}
-            </span>
-
-            <span
-              className={`text-sm ${item.mono ? "font-mono" : ""} ${
-                isEmpty
-                  ? "text-muted-foreground/50"
-                  : "font-semibold text-foreground/90"
-              }`}
-            >
-              {displayValue}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-function OperationRow({
-  label1,
-  value1,
-  label2,
-  value2,
-}: {
-  label1: string;
-  value1: string;
-  label2: string;
-  value2: string;
-}) {
-  return (
-    <tr>
-      <th className="w-[16%] bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-        {label1}
-      </th>
-
-      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-foreground">
-        {value1}
-      </td>
-
-      <th className="w-[16%] border-l border-border bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-        {label2}
-      </th>
-
-      <td className="w-[34%] px-4 py-2 text-sm font-semibold text-foreground">
-        {value2}
-      </td>
-    </tr>
   );
 }

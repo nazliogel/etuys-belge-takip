@@ -3,632 +3,54 @@
 import {
   CalendarDays,
   CheckCircle2,
-  ChevronRight,
-  ChevronsUpDown,
-  ChevronUp,
-  ChevronDown,
   Filter,
   FileText,
   Search,
   ShieldCheck,
   ShieldAlert,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { apiFetch } from "@/lib/api";
 import {
   clearSelectedDocument,
   setSelectedDocument,
 } from "@/app/(dashboard)/_lib/selected-document";
 import { useRouter, useSearchParams } from "next/navigation";
-import { DocumentDetailScreen } from "./document-detail-screen";
-import { AdminDocumentDetailScreen } from "./admin-document-detail-screen";
-
-type DocumentStatus = "ACTIVE" | "EXPIRING" | "EXPIRED" | "INACTIVE";
-
-type StoredDocumentStatus = "OPEN" | "CLOSED" | "CANCELLED";
-
-/* =====================================================
-   SIRALAMA (SORTING) YARDIMCI TİPLERİ
-===================================================== */
-
-type SortDirection = "asc" | "desc";
-
-// Belge tablosu için sıralanabilir sütunlar
-type DocumentSortKey =
-  | "documentNumber"
-  | "companyName"
-  | "consultant"
-  | "documentStartDate"
-  | "documentEndDate"
-  | "extensionDate"
-  | "authorizationEndDate"
-  | "supportClass"
-  | "status";
-
-// Tarih sütunları: sıralama "bugüne en yakın -> en uzak" mantığıyla çalışır.
-const DATE_SORT_KEYS: ReadonlySet<DocumentSortKey> = new Set([
-  "documentStartDate",
-  "documentEndDate",
-  "extensionDate",
-  "authorizationEndDate",
-]);
-
-// Yetkilendirme (authorization-required) tablosu için sıralanabilir sütunlar
-type AuthSortKey =
-  | "externalCompanyId"
-  | "name"
-  | "taxNumber"
-  | "consultant"
-  | "authorizationEndDate"
-  | "authorizationStatus";
-
-type SortConfig<K extends string> = {
-  key: K;
-  direction: SortDirection;
-} | null;
-
-function toggleSort<K extends string>(
-  current: SortConfig<K>,
-  key: K,
-): SortConfig<K> {
-  if (current?.key === key) {
-    // asc -> desc -> sıralama yok
-    return current.direction === "asc" ? { key, direction: "desc" } : null;
-  }
-  return { key, direction: "asc" };
-}
-
-function compareValues(valueA: unknown, valueB: unknown): number {
-  if (typeof valueA === "number" && typeof valueB === "number") {
-    return valueA - valueB;
-  }
-  return String(valueA ?? "").localeCompare(String(valueB ?? ""), "tr-TR");
-}
-
-function SortIcon({ direction }: { direction?: SortDirection }) {
-  if (direction === "asc") return <ChevronUp size={12} />;
-  if (direction === "desc") return <ChevronDown size={12} />;
-  return <ChevronsUpDown size={12} className="opacity-40" />;
-}
-
-// Belirtilen durum değeri için Türkçe görünen etiket (filtre listesinde ve
-// StatusBadge'de kullanılan aynı sözlük).
-const STATUS_LABELS: Record<string, string> = {
-  ACTIVE: "Aktif",
-  EXPIRED: "Kapatma Yapılacak",
-  CLOSED: "Kapalı",
-  CANCELLED: "İptal",
-  INACTIVE: "Kapalı-İptal",
-  EXTENSION_ELIGIBLE: "Uzatma Yapılabilir",
-  CLOSURE_ELIGIBLE: "Kapatma Yapılacak",
-  AUTHORIZATION_EXPIRED: "Yetkisi Bitmiş",
-};
-
-type ApiDocument = {
-  id: number;
-  externalDocumentId: number;
-  documentNumber: string | null;
-  documentStartDate: string | null;
-  documentEndDate: string | null;
-  extensionDate: string | null;
-  supportClass: string | null;
-  isActive: boolean;
-  status: DocumentStatus;
-  documentStatus?: StoredDocumentStatus;
-
-  company?: {
-    id: number;
-    externalCompanyId: number;
-    name: string;
-    taxNumber: string;
-    consultant: string | null;
-    authorizationEndDate: string | null;
-  };
-};
-type CompanyApiDocument = Omit<
+import type {
   ApiDocument,
-  "status" | "documentStatus" | "company"
-> & {
-  status: StoredDocumentStatus;
-};
-type OpenDocumentTab = {
-  key: string;
-  id: string;
-  documentNumber: string | null;
-  isClosed: boolean;
-};
+  AuthSortKey,
+  DocumentSortKey,
+  DocumentStatus,
+  DocumentsScreenProps,
+  OpenDocumentTab,
+  SortConfig,
+  StoredDocumentStatus,
+} from "./documents/types";
+import {
+  compareValues,
+  getAuthSortValue,
+  getBadgeStatus,
+  getDocumentSortValue,
+  hasValidAuthorization,
+  isDocumentAuthorizationExpired,
+  STATUS_LABELS,
+  toggleSort,
+  useDebouncedValue,
+} from "./documents/lib";
+import {
+  AuthorizationWarning,
+  ColumnFilterDropdown,
+  OperationStat,
+  SortIcon,
+} from "./documents/components";
+import {
+  AuthorizationCompanyCard,
+  AuthorizationCompanyRow,
+  DocumentCard,
+  DocumentRow,
+  DocumentTabsPanel,
+} from "./documents/rows";
+import { useDocumentsData } from "./documents/use-documents-data";
 
-type AuthMeResponse = {
-  user: {
-    id: number;
-    role: "ADMIN" | "COMPANY";
-    companyId: number | null;
-  };
-};
-
-type CompanyDetailResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    id: number;
-    externalCompanyId: number;
-    name: string;
-    taxNumber: string;
-    consultant: string | null;
-    authorizationEndDate: string | null;
-    documents: CompanyApiDocument[];
-  };
-};
-
-type DocumentListResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiDocument[];
-    totalCount: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    summary: {
-      total: number;
-      active: number;
-      expiring: number;
-      expired: number;
-      inactive: number;
-    };
-  };
-};
-type ClosedDocumentListResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: Array<
-      Omit<ApiDocument, "status" | "isActive" | "documentStatus"> & {
-        status: "CLOSED" | "CANCELLED";
-        isActive?: boolean;
-      }
-    >;
-    totalCount: number;
-  };
-};
-
-type ClosedApiDocument = ClosedDocumentListResponse["data"]["items"][number];
-
-type ExtensionEligibleResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiDocument[];
-    totalCount: number;
-  };
-};
-
-type ClosureEligibleResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: ApiDocument[];
-    totalCount: number;
-  };
-};
-
-type AuthorizationStatus = "MISSING" | "EXPIRED" | "EXPIRING";
-
-type AuthorizationRequiredCompany = {
-  id: number;
-  externalCompanyId: number;
-  name: string;
-  taxNumber: string;
-  processStatus: string | null;
-  consultant: string | null;
-  consultantPhone: string | null;
-  consultantEmail: string | null;
-  isActive: boolean;
-  authorizationEndDate: string | null;
-  authorizationStatus: AuthorizationStatus;
-  documentCount: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type AuthorizationRequiredResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    items: AuthorizationRequiredCompany[];
-    totalCount: number;
-  };
-};
-
-interface DocumentsScreenProps {
-  companyId?: string;
-  selectedDocumentId?: string | null;
-  variant?: "admin" | "company";
-  onSelectDocument?: (
-    documentId: string,
-    documentNumber: string | null,
-  ) => void;
-}
-
-// `extraParams` ile (ör. search) filtrelenmiş kapalı/iptal belgelerin
-// TÜMÜ, sayfa sayfa gezilerek tek dizide toplanır. Böylece "İptal" gibi bir
-// filtre uygulandığında sadece o an ekranda olan 20 kayıt değil, eşleşen
-// TÜM kayıtlar arasında arama/filtreleme/sıralama yapılabilir.
-async function fetchAllClosedDocuments(
-  extraParams?: URLSearchParams,
-): Promise<ClosedApiDocument[]> {
-  const limit = 100;
-
-  const firstParams = new URLSearchParams(extraParams);
-  firstParams.set("page", "1");
-  firstParams.set("limit", String(limit));
-
-  const firstResponse = await apiFetch<ClosedDocumentListResponse>(
-    `/closed-documents?${firstParams.toString()}`,
-  );
-
-  const totalPages = Math.ceil(firstResponse.data.totalCount / limit);
-
-  if (totalPages <= 1) {
-    return firstResponse.data.items;
-  }
-
-  const remainingResponses = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, index) => {
-      const pageParams = new URLSearchParams(extraParams);
-      pageParams.set("page", String(index + 2));
-      pageParams.set("limit", String(limit));
-      return apiFetch<ClosedDocumentListResponse>(
-        `/closed-documents?${pageParams.toString()}`,
-      );
-    }),
-  );
-
-  return [
-    ...firstResponse.data.items,
-    ...remainingResponses.flatMap((response) => response.data.items),
-  ];
-}
-
-// Aynı mantık: /documents endpointinin TÜM sayfaları tek seferde çekilir.
-// `summary` ilk sayfadan alınır (backend zaten toplam/aktif/vb. sayıları
-// sayfadan bağımsız, tüm filtrelenmiş küme için döndürür).
-async function fetchAllDocuments(baseParams: URLSearchParams): Promise<{
-  items: ApiDocument[];
-  summary: DocumentListResponse["data"]["summary"];
-}> {
-  const limit = 100;
-
-  const firstParams = new URLSearchParams(baseParams);
-  firstParams.set("page", "1");
-  firstParams.set("limit", String(limit));
-
-  const first = await apiFetch<DocumentListResponse>(
-    `/documents?${firstParams.toString()}`,
-  );
-
-  const totalPages = first.data.totalPages;
-
-  if (totalPages <= 1) {
-    return { items: first.data.items, summary: first.data.summary };
-  }
-
-  const rest = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, index) => {
-      const pageParams = new URLSearchParams(baseParams);
-      pageParams.set("page", String(index + 2));
-      pageParams.set("limit", String(limit));
-      return apiFetch<DocumentListResponse>(
-        `/documents?${pageParams.toString()}`,
-      );
-    }),
-  );
-
-  return {
-    items: [
-      ...first.data.items,
-      ...rest.flatMap((response) => response.data.items),
-    ],
-    summary: first.data.summary,
-  };
-}
-function formatDate(date: string | null): string {
-  if (!date) return "-";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("tr-TR").format(parsedDate);
-}
-function hasValidAuthorization(authorizationEndDate: string | null): boolean {
-  if (!authorizationEndDate) {
-    return false;
-  }
-
-  const endDate = new Date(authorizationEndDate);
-  const today = new Date();
-
-  if (Number.isNaN(endDate.getTime())) {
-    return false;
-  }
-
-  endDate.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  return endDate.getTime() >= today.getTime();
-}
-
-function calculateDocumentStatus(document: {
-  isActive: boolean;
-  documentEndDate: string | null;
-  extensionDate?: string | null;
-  status?: string;
-}): DocumentStatus {
-  if (
-    !document.isActive ||
-    document.status === "CLOSED" ||
-    document.status === "CANCELLED"
-  ) {
-    return "INACTIVE";
-  }
-
-  if (!document.documentEndDate) {
-    return "ACTIVE";
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const documentEndDate = new Date(document.documentEndDate);
-  documentEndDate.setHours(0, 0, 0, 0);
-
-  let effectiveEndDate = documentEndDate;
-
-  if (document.extensionDate) {
-    const extensionDate = new Date(document.extensionDate);
-    extensionDate.setHours(0, 0, 0, 0);
-
-    // Tarihler farklıysa süre uzatımı yapılmıştır.
-    if (
-      !Number.isNaN(extensionDate.getTime()) &&
-      extensionDate.getTime() !== documentEndDate.getTime()
-    ) {
-      effectiveEndDate = extensionDate;
-    }
-  }
-
-  if (effectiveEndDate < today) {
-    return "EXPIRED";
-  }
-
-  return "ACTIVE";
-}
-
-// Belgenin, o an tablo satırında gösterilen "gerçek" durum değeri. Filtre ve
-// StatusBadge aynı değeri kullanır (INACTIVE ise ham CLOSED/CANCELLED
-// değerine düşülür).
-function getDisplayStatus(doc: ApiDocument): string {
-  return doc.status === "INACTIVE"
-    ? (doc.documentStatus ?? "INACTIVE")
-    : doc.status;
-}
-
-// Tabloda satırın rozetinde YAZAN metnin karşılığı — filtre de bunu kullanır.
-// Öncelik sırası: Kapalı/İptal -> Yetkisi Bitmiş -> Kapatma Yapılacak ->
-// Uzatma Yapılabilir -> normal durum. Hem masaüstü tablo hem mobil kart
-// hem de filtre AYNI fonksiyonu kullanır; böylece ekranda görünen rozet ile
-// filtre sonucu her zaman birbirini tutar.
-function getBadgeStatus(
-  doc: ApiDocument,
-  opts: {
-    isClosureEligibleView: boolean;
-    isExtensionEligibleView: boolean;
-    closureEligibleIds: Set<number>;
-    extensionEligibleIds: Set<number>;
-    authorizationExpired: boolean;
-  },
-): string {
-  const isClosedOrCancelled =
-    doc.documentStatus === "CLOSED" || doc.documentStatus === "CANCELLED";
-
-  if (isClosedOrCancelled) return getDisplayStatus(doc);
-
-  if (opts.authorizationExpired) return "AUTHORIZATION_EXPIRED";
-
-  if (opts.isClosureEligibleView || opts.closureEligibleIds.has(doc.id))
-    return "CLOSURE_ELIGIBLE";
-  if (opts.isExtensionEligibleView || opts.extensionEligibleIds.has(doc.id))
-    return "EXTENSION_ELIGIBLE";
-  return getDisplayStatus(doc);
-}
-
-// Belge tablosu satırından, verilen sütun anahtarına göre karşılaştırılabilir
-// bir değer üretir (string ya da number). Tarih sütunlarında değer, bugüne
-// olan MUTLAK uzaklık (ms) olarak döner; böylece "asc" yönü bugüne en yakın
-// tarihi en üste, "desc" yönü en uzak tarihi en üste getirir.
-function getDocumentSortValue(
-  doc: ApiDocument,
-  key: DocumentSortKey,
-): string | number {
-  if (DATE_SORT_KEYS.has(key)) {
-    const rawDate =
-      key === "documentStartDate"
-        ? doc.documentStartDate
-        : key === "documentEndDate"
-          ? doc.documentEndDate
-          : key === "extensionDate"
-            ? doc.extensionDate
-            : (doc.company?.authorizationEndDate ?? null);
-
-    if (!rawDate) return Infinity; // tarihi olmayanlar en sona
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const target = new Date(rawDate);
-    target.setHours(0, 0, 0, 0);
-
-    if (Number.isNaN(target.getTime())) return Infinity;
-
-    return Math.abs(target.getTime() - today.getTime());
-  }
-
-  switch (key) {
-    case "documentNumber":
-      return doc.documentNumber ?? "";
-    case "companyName":
-      return doc.company?.name ?? "";
-    case "consultant":
-      return doc.company?.consultant ?? "";
-    case "supportClass":
-      return doc.supportClass ?? "";
-    case "status":
-      return getDisplayStatus(doc);
-    default:
-      return "";
-  }
-}
-
-function getAuthSortValue(
-  company: AuthorizationRequiredCompany,
-  key: AuthSortKey,
-): string | number {
-  switch (key) {
-    case "externalCompanyId":
-      return company.externalCompanyId;
-    case "name":
-      return company.name ?? "";
-    case "taxNumber":
-      return company.taxNumber ?? "";
-    case "consultant":
-      return company.consultant ?? "";
-    case "authorizationEndDate": {
-      if (!company.authorizationEndDate) return Infinity;
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const target = new Date(company.authorizationEndDate);
-      target.setHours(0, 0, 0, 0);
-
-      if (Number.isNaN(target.getTime())) return Infinity;
-
-      // Yetkilendirme bitişi de bugüne en yakından en uzağa sıralanır.
-      return Math.abs(target.getTime() - today.getTime());
-    }
-    case "authorizationStatus":
-      return company.authorizationStatus ?? "";
-    default:
-      return "";
-  }
-}
-
-/* =====================================================
-   SÜTUN FİLTRE (checkbox) DROPDOWN'I
-   Uzman / Destekleme Sınıfı / Durum gibi az sayıda farklı
-   değer alabilen sütunlarda, "sırala" yerine "filtrele"
-   kullanımı çok daha kullanışlı: kullanıcı istediği kadar
-   değeri aynı anda seçip listeyi daraltabiliyor.
-===================================================== */
-function ColumnFilterDropdown({
-  title,
-  options,
-  selected,
-  onToggle,
-  onClear,
-  onClose,
-  anchorRect,
-}: {
-  title: string;
-  options: { value: string; label: string }[];
-  selected: Set<string>;
-  onToggle: (value: string) => void;
-  onClear: () => void;
-  onClose: () => void;
-  anchorRect: DOMRect | null;
-}) {
-  if (!anchorRect || typeof document === "undefined") {
-    return null;
-  }
-
-  const dropdownWidth = 224;
-
-  const left = Math.max(
-    8,
-    Math.min(
-      anchorRect.left + anchorRect.width / 2 - dropdownWidth / 2,
-      window.innerWidth - dropdownWidth - 8,
-    ),
-  );
-
-  return createPortal(
-    <div
-      data-column-filter
-      className="fixed z-[9999] w-56 rounded-xl border border-border bg-popover p-2 text-left normal-case text-popover-foreground shadow-xl"
-      style={{
-        top: anchorRect.bottom + 6,
-        left,
-      }}
-    >
-      <div className="mb-1.5 flex items-center justify-between px-1">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </span>
-
-        <div className="flex items-center gap-2">
-          {selected.size > 0 && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-[11px] font-semibold text-red-600 hover:underline dark:text-red-400"
-            >
-              Temizle
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label="Filtreyi kapat"
-          >
-            <X size={13} />
-          </button>
-        </div>
-      </div>
-
-      <div className="max-h-64 space-y-0.5 overflow-y-auto">
-        {options.length === 0 ? (
-          <p className="px-1.5 py-1 text-xs font-medium text-muted-foreground">
-            Seçenek yok
-          </p>
-        ) : (
-          options.map((option) => (
-            <label
-              key={option.value}
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-            >
-              <input
-                type="checkbox"
-                checked={selected.has(option.value)}
-                onChange={() => onToggle(option.value)}
-                className="h-3.5 w-3.5 shrink-0 rounded border-border text-red-600 focus:ring-2 focus:ring-red-500/20"
-              />
-
-              <span className="truncate">{option.label}</span>
-            </label>
-          ))
-        )}
-      </div>
-    </div>,
-    document.body,
-  );
-}
 export function DocumentsScreen({
   companyId,
   variant = "company",
@@ -657,46 +79,45 @@ export function DocumentsScreen({
   const [activeDocumentKey, setActiveDocumentKey] = useState<string | null>(
     null,
   );
-  const [totalPages, setTotalPages] = useState(1);
   const [showCompanyExtensionEligible, setShowCompanyExtensionEligible] =
     useState(false);
-  const [closedDocumentCount, setClosedDocumentCount] = useState(0);
-  const [extensionEligibleCount, setExtensionEligibleCount] = useState(0);
-  const [closureEligibleCount, setClosureEligibleCount] = useState(0);
-
-  const [authorizationRequiredCount, setAuthorizationRequiredCount] =
-    useState(0);
-
-  const [authorizationRequiredCompanies, setAuthorizationRequiredCompanies] =
-    useState<AuthorizationRequiredCompany[]>([]);
-  const [companyExtensionEligibleIds, setCompanyExtensionEligibleIds] =
-    useState<Set<number>>(new Set());
   const [showCompanyClosureEligible, setShowCompanyClosureEligible] =
     useState(false);
-
-  const [companyClosureEligibleIds, setCompanyClosureEligibleIds] = useState<
-    Set<number>
-  >(new Set());
-  const [summary, setSummary] = useState({
-    total: 0,
-    active: 0,
-    expiring: 0,
-    expired: 0,
-    inactive: 0,
-  });
-  const [documents, setDocuments] = useState<ApiDocument[]>([]);
 
   const [companyStatusFilter, setCompanyStatusFilter] =
     useState<DocumentStatus | null>(null);
 
-  const [authorizationEndDate, setAuthorizationEndDate] = useState<
-    string | null
-  >(null);
-
-  const [isAuthorizationLoading, setIsAuthorizationLoading] = useState(
-    variant === "company",
-  );
   const [searchQuery, setSearchQuery] = useState("");
+
+  const debouncedSearch = useDebouncedValue(searchQuery.trim(), 300);
+
+  // Veri: belgeler, kart sayıları ve firma yetkisi (documents/use-documents-data.ts)
+  const {
+    documents,
+    totalPages,
+    isLoading,
+    loadError,
+    summary,
+    closedDocumentCount,
+    extensionEligibleCount,
+    closureEligibleCount,
+    authorizationRequiredCount,
+    authorizationRequiredCompanies,
+    companyExtensionEligibleIds,
+    companyClosureEligibleIds,
+    authorizationEndDate,
+    isAuthorizationLoading,
+    authorizationAllowsFetch,
+  } = useDocumentsData({
+    companyId,
+    variant,
+    currentPage,
+    status,
+    debouncedSearch,
+    isExtensionEligibleView,
+    isClosureEligibleView,
+    isAuthorizationRequiredView,
+  });
 
   const [openFilterColumn, setOpenFilterColumn] = useState<
     "consultant" | "supportClass" | "status" | null
@@ -796,8 +217,6 @@ export function DocumentsScreen({
     });
   }, [visibleAuthorizationCompaniesUnsorted, authSortConfig]);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const documentTabsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -812,588 +231,23 @@ export function DocumentsScreen({
     setSupportClassFilter(new Set());
   }, [requestedView, requestedStatus]);
 
+  // Firma yetkisi dolduysa açık belge sekmelerini kapat.
   useEffect(() => {
-    async function loadCompanyAuthorization() {
-      if (variant !== "company" || companyId) {
-        setIsAuthorizationLoading(false);
-        return;
-      }
+    if (isAuthorizationLoading || authorizationAllowsFetch) return;
 
-      setIsAuthorizationLoading(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenDocuments([]);
+    setActiveDocumentKey(null);
+    clearSelectedDocument();
+  }, [authorizationAllowsFetch, isAuthorizationLoading]);
 
-      try {
-        const authResponse = await apiFetch<AuthMeResponse>("/auth/me");
-        const userCompanyId = authResponse.user.companyId;
-
-        if (!userCompanyId) {
-          setAuthorizationEndDate(null);
-          return;
-        }
-
-        const companyResponse = await apiFetch<CompanyDetailResponse>(
-          `/companies/${userCompanyId}`,
-        );
-
-        setAuthorizationEndDate(
-          companyResponse.data.authorizationEndDate ?? null,
-        );
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Yetkilendirme bilgisi alınamadı.";
-
-        if (message.includes("yetki süresi dolmuştur")) {
-          setAuthorizationEndDate(null);
-          return;
-        }
-
-        console.error("Firma yetkilendirmesi alınamadı:", error);
-        setAuthorizationEndDate(null);
-      } finally {
-        setIsAuthorizationLoading(false);
-      }
-    }
-
-    void loadCompanyAuthorization();
-  }, [companyId, variant]);
-  useEffect(() => {
-    async function loadDocuments() {
-      // Firma yetkisi kontrol edilirken belge isteği gönderme.
-      if (variant === "company" && !companyId && isAuthorizationLoading) {
-        return;
-      }
-
-      setIsLoading(true);
-      setLoadError("");
-
-      // Firma yetkisi yoksa belge API'lerini hiç çağırma.
-      if (
-        variant === "company" &&
-        !companyId &&
-        !hasValidAuthorization(authorizationEndDate)
-      ) {
-        setDocuments([]);
-        setOpenDocuments([]);
-        setActiveDocumentKey(null);
-        clearSelectedDocument();
-        setSummary({
-          total: 0,
-          active: 0,
-          expiring: 0,
-          expired: 0,
-          inactive: 0,
-        });
-        setClosedDocumentCount(0);
-        setExtensionEligibleCount(0);
-        setClosureEligibleCount(0);
-        setTotalPages(1);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        if (companyId) {
-          const [
-            response,
-            allClosedDocuments,
-            extensionResponse,
-            closureResponse,
-          ] = await Promise.all([
-            apiFetch<CompanyDetailResponse>(`/companies/${companyId}`),
-            fetchAllClosedDocuments(),
-            apiFetch<ExtensionEligibleResponse>(
-              "/documents/extension-eligible",
-            ),
-            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-          ]);
-          setAuthorizationEndDate(response.data.authorizationEndDate ?? null);
-
-          const openDocuments: ApiDocument[] = response.data.documents.map(
-            (document) => ({
-              ...document,
-              documentStatus: document.status,
-              status: calculateDocumentStatus(document),
-              company: {
-                id: response.data.id,
-                externalCompanyId: response.data.externalCompanyId,
-                name: response.data.name,
-                taxNumber: response.data.taxNumber,
-                consultant: response.data.consultant,
-                authorizationEndDate:
-                  response.data.authorizationEndDate ?? null,
-              },
-            }),
-          );
-
-          const companyClosedDocuments: ApiDocument[] = allClosedDocuments
-            .filter((document) => document.company?.id === response.data.id)
-            .map((document) => ({
-              ...document,
-              isActive: false,
-              status: "INACTIVE",
-              documentStatus: document.status,
-              company: {
-                id: response.data.id,
-                externalCompanyId: response.data.externalCompanyId,
-                name: response.data.name,
-                taxNumber: response.data.taxNumber,
-                consultant: response.data.consultant,
-                authorizationEndDate:
-                  response.data.authorizationEndDate ?? null,
-              },
-            }));
-
-          /*
-           * Aynı belge hem açık listede hem kapalı listede bulunuyorsa
-           * kapalı/iptal kaydı esas alınır.
-           */
-          const documentsByExternalId = new Map<number, ApiDocument>();
-
-          openDocuments.forEach((document) => {
-            documentsByExternalId.set(document.externalDocumentId, document);
-          });
-
-          companyClosedDocuments.forEach((document) => {
-            documentsByExternalId.set(document.externalDocumentId, document);
-          });
-
-          const mappedDocuments = Array.from(documentsByExternalId.values());
-          const companyAuthorizationIsValid = hasValidAuthorization(
-            response.data.authorizationEndDate ?? null,
-          );
-          const companyExtensionEligibleDocuments =
-            extensionResponse.data.items.filter(
-              (document) => document.company?.id === response.data.id,
-            );
-
-          const eligibleDocumentIds = new Set(
-            companyExtensionEligibleDocuments.map((document) => document.id),
-          );
-          const companyClosureEligibleDocuments =
-            closureResponse.data.items.filter(
-              (document) => document.company?.id === response.data.id,
-            );
-
-          const closureEligibleDocumentIds = new Set(
-            companyClosureEligibleDocuments.map((document) => document.id),
-          );
-          setDocuments(mappedDocuments);
-          setExtensionEligibleCount(
-            companyAuthorizationIsValid
-              ? companyExtensionEligibleDocuments.length
-              : 0,
-          );
-
-          setCompanyExtensionEligibleIds(
-            companyAuthorizationIsValid ? eligibleDocumentIds : new Set(),
-          );
-
-          setClosureEligibleCount(
-            companyAuthorizationIsValid
-              ? companyClosureEligibleDocuments.length
-              : 0,
-          );
-
-          setCompanyClosureEligibleIds(
-            companyAuthorizationIsValid
-              ? closureEligibleDocumentIds
-              : new Set(),
-          );
-
-          // Uzatma/kapatma yapılabilir olarak işaretlenmiş belgeler kendi
-          // kartlarında (Süre Uzatma / Kapatma Yapılacaklar) sayıldığı için
-          // "Aktif" sayısına ayrıca dahil edilmiyor; aksi halde bir belge aynı
-          // anda hem Aktif hem Uzatma Yapılabilir kartında görünüyordu.
-          const activeMappedDocuments = companyAuthorizationIsValid
-            ? mappedDocuments.filter(
-                (document) =>
-                  document.status !== "INACTIVE" &&
-                  !eligibleDocumentIds.has(document.id) &&
-                  !closureEligibleDocumentIds.has(document.id),
-              )
-            : [];
-
-          setSummary({
-            // Toplam belge sayısı, yetki durumundan bağımsız olarak firmanın
-            // sahip olduğu TÜM belgeleri sayar (açık + kapalı/iptal).
-            total: mappedDocuments.length,
-
-            active: activeMappedDocuments.length,
-
-            expiring: companyAuthorizationIsValid
-              ? mappedDocuments.filter(
-                  (document) =>
-                    document.status === "EXPIRING" &&
-                    !eligibleDocumentIds.has(document.id) &&
-                    !closureEligibleDocumentIds.has(document.id),
-                ).length
-              : 0,
-
-            expired: companyAuthorizationIsValid
-              ? mappedDocuments.filter(
-                  (document) =>
-                    document.status === "EXPIRED" &&
-                    !eligibleDocumentIds.has(document.id) &&
-                    !closureEligibleDocumentIds.has(document.id),
-                ).length
-              : 0,
-
-            // Kapalı/İptal belgeler yalnızca kendi kategorisinde kalır.
-            inactive: mappedDocuments.filter(
-              (document) => document.status === "INACTIVE",
-            ).length,
-          });
-
-          setClosedDocumentCount(companyClosedDocuments.length);
-          setTotalPages(1);
-          setAuthorizationEndDate(response.data.authorizationEndDate);
-
-          return;
-        }
-
-        const params = new URLSearchParams({
-          page: String(currentPage),
-          limit: "20",
-        });
-
-        if (searchQuery.trim()) {
-          params.set("search", searchQuery.trim());
-        }
-        if (isAuthorizationRequiredView) {
-          const [
-            authorizationResponse,
-            summaryResponse,
-            closedResponse,
-            extensionResponse,
-            closureResponse,
-          ] = await Promise.all([
-            apiFetch<AuthorizationRequiredResponse>(
-              "/companies/authorization-required",
-            ),
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-            apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
-            ),
-            apiFetch<ExtensionEligibleResponse>(
-              "/documents/extension-eligible",
-            ),
-            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-          ]);
-
-          setAuthorizationRequiredCompanies(authorizationResponse.data.items);
-          setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
-
-          setSummary(summaryResponse.data.summary);
-          setClosedDocumentCount(closedResponse.data.totalCount);
-          setExtensionEligibleCount(extensionResponse.data.totalCount);
-          setCompanyExtensionEligibleIds(
-            new Set(
-              extensionResponse.data.items.map((document) => document.id),
-            ),
-          );
-
-          setClosureEligibleCount(closureResponse.data.totalCount);
-          setCompanyClosureEligibleIds(
-            new Set(closureResponse.data.items.map((document) => document.id)),
-          );
-
-          setDocuments([]);
-          setTotalPages(1);
-          setAuthorizationEndDate(null);
-
-          return;
-        }
-        if (isExtensionEligibleView) {
-          const [
-            extensionResponse,
-            summaryResponse,
-            closedResponse,
-            closureResponse,
-            authorizationResponse,
-          ] = await Promise.all([
-            apiFetch<ExtensionEligibleResponse>(
-              "/documents/extension-eligible",
-            ),
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-            apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
-            ),
-            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-            apiFetch<AuthorizationRequiredResponse>(
-              "/companies/authorization-required",
-            ),
-          ]);
-
-          const normalizedSearch = searchQuery
-            .trim()
-            .toLocaleLowerCase("tr-TR");
-
-          const eligibleDocuments = extensionResponse.data.items
-            .filter((document) => {
-              if (!normalizedSearch) return true;
-              return [
-                document.documentNumber,
-                document.company?.name,
-                document.company?.taxNumber,
-              ].some((value) =>
-                value?.toLocaleLowerCase("tr-TR").includes(normalizedSearch),
-              );
-            })
-            .map((document) => ({
-              ...document,
-              status: calculateDocumentStatus(document),
-            }));
-
-          setDocuments(eligibleDocuments);
-          setSummary(summaryResponse.data.summary);
-          setClosedDocumentCount(closedResponse.data.totalCount);
-          setExtensionEligibleCount(extensionResponse.data.totalCount);
-          setClosureEligibleCount(closureResponse.data.totalCount);
-          setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
-          setAuthorizationRequiredCompanies(authorizationResponse.data.items);
-          setTotalPages(1);
-          setAuthorizationEndDate(null);
-
-          return;
-        }
-        if (isClosureEligibleView) {
-          const [
-            closureResponse,
-            summaryResponse,
-            closedResponse,
-            extensionResponse,
-            authorizationResponse,
-          ] = await Promise.all([
-            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-            apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
-            ),
-            apiFetch<ExtensionEligibleResponse>(
-              "/documents/extension-eligible",
-            ),
-            apiFetch<AuthorizationRequiredResponse>(
-              "/companies/authorization-required",
-            ),
-          ]);
-
-          const normalizedSearch = searchQuery
-            .trim()
-            .toLocaleLowerCase("tr-TR");
-
-          const eligibleDocuments = closureResponse.data.items
-            .filter((document) => {
-              if (!normalizedSearch) return true;
-
-              return [
-                document.documentNumber,
-                document.company?.name,
-                document.company?.taxNumber,
-              ].some((value) =>
-                value?.toLocaleLowerCase("tr-TR").includes(normalizedSearch),
-              );
-            })
-            .map((document) => ({
-              ...document,
-              status: calculateDocumentStatus(document),
-            }));
-
-          setDocuments(eligibleDocuments);
-          setClosureEligibleCount(closureResponse.data.totalCount);
-          setSummary(summaryResponse.data.summary);
-          setClosedDocumentCount(closedResponse.data.totalCount);
-          setExtensionEligibleCount(extensionResponse.data.totalCount);
-          setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
-          setAuthorizationRequiredCompanies(authorizationResponse.data.items);
-          setTotalPages(1);
-          setAuthorizationEndDate(null);
-
-          return;
-        }
-        if (status === "INACTIVE") {
-          const [
-            allClosedDocuments,
-            summaryResponse,
-            closedResponse,
-            extensionResponse,
-            closureResponse,
-            authorizationResponse,
-          ] = await Promise.all([
-            fetchAllClosedDocuments(params),
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-            apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
-            ),
-            apiFetch<ExtensionEligibleResponse>(
-              "/documents/extension-eligible",
-            ),
-            apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-            apiFetch<AuthorizationRequiredResponse>(
-              "/companies/authorization-required",
-            ),
-          ]);
-
-          const mappedDocuments: ApiDocument[] = allClosedDocuments.map(
-            (document) => ({
-              ...document,
-              isActive: false,
-              status: "INACTIVE",
-              documentStatus: document.status,
-            }),
-          );
-
-          setDocuments(mappedDocuments);
-          setAuthorizationEndDate(null);
-
-          setSummary(summaryResponse.data.summary);
-          setClosedDocumentCount(closedResponse.data.totalCount); // ← ÖNEMLİ: mappedDocuments.length DEĞİL
-          setExtensionEligibleCount(extensionResponse.data.totalCount);
-          setClosureEligibleCount(closureResponse.data.totalCount);
-          setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
-          setAuthorizationRequiredCompanies(authorizationResponse.data.items);
-          return;
-        }
-        /*
-         * Aktif, süresi yaklaşan ve süresi dolmuş belgeler
-         * normal documents endpointinden geliyor.
-         */
-        if (status) {
-          params.set("status", status);
-        }
-
-        const isTotalView = !status;
-
-        const [
-          documentsData,
-          allClosedDocuments,
-          summaryResponse,
-          closedResponse,
-          extensionResponse,
-          closureResponse,
-          authorizationResponse,
-        ] = await Promise.all([
-          isTotalView
-            ? fetchAllDocuments(
-                new URLSearchParams(
-                  searchQuery.trim() ? { search: searchQuery.trim() } : {},
-                ),
-              )
-            : apiFetch<DocumentListResponse>(
-                `/documents?${params.toString()}`,
-              ).then((r) => ({
-                items: r.data.items,
-                summary: r.data.summary,
-                totalPages: r.data.totalPages,
-              })),
-
-          isTotalView
-            ? fetchAllClosedDocuments(
-                searchQuery.trim()
-                  ? new URLSearchParams({ search: searchQuery.trim() })
-                  : undefined,
-              )
-            : Promise.resolve<ClosedApiDocument[]>([]),
-
-          apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
-
-          apiFetch<ClosedDocumentListResponse>(
-            "/closed-documents?page=1&limit=1",
-          ),
-
-          apiFetch<ExtensionEligibleResponse>("/documents/extension-eligible"),
-
-          apiFetch<ClosureEligibleResponse>("/documents/closure-eligible"),
-
-          variant === "admin"
-            ? apiFetch<AuthorizationRequiredResponse>(
-                "/companies/authorization-required",
-              )
-            : Promise.resolve<AuthorizationRequiredResponse>({
-                success: true,
-                message: "",
-                data: { items: [], totalCount: 0 },
-              }),
-        ]);
-
-        setSummary(summaryResponse.data.summary);
-        setClosedDocumentCount(closedResponse.data.totalCount);
-        setExtensionEligibleCount(extensionResponse.data.totalCount);
-        setCompanyExtensionEligibleIds(
-          new Set(extensionResponse.data.items.map((document) => document.id)),
-        );
-        setClosureEligibleCount(closureResponse.data.totalCount);
-        setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
-        setAuthorizationRequiredCompanies(authorizationResponse.data.items);
-
-        if (isTotalView) {
-          const openItems = (
-            documentsData as { items: ApiDocument[] }
-          ).items.map((document) =>
-            document.status === "EXPIRING"
-              ? { ...document, status: "ACTIVE" as DocumentStatus }
-              : document,
-          );
-
-          const closedItems: ApiDocument[] = allClosedDocuments.map(
-            (document) => ({
-              ...document,
-              isActive: false,
-              status: "INACTIVE" as DocumentStatus,
-              documentStatus: document.status,
-            }),
-          );
-
-          const byId = new Map<number, ApiDocument>();
-          openItems.forEach((d) => byId.set(d.externalDocumentId, d));
-          closedItems.forEach((d) => byId.set(d.externalDocumentId, d));
-
-          setDocuments(Array.from(byId.values()));
-          setTotalPages(1);
-        } else {
-          const response = documentsData as unknown as {
-            items: ApiDocument[];
-            totalPages: number;
-          };
-          setTotalPages(response.totalPages);
-          setDocuments(
-            response.items.map((document) =>
-              document.status === "EXPIRING"
-                ? { ...document, status: "ACTIVE" }
-                : document,
-            ),
-          );
-        }
-      } catch (error) {
-        setDocuments([]);
-        setLoadError(
-          error instanceof Error ? error.message : "Belgeler yüklenemedi.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    void loadDocuments();
-  }, [
-    companyId,
-    currentPage,
-    status,
-    searchQuery,
-    isExtensionEligibleView,
-    isClosureEligibleView,
-    isAuthorizationRequiredView,
-    variant,
-    authorizationEndDate,
-    isAuthorizationLoading,
-  ]);
   useEffect(() => {
     // Liste/kategori değiştiğinde ilk sayfaya dön.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [
     status,
-    searchQuery,
+    debouncedSearch,
     isExtensionEligibleView,
     isClosureEligibleView,
     isAuthorizationRequiredView,
@@ -1472,6 +326,20 @@ export function DocumentsScreen({
     });
   }
 
+  // Listeden bir belgeye tıklanınca alttaki sekmelerde açılır.
+  function openDocument(doc: ApiDocument) {
+    handleOpenDocument(
+      String(doc.id),
+      doc.documentNumber,
+      doc.documentStatus ?? "OPEN",
+    );
+  }
+
+  // Yetkilendirme listesinden firma detayına gider.
+  function openCompany(id: number) {
+    router.push(`/companies?firmaSekme=${id}&firma=${id}&detay=1`);
+  }
+
   const authorizationIsValid = hasValidAuthorization(authorizationEndDate);
 
   // "Süresi yaklaşan" artık Aktif'e dahil olduğu için summary.expiring
@@ -1502,14 +370,11 @@ export function DocumentsScreen({
 
         if (!companyStatusFilter) return true;
 
-        // "Aktif" filtresine tıklanınca, kendi kartı olan uzatma/kapatma
-        // yapılabilir belgeler burada tekrar görünmesin.
-        const isEligibleElsewhere =
-          companyExtensionEligibleIds.has(document.id) ||
-          companyClosureEligibleIds.has(document.id);
-
-        if (companyStatusFilter === "ACTIVE" && isEligibleElsewhere) {
-          return false;
+        if (companyStatusFilter === "ACTIVE") {
+          return (
+            document.displayStatus === "ACTIVE" ||
+            document.displayStatus === "EXPIRING"
+          );
         }
 
         return document.status === companyStatusFilter;
@@ -1540,23 +405,37 @@ export function DocumentsScreen({
       .map((value) => ({ value, label: value }));
   }, [visibleDocumentsByStatusFilter]);
 
+  // Bir belgenin ekranda görünen durum rozeti. Mobil kart, masaüstü tablo,
+  // Durum filtresi seçenekleri ve filtrenin kendisi hep bu fonksiyonu kullanır;
+  // böylece rozet ile filtre her zaman aynı kalır.
+  function getRowBadge(doc: ApiDocument): string {
+    return getBadgeStatus(doc, {
+      isClosureEligibleView,
+      isExtensionEligibleView,
+      closureEligibleIds: companyClosureEligibleIds,
+      extensionEligibleIds: companyExtensionEligibleIds,
+      authorizationExpired: isDocumentAuthorizationExpired(doc, {
+        isCompanyDetail: Boolean(companyId),
+        isAuthorizationLoading,
+      }),
+    });
+  }
+
+  // Satır çizerken gereken her şey tek yerden: rozet, satır anahtarı, seçili mi.
+  function getRowView(doc: ApiDocument) {
+    const documentKey = `${doc.status === "INACTIVE" ? "closed" : "open"}-${doc.id}`;
+
+    return {
+      badgeStatus: getRowBadge(doc),
+      documentKey,
+      isSelected: activeDocumentKey === documentKey,
+    };
+  }
+
   const statusOptions = useMemo(() => {
     const values = new Set<string>();
     visibleDocumentsByStatusFilter.forEach((doc) => {
-      const authorizationExpired = !companyId
-        ? !hasValidAuthorization(doc.company?.authorizationEndDate ?? null)
-        : !isAuthorizationLoading &&
-          !hasValidAuthorization(doc.company?.authorizationEndDate ?? null);
-
-      values.add(
-        getBadgeStatus(doc, {
-          isClosureEligibleView,
-          isExtensionEligibleView,
-          closureEligibleIds: companyClosureEligibleIds,
-          extensionEligibleIds: companyExtensionEligibleIds,
-          authorizationExpired,
-        }),
-      );
+      values.add(getRowBadge(doc));
     });
 
     // Aynı etikete sahip birden fazla değer (EXPIRED + CLOSURE_ELIGIBLE ikisi
@@ -1576,21 +455,23 @@ export function DocumentsScreen({
       });
 
     return options;
-  }, [
-    visibleDocumentsByStatusFilter,
-    companyId,
-    isAuthorizationLoading,
-    isClosureEligibleView,
-    isExtensionEligibleView,
-    companyClosureEligibleIds,
-    companyExtensionEligibleIds,
-  ]);
+    // getRowBadge her render'da yeniden oluştuğu için buradaki hesap da
+    // her render'da yapılır (eskiden de öyleydi: liste her render'da yeni dizi).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleDocumentsByStatusFilter, getRowBadge]);
 
   // Uzman / Destekleme Sınıfı / Durum filtreleri uygulanır (hepsi VE
   // mantığıyla birleştirilir; bir filtre boşsa o sütun için hiçbir
   // kısıtlama uygulanmaz).
   const visibleDocumentsFiltered = visibleDocumentsByStatusFilter.filter(
     (doc) => {
+      // Firma detayında arama tarayıcıda yapılır (belge numarasına göre).
+      if (companyId && debouncedSearch) {
+        const query = debouncedSearch.toLocaleLowerCase("tr-TR");
+        if (!doc.documentNumber?.toLocaleLowerCase("tr-TR").includes(query)) {
+          return false;
+        }
+      }
       if (
         consultantFilter.size > 0 &&
         !consultantFilter.has(doc.company?.consultant ?? "-")
@@ -1606,18 +487,7 @@ export function DocumentsScreen({
       }
 
       if (statusFilter.size > 0) {
-        const authorizationExpired = !companyId
-          ? !hasValidAuthorization(doc.company?.authorizationEndDate ?? null)
-          : !isAuthorizationLoading &&
-            !hasValidAuthorization(doc.company?.authorizationEndDate ?? null);
-
-        const badge = getBadgeStatus(doc, {
-          isClosureEligibleView,
-          isExtensionEligibleView,
-          closureEligibleIds: companyClosureEligibleIds,
-          extensionEligibleIds: companyExtensionEligibleIds,
-          authorizationExpired,
-        });
+        const badge = getRowBadge(doc);
 
         // Aynı etikete sahip farklı değerler (EXPIRED / CLOSURE_ELIGIBLE) tek
         // bir seçenek gibi davransın: eşleşmeyi label bazlı yap.
@@ -1676,22 +546,6 @@ export function DocumentsScreen({
     ? Math.max(1, Math.ceil(visibleDocuments.length / CLOSED_PAGE_SIZE))
     : totalPages;
 
-  // Bir belge satırının (hem mobil kart hem masaüstü tablo) rozet değeri.
-  // Filtre ile aynı `getBadgeStatus` fonksiyonunu kullanır; böylece ekranda
-  // yazan rozet ile filtre seçenekleri her zaman aynı kalır.
-  function getRowBadgeStatus(
-    doc: ApiDocument,
-    authorizationExpired: boolean,
-  ): string {
-    return getBadgeStatus(doc, {
-      isClosureEligibleView,
-      isExtensionEligibleView,
-      closureEligibleIds: companyClosureEligibleIds,
-      extensionEligibleIds: companyExtensionEligibleIds,
-      authorizationExpired,
-    });
-  }
-
   // Belge tablosu başlıkları:
   // - `key` verilmişse sütun başlığına tıklanarak sıralanabilir.
   // - `filterType` verilmişse başlıktaki huni (funnel) ikonuyla checkbox'lı
@@ -1709,16 +563,18 @@ export function DocumentsScreen({
     label: string;
     key?: DocumentSortKey;
     filterType?: "consultant" | "supportClass" | "status";
+    // Küçük ekranda (1280px altı) gizlenen, daha az kritik sütunlar
+    wideOnly?: boolean;
   }[] = [
     { label: "Belge No", key: "documentNumber" },
     { label: "Firma", key: "companyName" },
     { label: "Uzman", key: "consultant", filterType: "consultant" },
-    { label: "Belge Başlangıç", key: "documentStartDate" },
-    { label: "Belge Bitiş", key: "documentEndDate" },
+    { label: "Başlangıç", key: "documentStartDate", wideOnly: true },
+    { label: "Bitiş", key: "documentEndDate" },
     { label: "Süre Uzatım", key: "extensionDate" },
-    { label: "Yetki Bitiş", key: "authorizationEndDate" },
+    { label: "Yetki Bitiş", key: "authorizationEndDate", wideOnly: true },
     {
-      label: "Destekleme Sınıfı",
+      label: "Destek Sınıfı",
       key: "supportClass",
       filterType: "supportClass",
     },
@@ -1939,7 +795,7 @@ export function DocumentsScreen({
         )}
 
         {/* MOBİL: KART GÖRÜNÜMÜ */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           {isLoading ? (
             <div className="px-4 py-10 text-center">
               <p className="text-sm font-medium text-muted-foreground">
@@ -1961,56 +817,11 @@ export function DocumentsScreen({
             ) : (
               <ul className="divide-y divide-border">
                 {visibleAuthorizationCompanies.map((company) => (
-                  <li key={company.id} className="px-3 py-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-foreground">
-                          {company.name}
-                        </p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">
-                          Firma ID: {company.externalCompanyId} • VKN:{" "}
-                          {company.taxNumber || "-"}
-                        </p>
-                      </div>
-                      <AuthorizationStatusBadge
-                        status={company.authorizationStatus}
-                      />
-                    </div>
-
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Uzman
-                        </p>
-                        <p className="mt-0.5 truncate font-medium text-foreground/80">
-                          {company.consultant ?? "-"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Yetki Bitiş
-                        </p>
-                        <p className="mt-0.5 font-medium text-foreground/80">
-                          {formatDate(company.authorizationEndDate)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-2.5 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          router.push(
-                            `/companies?firmaSekme=${company.id}&firma=${company.id}&detay=1`,
-                          )
-                        }
-                        className="inline-flex items-center gap-1 rounded-lg bg-muted px-2.5 py-1 text-[11px] font-semibold text-foreground/80 transition hover:bg-red-600 hover:text-white"
-                      >
-                        Firma Detayı
-                        <ChevronRight size={12} />
-                      </button>
-                    </div>
-                  </li>
+                  <AuthorizationCompanyCard
+                    key={company.id}
+                    company={company}
+                    onOpen={() => openCompany(company.id)}
+                  />
                 ))}
               </ul>
             )
@@ -2029,167 +840,17 @@ export function DocumentsScreen({
           ) : (
             <ul className="divide-y divide-border">
               {paginatedVisibleDocuments.map((doc) => {
-                const isClosedOrCancelled =
-                  doc.documentStatus === "CLOSED" ||
-                  doc.documentStatus === "CANCELLED";
-
-                const documentAuthorizationIsValid = hasValidAuthorization(
-                  doc.company?.authorizationEndDate ?? null,
-                );
-
-                // Firma detay sayfasında (companyId varken) yetkilendirme
-                // bilgisi ayrı bir istekle geldiği için isAuthorizationLoading
-                // ile flicker önleniyor. Genel listede (companyId yokken) her
-                // belge zaten kendi firmasının authorizationEndDate bilgisiyle
-                // geldiği için doğrudan o değer kullanılıyor.
-                const authorizationExpired =
-                  !isClosedOrCancelled &&
-                  (companyId
-                    ? !isAuthorizationLoading && !documentAuthorizationIsValid
-                    : !documentAuthorizationIsValid);
-
-                const badgeStatus = getRowBadgeStatus(
-                  doc,
-                  authorizationExpired,
-                );
-
-                const documentKey = `${
-                  doc.status === "INACTIVE" ? "closed" : "open"
-                }-${doc.id}`;
-
-                const isSelected = activeDocumentKey === documentKey;
+                const { badgeStatus, documentKey, isSelected } = getRowView(doc);
 
                 return (
-                  <li
+                  <DocumentCard
                     key={documentKey}
-                    className={
-                      isSelected ? "bg-red-500/5 dark:bg-red-500/10" : ""
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleOpenDocument(
-                          String(doc.id),
-                          doc.documentNumber,
-                          doc.documentStatus ?? "OPEN",
-                        )
-                      }
-                      className="w-full px-3 py-3 text-left transition active:bg-muted"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <div
-                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-                            isSelected
-                              ? "border-red-600 bg-red-600 text-white"
-                              : "border-border bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          <FileText size={16} />
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {doc.documentNumber ?? "-"}
-                          </p>
-                          <p className="font-mono text-[10px] text-muted-foreground">
-                            ID: {doc.externalDocumentId}
-                          </p>
-                        </div>
-
-                        <StatusBadge status={badgeStatus} />
-                      </div>
-
-                      {!companyId && doc.company && (
-                        <div className="mt-2 rounded-lg bg-muted/60 px-2 py-1.5">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                            Firma
-                          </p>
-                          <p className="truncate text-xs font-semibold text-foreground">
-                            {doc.company.name}
-                          </p>
-                          <p className="mt-0.5 text-[10px] text-muted-foreground">
-                            VKN: {doc.company.taxNumber ?? "-"}
-                            {doc.company.consultant && (
-                              <>
-                                {" • "}
-                                Uzman:{" "}
-                                <span className="font-semibold text-foreground/80">
-                                  {doc.company.consultant}
-                                </span>
-                              </>
-                            )}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Başlangıç
-                          </p>
-                          <p className="font-medium text-foreground/80">
-                            {formatDate(doc.documentStartDate)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Bitiş
-                          </p>
-                          <p className="font-medium text-foreground/80">
-                            {formatDate(doc.documentEndDate)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Süre Uzatım
-                          </p>
-                          <p className="font-medium text-foreground/80">
-                            {formatDate(doc.extensionDate)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Yetki Bitiş
-                          </p>
-                          <p className="font-medium text-foreground/80">
-                            {formatDate(
-                              doc.company?.authorizationEndDate ?? null,
-                            )}
-                          </p>
-                        </div>
-                        {doc.supportClass && (
-                          <div className="col-span-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              Destek Sınıfı
-                            </p>
-                            <p className="truncate font-medium text-foreground/80">
-                              {doc.supportClass}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-2.5 flex justify-end">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
-                            isSelected
-                              ? "bg-red-600 text-white"
-                              : "bg-muted text-foreground/80"
-                          }`}
-                        >
-                          {isSelected ? (
-                            "Görüntüleniyor"
-                          ) : (
-                            <>
-                              Görüntüle
-                              <ChevronRight size={12} />
-                            </>
-                          )}
-                        </span>
-                      </div>
-                    </button>
-                  </li>
+                    doc={doc}
+                    badgeStatus={badgeStatus}
+                    isSelected={isSelected}
+                    showCompany={!companyId}
+                    onOpen={() => openDocument(doc)}
+                  />
                 );
               })}
             </ul>
@@ -2197,12 +858,10 @@ export function DocumentsScreen({
         </div>
 
         {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
             <table
-              className={`w-full table-fixed text-left text-sm ${
-                isAuthorizationRequiredView ? "min-w-[900px]" : "min-w-[1250px]"
-              }`}
+              className="w-full table-fixed text-left text-sm"
             >
               {isAuthorizationRequiredView ? (
                 <colgroup>
@@ -2216,20 +875,21 @@ export function DocumentsScreen({
                 </colgroup>
               ) : (
                 <colgroup>
+                  {/* Toplam %100. Başlangıç ve Yetki Bitiş küçük ekranda gizlenir. */}
                   <col className="w-[9%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[10%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[11%]" />
+                  <col className="hidden w-[8%] xl:table-column" />
+                  <col className="w-[8%]" />
+                  <col className="w-[8%]" />
+                  <col className="hidden w-[8%] xl:table-column" />
+                  <col className="w-[9%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[9%]" />
                 </colgroup>
               )}
 
-              <thead className="sticky top-0 z-10 border-b border-border bg-muted/60 text-[11px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
+              <thead className="sticky top-0 z-10 border-b border-border bg-muted/60 text-[11px] font-bold uppercase tracking-wide text-muted-foreground backdrop-blur-sm">
                 <tr>
                   {(isAuthorizationRequiredView
                     ? authHeadings
@@ -2246,6 +906,10 @@ export function DocumentsScreen({
                         ).filterType
                       : undefined;
 
+                    const wideOnly =
+                      !isAuthorizationRequiredView &&
+                      (heading as { wideOnly?: boolean }).wideOnly;
+
                     const activeFilterCount = filterType
                       ? activeFilterCountByColumn[filterType]
                       : 0;
@@ -2253,7 +917,9 @@ export function DocumentsScreen({
                     return (
                       <th
                         key={heading.label}
-                        className="relative px-3 py-1.5 text-center"
+                        className={`relative px-2 py-2 text-center xl:whitespace-nowrap ${
+                          wideOnly ? "hidden xl:table-cell" : ""
+                        }`}
                       >
                         <span className="inline-flex items-center gap-1">
                           {heading.key ? (
@@ -2266,7 +932,7 @@ export function DocumentsScreen({
                                       heading.key as DocumentSortKey,
                                     )
                               }
-                              className="inline-flex items-center gap-1 uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                              className="inline-flex items-center gap-1 uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
                             >
                               {heading.label}
                               <SortIcon
@@ -2411,55 +1077,11 @@ export function DocumentsScreen({
                     </tr>
                   ) : (
                     visibleAuthorizationCompanies.map((company) => (
-                      <tr
+                      <AuthorizationCompanyRow
                         key={company.id}
-                        className="transition-colors hover:bg-muted/60"
-                      >
-                        <td className="px-3 py-2 text-center text-xs font-semibold text-foreground/80">
-                          {company.externalCompanyId}
-                        </td>
-                        <td className="max-w-xs px-3 py-2">
-                          <p
-                            title={company.name}
-                            className="truncate text-xs font-semibold text-foreground"
-                          >
-                            {company.name}
-                          </p>
-                        </td>
-                        <td className="px-3 py-2 text-center text-xs text-muted-foreground">
-                          {company.taxNumber || "-"}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <p
-                            title={company.consultant ?? undefined}
-                            className="truncate text-xs font-semibold text-foreground/80"
-                          >
-                            {company.consultant ?? "-"}
-                          </p>
-                        </td>
-                        <td className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                          {formatDate(company.authorizationEndDate)}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <AuthorizationStatusBadge
-                            status={company.authorizationStatus}
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              router.push(
-                                `/companies?firmaSekme=${company.id}&firma=${company.id}&detay=1`,
-                              )
-                            }
-                            className="inline-flex whitespace-nowrap items-center gap-1 rounded-lg bg-muted px-2.5 py-1 text-xs font-semibold text-foreground/80 transition hover:bg-red-600 hover:text-white"
-                          >
-                            Firma Detayı
-                            <ChevronRight size={14} />
-                          </button>
-                        </td>
-                      </tr>
+                        company={company}
+                        onOpen={() => openCompany(company.id)}
+                      />
                     ))
                   )
                 ) : paginatedVisibleDocuments.length === 0 ? (
@@ -2478,150 +1100,16 @@ export function DocumentsScreen({
                   </tr>
                 ) : (
                   paginatedVisibleDocuments.map((doc) => {
-                    const isClosedOrCancelled =
-                      doc.documentStatus === "CLOSED" ||
-                      doc.documentStatus === "CANCELLED";
-
-                    const documentAuthorizationIsValid = hasValidAuthorization(
-                      doc.company?.authorizationEndDate ?? null,
-                    );
-
-                    // Firma detay sayfasında (companyId varken) yetkilendirme
-                    // bilgisi ayrı bir istekle geldiği için isAuthorizationLoading
-                    // ile flicker önleniyor. Genel listede (companyId yokken) her
-                    // belge zaten kendi firmasının authorizationEndDate bilgisiyle
-                    // geldiği için doğrudan o değer kullanılıyor.
-                    const authorizationExpired =
-                      !isClosedOrCancelled &&
-                      (companyId
-                        ? !isAuthorizationLoading &&
-                          !documentAuthorizationIsValid
-                        : !documentAuthorizationIsValid);
-
-                    const badgeStatus = getRowBadgeStatus(
-                      doc,
-                      authorizationExpired,
-                    );
-
-                    const documentKey = `${
-                      doc.status === "INACTIVE" ? "closed" : "open"
-                    }-${doc.id}`;
-
-                    const isSelected = activeDocumentKey === documentKey;
+                    const { badgeStatus, documentKey, isSelected } = getRowView(doc);
 
                     return (
-                      <tr
+                      <DocumentRow
                         key={documentKey}
-                        className={`transition-colors ${
-                          isSelected
-                            ? "bg-red-500/5 dark:bg-red-500/10"
-                            : "hover:bg-muted/60"
-                        }`}
-                      >
-                        <td className="px-3 py-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-                                isSelected
-                                  ? "border-red-600 bg-red-600 text-white"
-                                  : "border-border bg-muted text-muted-foreground"
-                              }`}
-                            >
-                              <FileText size={16} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-foreground">
-                                {doc.documentNumber ?? "-"}
-                              </p>
-                              <p className="font-mono text-[11px] text-muted-foreground">
-                                ID: {doc.externalDocumentId}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Firma */}
-                        <td className="max-w-xs px-3 py-1.5">
-                          <p
-                            title={
-                              doc.company?.name ?? "Firma bilgisi bulunamadı"
-                            }
-                            className="truncate text-xs font-semibold text-foreground"
-                          >
-                            {doc.company?.name ?? "Firma bilgisi bulunamadı"}
-                          </p>
-                          <p className="mt-1 text-left text-[11px] text-muted-foreground">
-                            VKN: {doc.company?.taxNumber ?? "-"}
-                          </p>
-                        </td>
-
-                        {/* Uzman */}
-                        <td className="px-3 py-1.5 text-center">
-                          <p
-                            title={doc.company?.consultant ?? undefined}
-                            className="truncate text-xs font-semibold text-foreground/80"
-                          >
-                            {doc.company?.consultant ?? "-"}
-                          </p>
-                        </td>
-
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
-                          {formatDate(doc.documentStartDate)}
-                        </td>
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
-                          {formatDate(doc.documentEndDate)}
-                        </td>
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
-                          {formatDate(doc.extensionDate)}
-                        </td>
-
-                        {/* Yetki Bitiş */}
-                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
-                          {formatDate(
-                            doc.company?.authorizationEndDate ?? null,
-                          )}
-                        </td>
-
-                        <td className="px-3 py-1.5 text-center">
-                          <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold text-foreground/80">
-                            {doc.supportClass ?? "-"}
-                          </span>
-                        </td>
-
-                        {/* Durum */}
-                        <td className="px-3 py-1.5 text-center">
-                          <StatusBadge status={badgeStatus} />
-                        </td>
-
-                        <td className="px-3 py-1.5 text-center">
-                          <div className="flex items-center justify-center px-1">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleOpenDocument(
-                                  String(doc.id),
-                                  doc.documentNumber,
-                                  doc.documentStatus ?? "OPEN",
-                                )
-                              }
-                              className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                                isSelected
-                                  ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
-                                  : "bg-muted text-foreground/80 hover:bg-muted/80"
-                              }`}
-                            >
-                              {isSelected ? (
-                                "Görüntüleniyor"
-                              ) : (
-                                <>
-                                  Görüntüle
-                                  <ChevronRight size={14} />
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                        doc={doc}
+                        badgeStatus={badgeStatus}
+                        isSelected={isSelected}
+                        onOpen={() => openDocument(doc)}
+                      />
                     );
                   })
                 )}
@@ -2663,280 +1151,15 @@ export function DocumentsScreen({
       </section>
 
       {openDocuments.length > 0 && (
-        <section
-          ref={documentTabsRef}
-          className="scroll-mt-16 overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:scroll-mt-24 sm:rounded-2xl"
-        >
-          {/* BELGE TABLARI */}
-          <div className="flex gap-1 overflow-x-auto border-b border-border bg-muted/60 px-2 pt-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-2.5">
-            {openDocuments.map((document) => {
-              const isActive = activeDocumentKey === document.key;
-
-              const label = document.documentNumber
-                ? `${document.documentNumber} No'lu Belge`
-                : `Belge #${document.id}`;
-
-              return (
-                <div
-                  key={document.key}
-                  className={`flex shrink-0 items-center rounded-t-xl border border-b-0 ${
-                    isActive
-                      ? "border-border bg-card font-semibold text-red-600 dark:text-red-400"
-                      : "border-transparent bg-muted text-muted-foreground"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setActiveDocumentKey(document.key)}
-                    className="max-w-56 truncate px-2.5 py-1.5 text-xs"
-                  >
-                    {label}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCloseDocument(document.key)}
-                    aria-label="Sekmeyi kapat"
-                    className="mr-1 rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 sm:p-1"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/*
-            SEÇİLİ BELGENİN DETAYI
-            Açık tüm tab'lar burada aynı anda mount edilir; sadece aktif olan
-            görünür, diğerleri CSS ile gizlenir. Böylece tab değiştirirken
-            DocumentDetailScreen yeniden mount olup veriyi baştan çekmiyor
-            (tekrar "yükleniyor" durumuna düşüp içeriğin anlık kaybolması /
-            geri gelmesi - flicker - önlenmiş oluyor).
-          */}
-          <div className="min-w-0 p-2 sm:p-3">
-            {openDocuments.map((document) => (
-              <div
-                key={document.key}
-                className={
-                  document.key === activeDocumentKey ? "block" : "hidden"
-                }
-              >
-                {variant === "admin" ? (
-                  <AdminDocumentDetailScreen
-                    documentId={document.id}
-                    isClosed={document.isClosed}
-                  />
-                ) : (
-                  <DocumentDetailScreen
-                    documentId={document.id}
-                    variant={variant}
-                    isClosed={document.isClosed}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+        <DocumentTabsPanel
+          tabs={openDocuments}
+          activeKey={activeDocumentKey}
+          variant={variant}
+          sectionRef={documentTabsRef}
+          onActivate={setActiveDocumentKey}
+          onClose={handleCloseDocument}
+        />
       )}
     </div>
-  );
-}
-
-/* =====================================================
-   ALT BİLEŞENLER
-===================================================== */
-
-function OperationStat({
-  label,
-  value,
-  icon,
-  valueClass = "text-foreground",
-  onClick,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  valueClass?: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-full w-full items-center gap-2 px-2.5 py-2.5 text-left transition hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500/30"
-    >
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        {icon}
-      </div>
-
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-
-        <p className={`mt-0.5 truncate text-lg font-extrabold ${valueClass}`}>
-          {value}
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function AuthorizationStatusBadge({ status }: { status: AuthorizationStatus }) {
-  const config = {
-    MISSING: {
-      label: "Yetki Yok",
-      className:
-        "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300",
-    },
-    EXPIRED: {
-      label: "Yetkisi Bitmiş",
-      className:
-        "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-300",
-    },
-    EXPIRING: {
-      label: "6 Ay İçinde Bitecek",
-      className:
-        "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300",
-    },
-  };
-
-  const current = config[status];
-
-  return (
-    <span
-      className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-bold ${current.className}`}
-    >
-      {current.label}
-    </span>
-  );
-}
-
-function AuthorizationWarning({ variant }: { variant: "admin" | "company" }) {
-  return (
-    <div className="mx-auto max-w-4xl rounded-xl border border-border bg-muted/40 px-3 py-2.5 text-left">
-      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-        <div className="flex min-w-0 flex-1 items-start gap-2.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300 sm:h-11 sm:w-11">
-            <ShieldAlert size={21} strokeWidth={1.8} />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">
-              Yetkilendirme gerekli
-            </span>
-            <h3 className="mt-1 text-sm font-bold text-foreground sm:text-base">
-              Yetki süreniz dolmuştur.
-            </h3>
-            <p className="mt-1.5 text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">
-              Firmanın belge bilgilerinin görüntülenebilmesi için yeniden
-              yetkilendirme yapılmalıdır.
-            </p>
-          </div>
-        </div>
-
-        {variant === "company" && (
-          <div className="border-t border-border pt-2.5 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-3 lg:pt-0">
-            <p className="text-xs font-medium leading-5 text-muted-foreground">
-              Yetkilendirme işlemi için lütfen uzmanınız ile iletişime geçiniz.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const config: Record<
-    string,
-    {
-      label: string;
-      dot: string;
-      text: string;
-      bg: string;
-      border: string;
-    }
-  > = {
-    ACTIVE: {
-      label: "Aktif",
-      dot: "bg-emerald-500",
-      text: "text-emerald-700 dark:text-emerald-300",
-      bg: "bg-emerald-50 dark:bg-emerald-500/10",
-      border: "border-emerald-200/60 dark:border-emerald-500/30",
-    },
-
-    EXPIRED: {
-      label: "Kapatma Yapılacak",
-      dot: "bg-red-500",
-      text: "text-red-700 dark:text-red-300",
-      bg: "bg-red-50 dark:bg-red-500/10",
-      border: "border-red-200/60 dark:border-red-500/30",
-    },
-
-    // getBadgeStatus'un döndürdüğü "Kapatma Yapılacak" görünümü
-    CLOSURE_ELIGIBLE: {
-      label: "Kapatma Yapılacak",
-      dot: "bg-red-500",
-      text: "text-red-700 dark:text-red-300",
-      bg: "bg-red-50 dark:bg-red-500/10",
-      border: "border-red-200 dark:border-red-500/30",
-    },
-
-    // getBadgeStatus'un döndürdüğü "Uzatma Yapılabilir" görünümü
-    EXTENSION_ELIGIBLE: {
-      label: "Uzatma Yapılabilir",
-      dot: "bg-amber-500",
-      text: "text-amber-700 dark:text-amber-300",
-      bg: "bg-amber-50 dark:bg-amber-500/10",
-      border: "border-amber-200 dark:border-amber-500/30",
-    },
-
-    CLOSED: {
-      label: "Kapalı",
-      dot: "bg-blue-500",
-      text: "text-blue-700 dark:text-blue-300",
-      bg: "bg-blue-50 dark:bg-blue-500/10",
-      border: "border-blue-200 dark:border-blue-500/30",
-    },
-
-    CANCELLED: {
-      label: "İptal",
-      dot: "bg-red-500",
-      text: "text-red-700 dark:text-red-300",
-      bg: "bg-red-50 dark:bg-red-500/10",
-      border: "border-red-200/60 dark:border-red-500/30",
-    },
-    INACTIVE: {
-      label: "Kapalı-İptal",
-      dot: "bg-slate-400",
-      text: "text-muted-foreground",
-      bg: "bg-muted",
-      border: "border-border",
-    },
-    AUTHORIZATION_EXPIRED: {
-      label: "Yetkisi Bitmiş",
-      dot: "bg-blue-500",
-      text: "text-blue-700 dark:text-blue-300",
-      bg: "bg-blue-50 dark:bg-blue-500/10",
-      border: "border-blue-200 dark:border-blue-500/30",
-    },
-  };
-
-  const c = config[status] ?? {
-    label: status,
-    dot: "bg-slate-400",
-    text: "text-muted-foreground",
-    bg: "bg-muted",
-    border: "border-border",
-  };
-
-  return (
-    <span
-      className={`inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${c.bg} ${c.text} ${c.border}`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
-      {c.label}
-    </span>
   );
 }

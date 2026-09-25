@@ -23,11 +23,18 @@ export class ClosedDocumentController {
     const search =
       typeof req.query.search === "string" ? req.query.search : undefined;
 
+    const requestedCompanyId = Number(req.query.companyId);
+    const companyId =
+      Number.isInteger(requestedCompanyId) && requestedCompanyId > 0
+        ? requestedCompanyId
+        : undefined;
+
     const data = await this.service.getDocuments(
       {
         page,
         limit,
         search,
+        companyId,
       },
       req.user.id,
       req.user.role,
