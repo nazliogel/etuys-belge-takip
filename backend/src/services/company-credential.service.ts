@@ -122,7 +122,7 @@ export class CompanyCredentialService {
       `${company.name} firması için Yatırım Teşvik Yönetim Sistemi kullanıcı hesabınız oluşturulmuştur.`,
       "",
       `Kullanıcı adı: ${username}`,
-      `Geçici şifre: ${plainPassword}`,
+      `Şifre: ${plainPassword}`,
       "",
       "Sisteme kullanıcı adınız veya e-posta adresiniz ile giriş yapabilirsiniz.",
       "Güvenliğiniz için giriş yaptıktan sonra şifrenizi değiştirmenizi öneririz.",
@@ -181,7 +181,7 @@ export class CompanyCredentialService {
         username,
         email: options?.email ?? null,
         passwordHash,
-        mustChangePassword: true,
+        mustChangePassword: false,
         role: "COMPANY",
         isActive: true,
         company: { connect: { id: companyId } },
@@ -259,45 +259,53 @@ export class CompanyCredentialService {
       username,
       email,
       passwordHash,
-      mustChangePassword: true,
+      mustChangePassword: false,
     });
 
     return { user, plainPassword };
   }
 
-  // Çakışma durumunda -2, -3 suffix eklesin
+  // Asıl iş dosyanın altındaki generateUniqueCompanyUsername fonksiyonunda;
+  // UserService (manuel kullanıcı formu) da aynı fonksiyonu kullanıyor.
   private async generateUniqueUsername(
     companyName: string,
     client: PrismaTransactionClient,
   ): Promise<string> {
-    const base = createCompanyUsername(companyName);
+    return generateUniqueCompanyUsername(companyName, client);
+  }
+}
 
-    if (!base) {
-      throw new AppError("Firma adından kullanıcı adı oluşturulamadı.", {
-        statusCode: HTTP_STATUS.BAD_REQUEST,
-        code: "USERNAME_COULD_NOT_BE_CREATED",
+export async function generateUniqueCompanyUsername(
+  companyName: string,
+  client: PrismaTransactionClient = prisma,
+): Promise<string> {
+  const base = createCompanyUsername(companyName);
+
+  if (!base) {
+    throw new AppError("Firma adından kullanıcı adı oluşturulamadı.", {
+      statusCode: HTTP_STATUS.BAD_REQUEST,
+      code: "USERNAME_COULD_NOT_BE_CREATED",
+    });
+  }
+
+  let candidate = base;
+  let suffix = 2;
+
+  while (
+    await client.user.findFirst({
+      where: { username: { equals: candidate, mode: "insensitive" } },
+    })
+  ) {
+    candidate = `${base}${suffix}`;
+    suffix += 1;
+
+    if (suffix > 999) {
+      throw new AppError("Benzersiz kullanıcı adı üretilemedi.", {
+        statusCode: HTTP_STATUS.CONFLICT,
+        code: "USERNAME_GENERATION_FAILED",
       });
     }
-
-    let candidate = base;
-    let suffix = 2;
-
-    while (
-      await client.user.findFirst({
-        where: { username: { equals: candidate, mode: "insensitive" } },
-      })
-    ) {
-      candidate = `${base}${suffix}`;
-      suffix += 1;
-
-      if (suffix > 999) {
-        throw new AppError("Benzersiz kullanıcı adı üretilemedi.", {
-          statusCode: HTTP_STATUS.CONFLICT,
-          code: "USERNAME_GENERATION_FAILED",
-        });
-      }
-    }
-
-    return candidate;
   }
+
+  return candidate;
 }
