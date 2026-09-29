@@ -90,7 +90,7 @@ ${authNoticeText(authorizationExpired)}İfade edemediğim bir nokta varsa aşağ
 
 Saygılarımla,
 
-Best regards,`;
+İyi Çalışmalar Dilerim.`;
 
   const html = `
     <p>Merhabalar,</p>
@@ -162,7 +162,7 @@ Best regards,`;
     <p>
       Saygılarımla,
       <br /><br />
-      Best regards,
+      İyi Çalışmalar Dilerim.
     </p>
   `;
 
@@ -218,7 +218,7 @@ Yatırım teşvik belgesi süre uzatım ücreti harçlar dahil 20.000 TL + KDV �
 
 ${authNoticeText(authorizationExpired)}Saygılarımla,
 
-Best regards,`;
+İyi Çalışmalar Dilerim.`;
 
   const html = `
     <p>Merhabalar,</p>
@@ -255,7 +255,7 @@ Best regards,`;
     <p>
      Saygılarımla,
       <br /><br />
-      Best regards,
+      İyi Çalışmalar Dilerim.
     </p>
   `;
 
@@ -299,7 +299,7 @@ Bu işlem için firmanıza ait kurumsal bir KEP adresi ile firma yetkilisine ait
 
 Saygılarımla,
 
-Best regards,`;
+İyi Çalışmalar Dilerim.`;
 
   const html = `
     <p>Merhabalar,</p>
@@ -357,7 +357,7 @@ Best regards,`;
     <p>
       Saygılarımla,
       <br /><br />
-      Best regards,
+      İyi Çalışmalar Dilerim.
     </p>
   `;
 

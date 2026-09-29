@@ -1,4 +1,5 @@
 import { env } from "../config/env.js";
+import { CompanyRequestRepository } from "../repositories/company-request.repository.js";
 import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
 import {
@@ -7,7 +8,14 @@ import {
 } from "./closure-email-template.service.js";
 import { DEFAULT_CC_RECIPIENTS } from "./document-reminder-preview.service.js";
 import { EmailService } from "./email.service.js";
-import { normalizeDate } from "./document-reminder.service.js";
+import {
+  normalizeDate,
+  resolveReminderDecision,
+} from "./document-reminder.service.js";
+
+function isSameDate(first: Date, second: Date): boolean {
+  return normalizeDate(first).getTime() === normalizeDate(second).getTime();
+}
 const TURKEY_UTC_OFFSET_HOURS = 3;
 
 function getHourStart(now: Date): Date {
@@ -33,6 +41,7 @@ export class DocumentReminderWorkerService {
   private isProcessing = false;
   constructor(
     private readonly repository = new DocumentReminderRepository(),
+    private readonly companyRequestRepository = new CompanyRequestRepository(),
     private readonly emailService = new EmailService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
   ) {}
@@ -147,11 +156,72 @@ export class DocumentReminderWorkerService {
 
       let sentCount = 0;
       let failedCount = 0;
+      let skippedCount = 0;
 
-      const results = [];
+      const results: Record<string, unknown>[] = [];
 
       for (const reminder of reminders) {
         try {
+          // YENİ: Kuyruğa alındıktan sonra koşullar değişmiş olabilir.
+          // Göndermeden önce WhatsApp worker'ındaki kontrollerin aynısı yapılır.
+          const skip = async (reason: string) => {
+            await this.repository.markSkipped(reminder.id, reason);
+            skippedCount += 1;
+            results.push({ id: reminder.id, status: "SKIPPED", reason });
+          };
+
+          const document = reminder.document;
+
+          if (
+            !document.isActive ||
+            document.status !== "OPEN" ||
+            !document.documentEndDate ||
+            !document.extensionDate
+          ) {
+            await skip("Belge artık aktif ve açık durumda değil.");
+            continue;
+          }
+
+          const currentDecision = resolveReminderDecision(
+            document.documentEndDate,
+            document.extensionDate,
+            now,
+          );
+
+          if (
+            !currentDecision ||
+            currentDecision.type !== reminder.type ||
+            currentDecision.reminderMonth !== reminder.reminderMonth ||
+            !isSameDate(currentDecision.targetDate, reminder.targetDate)
+          ) {
+            await skip("Hatırlatma koşulları artık geçerli değil.");
+            continue;
+          }
+
+          const closureRequest =
+            await this.companyRequestRepository.findLatestClosureRequest({
+              companyId: reminder.companyId,
+              externalDocumentId: document.externalDocumentId,
+            });
+
+          if (reminder.type === "EXTENSION_APPLICATION" && closureRequest) {
+            await skip("Firma için kapatma başvurusu bulundu.");
+            continue;
+          }
+
+          if (reminder.type === "CLOSURE_APPLICATION" && closureRequest) {
+            const requestStatus = closureRequest.requestStatus
+              ?.trim()
+              .toLocaleUpperCase("tr-TR");
+
+            if (requestStatus !== "REDDEDİLDİ") {
+              await skip(
+                "Firma için reddedilmemiş bir kapatma başvurusu bulundu.",
+              );
+              continue;
+            }
+          }
+
           const validationErrors: string[] = [];
 
           if (!reminder.contact) {
@@ -188,7 +258,7 @@ export class DocumentReminderWorkerService {
           const authorizationExpired =
             authorizationEndDate === null ||
             normalizeDate(authorizationEndDate) < normalizeDate(now);
-                   const template =
+          const template =
             reminder.type === "CLOSURE_APPLICATION"
               ? createClosureEmailTemplate({
                   companyName: reminder.company.name,
@@ -214,14 +284,9 @@ export class DocumentReminderWorkerService {
             attachments: template.attachments,
           });
 
-          const normalizedRecipient = reminder.recipient.trim().toLowerCase();
-
-          const primaryRecipientAccepted = result.accepted.some(
-            (address) =>
-              String(address).trim().toLowerCase() === normalizedRecipient,
-          );
-
-          if (!primaryRecipientAccepted) {
+          // YENİ: İletişim alanında birden fazla adres olabilir
+          // ("a@x.com; b@x.com"); en az biri kabul edildiyse başarılı sayılır.
+          if (!result.anyRecipientAccepted) {
             const rejectedRecipients = result.rejected.map((address) =>
               String(address),
             );
@@ -397,6 +462,7 @@ export class DocumentReminderWorkerService {
         foundCount: reminders.length,
         sentCount,
         failedCount,
+        skippedCount,
         results,
       };
     } finally {

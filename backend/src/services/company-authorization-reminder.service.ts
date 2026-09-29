@@ -10,6 +10,22 @@ interface AuthorizationReminderDecision {
   reminderMonth: number;
 }
 
+export function hasOpenIncentiveDocument(company: {
+  documents: { externalDocumentId: number }[];
+  closedDocuments: { externalDocumentId: number }[];
+}): boolean {
+  const closedIds = new Set(
+    company.closedDocuments.map((document) => document.externalDocumentId),
+  );
+
+  return company.documents.some(
+    (document) => !closedIds.has(document.externalDocumentId),
+  );
+}
+
+export const NO_OPEN_DOCUMENT_SKIP_REASON =
+  "Firmanın açık teşvik belgesi bulunmuyor (tüm belgeler kapalı veya iptal). Yetkilendirme bildirimi gönderilmedi.";
+
 export function resolveAuthorizationReminderDecision(
   authorizationEndDate: Date,
   today: Date = new Date(),
@@ -41,6 +57,12 @@ export class CompanyAuthorizationReminderService {
         return [];
       }
 
+      // YENİ: Firmanın açık belgesi kalmadıysa (hepsi kapalı / iptal)
+      // yetkilendirme bildirimine gerek yok.
+      if (!hasOpenIncentiveDocument(authorization.company)) {
+        return [];
+      }
+
       const decision = resolveAuthorizationReminderDecision(
         authorization.authorizationEndDate,
         today,
@@ -61,5 +83,15 @@ export class CompanyAuthorizationReminderService {
         },
       ];
     });
+  }
+
+  async companyHasOpenDocument(companyId: number): Promise<boolean> {
+    const state = await this.repository.findCompanyDocumentState(companyId);
+
+    if (!state) {
+      return false;
+    }
+
+    return hasOpenIncentiveDocument(state);
   }
 }
