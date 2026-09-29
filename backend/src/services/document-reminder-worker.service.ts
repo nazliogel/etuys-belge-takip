@@ -7,7 +7,7 @@ import {
 } from "./closure-email-template.service.js";
 import { DEFAULT_CC_RECIPIENTS } from "./document-reminder-preview.service.js";
 import { EmailService } from "./email.service.js";
-
+import { normalizeDate } from "./document-reminder.service.js";
 const TURKEY_UTC_OFFSET_HOURS = 3;
 
 function getHourStart(now: Date): Date {
@@ -181,8 +181,14 @@ export class DocumentReminderWorkerService {
               )}`,
             );
           }
+          // Yetki durumu gönderim anında hesaplanır (findDueCandidates ile aynı mantık).
+          const authorizationEndDate =
+            reminder.company.authorization?.authorizationEndDate ?? null;
 
-          const template =
+          const authorizationExpired =
+            authorizationEndDate === null ||
+            normalizeDate(authorizationEndDate) < normalizeDate(now);
+                   const template =
             reminder.type === "CLOSURE_APPLICATION"
               ? createClosureEmailTemplate({
                   companyName: reminder.company.name,
@@ -191,10 +197,12 @@ export class DocumentReminderWorkerService {
                     "Belge numarası bulunamadı",
                   targetDate: reminder.targetDate,
                   investorAddress: reminder.company.identity?.investorAddress,
+                  authorizationExpired, // YENİ
                 })
               : createExtensionEmailTemplate({
                   companyName: reminder.company.name,
                   targetDate: reminder.targetDate,
+                  authorizationExpired, // YENİ
                 });
 
           const result = await this.emailService.send({
