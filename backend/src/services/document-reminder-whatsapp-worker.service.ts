@@ -177,24 +177,14 @@ export class DocumentReminderWhatsAppWorkerService {
             continue;
           }
 
+          // Yetki süresi dolmuş olsa da mesaj gönderilir;
+          // yetkilendirme notlu şablon kullanılır.
           const authorizationEndDate =
             reminder.company.authorization?.authorizationEndDate ?? null;
-
-          if (
+            
+          const authorizationExpired =
             !authorizationEndDate ||
-            normalizeDate(authorizationEndDate) < normalizeDate(now)
-          ) {
-            const reason = "Firmanın geçerli yetkilendirmesi bulunmuyor.";
-
-            await this.repository.markSkipped(reminder.id, reason);
-            skippedCount += 1;
-            results.push({
-              id: reminder.id,
-              status: "SKIPPED",
-              reason,
-            });
-            continue;
-          }
+            normalizeDate(authorizationEndDate) < normalizeDate(now);
 
           if (!contact?.phone.trim()) {
             const reason = "Firma iletişim telefon numarası bulunamadı.";
@@ -208,7 +198,6 @@ export class DocumentReminderWhatsAppWorkerService {
             });
             continue;
           }
-
           const currentRecipient = normalizeWhatsAppRecipient(contact.phone);
 
           if (
@@ -297,11 +286,13 @@ export class DocumentReminderWhatsAppWorkerService {
                   companyName: reminder.company.name,
                   documentNumber: document.documentNumber,
                   targetDate: reminder.targetDate,
+                  authorizationExpired,
                 })
               : createExtensionWhatsAppTemplate({
                   companyName: reminder.company.name,
                   documentNumber: document.documentNumber,
                   targetDate: reminder.targetDate,
+                  authorizationExpired,
                 });
 
           const sendResult = await this.whatsAppService.sendTemplate({

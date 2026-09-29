@@ -20,3 +20,4 @@ npm-debug.log*
 Thumbs.db
 
 uploads/
+backend/mail-adaylari-*.csv

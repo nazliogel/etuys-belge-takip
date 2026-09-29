@@ -347,6 +347,13 @@ export class DocumentReminderRepository {
         company: {
           include: {
             identity: true,
+            authorization: {
+              // YENİ
+              select: {
+                // YENİ
+                authorizationEndDate: true, // YENİ
+              }, // YENİ
+            }, // YENİ
             consultantUser: {
               select: {
                 id: true,

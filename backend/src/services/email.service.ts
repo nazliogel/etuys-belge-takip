@@ -1,10 +1,18 @@
 import nodemailer from "nodemailer";
 
 import { env } from "../config/env.js";
+import { appendEmailFooter } from "./email-footer.js";
+import {
+  isAnyRecipientAccepted,
+  parseEmailRecipients,
+} from "./email-recipients.js";
 
 export interface EmailAttachment {
   filename: string;
   path: string;
+  /** Gömülü (inline) görseller için içerik kimliği, örn. imza görseli. */
+  cid?: string;
+  contentDisposition?: "inline" | "attachment";
 }
 
 interface SendEmailParams {
@@ -84,25 +92,40 @@ export class EmailService {
 
     const { transporter, from } = this.createTransporter();
 
+    // Gerçek gönderimde kullanılacak alıcı listesi, kontrol için test
+    // e-postasında gösterilir.
+    const realRecipients = parseEmailRecipients(params.to);
+    const realRecipientsLabel =
+      realRecipients.length > 0
+        ? realRecipients.join(", ")
+        : `GEÇERLİ ADRES YOK ("${params.to}")`;
+
+    // YENİ: İmza görseli ve KVKK metni test e-postalarında da görünsün.
+    const body = appendEmailFooter({
+      text: params.text,
+      html: params.html,
+      attachments: params.attachments,
+    });
+
     const result = await transporter.sendMail({
       from,
       to: testRecipient,
       subject: `[TEST] ${params.subject}`,
       text: [
         "BU BİR TEST E-POSTASIDIR.",
-        `Gerçek alıcı: ${params.to}`,
+        `Gerçek alıcı(lar): ${realRecipientsLabel}`,
         "",
-        params.text,
+        body.text,
       ].join("\n"),
-      html: params.html
+      html: body.html
         ? `
             <p><strong>BU BİR TEST E-POSTASIDIR.</strong></p>
-            <p>Gerçek alıcı: ${params.to}</p>
+            <p>Gerçek alıcı(lar): ${realRecipientsLabel}</p>
             <hr />
-            ${params.html}
+            ${body.html}
           `
         : undefined,
-      attachments: params.attachments,
+      attachments: body.attachments,
     });
 
     return {
@@ -118,22 +141,43 @@ export class EmailService {
       throw new Error("E-posta gönderimi güvenlik nedeniyle devre dışı.");
     }
 
+    // YENİ: İletişim alanında birden fazla adres olabilir ("a@x.com; b@x.com").
+    // Hepsi ayrıştırılıp alıcı yapılır; geçerli adres yoksa gönderilmez.
+    const recipients = parseEmailRecipients(params.to);
+
+    if (recipients.length === 0) {
+      throw new Error(
+        `Firmanın iletişim alanında geçerli bir e-posta adresi bulunamadı: "${params.to}"`,
+      );
+    }
+
     const { transporter, from } = this.createTransporter();
 
-    const result = await transporter.sendMail({
-      from,
-      to: params.to,
-      cc: params.cc,
-      subject: params.subject,
+    // YENİ: Tüm otomatik e-postaların sonuna imza görseli ve KVKK metni eklenir.
+    const body = appendEmailFooter({
       text: params.text,
       html: params.html,
       attachments: params.attachments,
+    });
+
+    const result = await transporter.sendMail({
+      from,
+      to: recipients,
+      cc: params.cc,
+      subject: params.subject,
+      text: body.text,
+      html: body.html,
+      attachments: body.attachments,
     });
 
     return {
       messageId: result.messageId,
       accepted: result.accepted,
       rejected: result.rejected,
+      /** Gönderimde kullanılan, ayrıştırılmış firma adresleri */
+      recipients,
+      /** Firma adreslerinden en az biri SMTP tarafından kabul edildi mi */
+      anyRecipientAccepted: isAnyRecipientAccepted(recipients, result.accepted),
     };
   }
 }
