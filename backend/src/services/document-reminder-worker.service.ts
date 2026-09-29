@@ -279,7 +279,7 @@ export class DocumentReminderWorkerService {
             to: reminder.recipient,
             cc: [...DEFAULT_CC_RECIPIENTS],
             subject: reminder.subject ?? template.subject,
-            text: reminder.message,
+            text: template.text,
             html: template.html,
             attachments: template.attachments,
           });
@@ -313,8 +313,7 @@ export class DocumentReminderWorkerService {
           if (
             reminder.reminderMonth === 1 &&
             consultant &&
-            consultant.isActive &&
-            consultant.role === "OPERATION"
+            consultant.isActive
           ) {
             try {
               consultantNotificationCreated =
@@ -365,11 +364,7 @@ export class DocumentReminderWorkerService {
 
           const consultant = reminder.company.consultantUser;
 
-          if (
-            consultant &&
-            consultant.isActive &&
-            consultant.role === "OPERATION"
-          ) {
+          if (consultant && consultant.isActive) {
             try {
               consultantNotificationCreated =
                 await this.repository.createConsultantNotification({

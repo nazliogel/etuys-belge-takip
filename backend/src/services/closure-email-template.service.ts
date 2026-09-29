@@ -72,7 +72,8 @@ Firma olarak evrakları tamamlamanızı ve dosyanızı tarafımıza göndermeniz
 
 Sonrasında bizde gerekli dosyalarımızı hazırlayıp kuruma müracaatımızı tamamlamış olacağız.
 
-İşlemler için uzman masrafları hariç, harç masrafları dahil 40.000 TL + KDV faturalandırmamız olacak.
+
+İşlemler için uzman masrafları hariç, kuruma yapılan ilk harç masrafları dahil 45.000 TL + KDV faturalandırmamız olacak.
 
 **Uzman masrafları firmanıza uzmanların ziyareti zamanı belli olacak.
 
@@ -116,11 +117,10 @@ Saygılarımla,
       müracaatımızı tamamlamış olacağız.
     </p>
 
-    <p>
-      İşlemler için uzman masrafları hariç, harç masrafları dahil
-      <strong>40.000 TL + KDV</strong> faturalandırmamız olacak.
-    </p>
-
+         <p>
+        İşlemler için uzman masrafları hariç, kuruma yapılan ilk harç masrafları dahil
+        <strong>45.000 TL + KDV</strong> faturalandırmamız olacak.
+      </p>
     <p>
       <strong>**Uzman masrafları firmanıza uzmanların ziyareti zamanı
       belli olacak.</strong>

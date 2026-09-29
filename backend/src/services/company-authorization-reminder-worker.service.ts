@@ -276,8 +276,7 @@ export class CompanyAuthorizationReminderWorkerService {
           if (
             reminder.reminderMonth === 1 &&
             consultant &&
-            consultant.isActive &&
-            consultant.role === "OPERATION"
+            consultant.isActive
           ) {
             try {
               consultantNotificationCreated =
@@ -324,11 +323,7 @@ export class CompanyAuthorizationReminderWorkerService {
 
           const consultant = reminder.company.consultantUser;
 
-          if (
-            consultant &&
-            consultant.isActive &&
-            consultant.role === "OPERATION"
-          ) {
+          if (consultant && consultant.isActive) {
             try {
               consultantNotificationCreated =
                 await this.repository.createConsultantNotification({
