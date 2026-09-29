@@ -21,7 +21,7 @@ function parsePositiveInteger(
 const port = Number(process.env.PORT ?? 3001);
 const databaseUrl = process.env.DATABASE_URL;
 const jwtSecret = process.env.JWT_SECRET;
-const jwtExpiresIn = process.env.JWT_EXPIRES_IN ?? "7d";
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN ?? "8h";
 
 const smtpPort = process.env.SMTP_PORT
   ? Number(process.env.SMTP_PORT)
