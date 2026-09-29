@@ -166,3 +166,8 @@ export type CompanyAuthorizationReminder = Prisma.CompanyAuthorizationReminderMo
  * 
  */
 export type SupportRequest = Prisma.SupportRequestModel
+/**
+ * Model AuthSession
+ * 
+ */
+export type AuthSession = Prisma.AuthSessionModel
