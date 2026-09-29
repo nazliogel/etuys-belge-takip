@@ -48,11 +48,7 @@ export class CompanyAuthorizationReminderQueueService {
           warnings: preview.warnings,
         });
 
-        if (
-          preview.consultantUserId &&
-          preview.consultantIsActive &&
-          preview.consultantRole === "OPERATION"
-        ) {
+        if (preview.consultantUserId && preview.consultantIsActive) {
           const notificationCreated =
             await this.repository.createConsultantNotification({
               authorizationId: preview.authorizationId,
