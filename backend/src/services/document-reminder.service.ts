@@ -174,9 +174,9 @@ export class DocumentReminderService {
         authorizationEndDate !== null &&
         normalizeDate(authorizationEndDate) >= normalizeDate(today);
 
-      if (!hasValidAuthorization) {
-        continue;
-      }
+      // Yetki süresi dolmuş olsa da bildirim gönderilir;
+      // e-postaya yetkilendirme bilgilendirmesi eklenir.
+      const authorizationExpired = !hasValidAuthorization;
 
       const closureRequest =
         await this.companyRequestRepository.findLatestClosureRequest({
@@ -207,6 +207,7 @@ export class DocumentReminderService {
         company: document.company,
         contact,
         decision,
+        authorizationExpired,
       });
     }
 

@@ -38,18 +38,20 @@ export class DocumentReminderWhatsAppPreviewService {
 
     return candidates.map((candidate) => {
       const { document, company, contact, decision } = candidate;
-
+      const authorizationExpired = candidate.authorizationExpired;
       const template =
         decision.type === "CLOSURE_APPLICATION"
           ? createClosureWhatsAppTemplate({
               companyName: company.name,
               documentNumber: document.documentNumber,
               targetDate: decision.targetDate,
+              authorizationExpired, // YENİ
             })
           : createExtensionWhatsAppTemplate({
               companyName: company.name,
               documentNumber: document.documentNumber,
               targetDate: decision.targetDate,
+              authorizationExpired, // YENİ
             });
 
       const warnings: string[] = [];

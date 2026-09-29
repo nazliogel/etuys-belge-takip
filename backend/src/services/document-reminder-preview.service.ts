@@ -25,10 +25,12 @@ export class DocumentReminderPreviewService {
     return candidates.map((candidate) => {
       const { document, company, contact, decision } = candidate;
 
+      const authorizationExpired = candidate.authorizationExpired;
       const template =
         decision.type === "CLOSURE_APPLICATION"
           ? createClosureEmailTemplate({
               companyName: company.name,
+                 authorizationExpired,
               documentNumber:
                 document.documentNumber ?? "Belge numarası bulunamadı",
               targetDate: decision.targetDate,
@@ -37,6 +39,7 @@ export class DocumentReminderPreviewService {
           : createExtensionEmailTemplate({
               companyName: company.name,
               targetDate: decision.targetDate,
+                 authorizationExpired,
             });
 
       const warnings: string[] = [];
@@ -75,6 +78,7 @@ export class DocumentReminderPreviewService {
         type: decision.type,
         reminderMonth: decision.reminderMonth,
         targetDate: decision.targetDate,
+        authorizationExpired,
         subject: template.subject,
         text: template.text,
         html: template.html,

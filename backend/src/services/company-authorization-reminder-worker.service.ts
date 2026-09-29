@@ -2,6 +2,10 @@
 import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
 import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
 import { createAuthorizationExpiryEmailTemplate } from "./closure-email-template.service.js";
+import {
+  CompanyAuthorizationReminderService,
+  NO_OPEN_DOCUMENT_SKIP_REASON,
+} from "./company-authorization-reminder.service.js";
 import { DEFAULT_CC_RECIPIENTS } from "./document-reminder-preview.service.js";
 import { EmailService } from "./email.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
@@ -50,6 +54,7 @@ export class CompanyAuthorizationReminderWorkerService {
     private readonly documentRepository = new DocumentReminderRepository(),
     private readonly emailService = new EmailService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
+    private readonly authorizationService = new CompanyAuthorizationReminderService(),
   ) {}
 
   async processPendingReminders(limit = 20) {
@@ -180,10 +185,33 @@ export class CompanyAuthorizationReminderWorkerService {
 
       let sentCount = 0;
       let failedCount = 0;
+      let skippedCount = 0;
       const results = [];
 
       for (const reminder of reminders) {
         try {
+          // YENİ: Kuyruğa alındıktan sonra firmanın tüm belgeleri kapanmış
+          // veya iptal olmuş olabilir. Göndermeden önce tekrar kontrol et.
+          const hasOpenDocument =
+            await this.authorizationService.companyHasOpenDocument(
+              reminder.companyId,
+            );
+
+          if (!hasOpenDocument) {
+            await this.repository.markSkipped(
+              reminder.id,
+              NO_OPEN_DOCUMENT_SKIP_REASON,
+            );
+
+            skippedCount += 1;
+            results.push({
+              id: reminder.id,
+              status: "SKIPPED",
+              reason: NO_OPEN_DOCUMENT_SKIP_REASON,
+            });
+            continue;
+          }
+
           const validationErrors: string[] = [];
 
           if (!reminder.contact) {
@@ -218,14 +246,9 @@ export class CompanyAuthorizationReminderWorkerService {
             attachments: template.attachments,
           });
 
-          const normalizedRecipient = reminder.recipient.trim().toLowerCase();
-
-          const primaryRecipientAccepted = result.accepted.some(
-            (address) =>
-              String(address).trim().toLowerCase() === normalizedRecipient,
-          );
-
-          if (!primaryRecipientAccepted) {
+          // YENİ: İletişim alanında birden fazla adres olabilir
+          // ("a@x.com; b@x.com"); en az biri kabul edildiyse başarılı sayılır.
+          if (!result.anyRecipientAccepted) {
             const rejectedRecipients = result.rejected.map((address) =>
               String(address),
             );
@@ -396,6 +419,7 @@ export class CompanyAuthorizationReminderWorkerService {
         foundCount: reminders.length,
         sentCount,
         failedCount,
+        skippedCount,
         results,
       };
     } finally {

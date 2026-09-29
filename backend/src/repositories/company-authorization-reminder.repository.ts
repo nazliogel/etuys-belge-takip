@@ -3,6 +3,28 @@ import { prisma } from "../config/env.js";
 type ReminderChannel =
   "EMAIL" | "WHATSAPP" | "CONSULTANT_IN_APP" | "ADMIN_EMAIL";
 
+/**
+ * Açık belge kontrolü için gereken alanlar. Sadece aktif ve OPEN durumdaki
+ * belgeler çekilir; Kapalı Belgeler'deki numaralar ayrıca karşılaştırılır
+ * (bkz. hasOpenIncentiveDocument).
+ */
+const OPEN_DOCUMENT_STATE_SELECT = {
+  documents: {
+    where: {
+      isActive: true,
+      status: "OPEN",
+    },
+    select: {
+      externalDocumentId: true,
+    },
+  },
+  closedDocuments: {
+    select: {
+      externalDocumentId: true,
+    },
+  },
+} as const;
+
 export class CompanyAuthorizationReminderRepository {
   async findActiveCandidates() {
     return prisma.companyAuthorization.findMany({
@@ -12,6 +34,14 @@ export class CompanyAuthorizationReminderRepository {
         },
         company: {
           isActive: true,
+          // YENİ: En az bir aktif OPEN belgesi olmayan firma hiç gelmez.
+          // Kapalı Belgeler ile çakışma kontrolü serviste yapılır.
+          documents: {
+            some: {
+              isActive: true,
+              status: "OPEN",
+            },
+          },
         },
       },
       include: {
@@ -38,9 +68,18 @@ export class CompanyAuthorizationReminderRepository {
               ],
               take: 1,
             },
+            ...OPEN_DOCUMENT_STATE_SELECT,
           },
         },
       },
+    });
+  }
+
+  /** YENİ: Gönderim anında firmanın güncel belge durumunu getirir. */
+  async findCompanyDocumentState(companyId: number) {
+    return prisma.company.findUnique({
+      where: { id: companyId },
+      select: OPEN_DOCUMENT_STATE_SELECT,
     });
   }
 
@@ -231,6 +270,11 @@ export class CompanyAuthorizationReminderRepository {
     return prisma.companyAuthorizationReminder.findFirst({
       where: {
         channel: "EMAIL",
+        // YENİ: Atlanan (SKIPPED) kayıtlar gerçekte e-posta göndermez,
+        // gönderim aralığı (emailDelaySeconds) hesabına katılmamalı.
+        status: {
+          in: ["SENT", "FAILED"],
+        },
         attemptedAt: {
           not: null,
         },
@@ -264,6 +308,18 @@ export class CompanyAuthorizationReminderRepository {
         status: "FAILED",
         attemptedAt: new Date(),
         errorMessage,
+      },
+    });
+  }
+
+  /** YENİ: Kuyruktaki bildirimi göndermeden kapatır (örn. belge kapandıysa). */
+  async markSkipped(id: number, reason: string) {
+    return prisma.companyAuthorizationReminder.update({
+      where: { id },
+      data: {
+        status: "SKIPPED",
+        attemptedAt: new Date(),
+        errorMessage: reason,
       },
     });
   }

@@ -1,19 +1,21 @@
 import path from "node:path";
 
+interface AuthorizationExpiryEmailTemplateParams {
+  companyName: string;
+  targetDate: Date;
+}
 interface ClosureEmailTemplateParams {
   companyName: string;
   documentNumber: string;
   targetDate: Date;
   investorAddress?: string | null;
+  authorizationExpired?: boolean; // YENİ
 }
 
 interface ExtensionEmailTemplateParams {
   companyName: string;
   targetDate: Date;
-}
-interface AuthorizationExpiryEmailTemplateParams {
-  companyName: string;
-  targetDate: Date;
+  authorizationExpired?: boolean; // YENİ
 }
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("tr-TR", {
@@ -35,13 +37,29 @@ function escapeHtml(value: string): string {
 function getShortCompanyName(companyName: string): string {
   return companyName.trim().split(/\s+/).slice(0, 2).join(" ");
 }
+
+const AUTHORIZATION_NOTICE =
+  "Ekranlarınızın takibi, olası teşvik belgesi süre uzatma ya da kapatma işlemlerinin yapılabilmesi " +
+  "ve genel süreçlerinizin takip edilebilmesi noktasında yetkilendirme işlemlerinin yapılması gerekmektedir. " +
+  "Yetkilendirme evrakları ve süreç bilgisi ayrıca tarafınıza iletilmektedir.";
+
+function authNoticeText(show: boolean): string {
+  return show ? `${AUTHORIZATION_NOTICE}\n\n` : "";
+}
+
+function authNoticeHtml(show: boolean): string {
+  return show
+    ? `<p><strong>${escapeHtml(AUTHORIZATION_NOTICE)}</strong></p>`
+    : "";
+}
+
 export function createClosureEmailTemplate(params: ClosureEmailTemplateParams) {
   const companyName = params.companyName.trim();
   const documentNumber = params.documentNumber.trim();
   const targetDate = formatDate(params.targetDate);
   const investorAddress =
     params.investorAddress?.trim() || "Adres bilgisi sistemde bulunmamaktadır.";
-
+  const authorizationExpired = params.authorizationExpired === true;
   const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Kapatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
@@ -68,11 +86,11 @@ Teşvik belgesindeki adres: ${investorAddress} Şu an bu adreste misiniz?
 
 Belgenizin kapanış işlem müracaatı sonrası yeni belge alımı için işlemlerinizi yapabiliriz. Yeni belge alırsanız ilk etapta 3 yıl, sonra talebiniz olursa ilave 1,5 yıl ile belge kullanımını başlatabiliriz.
 
-İfade edemediğim bir nokta varsa aşağıdaki iletişim bilgilerinden bana ulaşabilirsiniz.
+${authNoticeText(authorizationExpired)}İfade edemediğim bir nokta varsa aşağıdaki iletişim bilgilerinden bana ulaşabilirsiniz.
 
 Saygılarımla,
 
-Best regards,`;
+İyi Çalışmalar Dilerim.`;
 
   const html = `
     <p>Merhabalar,</p>
@@ -135,7 +153,7 @@ Best regards,`;
       sonra talebiniz olursa ilave 1,5 yıl ile belge kullanımını
       başlatabiliriz.
     </p>
-
+    ${authNoticeHtml(authorizationExpired)}
     <p>
       İfade edemediğim bir nokta varsa aşağıdaki iletişim bilgilerinden
       bana ulaşabilirsiniz.
@@ -144,7 +162,7 @@ Best regards,`;
     <p>
       Saygılarımla,
       <br /><br />
-      Best regards,
+      İyi Çalışmalar Dilerim.
     </p>
   `;
 
@@ -184,6 +202,7 @@ export function createExtensionEmailTemplate(
 ) {
   const companyName = params.companyName.trim();
   const targetDate = formatDate(params.targetDate);
+  const authorizationExpired = params.authorizationExpired === true;
 
   const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
 
@@ -197,9 +216,9 @@ Yatırım teşvik belgesi süre uzatım ücreti harçlar dahil 20.000 TL + KDV �
 
 ***Bakanlıkça yayınlanan tebliğ ve karara istinaden belge süresi dolan firmaların süre bitimi ardından 6 ay içerisinde belge kapatma işlemi ya da mevcutta süre uzatma hakları varsa bu işlemi gerçekleştirilmesi gerekliliği bulunduğunu ve aksi durumda bakanlığın herhangi bir işlem gerçekleştirmeyen firmaların belgelerini iptal etme hakkı bulunduğu bilgisini de hatırlatmak isteriz.
 
-Saygılarımla,
+${authNoticeText(authorizationExpired)}Saygılarımla,
 
-Best regards,`;
+İyi Çalışmalar Dilerim.`;
 
   const html = `
     <p>Merhabalar,</p>
@@ -232,11 +251,11 @@ Best regards,`;
         isteriz.
       </strong>
     </p>
-
+    ${authNoticeHtml(authorizationExpired)}
     <p>
-      Saygılarımla,
+     Saygılarımla,
       <br /><br />
-      Best regards,
+      İyi Çalışmalar Dilerim.
     </p>
   `;
 
@@ -260,7 +279,7 @@ export function createAuthorizationExpiryEmailTemplate(
 
 Yatırım teşvik belgenizin yürütümü için tarafımıza vermiş olduğunuz yetkilendirmenin süresi ${targetDate} tarihinde dolacaktır.
 
-Yetki süresinin sona ermesinin ardından firmanıza ait ekranları kontrol edemeyeceğimiz için belge kapatma ve gerekli olması hâlinde yapılması gereken diğer işlemleri gerçekleştirebilmemiz adına yetkilendirmenin yenilenmesi gerekmektedir.
+Yetki süresinin sona ermesinin ardından firmanıza ait ekranları kontrol edemeyeceğimiz için ekranlarınızın takibi, olası teşvik belgesi süre uzatma ya da kapatma işlemlerinin yapılabilmesi ve genel süreçlerinizin takip edilebilmesi adına yetkilendirmenin yenilenmesi gerekmektedir.
 
 Yetkilendirme evrakları ekte yer almaktadır. Evrakların aşağıdaki şekilde tamamlanarak tarafımıza iletilmesini rica ederiz.
 
@@ -280,7 +299,7 @@ Bu işlem için firmanıza ait kurumsal bir KEP adresi ile firma yetkilisine ait
 
 Saygılarımla,
 
-Best regards,`;
+İyi Çalışmalar Dilerim.`;
 
   const html = `
     <p>Merhabalar,</p>
@@ -291,13 +310,12 @@ Best regards,`;
       tarihinde dolacaktır.
     </p>
 
-    <p>
+       <p>
       Yetki süresinin sona ermesinin ardından firmanıza ait ekranları kontrol
-      edemeyeceğimiz için belge kapatma ve gerekli olması hâlinde yapılması
-      gereken diğer işlemleri gerçekleştirebilmemiz adına yetkilendirmenin
-      yenilenmesi gerekmektedir.
+      edemeyeceğimiz için ekranlarınızın takibi, olası teşvik belgesi süre
+      uzatma ya da kapatma işlemlerinin yapılabilmesi ve genel süreçlerinizin
+      takip edilebilmesi adına yetkilendirmenin yenilenmesi gerekmektedir.
     </p>
-
     <p>
       Yetkilendirme evrakları ekte yer almaktadır. Evrakların aşağıdaki şekilde
       tamamlanarak tarafımıza iletilmesini rica ederiz.
@@ -339,7 +357,7 @@ Best regards,`;
     <p>
       Saygılarımla,
       <br /><br />
-      Best regards,
+      İyi Çalışmalar Dilerim.
     </p>
   `;
 
