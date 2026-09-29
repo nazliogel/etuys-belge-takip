@@ -6,12 +6,12 @@ import {
 import { DocumentReminderService } from "./document-reminder.service.js";
 
 export const DEFAULT_CC_RECIPIENTS = [
-  /*"salihsahin@akkasgroup.com",
+  "salihsahin@akkasgroup.com",
   "emininangu@akkasgroup.com",
   "ezgitemel@akkasgroup.com",
   "berkeincesu@aya.com.tr",
-  "murathanaraci@aya.com.tr",*/
-  "nazlicanogel@aya.com.tr",
+  "murathanaraci@aya.com.tr",
+
 ];
 
 export class DocumentReminderPreviewService {
