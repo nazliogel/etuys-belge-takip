@@ -5,6 +5,7 @@ import type { UserRole } from "../generated/prisma/client.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
 import type { UserRepository } from "../repositories/user.repository.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
+import { generateUniqueCompanyUsername } from "./company-credential.service.js";
 
 type CreateUserInput = {
   firstName: string;
@@ -77,6 +78,11 @@ export class UserService {
 
     let companyId: number | null = null;
 
+    // Firma kullanıcılarına kullanıcı adı otomatik verilir (firma adından).
+    // Eskiden bu formdan eklenen firma kullanıcılarının kullanıcı adı boş
+    // kalıyordu; "Yeniden Oluştur" ile aynı üretme fonksiyonu kullanılıyor.
+    let username: string | null = null;
+
     if (payload.role === "COMPANY") {
       const company = await this.companyRepository.findById(payload.companyId!);
 
@@ -101,6 +107,7 @@ export class UserService {
       }
 
       companyId = company.id;
+      username = await generateUniqueCompanyUsername(company.name);
     }
 
     const passwordHash = await bcrypt.hash(payload.password, 12);
@@ -112,6 +119,8 @@ export class UserService {
       passwordHash,
       role: payload.role,
       isActive: true,
+
+      ...(username ? { username } : {}),
 
       ...(companyId
         ? {
@@ -128,6 +137,7 @@ export class UserService {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
+      username: user.username,
       email: user.email,
       role: user.role,
       companyId: user.companyId,

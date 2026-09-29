@@ -1,4 +1,4 @@
-import { getAccessToken } from "@/lib/mock-auth";
+import { getAccessToken, logoutMockUser } from "@/lib/mock-auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
@@ -22,6 +22,19 @@ export async function apiFetch<T>(
     ...options,
     headers,
   });
+
+  if (response.status === 401) {
+    logoutMockUser();
+
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/login"
+    ) {
+      window.location.replace("/login");
+    }
+
+    throw new Error("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
+  }
 
   const data = await response.json();
 

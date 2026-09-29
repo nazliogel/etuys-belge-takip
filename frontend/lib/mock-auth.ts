@@ -113,3 +113,21 @@ export function logoutMockUser(): void {
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(ACCESS_TOKEN_KEY);
 }
+export async function logoutUser(): Promise<void> {
+  const token = getAccessToken();
+
+  try {
+    if (token) {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Sunucuda oturum kapatılamadı:", error);
+  } finally {
+    logoutMockUser();
+  }
+}
