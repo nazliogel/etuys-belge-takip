@@ -1,6 +1,7 @@
 import type { User } from "../generated/prisma/client.js";
 
 import { AppError } from "../errors/app-error.js";
+import type { AuthSessionRepository } from "../repositories/auth-session.repository.js";
 import type { UserRepository } from "../repositories/user.repository.js";
 import type {
   AuthProfileResponse,
@@ -15,7 +16,10 @@ import { serializeAuthUser } from "../utils/serialize-auth-user.js";
 import { fromPrismaUserRole } from "../utils/user-role.js";
 
 export class AuthService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly authSessionRepository: AuthSessionRepository,
+  ) {}
 
   async register(payload: RegisterInput): Promise<AuthResponse> {
     const normalizedEmail = payload.email.trim().toLowerCase();
@@ -92,12 +96,30 @@ export class AuthService {
     };
   }
 
-  private createAuthResponse(user: User): AuthResponse {
+  async recordActivity(sessionId: string): Promise<void> {
+    const result = await this.authSessionRepository.touch(sessionId);
+
+    if (result.count === 0) {
+      throw new AppError("Oturum süresi doldu. Lütfen tekrar giriş yapın.", {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        code: "SESSION_EXPIRED",
+      });
+    }
+  }
+
+  async logout(sessionId: string): Promise<void> {
+    await this.authSessionRepository.revoke(sessionId);
+  }
+
+  private async createAuthResponse(user: User): Promise<AuthResponse> {
+    const session = await this.authSessionRepository.create(user.id);
+
     return {
       user: serializeAuthUser(user),
       accessToken: signAccessToken({
         sub: user.id,
         role: fromPrismaUserRole(user.role),
+        sessionId: session.id,
       }),
     };
   }

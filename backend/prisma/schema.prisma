@@ -148,6 +148,7 @@ model User {
   changeHistory   ChangeHistory[]
   notifications   Notification[]
   companyNotes    CompanyNote[]
+  authSessions    AuthSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -917,4 +918,17 @@ model SupportRequest {
   @@index([status])
   @@index([externalDocumentId])
   @@index([createdAt])
+}
+
+model AuthSession {
+  id             String    @id @default(uuid())
+  userId         Int
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  lastActivityAt DateTime  @default(now())
+  expiresAt      DateTime
+  revokedAt      DateTime?
+
+  @@index([userId])
+  @@index([expiresAt])
 }

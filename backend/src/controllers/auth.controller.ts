@@ -35,6 +35,44 @@ export class AuthController {
     }
   };
 
+  recordActivity = async (
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const sessionId = res.locals.authSessionId as string | undefined;
+
+      if (!sessionId) {
+        throw new Error("Authenticated session information is missing.");
+      }
+
+      await this.authService.recordActivity(sessionId);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  logout = async (
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const sessionId = res.locals.authSessionId as string | undefined;
+
+      if (!sessionId) {
+        throw new Error("Authenticated session information is missing.");
+      }
+
+      await this.authService.logout(sessionId);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getProfile = async (
     req: Request,
     res: Response,

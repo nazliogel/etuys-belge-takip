@@ -7,6 +7,7 @@ import { isUserRoleValue, type UserRoleValue } from "./user-role.js";
 type AccessTokenPayload = {
   sub: number;
   role: UserRoleValue;
+  sessionId: string;
 };
 
 export const signAccessToken = (payload: AccessTokenPayload): string => {
@@ -23,7 +24,9 @@ export const verifyAccessToken = (token: string): AccessTokenPayload => {
     payload === null ||
     typeof payload.sub !== "number" ||
     typeof payload.role !== "string" ||
-    !isUserRoleValue(payload.role)
+    !isUserRoleValue(payload.role) ||
+    typeof payload.sessionId !== "string" ||
+    !payload.sessionId
   ) {
     throw new Error("Invalid access token payload.");
   }
@@ -31,5 +34,6 @@ export const verifyAccessToken = (token: string): AccessTokenPayload => {
   return {
     sub: payload.sub,
     role: payload.role,
+    sessionId: payload.sessionId,
   };
 };

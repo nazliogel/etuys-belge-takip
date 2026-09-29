@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   getSessionUser,
   getAccessToken,
+  logoutMockUser,
   type SessionUser,
 } from "@/lib/mock-auth";
 import { DashboardShell } from "./_components/dashboard-shell";
@@ -52,20 +53,116 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [myCompany, setMyCompany] = useState<MyCompanyInfo | null>(null);
+  const [authError, setAuthError] = useState("");
 
   useEffect(() => {
-    const sessionUser = getSessionUser();
-    if (!sessionUser) {
-      router.replace("/login");
-      return;
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function checkSession() {
+      const sessionUser = getSessionUser();
+      const token = getAccessToken();
+
+      if (!sessionUser || !token) {
+        logoutMockUser();
+        router.replace("/login");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          logoutMockUser();
+          router.replace("/login");
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("Oturum doğrulanamadı.");
+        }
+
+        const result = (await response.json()) as {
+          user: { id: number; role: SessionUser["role"] };
+        };
+
+        if (result.user.id !== sessionUser.id) {
+          logoutMockUser();
+          router.replace("/login");
+          return;
+        }
+
+        if (!cancelled) {
+          setUser({ ...sessionUser, role: result.user.role });
+        }
+      } catch {
+        if (!cancelled && !controller.signal.aborted) {
+          setAuthError("Sunucuya ulaşılamadı. Lütfen tekrar deneyin.");
+        }
+      }
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUser(sessionUser);
+
+    void checkSession();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [router]);
 
-  // Danışman bilgisi sadece firma sahibi (COMPANY) kullanıcılar için
-  // anlamlı — ADMIN için GET /companies tüm firmaları döndürür, "benim
-  // danışmanım" diye tekil bir anlamı yok.
+  useEffect(() => {
+    if (!user) return;
+
+    let lastSentAt = 0;
+    let sending = false;
+
+    const recordActivity = () => {
+      const now = Date.now();
+      if (sending || now - lastSentAt < 60_000) return;
+
+      const token = getAccessToken();
+      if (!token) {
+        logoutMockUser();
+        router.replace("/login");
+        return;
+      }
+
+      lastSentAt = now;
+      sending = true;
+
+      void fetch(`${API_URL}/auth/activity`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((response) => {
+          if (response.status === 401 || response.status === 403) {
+            logoutMockUser();
+            router.replace("/login");
+          }
+        })
+        .catch(() => {
+          // Bağlantı hatasında oturumu silme; sonraki harekette yeniden denenecek.
+        })
+        .finally(() => {
+          sending = false;
+        });
+    };
+
+    window.addEventListener("pointerdown", recordActivity);
+    window.addEventListener("keydown", recordActivity);
+    window.addEventListener("wheel", recordActivity, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", recordActivity);
+      window.removeEventListener("keydown", recordActivity);
+      window.removeEventListener("wheel", recordActivity);
+    };
+  }, [user, router]);
+
   useEffect(() => {
     if (user?.role !== "COMPANY") {
       return;
@@ -83,6 +180,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [user]);
+
+  if (authError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+        <p>{authError}</p>
+        <button type="button" onClick={() => window.location.reload()}>
+          Tekrar dene
+        </button>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
