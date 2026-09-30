@@ -12,6 +12,11 @@ import type {
   UserRole,
 } from "../generated/prisma/client.js";
 
+import {
+  deleteSupportRequestFiles,
+  saveSupportRequestFiles,
+} from "./support-request-file.service.js";
+
 type AuthUser = {
   id: number;
   role: UserRole;
@@ -19,6 +24,7 @@ type AuthUser = {
 
 type CreateSupportRequestInput = {
   description: string;
+  files: Express.Multer.File[];
 };
 
 export class SupportRequestService {
@@ -58,12 +64,22 @@ export class SupportRequestService {
       });
     }
 
-    const supportRequest =
-      await this.supportRequestRepository.createWithNextTicketNumber({
-        companyId: company.id,
-        assignedToId: company.consultantUserId,
-        description,
-      });
+    const attachments = await saveSupportRequestFiles(input.files);
+
+    let supportRequest;
+
+    try {
+      supportRequest =
+        await this.supportRequestRepository.createWithNextTicketNumber({
+          companyId: company.id,
+          assignedToId: company.consultantUserId,
+          description,
+          attachments,
+        });
+    } catch (error) {
+      await deleteSupportRequestFiles(attachments);
+      throw error;
+    }
 
     const consultantEmail = supportRequest.assignedTo?.email?.trim();
 
@@ -207,6 +223,28 @@ export class SupportRequestService {
       statusCode: 403,
       code: "SUPPORT_REQUEST_ACCESS_FORBIDDEN",
     });
+  }
+
+  async getAttachment(
+    user: AuthUser,
+    supportRequestId: number,
+    attachmentId: number,
+  ) {
+    await this.getById(user, supportRequestId);
+
+    const attachment = await this.supportRequestRepository.findAttachmentById(
+      supportRequestId,
+      attachmentId,
+    );
+
+    if (!attachment) {
+      throw new AppError("Destek talebi eki bulunamadı.", {
+        statusCode: 404,
+        code: "SUPPORT_REQUEST_ATTACHMENT_NOT_FOUND",
+      });
+    }
+
+    return attachment;
   }
   async getUnreadCount(user: AuthUser) {
     if (user.role !== "ADMIN" && user.role !== "OPERATION") {

@@ -14,6 +14,8 @@ import { SupportRequestService } from "../services/support-request.service.js";
 
 import { EmailService } from "../services/email.service.js";
 
+import { supportRequestUpload } from "../config/support-request-upload.js";
+
 const router = Router();
 
 const supportRequestRepository = new SupportRequestRepository();
@@ -48,8 +50,13 @@ router.get("/unread-count", supportRequestController.getUnreadCount);
 // Detay
 router.get("/:id", supportRequestController.getById);
 
+router.get(
+  "/:id/attachments/:attachmentId",
+  supportRequestController.downloadAttachment,
+);
+
 // Oluştur
-router.post("/", supportRequestController.create);
+router.post("/", supportRequestUpload, supportRequestController.create);
 
 // Bildirim / okunma
 router.patch("/:id/unread", supportRequestController.markUnread);

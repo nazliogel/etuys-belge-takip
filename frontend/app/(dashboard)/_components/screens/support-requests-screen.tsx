@@ -1,30 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   Building2,
   Calendar,
   CheckCircle2,
   Clock3,
+  Download,
   Eye,
   EyeOff,
+  FileImage,
+  FileSpreadsheet,
   FileText,
   Filter,
   Headphones,
   Inbox,
   Loader2,
+  Paperclip,
   Plus,
   Search,
   Send,
   Tag,
+  Upload,
   User,
   X,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
-import { apiFetch } from "@/lib/api";
+import { apiDownload, apiFetch } from "@/lib/api";
 import { getSessionUser } from "@/lib/mock-auth";
 
 type UserRole = "ADMIN" | "OPERATION" | "COMPANY";
@@ -63,6 +68,15 @@ type SupportConsultantsResponse = {
   data: SupportConsultant[];
 };
 type SupportRequestCompany = { id: number; name: string; taxNumber: string };
+type SupportRequestAttachment = {
+  id: number;
+  supportRequestId: number;
+  fileName: string;
+  storedFileName: string;
+  mimeType: string;
+  size: number;
+  createdAt: string;
+};
 type SupportRequest = {
   id: number;
   ticketNumber: string | null;
@@ -82,6 +96,7 @@ type SupportRequest = {
   updatedAt: string;
   company: SupportRequestCompany;
   assignedTo: SupportRequestUser | null;
+  attachments: SupportRequestAttachment[];
 };
 type SupportRequestsResponse = { success: boolean; data: SupportRequest[] };
 type SupportRequestResponse = { success: boolean; data: SupportRequest };
@@ -115,6 +130,79 @@ function formatDate(value: string | null | undefined) {
 
 const PAGE_SIZE = 10;
 
+/* ---------------------------------- Dosya yardımcıları ---------------------------------- */
+
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_EXTENSIONS = [
+  ".pdf",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+];
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
+}
+
+function getExtension(name: string) {
+  const index = name.lastIndexOf(".");
+  return index >= 0 ? name.slice(index).toLowerCase() : "";
+}
+
+function fileKey(file: File) {
+  return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function mergeFiles(current: File[], incoming: File[]) {
+  const errors: string[] = [];
+  const next = [...current];
+  const keys = new Set(current.map(fileKey));
+
+  for (const file of incoming) {
+    if (keys.has(fileKey(file))) continue;
+    if (!ACCEPTED_EXTENSIONS.includes(getExtension(file.name))) {
+      errors.push(`"${file.name}" desteklenmeyen bir dosya türü.`);
+      continue;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      errors.push(
+        `"${file.name}" 10 MB sınırını aşıyor (${formatFileSize(file.size)}).`,
+      );
+      continue;
+    }
+    if (next.length >= MAX_FILES) {
+      errors.push(
+        `En fazla ${MAX_FILES} dosya ekleyebilirsiniz; "${file.name}" eklenmedi.`,
+      );
+      continue;
+    }
+    next.push(file);
+    keys.add(fileKey(file));
+  }
+
+  return { files: next, errors };
+}
+
+/** Panodan yapıştırılan ekran görüntüleri "image.png" adıyla gelir; anlamlı bir ad verelim. */
+function renamePastedFile(file: File, index: number) {
+  if (!/^image\.(png|jpe?g)$/i.test(file.name)) return file;
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");
+  const ext = getExtension(file.name) || ".png";
+  return new File([file], `ekran-goruntusu-${stamp}-${index + 1}${ext}`, {
+    type: file.type,
+    lastModified: Date.now(),
+  });
+}
+
+/* ---------------------------------------------------------------------------------------- */
+
 export default function SupportRequestsScreen() {
   const sessionUser = getSessionUser();
   const role = sessionUser?.role as UserRole | undefined;
@@ -129,6 +217,9 @@ export default function SupportRequestsScreen() {
     null,
   );
   const [description, setDescription] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [fileErrors, setFileErrors] = useState<string[]>([]);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -177,10 +268,24 @@ export default function SupportRequestsScreen() {
   const resetForm = () => {
     setDescription("");
     setErrorMessage("");
+    setFiles([]);
+    setFileErrors([]);
   };
   const closeCreateForm = () => {
     resetForm();
     setIsCreateOpen(false);
+  };
+
+  const addFiles = (incoming: File[]) => {
+    if (incoming.length === 0) return;
+    const result = mergeFiles(files, incoming);
+    setFiles(result.files);
+    setFileErrors(result.errors);
+  };
+
+  const removeFile = (key: string) => {
+    setFiles((current) => current.filter((file) => fileKey(file) !== key));
+    setFileErrors([]);
   };
 
   const handleSubmit = async () => {
@@ -191,9 +296,16 @@ export default function SupportRequestsScreen() {
     }
     try {
       setSubmitting(true);
+      const formData = new FormData();
+      formData.append("description", description.trim());
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
       await apiFetch<SupportRequestResponse>("/support-requests", {
         method: "POST",
-        body: JSON.stringify({ description: description.trim() }),
+        body: formData,
       });
       closeCreateForm();
       await loadRequests();
@@ -206,6 +318,25 @@ export default function SupportRequestsScreen() {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const downloadAttachment = async (
+    requestId: number,
+    attachment: SupportRequestAttachment,
+  ) => {
+    try {
+      setDownloadingId(attachment.id);
+      await apiDownload(
+        `/support-requests/${requestId}/attachments/${attachment.id}`,
+        attachment.fileName,
+      );
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Dosya indirilemedi.",
+      );
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -750,6 +881,15 @@ export default function SupportRequestsScreen() {
                         <span className="font-mono text-sm font-semibold text-foreground">
                           {request.ticketNumber ?? `#${request.id}`}
                         </span>
+                        {(request.attachments?.length ?? 0) > 0 && (
+                          <span
+                            className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground"
+                            title={`${request.attachments.length} ek`}
+                          >
+                            <Paperclip size={12} />
+                            {request.attachments.length}
+                          </span>
+                        )}
                       </div>
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-medium sm:text-xs lg:hidden ${getStatusClass(request)}`}
@@ -866,9 +1006,14 @@ export default function SupportRequestsScreen() {
       </div>
 
       {role === "COMPANY" && isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-3 backdrop-blur-sm dark:bg-black/70 sm:p-4">
-          <div className="w-full max-w-xl overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
-            <div className="flex items-start justify-between border-b border-border px-4 py-4 sm:px-6 sm:py-5">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm dark:bg-black/70 sm:p-4"
+          // Dropzone dışına bırakılan dosya tarayıcıda açılıp formu kaybettirmesin
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => event.preventDefault()}
+        >
+          <div className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl sm:max-h-[calc(100dvh-2rem)]">
+            <div className="flex shrink-0 items-start justify-between border-b border-border px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white dark:bg-blue-600">
                   <Plus size={18} strokeWidth={2} />
@@ -885,12 +1030,14 @@ export default function SupportRequestsScreen() {
               <button
                 type="button"
                 onClick={closeCreateForm}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                disabled={submitting}
+                aria-label="Kapat"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
+            <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
               {errorMessage && (
                 <div className="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
                   <AlertCircle size={18} className="mt-0.5 shrink-0" />
@@ -911,6 +1058,17 @@ export default function SupportRequestsScreen() {
                   rows={6}
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
+                  onPaste={(event) => {
+                    const pasted = Array.from(event.clipboardData.files);
+                    // Metin de varsa (ör. Excel hücresi kopyalama) normal yapıştırmaya dokunma
+                    if (
+                      pasted.length === 0 ||
+                      event.clipboardData.getData("text/plain")
+                    )
+                      return;
+                    event.preventDefault();
+                    addFiles(pasted.map(renamePastedFile));
+                  }}
                   placeholder="Talebinizi açıklayınız..."
                   className="w-full resize-none rounded-lg border border-border bg-background px-3.5 py-2.5 text-base leading-6 text-foreground outline-none transition placeholder:text-muted-foreground focus:border-blue-400 focus:ring-2 focus:ring-blue-500/15 sm:text-sm"
                 />
@@ -918,8 +1076,16 @@ export default function SupportRequestsScreen() {
                   {description.length} karakter
                 </div>
               </FormField>
+              <FileDropzone
+                files={files}
+                errors={fileErrors}
+                disabled={submitting}
+                onAdd={addFiles}
+                onRemove={removeFile}
+                onDismissErrors={() => setFileErrors([])}
+              />
             </div>
-            <div className="flex items-center justify-end gap-2 border-t border-border bg-muted/40 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
+            <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-muted/40 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
               <button
                 type="button"
                 onClick={closeCreateForm}
@@ -939,7 +1105,13 @@ export default function SupportRequestsScreen() {
                 ) : (
                   <Send size={16} />
                 )}
-                {submitting ? "Gönderiliyor..." : "Talebi Gönder"}
+                {submitting
+                  ? files.length > 0
+                    ? "Dosyalar yükleniyor..."
+                    : "Gönderiliyor..."
+                  : files.length > 0
+                    ? `Talebi Gönder (${files.length} ek)`
+                    : "Talebi Gönder"}
               </button>
             </div>
           </div>
@@ -985,6 +1157,7 @@ export default function SupportRequestsScreen() {
                 <button
                   type="button"
                   onClick={() => setSelectedRequest(null)}
+                  aria-label="Kapat"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 >
                   <X size={20} />
@@ -1032,6 +1205,53 @@ export default function SupportRequestsScreen() {
                     {selectedRequest.description}
                   </div>
                 </div>
+                {(selectedRequest.attachments?.length ?? 0) > 0 && (
+                  <div>
+                    <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Paperclip size={13} />
+                      Ekler ({selectedRequest.attachments.length})
+                    </div>
+
+                    <div className="space-y-2">
+                      {selectedRequest.attachments.map((attachment) => {
+                        const isDownloading = downloadingId === attachment.id;
+                        return (
+                          <button
+                            key={attachment.id}
+                            type="button"
+                            disabled={isDownloading}
+                            onClick={() =>
+                              void downloadAttachment(
+                                selectedRequest.id,
+                                attachment,
+                              )
+                            }
+                            title={`${attachment.fileName} dosyasını indir`}
+                            className="group flex w-full items-center gap-3 rounded-lg border border-border bg-muted/30 p-2.5 text-left transition hover:border-blue-300 hover:bg-blue-50/50 disabled:cursor-wait disabled:opacity-70 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/5"
+                          >
+                            <FileTypeIcon fileName={attachment.fileName} />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {attachment.fileName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatFileSize(attachment.size)}
+                              </p>
+                            </div>
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                              {isDownloading ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <Download size={16} />
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <div className="mb-3 text-xs font-medium text-muted-foreground">
                     Zaman Çizelgesi
@@ -1130,6 +1350,247 @@ export default function SupportRequestsScreen() {
     </div>
   );
 }
+
+/* ---------------------------------- Dosya bileşenleri ---------------------------------- */
+
+function FileDropzone({
+  files,
+  errors,
+  disabled,
+  onAdd,
+  onRemove,
+  onDismissErrors,
+}: {
+  files: File[];
+  errors: string[];
+  disabled?: boolean;
+  onAdd: (files: File[]) => void;
+  onRemove: (key: string) => void;
+  onDismissErrors: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dragDepth = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const isFull = files.length >= MAX_FILES;
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Paperclip size={13} />
+          Ekler
+          <span className="font-normal text-muted-foreground/70">
+            (isteğe bağlı)
+          </span>
+        </label>
+        <span
+          className={`text-xs tabular-nums ${isFull ? "font-medium text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}
+        >
+          {files.length}/{MAX_FILES}
+        </span>
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        hidden
+        accept={ACCEPTED_EXTENSIONS.join(",")}
+        onChange={(event) => {
+          onAdd(Array.from(event.target.files ?? []));
+          // Aynı dosya kaldırılıp tekrar seçilebilsin
+          event.target.value = "";
+        }}
+      />
+
+      {!isFull && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => inputRef.current?.click()}
+          onDragEnter={(event) => {
+            event.preventDefault();
+            dragDepth.current += 1;
+            setIsDragging(true);
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "copy";
+          }}
+          onDragLeave={() => {
+            dragDepth.current = Math.max(0, dragDepth.current - 1);
+            if (dragDepth.current === 0) setIsDragging(false);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            dragDepth.current = 0;
+            setIsDragging(false);
+            if (disabled) return;
+            onAdd(Array.from(event.dataTransfer.files));
+          }}
+          className={`flex w-full flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed px-4 py-5 text-center outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60 ${
+            isDragging
+              ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-500/10"
+              : "border-border hover:border-blue-400 hover:bg-muted/40"
+          }`}
+        >
+          <div
+            className={`pointer-events-none flex h-9 w-9 items-center justify-center rounded-full transition ${
+              isDragging
+                ? "bg-blue-600 text-white"
+                : "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
+            }`}
+          >
+            <Upload size={17} />
+          </div>
+          <p className="pointer-events-none text-sm text-foreground">
+            {isDragging ? (
+              <span className="font-medium text-blue-700 dark:text-blue-300">
+                Dosyaları buraya bırakın
+              </span>
+            ) : (
+              <>
+                <span className="font-medium text-blue-700 dark:text-blue-400">
+                  Dosya seçin
+                </span>
+                <span className="hidden sm:inline">
+                  {" "}
+                  veya buraya sürükleyin
+                </span>
+              </>
+            )}
+          </p>
+          <p className="pointer-events-none text-xs text-muted-foreground">
+            PDF, JPG, PNG, Word, Excel · dosya başına en fazla 10 MB
+          </p>
+        </button>
+      )}
+
+      {errors.length > 0 && (
+        <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" />
+          <ul className="flex-1 space-y-0.5">
+            {errors.map((error) => (
+              <li key={error} className="break-words">
+                {error}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={onDismissErrors}
+            aria-label="Uyarıyı kapat"
+            className="shrink-0 rounded p-0.5 transition hover:bg-amber-100 dark:hover:bg-amber-500/20"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {files.length > 0 && (
+        <ul className="mt-2 space-y-1.5">
+          {files.map((file) => (
+            <li
+              key={fileKey(file)}
+              className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-2 pr-1.5"
+            >
+              <FileThumb file={file} />
+              <div className="min-w-0 flex-1">
+                <p
+                  className="truncate text-sm font-medium text-foreground"
+                  title={file.name}
+                >
+                  {file.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatFileSize(file.size)}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onRemove(fileKey(file))}
+                aria-label={`${file.name} dosyasını kaldır`}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+              >
+                <X size={16} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        {isFull ? (
+          <span>
+            Dosya sınırına ulaştınız. Yeni dosya eklemek için birini kaldırın.
+          </span>
+        ) : (
+          <span className="hidden sm:inline">
+            İpucu: Ekran görüntüsünü açıklama alanına Ctrl+V ile
+            yapıştırabilirsiniz.
+          </span>
+        )}
+        {files.length > 1 && (
+          <span className="tabular-nums">
+            Toplam {formatFileSize(totalSize)}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FileTypeIcon({ fileName }: { fileName: string }) {
+  const ext = getExtension(fileName);
+  const isImage = [".jpg", ".jpeg", ".png"].includes(ext);
+  const isSheet = [".xls", ".xlsx"].includes(ext);
+  const isPdf = ext === ".pdf";
+
+  const Icon = isImage ? FileImage : isSheet ? FileSpreadsheet : FileText;
+  const colorClass = isPdf
+    ? "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300"
+    : isSheet
+      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300"
+      : isImage
+        ? "bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-300"
+        : "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300";
+
+  return (
+    <div
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${colorClass}`}
+    >
+      <Icon size={17} />
+    </div>
+  );
+}
+
+function FileThumb({ file }: { file: File }) {
+  const isImage = file.type.startsWith("image/");
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isImage) return;
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file, isImage]);
+
+  if (isImage && url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt=""
+        className="h-9 w-9 shrink-0 rounded-md border border-border object-cover"
+      />
+    );
+  }
+  return <FileTypeIcon fileName={file.name} />;
+}
+
+/* ---------------------------------------------------------------------------------------- */
 
 function StatCard({
   label,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Headphones, LogOut } from "lucide-react";
-import { getAccessToken, logoutMockUser } from "@/lib/mock-auth";
+import { getAccessToken, logoutUser } from "@/lib/mock-auth";
 import { apiFetch } from "@/lib/api";
 
 import { navigationItems } from "../_lib/navigation";
@@ -320,9 +320,9 @@ export function AppSidebar({
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutUser();
     clearSelectedDocument();
-    logoutMockUser();
     router.replace("/login");
   };
 
@@ -330,17 +330,6 @@ export function AppSidebar({
     pathname === "/support-requests" ||
     pathname.startsWith("/support-requests/");
 
-  /*
-    <aside> className mantığı:
-    - variant === "mobile"  → Drawer içinde tam ekran (header'daki Sheet'e sığar).
-                              Border, sticky, hidden yok — sadece flex + gradient.
-    - variant === "desktop" → 1024px altında GİZLİ (hidden lg:flex).
-                              1024px ve üzerinde sticky, w-64 (açık) veya w-20 (kapalı).
-                              overflow-visible çünkü daralt/genişlet butonu sağa taşıyor.
-
-    Dark mode: mavi gradient → daha koyu slate gradient'e iniyor. Böylece marka mavisi
-    light mode'da korunuyor, dark mode'da ana zeminle uyumlu koyu bir yüzeye dönüşüyor.
-  */
   const asideClassName =
     variant === "mobile"
       ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200"

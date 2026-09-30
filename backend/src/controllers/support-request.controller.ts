@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 
 import { AppError } from "../errors/app-error.js";
 import type { SupportRequestService } from "../services/support-request.service.js";
+import { getSupportRequestFilePath } from "../services/support-request-file.service.js";
 
 export class SupportRequestController {
   constructor(private readonly supportRequestService: SupportRequestService) {}
@@ -29,6 +30,7 @@ export class SupportRequestController {
             typeof req.body.description === "string"
               ? req.body.description
               : "",
+          files: Array.isArray(req.files) ? req.files : [],
         },
       );
 
@@ -139,6 +141,50 @@ export class SupportRequestController {
         success: true,
         data: request,
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  downloadAttachment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new AppError("Oturum bilgisi bulunamadı.", {
+          statusCode: 401,
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const supportRequestId = Number(req.params.id);
+      const attachmentId = Number(req.params.attachmentId);
+
+      if (
+        !Number.isSafeInteger(supportRequestId) ||
+        supportRequestId <= 0 ||
+        !Number.isSafeInteger(attachmentId) ||
+        attachmentId <= 0
+      ) {
+        throw new AppError("Geçersiz destek talebi veya dosya ID'si.", {
+          statusCode: 400,
+          code: "INVALID_SUPPORT_REQUEST_ATTACHMENT_ID",
+        });
+      }
+
+      const attachment = await this.supportRequestService.getAttachment(
+        { id: req.user.id, role: req.user.role },
+        supportRequestId,
+        attachmentId,
+      );
+
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.download(
+        getSupportRequestFilePath(attachment.storedFileName),
+        attachment.fileName,
+      );
     } catch (error) {
       next(error);
     }

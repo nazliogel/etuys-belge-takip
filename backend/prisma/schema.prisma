@@ -905,8 +905,9 @@ model SupportRequest {
   status   SupportRequestStatus @default(SENT)
   viewedAt DateTime?
 
-  company    Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  assignedTo User?   @relation("AssignedSupportRequests", fields: [assignedToId], references: [id], onDelete: SetNull)
+  company     Company                    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assignedTo  User?                      @relation("AssignedSupportRequests", fields: [assignedToId], references: [id], onDelete: SetNull)
+  attachments SupportRequestAttachment[]
 
   createdAt  DateTime  @default(now())
   resolvedAt DateTime?
@@ -918,6 +919,20 @@ model SupportRequest {
   @@index([status])
   @@index([externalDocumentId])
   @@index([createdAt])
+}
+
+model SupportRequestAttachment {
+  id               Int      @id @default(autoincrement())
+  supportRequestId Int
+  fileName         String
+  storedFileName   String   @unique
+  mimeType         String
+  size             Int
+  createdAt        DateTime @default(now())
+
+  supportRequest SupportRequest @relation(fields: [supportRequestId], references: [id], onDelete: Cascade)
+
+  @@index([supportRequestId])
 }
 
 model AuthSession {

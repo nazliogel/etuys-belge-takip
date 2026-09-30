@@ -322,6 +322,7 @@ export type SupportRequestWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"SupportRequest"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
   assignedTo?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  attachments?: Prisma.SupportRequestAttachmentListRelationFilter
 }
 
 export type SupportRequestOrderByWithRelationInput = {
@@ -343,6 +344,7 @@ export type SupportRequestOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   company?: Prisma.CompanyOrderByWithRelationInput
   assignedTo?: Prisma.UserOrderByWithRelationInput
+  attachments?: Prisma.SupportRequestAttachmentOrderByRelationAggregateInput
 }
 
 export type SupportRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -368,6 +370,7 @@ export type SupportRequestWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"SupportRequest"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
   assignedTo?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  attachments?: Prisma.SupportRequestAttachmentListRelationFilter
 }, "id" | "companyId_ticketNumber">
 
 export type SupportRequestOrderByWithAggregationInput = {
@@ -432,6 +435,7 @@ export type SupportRequestCreateInput = {
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutSupportRequestsInput
   assignedTo?: Prisma.UserCreateNestedOneWithoutAssignedSupportRequestsInput
+  attachments?: Prisma.SupportRequestAttachmentCreateNestedManyWithoutSupportRequestInput
 }
 
 export type SupportRequestUncheckedCreateInput = {
@@ -451,6 +455,7 @@ export type SupportRequestUncheckedCreateInput = {
   createdAt?: Date | string
   resolvedAt?: Date | string | null
   updatedAt?: Date | string
+  attachments?: Prisma.SupportRequestAttachmentUncheckedCreateNestedManyWithoutSupportRequestInput
 }
 
 export type SupportRequestUpdateInput = {
@@ -469,6 +474,7 @@ export type SupportRequestUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutSupportRequestsNestedInput
   assignedTo?: Prisma.UserUpdateOneWithoutAssignedSupportRequestsNestedInput
+  attachments?: Prisma.SupportRequestAttachmentUpdateManyWithoutSupportRequestNestedInput
 }
 
 export type SupportRequestUncheckedUpdateInput = {
@@ -488,6 +494,7 @@ export type SupportRequestUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attachments?: Prisma.SupportRequestAttachmentUncheckedUpdateManyWithoutSupportRequestNestedInput
 }
 
 export type SupportRequestCreateManyInput = {
@@ -632,6 +639,11 @@ export type SupportRequestSumOrderByAggregateInput = {
   relatedRecordId?: Prisma.SortOrder
 }
 
+export type SupportRequestScalarRelationFilter = {
+  is?: Prisma.SupportRequestWhereInput
+  isNot?: Prisma.SupportRequestWhereInput
+}
+
 export type SupportRequestCreateNestedManyWithoutAssignedToInput = {
   create?: Prisma.XOR<Prisma.SupportRequestCreateWithoutAssignedToInput, Prisma.SupportRequestUncheckedCreateWithoutAssignedToInput> | Prisma.SupportRequestCreateWithoutAssignedToInput[] | Prisma.SupportRequestUncheckedCreateWithoutAssignedToInput[]
   connectOrCreate?: Prisma.SupportRequestCreateOrConnectWithoutAssignedToInput | Prisma.SupportRequestCreateOrConnectWithoutAssignedToInput[]
@@ -728,6 +740,20 @@ export type EnumSupportRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.SupportRequestStatus
 }
 
+export type SupportRequestCreateNestedOneWithoutAttachmentsInput = {
+  create?: Prisma.XOR<Prisma.SupportRequestCreateWithoutAttachmentsInput, Prisma.SupportRequestUncheckedCreateWithoutAttachmentsInput>
+  connectOrCreate?: Prisma.SupportRequestCreateOrConnectWithoutAttachmentsInput
+  connect?: Prisma.SupportRequestWhereUniqueInput
+}
+
+export type SupportRequestUpdateOneRequiredWithoutAttachmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.SupportRequestCreateWithoutAttachmentsInput, Prisma.SupportRequestUncheckedCreateWithoutAttachmentsInput>
+  connectOrCreate?: Prisma.SupportRequestCreateOrConnectWithoutAttachmentsInput
+  upsert?: Prisma.SupportRequestUpsertWithoutAttachmentsInput
+  connect?: Prisma.SupportRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SupportRequestUpdateToOneWithWhereWithoutAttachmentsInput, Prisma.SupportRequestUpdateWithoutAttachmentsInput>, Prisma.SupportRequestUncheckedUpdateWithoutAttachmentsInput>
+}
+
 export type SupportRequestCreateWithoutAssignedToInput = {
   ticketNumber?: string | null
   topic: $Enums.SupportRequestTopic
@@ -743,6 +769,7 @@ export type SupportRequestCreateWithoutAssignedToInput = {
   resolvedAt?: Date | string | null
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutSupportRequestsInput
+  attachments?: Prisma.SupportRequestAttachmentCreateNestedManyWithoutSupportRequestInput
 }
 
 export type SupportRequestUncheckedCreateWithoutAssignedToInput = {
@@ -761,6 +788,7 @@ export type SupportRequestUncheckedCreateWithoutAssignedToInput = {
   createdAt?: Date | string
   resolvedAt?: Date | string | null
   updatedAt?: Date | string
+  attachments?: Prisma.SupportRequestAttachmentUncheckedCreateNestedManyWithoutSupportRequestInput
 }
 
 export type SupportRequestCreateOrConnectWithoutAssignedToInput = {
@@ -826,6 +854,7 @@ export type SupportRequestCreateWithoutCompanyInput = {
   resolvedAt?: Date | string | null
   updatedAt?: Date | string
   assignedTo?: Prisma.UserCreateNestedOneWithoutAssignedSupportRequestsInput
+  attachments?: Prisma.SupportRequestAttachmentCreateNestedManyWithoutSupportRequestInput
 }
 
 export type SupportRequestUncheckedCreateWithoutCompanyInput = {
@@ -844,6 +873,7 @@ export type SupportRequestUncheckedCreateWithoutCompanyInput = {
   createdAt?: Date | string
   resolvedAt?: Date | string | null
   updatedAt?: Date | string
+  attachments?: Prisma.SupportRequestAttachmentUncheckedCreateNestedManyWithoutSupportRequestInput
 }
 
 export type SupportRequestCreateOrConnectWithoutCompanyInput = {
@@ -870,6 +900,96 @@ export type SupportRequestUpdateWithWhereUniqueWithoutCompanyInput = {
 export type SupportRequestUpdateManyWithWhereWithoutCompanyInput = {
   where: Prisma.SupportRequestScalarWhereInput
   data: Prisma.XOR<Prisma.SupportRequestUpdateManyMutationInput, Prisma.SupportRequestUncheckedUpdateManyWithoutCompanyInput>
+}
+
+export type SupportRequestCreateWithoutAttachmentsInput = {
+  ticketNumber?: string | null
+  topic: $Enums.SupportRequestTopic
+  section?: $Enums.SupportRequestSection | null
+  externalDocumentId?: number | null
+  documentNumber?: string | null
+  relatedRecordId?: number | null
+  relatedRecordName?: string | null
+  description: string
+  status?: $Enums.SupportRequestStatus
+  viewedAt?: Date | string | null
+  createdAt?: Date | string
+  resolvedAt?: Date | string | null
+  updatedAt?: Date | string
+  company: Prisma.CompanyCreateNestedOneWithoutSupportRequestsInput
+  assignedTo?: Prisma.UserCreateNestedOneWithoutAssignedSupportRequestsInput
+}
+
+export type SupportRequestUncheckedCreateWithoutAttachmentsInput = {
+  id?: number
+  ticketNumber?: string | null
+  companyId: number
+  assignedToId?: number | null
+  topic: $Enums.SupportRequestTopic
+  section?: $Enums.SupportRequestSection | null
+  externalDocumentId?: number | null
+  documentNumber?: string | null
+  relatedRecordId?: number | null
+  relatedRecordName?: string | null
+  description: string
+  status?: $Enums.SupportRequestStatus
+  viewedAt?: Date | string | null
+  createdAt?: Date | string
+  resolvedAt?: Date | string | null
+  updatedAt?: Date | string
+}
+
+export type SupportRequestCreateOrConnectWithoutAttachmentsInput = {
+  where: Prisma.SupportRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.SupportRequestCreateWithoutAttachmentsInput, Prisma.SupportRequestUncheckedCreateWithoutAttachmentsInput>
+}
+
+export type SupportRequestUpsertWithoutAttachmentsInput = {
+  update: Prisma.XOR<Prisma.SupportRequestUpdateWithoutAttachmentsInput, Prisma.SupportRequestUncheckedUpdateWithoutAttachmentsInput>
+  create: Prisma.XOR<Prisma.SupportRequestCreateWithoutAttachmentsInput, Prisma.SupportRequestUncheckedCreateWithoutAttachmentsInput>
+  where?: Prisma.SupportRequestWhereInput
+}
+
+export type SupportRequestUpdateToOneWithWhereWithoutAttachmentsInput = {
+  where?: Prisma.SupportRequestWhereInput
+  data: Prisma.XOR<Prisma.SupportRequestUpdateWithoutAttachmentsInput, Prisma.SupportRequestUncheckedUpdateWithoutAttachmentsInput>
+}
+
+export type SupportRequestUpdateWithoutAttachmentsInput = {
+  ticketNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  topic?: Prisma.EnumSupportRequestTopicFieldUpdateOperationsInput | $Enums.SupportRequestTopic
+  section?: Prisma.NullableEnumSupportRequestSectionFieldUpdateOperationsInput | $Enums.SupportRequestSection | null
+  externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedRecordId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  relatedRecordName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSupportRequestStatusFieldUpdateOperationsInput | $Enums.SupportRequestStatus
+  viewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  company?: Prisma.CompanyUpdateOneRequiredWithoutSupportRequestsNestedInput
+  assignedTo?: Prisma.UserUpdateOneWithoutAssignedSupportRequestsNestedInput
+}
+
+export type SupportRequestUncheckedUpdateWithoutAttachmentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  ticketNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedToId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topic?: Prisma.EnumSupportRequestTopicFieldUpdateOperationsInput | $Enums.SupportRequestTopic
+  section?: Prisma.NullableEnumSupportRequestSectionFieldUpdateOperationsInput | $Enums.SupportRequestSection | null
+  externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  relatedRecordId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  relatedRecordName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSupportRequestStatusFieldUpdateOperationsInput | $Enums.SupportRequestStatus
+  viewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SupportRequestCreateManyAssignedToInput = {
@@ -905,6 +1025,7 @@ export type SupportRequestUpdateWithoutAssignedToInput = {
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutSupportRequestsNestedInput
+  attachments?: Prisma.SupportRequestAttachmentUpdateManyWithoutSupportRequestNestedInput
 }
 
 export type SupportRequestUncheckedUpdateWithoutAssignedToInput = {
@@ -923,6 +1044,7 @@ export type SupportRequestUncheckedUpdateWithoutAssignedToInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attachments?: Prisma.SupportRequestAttachmentUncheckedUpdateManyWithoutSupportRequestNestedInput
 }
 
 export type SupportRequestUncheckedUpdateManyWithoutAssignedToInput = {
@@ -976,6 +1098,7 @@ export type SupportRequestUpdateWithoutCompanyInput = {
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assignedTo?: Prisma.UserUpdateOneWithoutAssignedSupportRequestsNestedInput
+  attachments?: Prisma.SupportRequestAttachmentUpdateManyWithoutSupportRequestNestedInput
 }
 
 export type SupportRequestUncheckedUpdateWithoutCompanyInput = {
@@ -994,6 +1117,7 @@ export type SupportRequestUncheckedUpdateWithoutCompanyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attachments?: Prisma.SupportRequestAttachmentUncheckedUpdateManyWithoutSupportRequestNestedInput
 }
 
 export type SupportRequestUncheckedUpdateManyWithoutCompanyInput = {
@@ -1015,6 +1139,35 @@ export type SupportRequestUncheckedUpdateManyWithoutCompanyInput = {
 }
 
 
+/**
+ * Count Type SupportRequestCountOutputType
+ */
+
+export type SupportRequestCountOutputType = {
+  attachments: number
+}
+
+export type SupportRequestCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  attachments?: boolean | SupportRequestCountOutputTypeCountAttachmentsArgs
+}
+
+/**
+ * SupportRequestCountOutputType without action
+ */
+export type SupportRequestCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportRequestCountOutputType
+   */
+  select?: Prisma.SupportRequestCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * SupportRequestCountOutputType without action
+ */
+export type SupportRequestCountOutputTypeCountAttachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportRequestAttachmentWhereInput
+}
+
 
 export type SupportRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1035,6 +1188,8 @@ export type SupportRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   assignedTo?: boolean | Prisma.SupportRequest$assignedToArgs<ExtArgs>
+  attachments?: boolean | Prisma.SupportRequest$attachmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.SupportRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["supportRequest"]>
 
 export type SupportRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1102,6 +1257,8 @@ export type SupportRequestOmit<ExtArgs extends runtime.Types.Extensions.Internal
 export type SupportRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   assignedTo?: boolean | Prisma.SupportRequest$assignedToArgs<ExtArgs>
+  attachments?: boolean | Prisma.SupportRequest$attachmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.SupportRequestCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SupportRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -1117,6 +1274,7 @@ export type $SupportRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
   objects: {
     company: Prisma.$CompanyPayload<ExtArgs>
     assignedTo: Prisma.$UserPayload<ExtArgs> | null
+    attachments: Prisma.$SupportRequestAttachmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1531,6 +1689,7 @@ export interface Prisma__SupportRequestClient<T, Null = never, ExtArgs extends r
   readonly [Symbol.toStringTag]: "PrismaPromise"
   company<T extends Prisma.CompanyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CompanyDefaultArgs<ExtArgs>>): Prisma.Prisma__CompanyClient<runtime.Types.Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assignedTo<T extends Prisma.SupportRequest$assignedToArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SupportRequest$assignedToArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  attachments<T extends Prisma.SupportRequest$attachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SupportRequest$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1993,6 +2152,30 @@ export type SupportRequest$assignedToArgs<ExtArgs extends runtime.Types.Extensio
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * SupportRequest.attachments
+ */
+export type SupportRequest$attachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportRequestAttachment
+   */
+  select?: Prisma.SupportRequestAttachmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportRequestAttachment
+   */
+  omit?: Prisma.SupportRequestAttachmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportRequestAttachmentInclude<ExtArgs> | null
+  where?: Prisma.SupportRequestAttachmentWhereInput
+  orderBy?: Prisma.SupportRequestAttachmentOrderByWithRelationInput | Prisma.SupportRequestAttachmentOrderByWithRelationInput[]
+  cursor?: Prisma.SupportRequestAttachmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportRequestAttachmentScalarFieldEnum | Prisma.SupportRequestAttachmentScalarFieldEnum[]
 }
 
 /**
