@@ -36,10 +36,15 @@ export async function apiFetch<T>(
     throw new Error("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
   }
 
-  const data = await response.json();
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.message ?? "İstek sırasında bir hata oluştu.");
+    throw new Error(
+      data?.message ??
+        (response.status === 413
+          ? "Dosya boyutu sunucu sınırını aşıyor."
+          : "İstek sırasında bir hata oluştu."),
+    );
   }
 
   return data as T;

@@ -419,7 +419,7 @@ export default function SupportRequestsScreen() {
   };
 
   const getStatusLabel = (request: SupportRequest) => {
-    if (request.status === "RESOLVED") return "Çözüldü";
+    if (request.status === "RESOLVED") return "Onaylandı";
     if (request.status === "IN_PROGRESS") return "İşlemde";
     if (role === "OPERATION" || role === "ADMIN")
       return request.viewedAt ? "Görüldü" : "Yeni";
@@ -631,7 +631,7 @@ export default function SupportRequestsScreen() {
             accentClass="border-l-indigo-400"
           />
           <StatCard
-            label="Çözüldü"
+            label="Onaylandı"
             value={stats.resolved}
             icon={<CheckCircle2 size={15} strokeWidth={1.75} />}
             accentClass="border-l-emerald-400"
@@ -678,7 +678,7 @@ export default function SupportRequestsScreen() {
                   <div>Toplam</div>
                   <div>Yeni</div>
                   <div>İşlemde</div>
-                  <div>Çözüldü</div>
+                  <div>Onaylandı</div>
                   <div>Çözülmemiş</div>
                   <div>Çözüm Oranı</div>
                 </div>
@@ -812,7 +812,7 @@ export default function SupportRequestsScreen() {
                     label: role === "COMPANY" ? "Gönderildi" : "Yeni",
                   },
                   { key: "IN_PROGRESS" as const, label: "İşlemde" },
-                  { key: "RESOLVED" as const, label: "Çözüldü" },
+                  { key: "RESOLVED" as const, label: "Onaylandı" },
                 ].map((filter) => (
                   <button
                     key={filter.key}
@@ -1283,7 +1283,7 @@ export default function SupportRequestsScreen() {
                       <TimelineItem
                         icon={<CheckCircle2 size={14} />}
                         iconClass="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                        label="Çözüldü"
+                        label="Onaylandı"
                         date={selectedRequest.resolvedAt}
                         isLast
                       />
