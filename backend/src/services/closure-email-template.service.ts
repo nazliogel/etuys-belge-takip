@@ -25,7 +25,20 @@ function formatDate(date: Date): string {
     timeZone: "UTC",
   }).format(date);
 }
-
+function isPastDate(date: Date): boolean {
+  const now = new Date();
+  const target = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+  );
+  const today = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+  return target < today;
+}
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -60,11 +73,12 @@ export function createClosureEmailTemplate(params: ClosureEmailTemplateParams) {
   const investorAddress =
     params.investorAddress?.trim() || "Adres bilgisi sistemde bulunmamaktadır.";
   const authorizationExpired = params.authorizationExpired === true;
+  const expired = isPastDate(params.targetDate);
   const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Kapatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 
-${documentNumber} belge numaralı yatırım teşvik belgenizin süresi ${targetDate} tarihinde dolacak olup bu belge için süre bitimine müteakip yasal olarak 3 ay içerisinde kapatma işlemleri yapılması gerekmektedir.
+${documentNumber} belge numaralı yatırım teşvik belgenizin süresi ${targetDate} tarihinde ${expired ? "dolmuş" : "dolacak"} olup bu belge için süre bitimine müteakip yasal olarak 3 ay içerisinde kapatma işlemleri yapılması gerekmektedir.
 
 Yatırım teşvik belgesi kapatma evrakları ekte yer almaktadır.
 
@@ -98,7 +112,7 @@ Saygılarımla,
 
     <p>
       ${escapeHtml(documentNumber)} belge numaralı yatırım teşvik
-      belgenizin süresi ${escapeHtml(targetDate)} tarihinde dolacak olup
+      belgenizin süresi ${escapeHtml(targetDate)} tarihinde ${expired ? "dolmuş" : "dolacak"} olup
       bu belge için süre bitimine müteakip yasal olarak 3 ay içerisinde
       kapatma işlemleri yapılması gerekmektedir.
     </p>
@@ -203,12 +217,13 @@ export function createExtensionEmailTemplate(
   const companyName = params.companyName.trim();
   const targetDate = formatDate(params.targetDate);
   const authorizationExpired = params.authorizationExpired === true;
+  const expired = isPastDate(params.targetDate);
 
   const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 
-Yatırım teşvik belgenizin üç yıllık süresi ${targetDate} tarihinde dolacaktır. Süre bitimine müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.
+Yatırım teşvik belgenizin üç yıllık süresi ${targetDate} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}. Süre bitimine müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.
 
 Süre uzatımı için güncel aya ait SGK borcu yoktur yazısı (Sanayi ve Teknoloji Bakanlığı’na verilmek üzere ibaresi eklenmelidir.) gerekmektedir.
 
@@ -225,7 +240,7 @@ ${authNoticeText(authorizationExpired)}Saygılarımla,
 
     <p>
       Yatırım teşvik belgenizin üç yıllık süresi
-      ${escapeHtml(targetDate)} tarihinde dolacaktır. Süre bitimine
+      ${escapeHtml(targetDate)} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}. Süre bitimine
       müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.
     </p>
 
@@ -272,12 +287,12 @@ export function createAuthorizationExpiryEmailTemplate(
 ) {
   const companyName = params.companyName.trim();
   const targetDate = formatDate(params.targetDate);
-
+  const expired = isPastDate(params.targetDate);
   const subject = `${getShortCompanyName(companyName)} E-TUYS Yetkilendirme Süresi Hk.`;
 
   const text = `Merhabalar,
 
-Yatırım teşvik belgenizin yürütümü için tarafımıza vermiş olduğunuz yetkilendirmenin süresi ${targetDate} tarihinde dolacaktır.
+Yatırım teşvik belgenizin yürütümü için tarafımıza vermiş olduğunuz yetkilendirmenin süresi ${targetDate} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}.
 
 Yetki süresinin sona ermesinin ardından firmanıza ait ekranları kontrol edemeyeceğimiz için ekranlarınızın takibi, olası teşvik belgesi süre uzatma ya da kapatma işlemlerinin yapılabilmesi ve genel süreçlerinizin takip edilebilmesi adına yetkilendirmenin yenilenmesi gerekmektedir.
 
@@ -307,7 +322,7 @@ Saygılarımla,
     <p>
       Yatırım teşvik belgenizin yürütümü için tarafımıza vermiş olduğunuz
       yetkilendirmenin süresi <strong>${escapeHtml(targetDate)}</strong>
-      tarihinde dolacaktır.
+      tarihinde ${expired ? "dolmuştur" : "dolacaktır"}.
     </p>
 
        <p>
