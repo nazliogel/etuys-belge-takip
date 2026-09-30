@@ -422,6 +422,7 @@ export const ModelName = {
   DocumentReminder: 'DocumentReminder',
   CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
   SupportRequest: 'SupportRequest',
+  SupportRequestAttachment: 'SupportRequestAttachment',
   AuthSession: 'AuthSession'
 } as const
 
@@ -438,7 +439,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "authSession"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2292,6 +2293,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SupportRequestAttachment: {
+      payload: Prisma.$SupportRequestAttachmentPayload<ExtArgs>
+      fields: Prisma.SupportRequestAttachmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupportRequestAttachmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupportRequestAttachmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>
+        }
+        findFirst: {
+          args: Prisma.SupportRequestAttachmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupportRequestAttachmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>
+        }
+        findMany: {
+          args: Prisma.SupportRequestAttachmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>[]
+        }
+        create: {
+          args: Prisma.SupportRequestAttachmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>
+        }
+        createMany: {
+          args: Prisma.SupportRequestAttachmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupportRequestAttachmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>[]
+        }
+        delete: {
+          args: Prisma.SupportRequestAttachmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>
+        }
+        update: {
+          args: Prisma.SupportRequestAttachmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupportRequestAttachmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupportRequestAttachmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupportRequestAttachmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupportRequestAttachmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportRequestAttachmentPayload>
+        }
+        aggregate: {
+          args: Prisma.SupportRequestAttachmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportRequestAttachment>
+        }
+        groupBy: {
+          args: Prisma.SupportRequestAttachmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportRequestAttachmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupportRequestAttachmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportRequestAttachmentCountAggregateOutputType> | number
+        }
+      }
+    }
     AuthSession: {
       payload: Prisma.$AuthSessionPayload<ExtArgs>
       fields: Prisma.AuthSessionFieldRefs
@@ -2962,6 +3037,19 @@ export const SupportRequestScalarFieldEnum = {
 export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
 
 
+export const SupportRequestAttachmentScalarFieldEnum = {
+  id: 'id',
+  supportRequestId: 'supportRequestId',
+  fileName: 'fileName',
+  storedFileName: 'storedFileName',
+  mimeType: 'mimeType',
+  size: 'size',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportRequestAttachmentScalarFieldEnum = (typeof SupportRequestAttachmentScalarFieldEnum)[keyof typeof SupportRequestAttachmentScalarFieldEnum]
+
+
 export const AuthSessionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -3532,6 +3620,7 @@ export type GlobalOmitConfig = {
   documentReminder?: Prisma.DocumentReminderOmit
   companyAuthorizationReminder?: Prisma.CompanyAuthorizationReminderOmit
   supportRequest?: Prisma.SupportRequestOmit
+  supportRequestAttachment?: Prisma.SupportRequestAttachmentOmit
   authSession?: Prisma.AuthSessionOmit
 }
 

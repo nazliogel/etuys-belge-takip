@@ -9,6 +9,12 @@ type CreateSupportRequestParams = {
   companyId: number;
   assignedToId?: number | null;
   description: string;
+  attachments?: {
+    fileName: string;
+    storedFileName: string;
+    mimeType: string;
+    size: number;
+  }[];
 };
 
 export class SupportRequestRepository {
@@ -61,11 +67,16 @@ export class SupportRequestRepository {
 
           description: params.description,
           status: "SENT",
+
+          attachments: params.attachments?.length
+            ? { create: params.attachments }
+            : undefined,
         },
 
         include: {
           company: true,
           assignedTo: true,
+          attachments: true,
         },
       });
     });
@@ -77,6 +88,16 @@ export class SupportRequestRepository {
       include: {
         company: true,
         assignedTo: true,
+        attachments: true,
+      },
+    });
+  }
+
+  async findAttachmentById(supportRequestId: number, attachmentId: number) {
+    return prisma.supportRequestAttachment.findFirst({
+      where: {
+        id: attachmentId,
+        supportRequestId,
       },
     });
   }
@@ -105,6 +126,7 @@ export class SupportRequestRepository {
       include: {
         company: true,
         assignedTo: true,
+        attachments: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -122,6 +144,7 @@ export class SupportRequestRepository {
       include: {
         company: true,
         assignedTo: true,
+        attachments: true,
       },
     });
   }
@@ -136,6 +159,7 @@ export class SupportRequestRepository {
       include: {
         company: true,
         assignedTo: true,
+        attachments: true,
       },
     });
   }
@@ -159,6 +183,7 @@ export class SupportRequestRepository {
       include: {
         company: true,
         assignedTo: true,
+        attachments: true,
       },
     });
   }
@@ -173,6 +198,7 @@ export class SupportRequestRepository {
       include: {
         company: true,
         assignedTo: true,
+        attachments: true,
       },
     });
   }

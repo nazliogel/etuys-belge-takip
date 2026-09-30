@@ -76,6 +76,7 @@ export const ModelName = {
   DocumentReminder: 'DocumentReminder',
   CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
   SupportRequest: 'SupportRequest',
+  SupportRequestAttachment: 'SupportRequestAttachment',
   AuthSession: 'AuthSession'
 } as const
 
@@ -650,6 +651,19 @@ export const SupportRequestScalarFieldEnum = {
 } as const
 
 export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
+
+
+export const SupportRequestAttachmentScalarFieldEnum = {
+  id: 'id',
+  supportRequestId: 'supportRequestId',
+  fileName: 'fileName',
+  storedFileName: 'storedFileName',
+  mimeType: 'mimeType',
+  size: 'size',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportRequestAttachmentScalarFieldEnum = (typeof SupportRequestAttachmentScalarFieldEnum)[keyof typeof SupportRequestAttachmentScalarFieldEnum]
 
 
 export const AuthSessionScalarFieldEnum = {
