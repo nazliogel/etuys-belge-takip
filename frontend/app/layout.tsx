@@ -6,8 +6,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "E-TUYS Belge Takip",
-  description: "E-TUYS belge takip ve yönetim sistemi",
+  title: "Tesvik Akkaş",
+  description:
+    "Teşvik Akkaş ile yatırım teşvik belgelerinizi, yetki sürelerinizi ve başvuru süreçlerinizi tek panelden takip edin.",
 };
 
 export default function RootLayout({
