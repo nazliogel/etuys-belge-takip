@@ -43,6 +43,14 @@ function subtractMonthsClamped(date: Date, months: number): Date {
   );
 }
 
+/** Belge bitişinden sonra tanınan ilave süre uzatım hakkı (1,5 yıl) */
+export const EXTENSION_RIGHT_MONTHS = 18;
+
+/** Süre uzatım hakkının son günü = süre uzatım tarihi + 18 ay */
+export function getExtensionRightDeadline(extensionDate: Date): Date {
+  return subtractMonthsClamped(extensionDate, -EXTENSION_RIGHT_MONTHS);
+}
+
 export function resolveReminderMonth(
   targetDate: Date,
   today: Date,
@@ -98,10 +106,33 @@ export function resolveReminderDecision(
     normalizedExtensionDate,
   );
 
-  // Süre uzatma mailinin mevcut 6 aylık kuralı korunur.
   if (isExtensionApplication) {
+    // YENİ: Süre uzatım hakkının son günü = uzatım tarihi + 18 ay
+    const extensionRightDeadline = getExtensionRightDeadline(
+      normalizedExtensionDate,
+    );
+
+    // 18 ay dolmamışsa: süre uzatma maili (mevcut 6 aylık kural korunur)
+    if (normalizedToday <= extensionRightDeadline) {
+      const reminderMonth = resolveReminderMonth(
+        normalizedDocumentEndDate,
+        normalizedToday,
+      );
+
+      if (reminderMonth === null) {
+        return null;
+      }
+
+      return {
+        type: "EXTENSION_APPLICATION",
+        targetDate: normalizedDocumentEndDate,
+        reminderMonth,
+      };
+    }
+
+    // YENİ: 18 ay dolmuşsa uzatma hakkı kalmadı → sadece kapatma maili
     const reminderMonth = resolveReminderMonth(
-      normalizedDocumentEndDate,
+      extensionRightDeadline,
       normalizedToday,
     );
 
@@ -110,8 +141,8 @@ export function resolveReminderDecision(
     }
 
     return {
-      type: "EXTENSION_APPLICATION",
-      targetDate: normalizedDocumentEndDate,
+      type: "CLOSURE_APPLICATION",
+      targetDate: normalizedExtensionDate,
       reminderMonth,
     };
   }

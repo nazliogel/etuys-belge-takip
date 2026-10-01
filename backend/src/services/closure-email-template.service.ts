@@ -39,6 +39,34 @@ function isPastDate(date: Date): boolean {
   );
   return target < today;
 }
+
+/** Ay ekler; hedef ayda o gün yoksa ayın son gününe sabitler */
+function addMonthsUTC(date: Date, months: number): Date {
+  const y = date.getUTCFullYear();
+  const m = date.getUTCMonth() + months;
+  const d = date.getUTCDate();
+  const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m, Math.min(d, lastDay)));
+}
+
+/** Bugünden verilen tarihe kalan süreyi "X ay Y gün" olarak yazar */
+function formatRemaining(until: Date): string {
+  const now = new Date();
+  const today = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  let months =
+    (until.getUTCFullYear() - today.getUTCFullYear()) * 12 +
+    (until.getUTCMonth() - today.getUTCMonth());
+  if (addMonthsUTC(today, months).getTime() > until.getTime()) months--;
+  const days = Math.round(
+    (until.getTime() - addMonthsUTC(today, months).getTime()) / 86_400_000,
+  );
+  const parts: string[] = [];
+  if (months > 0) parts.push(`${months} ay`);
+  if (days > 0) parts.push(`${days} gün`);
+  return parts.length ? parts.join(" ") : "0 gün";
+}
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -219,11 +247,19 @@ export function createExtensionEmailTemplate(
   const authorizationExpired = params.authorizationExpired === true;
   const expired = isPastDate(params.targetDate);
 
+  // Son hak tarihi = süre uzatım tarihi + 18 ay
+  const deadline = addMonthsUTC(params.targetDate, 18);
+  const deadlineText = formatDate(deadline);
+
+  const extensionSentence = expired
+    ? `Süre uzatım hakkınız ${deadlineText} tarihinde sona erecektir. Bu tarihe kadar süre uzatımı yapılması hâlinde belgeniz en fazla ${deadlineText} tarihine kadar uzatılabilecek olup bugün itibarıyla kalan süreniz ${formatRemaining(deadline)} olacaktır.`
+    : `Süre bitimine müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.`;
+
   const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
 
   const text = `Merhabalar,
 
-Yatırım teşvik belgenizin üç yıllık süresi ${targetDate} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}. Süre bitimine müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.
+Yatırım teşvik belgenizin üç yıllık süresi ${targetDate} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}. ${extensionSentence}
 
 Süre uzatımı için güncel aya ait SGK borcu yoktur yazısı (Sanayi ve Teknoloji Bakanlığı’na verilmek üzere ibaresi eklenmelidir.) gerekmektedir.
 
@@ -240,8 +276,8 @@ ${authNoticeText(authorizationExpired)}Saygılarımla,
 
     <p>
       Yatırım teşvik belgenizin üç yıllık süresi
-      ${escapeHtml(targetDate)} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}. Süre bitimine
-      müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.
+      ${escapeHtml(targetDate)} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}.
+      ${escapeHtml(extensionSentence)}
     </p>
 
     <p>

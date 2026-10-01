@@ -12,6 +12,7 @@ export const DEFAULT_CC_RECIPIENTS = [
   "berkeincesu@aya.com.tr",
   "murathanaraci@aya.com.tr",
   "yatirimtesvik@akkasgroup.com",
+  "beyzabasaran@akkasgroup.com",
 ];
 
 export class DocumentReminderPreviewService {
