@@ -115,9 +115,7 @@ Firma olarak evrakları tamamlamanızı ve dosyanızı tarafımıza göndermeniz
 Sonrasında bizde gerekli dosyalarımızı hazırlayıp kuruma müracaatımızı tamamlamış olacağız.
 
 
-İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında uzmanlarımız sizi ayrıca bilgilendirecektir.
-
-**Uzman masrafları firmanıza uzmanların ziyareti zamanı belli olacak.
+**İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında uzmanlarımız sizi ayrıca bilgilendirecektir.
 
 Belgenizin kapanış müracaat işlemlerini evraklarınız bize eksiksiz geldikten sonra 10 gün içerisinde tamamlayacağız.
 
@@ -159,13 +157,9 @@ Saygılarımla,
       müracaatımızı tamamlamış olacağız.
     </p>
 
-    <p>
-      İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında
-      uzmanlarımız sizi ayrıca bilgilendirecektir.
-    </p>
-    <p>
-      <strong>**Uzman masrafları firmanıza uzmanların ziyareti zamanı
-      belli olacak.</strong>
+       <p>
+      <strong>İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında
+      uzmanlarımız sizi ayrıca bilgilendirecektir.</strong>
     </p>
 
     <p>
