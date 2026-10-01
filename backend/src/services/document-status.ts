@@ -15,6 +15,8 @@ export type DisplayStatus =
 export const EXTENSION_APPLICATION_MONTHS = 6;
 /** Bitişe kaç ay kala "Süresi Yaklaşıyor" sayılır */
 export const EXPIRING_WINDOW_MONTHS = 6;
+/** Süre uzatım hakkı, süre uzatım tarihinden itibaren kaç ay sürer (1,5 yıl) */
+export const EXTENSION_RIGHT_MONTHS = 18;
 
 /** "YYYY-MM-DD" biçiminde takvim günü */
 export type DateOnly = string;
@@ -76,18 +78,33 @@ export function computeDocumentStatus(
   const isExtended =
     endDate !== null && extensionDate !== null && endDate !== extensionDate;
 
+  // Uzatılmamış belgede süre uzatım hakkının son günü (uzatım tarihi + 18 ay).
+  const extensionRightDeadline =
+    endDate !== null && extensionDate !== null && !isExtended
+      ? addMonths(extensionDate, EXTENSION_RIGHT_MONTHS)
+      : null;
+
+  // Uzatılmamış ama 18 ayı geçmiş belge artık uzatılamaz.
+  const isExtensionRightExpired =
+    extensionRightDeadline !== null && extensionRightDeadline < today;
+
   const effectiveEndDate = isExtended
     ? extensionDate
     : (endDate ?? extensionDate);
 
   const extensionApplicationStartDate =
-    endDate !== null && extensionDate !== null && !isExtended
+    endDate !== null &&
+    extensionDate !== null &&
+    !isExtended &&
+    !isExtensionRightExpired
       ? addMonths(endDate, -EXTENSION_APPLICATION_MONTHS)
       : null;
 
   const closureApplicationStartDate = isExtended
     ? addMonths(extensionDate!, -EXTENSION_APPLICATION_MONTHS)
-    : null;
+    : isExtensionRightExpired
+      ? extensionRightDeadline
+      : null;
 
   const result = (displayStatus: DisplayStatus): DocumentStatusResult => ({
     displayStatus,
@@ -110,6 +127,9 @@ export function computeDocumentStatus(
 
   // 3) Kapatma: uzatılmış ve uzatılan süre geçmiş
   if (isExtended && extensionDate! < today) return result("CLOSURE_ELIGIBLE");
+
+  // 3b) Uzatılmamış ama 1,5 yıllık uzatım hakkı geçmiş → kapatma
+  if (isExtensionRightExpired) return result("CLOSURE_ELIGIBLE");
 
   // 4) Süre uzatma: uzatılmamış ve müracaat dönemi başlamış
   if (extensionApplicationStartDate && today >= extensionApplicationStartDate) {

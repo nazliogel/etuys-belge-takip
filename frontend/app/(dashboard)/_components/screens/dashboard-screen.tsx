@@ -318,9 +318,7 @@ function SectionCard({
 }
 
 function ListMessage({ children }: { children: ReactNode }) {
-  return (
-    <p className="py-6 text-center text-xs text-slate-400">{children}</p>
-  );
+  return <p className="py-6 text-center text-xs text-slate-400">{children}</p>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -342,7 +340,7 @@ export function DashboardScreen() {
   const [closureSortDir, setClosureSortDir] = useState<SortDirection>("asc");
   const [extensionSortDir, setExtensionSortDir] =
     useState<SortDirection>("asc");
-  // Aktif: bitişi en yakın olan üstte (asc). Kapalı: en son biten üstte (desc).
+  // Aktif: uzatma tarihi en yakın olan üstte (asc). Kapalı: en yeni olan üstte (desc).
   const [activeSortDir, setActiveSortDir] = useState<SortDirection>("asc");
   const [closedSortDir, setClosedSortDir] = useState<SortDirection>("desc");
 
@@ -393,11 +391,13 @@ export function DashboardScreen() {
     };
   }, []);
 
+  // Kapatma, aktif ve kapalı listeleri uzatma tarihine göre sıralanır;
+  // uzatma tarihi yoksa bitiş tarihi kullanılır.
   const sortedClosureItems = useMemo(
     () =>
       sortByDate(
         data?.closureEligibleItems ?? [],
-        (item) => item.documentEndDate,
+        (item) => item.extensionDate ?? item.documentEndDate,
         closureSortDir,
       ),
     [data?.closureEligibleItems, closureSortDir],
@@ -417,7 +417,7 @@ export function DashboardScreen() {
     () =>
       sortByDate(
         data?.activeDocumentItems ?? [],
-        (item) => item.documentEndDate,
+        (item) => item.extensionDate ?? item.documentEndDate,
         activeSortDir,
       ),
     [data?.activeDocumentItems, activeSortDir],
@@ -427,7 +427,7 @@ export function DashboardScreen() {
     () =>
       sortByDate(
         data?.closedCancelledItems ?? [],
-        (item) => item.documentEndDate,
+        (item) => item.extensionDate ?? item.documentEndDate,
         closedSortDir,
       ),
     [data?.closedCancelledItems, closedSortDir],
@@ -588,6 +588,150 @@ export function DashboardScreen() {
         })}
       </section>
 
+      {/* AKTİF BELGELER & KAPALI / İPTAL BELGELER */}
+      {!isCompany && (
+        <section className="grid gap-6 xl:grid-cols-2">
+          <SectionCard
+            icon={FileCheck2}
+            title="Aktif Belgeler"
+            description="Sistemde aktif durumda bulunan teşvik belgeleri."
+            actions={
+              <>
+                <SortButton
+                  direction={activeSortDir}
+                  label="Uzatma Tarihi"
+                  onToggle={() =>
+                    setActiveSortDir((prev) =>
+                      prev === "asc" ? "desc" : "asc",
+                    )
+                  }
+                />
+
+                <ViewAllLink href="/documents?status=ACTIVE" />
+              </>
+            }
+          >
+            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
+              {isInitialLoading ? (
+                <p className="py-8 text-center text-xs text-slate-400">
+                  Aktif belgeler yükleniyor...
+                </p>
+              ) : sortedActiveItems.length === 0 ? (
+                <p className="py-8 text-center text-xs text-slate-400">
+                  Aktif belge bulunmuyor.
+                </p>
+              ) : (
+                sortedActiveItems.map((document) => (
+                  <article
+                    key={document.id}
+                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
+                        <FileCheck2 size={16} />
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold text-slate-900">
+                          {document.company.name}
+                        </h3>
+
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Belge No:{" "}
+                          <strong className="text-slate-700">
+                            {document.documentNumber || "—"}
+                          </strong>
+                          {" · "}
+                          Uzatma tarihi:{" "}
+                          <strong className="text-emerald-600">
+                            {formatDate(document.extensionDate)}
+                          </strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                        Aktif
+                      </span>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            icon={Ban}
+            title="Kapalı / İptal Belgeler"
+            description="Kapatılmış veya iptal edilmiş teşvik belgeleri."
+            actions={
+              <>
+                <SortButton
+                  direction={closedSortDir}
+                  label="Uzatma Tarihi"
+                  onToggle={() =>
+                    setClosedSortDir((prev) =>
+                      prev === "asc" ? "desc" : "asc",
+                    )
+                  }
+                />
+
+                <ViewAllLink href="/documents?status=INACTIVE" />
+              </>
+            }
+          >
+            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
+              {isInitialLoading ? (
+                <p className="py-8 text-center text-xs text-slate-400">
+                  Kapalı belgeler yükleniyor...
+                </p>
+              ) : sortedClosedItems.length === 0 ? (
+                <p className="py-8 text-center text-xs text-slate-400">
+                  Kapalı veya iptal edilmiş belge bulunmuyor.
+                </p>
+              ) : (
+                sortedClosedItems.map((document) => (
+                  <article
+                    key={document.id}
+                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
+                        <Ban size={16} />
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold text-slate-900">
+                          {document.company.name}
+                        </h3>
+
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Belge No:{" "}
+                          <strong className="text-slate-700">
+                            {document.documentNumber || "—"}
+                          </strong>
+                          {" · "}
+                          Uzatma tarihi:{" "}
+                          <strong className="text-slate-700">
+                            {formatDate(document.extensionDate)}
+                          </strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                        Kapalı / İptal
+                      </span>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </section>
+      )}
       {/* KAPATMA YAPILACAKLAR & SÜRE UZATMA */}
       <section
         className={`grid gap-6 ${isCompany ? "grid-cols-1" : "xl:grid-cols-2"}`}
@@ -600,12 +744,12 @@ export function DashboardScreen() {
             <>
               <SortButton
                 direction={closureSortDir}
-                label="Bitiş Tarihi"
+                label="Uzatma Tarihi"
                 onToggle={() =>
                   setClosureSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
                 }
               />
-              
+
               <ViewAllLink href="/documents?view=closure-eligible" />
             </>
           }
@@ -637,9 +781,9 @@ export function DashboardScreen() {
                           {document.documentNumber || "—"}
                         </strong>
                         {" · "}
-                        Bitiş tarihi:{" "}
+                        Uzatma tarihi:{" "}
                         <strong className="text-red-600">
-                          {formatDate(document.documentEndDate)}
+                          {formatDate(document.extensionDate)}
                         </strong>
                       </p>
                     </div>
@@ -663,14 +807,14 @@ export function DashboardScreen() {
               <>
                 <SortButton
                   direction={extensionSortDir}
-                  label="Başvuru Tarihi"
+                  label="Uzatma Tarihi"
                   onToggle={() =>
                     setExtensionSortDir((prev) =>
                       prev === "asc" ? "desc" : "asc",
                     )
                   }
                 />
-                
+
                 <ViewAllLink href="/documents?view=extension-eligible" />
               </>
             }
@@ -725,145 +869,6 @@ export function DashboardScreen() {
           </SectionCard>
         )}
       </section>
-
-      {/* AKTİF BELGELER & KAPALI / İPTAL BELGELER */}
-      {!isCompany && (
-        <section className="grid gap-6 xl:grid-cols-2">
-          <SectionCard
-            icon={FileCheck2}
-            title="Aktif Belgeler"
-            description="Sistemde aktif durumda bulunan teşvik belgeleri."
-            actions={
-              <>
-                <SortButton
-                  direction={activeSortDir}
-                  label="Bitiş Tarihi"
-                  onToggle={() =>
-                    setActiveSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
-                  }
-                />
-               
-                <ViewAllLink href="/documents?status=ACTIVE" />
-              </>
-            }
-          >
-            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
-              {isInitialLoading ? (
-                <p className="py-8 text-center text-xs text-slate-400">
-                  Aktif belgeler yükleniyor...
-                </p>
-              ) : sortedActiveItems.length === 0 ? (
-                <p className="py-8 text-center text-xs text-slate-400">
-                  Aktif belge bulunmuyor.
-                </p>
-              ) : (
-                sortedActiveItems.map((document) => (
-                  <article
-                    key={document.id}
-                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
-                        <FileCheck2 size={16} />
-                      </div>
-
-                      <div className="min-w-0">
-                        <h3 className="truncate text-sm font-semibold text-slate-900">
-                          {document.company.name}
-                        </h3>
-
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          Belge No:{" "}
-                          <strong className="text-slate-700">
-                            {document.documentNumber || "—"}
-                          </strong>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span className="text-xs text-slate-500">
-                        Bitiş: {formatDate(document.documentEndDate)}
-                      </span>
-
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                        Aktif
-                      </span>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            icon={Ban}
-            title="Kapalı / İptal Belgeler"
-            description="Kapatılmış veya iptal edilmiş teşvik belgeleri."
-            actions={
-              <>
-                <SortButton
-                  direction={closedSortDir}
-                  label="Bitiş Tarihi"
-                  onToggle={() =>
-                    setClosedSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
-                  }
-                />
-                
-                <ViewAllLink href="/documents?status=INACTIVE" />
-              </>
-            }
-          >
-            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
-              {isInitialLoading ? (
-                <p className="py-8 text-center text-xs text-slate-400">
-                  Kapalı belgeler yükleniyor...
-                </p>
-              ) : sortedClosedItems.length === 0 ? (
-                <p className="py-8 text-center text-xs text-slate-400">
-                  Kapalı veya iptal edilmiş belge bulunmuyor.
-                </p>
-              ) : (
-                sortedClosedItems.map((document) => (
-                  <article
-                    key={document.id}
-                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
-                        <Ban size={16} />
-                      </div>
-
-                      <div className="min-w-0">
-                        <h3 className="truncate text-sm font-semibold text-slate-900">
-                          {document.company.name}
-                        </h3>
-
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          Belge No:{" "}
-                          <strong className="text-slate-700">
-                            {document.documentNumber || "—"}
-                          </strong>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span className="text-xs text-slate-500">
-                        Bitiş: {formatDate(document.documentEndDate)}
-                      </span>
-
-                      <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
-                        Kapalı / İptal
-                      </span>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </SectionCard>
-        </section>
-      )}
     </div>
   );
 }
