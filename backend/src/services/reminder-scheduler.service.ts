@@ -8,6 +8,28 @@ import { DocumentReminderWhatsAppWorkerService } from "./document-reminder-whats
 
 type WorkerPriority = "DOCUMENT" | "AUTHORIZATION";
 
+/** Otomatik gönderim yalnızca hafta içi bu saatler arasında yapılır (Europe/Istanbul) */
+const SEND_WINDOW_START_HOUR = 8; // dahil
+const SEND_WINDOW_END_HOUR = 18; // hariç (17:59'a kadar gönderilir)
+
+export function isWithinSendingWindow(now: Date = new Date()): boolean {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Istanbul",
+    weekday: "short",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+
+  const weekday = parts.find((part) => part.type === "weekday")?.value;
+  const hour = Number(parts.find((part) => part.type === "hour")?.value);
+
+  const isWeekday = weekday !== "Sat" && weekday !== "Sun";
+
+  return (
+    isWeekday && hour >= SEND_WINDOW_START_HOUR && hour < SEND_WINDOW_END_HOUR
+  );
+}
+
 export class ReminderSchedulerService {
   private queueTimer?: NodeJS.Timeout;
   private workerTimer?: NodeJS.Timeout;
@@ -15,6 +37,7 @@ export class ReminderSchedulerService {
   private queueCycleRunning = false;
   private workerCycleRunning = false;
   private nextWorkerPriority: WorkerPriority = "DOCUMENT";
+  private outsideWindowLogged = false;
 
   constructor(
     private readonly documentQueueService = new DocumentReminderQueueService(),
@@ -111,7 +134,20 @@ export class ReminderSchedulerService {
     ) {
       return;
     }
+    if (!isWithinSendingWindow()) {
+      if (!this.outsideWindowLogged) {
+        console.log(
+          "Reminder workers paused: outside sending window (weekdays 08:00-18:00 Europe/Istanbul).",
+        );
+        this.outsideWindowLogged = true;
+      }
+      return;
+    }
 
+    if (this.outsideWindowLogged) {
+      console.log("Reminder workers resumed: within sending window.");
+      this.outsideWindowLogged = false;
+    }
     this.workerCycleRunning = true;
 
     try {
