@@ -12,7 +12,9 @@ export type DisplayStatus =
   | "ACTIVE";
 
 /** Süre uzatma müracaatı belge bitişinden kaç ay önce başlar */
-export const EXTENSION_APPLICATION_MONTHS = 6;
+export const EXTENSION_APPLICATION_MONTHS = 2;
+/** Kapatma müracaatı, uzatılmış sürenin bitişinden kaç ay önce başlar */
+export const CLOSURE_APPLICATION_MONTHS = 6;
 /** Bitişe kaç ay kala "Süresi Yaklaşıyor" sayılır */
 export const EXPIRING_WINDOW_MONTHS = 6;
 /** Süre uzatım hakkı, süre uzatım tarihinden itibaren kaç ay sürer (1,5 yıl) */
@@ -101,7 +103,7 @@ export function computeDocumentStatus(
       : null;
 
   const closureApplicationStartDate = isExtended
-    ? addMonths(extensionDate!, -EXTENSION_APPLICATION_MONTHS)
+    ? addMonths(extensionDate!, -CLOSURE_APPLICATION_MONTHS)
     : isExtensionRightExpired
       ? extensionRightDeadline
       : null;

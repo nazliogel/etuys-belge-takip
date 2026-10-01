@@ -42,6 +42,8 @@ function subtractMonthsClamped(date: Date, months: number): Date {
     ),
   );
 }
+/** Süre uzatma hatırlatma mailinin, bitiş tarihinden kaç ay önce başlayacağı */
+export const EXTENSION_REMINDER_WINDOW_MONTHS = 2;
 
 /** Belge bitişinden sonra tanınan ilave süre uzatım hakkı (1,5 yıl) */
 export const EXTENSION_RIGHT_MONTHS = 18;
@@ -57,10 +59,9 @@ export function resolveReminderMonth(
 ): number | null {
   const normalizedTarget = normalizeDate(targetDate);
   const normalizedToday = normalizeDate(today);
-
-  // Bitiş tarihinden önceki son 6 aylık dönem.
+  // Bitiş tarihinden önceki son EXTENSION_REMINDER_WINDOW_MONTHS aylık dönem.
   if (normalizedToday < normalizedTarget) {
-    for (let month = 6; month >= 1; month -= 1) {
+    for (let month = EXTENSION_REMINDER_WINDOW_MONTHS; month >= 1; month -= 1) {
       const periodStart = subtractMonthsClamped(normalizedTarget, month);
       const periodEnd = subtractMonthsClamped(normalizedTarget, month - 1);
 
@@ -112,7 +113,7 @@ export function resolveReminderDecision(
       normalizedExtensionDate,
     );
 
-    // 18 ay dolmamışsa: süre uzatma maili (mevcut 6 aylık kural korunur)
+    // 18 ay dolmamışsa: süre uzatma maili (bitişten önceki son 2 ay + bitişten sonra her ay)
     if (normalizedToday <= extensionRightDeadline) {
       const reminderMonth = resolveReminderMonth(
         normalizedDocumentEndDate,
