@@ -115,7 +115,7 @@ Firma olarak evrakları tamamlamanızı ve dosyanızı tarafımıza göndermeniz
 Sonrasında bizde gerekli dosyalarımızı hazırlayıp kuruma müracaatımızı tamamlamış olacağız.
 
 
-İşlemler için uzman masrafları hariç, kuruma yapılan ilk harç masrafları dahil 45.000 TL + KDV faturalandırmamız olacak.
+İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında uzmanlarımız sizi ayrıca bilgilendirecektir.
 
 **Uzman masrafları firmanıza uzmanların ziyareti zamanı belli olacak.
 
@@ -159,10 +159,10 @@ Saygılarımla,
       müracaatımızı tamamlamış olacağız.
     </p>
 
-         <p>
-        İşlemler için uzman masrafları hariç, kuruma yapılan ilk harç masrafları dahil
-        <strong>45.000 TL + KDV</strong> faturalandırmamız olacak.
-      </p>
+    <p>
+      İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında
+      uzmanlarımız sizi ayrıca bilgilendirecektir.
+    </p>
     <p>
       <strong>**Uzman masrafları firmanıza uzmanların ziyareti zamanı
       belli olacak.</strong>
@@ -263,7 +263,7 @@ Yatırım teşvik belgenizin üç yıllık süresi ${targetDate} tarihinde ${exp
 
 Süre uzatımı için güncel aya ait SGK borcu yoktur yazısı (Sanayi ve Teknoloji Bakanlığı’na verilmek üzere ibaresi eklenmelidir.) gerekmektedir.
 
-Yatırım teşvik belgesi süre uzatım ücreti harçlar dahil 20.000 TL + KDV şeklindedir.
+İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında uzmanlarımız sizi ayrıca bilgilendirecektir.
 
 ***Bakanlıkça yayınlanan tebliğ ve karara istinaden belge süresi dolan firmaların süre bitimi ardından 6 ay içerisinde belge kapatma işlemi ya da mevcutta süre uzatma hakları varsa bu işlemi gerçekleştirilmesi gerekliliği bulunduğunu ve aksi durumda bakanlığın herhangi bir işlem gerçekleştirmeyen firmaların belgelerini iptal etme hakkı bulunduğu bilgisini de hatırlatmak isteriz.
 
@@ -286,9 +286,9 @@ ${authNoticeText(authorizationExpired)}Saygılarımla,
       eklenmelidir.) gerekmektedir.
     </p>
 
-    <p>
-      Yatırım teşvik belgesi süre uzatım ücreti harçlar dahil
-      <strong>20.000 TL + KDV</strong> şeklindedir.
+        <p>
+      İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında
+      uzmanlarımız sizi ayrıca bilgilendirecektir.
     </p>
 
     <p>
