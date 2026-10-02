@@ -321,6 +321,42 @@ function ListMessage({ children }: { children: ReactNode }) {
   return <p className="py-6 text-center text-xs text-slate-400">{children}</p>;
 }
 
+/** Belge No · (Başvuru) · Bitiş tarihi (kırmızı) · Uzatma tarihi (yeşil) */
+function DocumentMeta({
+  documentNumber,
+  endDate,
+  extensionDate,
+  applicationDate,
+}: {
+  documentNumber: string | null;
+  endDate: string | null | undefined;
+  extensionDate: string | null | undefined;
+  /** Yalnızca Süre Uzatma kartında gösterilir */
+  applicationDate?: string | null;
+}) {
+  return (
+    <p className="mt-0.5 text-xs text-slate-500">
+      Belge No:{" "}
+      <strong className="text-slate-700">{documentNumber || "—"}</strong>
+      {applicationDate !== undefined && (
+        <>
+          {" · "}
+          Başvuru:{" "}
+          <strong className="text-slate-700">
+            {formatDate(applicationDate)}
+          </strong>
+        </>
+      )}
+      {" · "}
+      Bitiş tarihi:{" "}
+      <strong className="text-red-600">{formatDate(endDate)}</strong>
+      {" · "}
+      Uzatma tarihi:{" "}
+      <strong className="text-emerald-600">{formatDate(extensionDate)}</strong>
+    </p>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Ana ekran                                                                  */
 /* -------------------------------------------------------------------------- */
@@ -611,7 +647,7 @@ export function DashboardScreen() {
               </>
             }
           >
-            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
+            <div className="h-[320px] divide-y divide-slate-100 overflow-y-auto">
               {isInitialLoading ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Aktif belgeler yükleniyor...
@@ -624,7 +660,7 @@ export function DashboardScreen() {
                 sortedActiveItems.map((document) => (
                   <article
                     key={document.id}
-                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
+                    className="flex flex-col justify-between gap-2 px-5 py-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
@@ -636,17 +672,11 @@ export function DashboardScreen() {
                           {document.company.name}
                         </h3>
 
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          Belge No:{" "}
-                          <strong className="text-slate-700">
-                            {document.documentNumber || "—"}
-                          </strong>
-                          {" · "}
-                          Uzatma tarihi:{" "}
-                          <strong className="text-emerald-600">
-                            {formatDate(document.extensionDate)}
-                          </strong>
-                        </p>
+                        <DocumentMeta
+                          documentNumber={document.documentNumber}
+                          endDate={document.documentEndDate}
+                          extensionDate={document.extensionDate}
+                        />
                       </div>
                     </div>
 
@@ -681,7 +711,7 @@ export function DashboardScreen() {
               </>
             }
           >
-            <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
+            <div className="h-[320px] divide-y divide-slate-100 overflow-y-auto">
               {isInitialLoading ? (
                 <p className="py-8 text-center text-xs text-slate-400">
                   Kapalı belgeler yükleniyor...
@@ -694,7 +724,7 @@ export function DashboardScreen() {
                 sortedClosedItems.map((document) => (
                   <article
                     key={document.id}
-                    className="flex flex-col justify-between gap-2 p-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
+                    className="flex flex-col justify-between gap-2 px-5 py-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
@@ -706,17 +736,11 @@ export function DashboardScreen() {
                           {document.company.name}
                         </h3>
 
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          Belge No:{" "}
-                          <strong className="text-slate-700">
-                            {document.documentNumber || "—"}
-                          </strong>
-                          {" · "}
-                          Uzatma tarihi:{" "}
-                          <strong className="text-slate-700">
-                            {formatDate(document.extensionDate)}
-                          </strong>
-                        </p>
+                        <DocumentMeta
+                          documentNumber={document.documentNumber}
+                          endDate={document.documentEndDate}
+                          extensionDate={document.extensionDate}
+                        />
                       </div>
                     </div>
 
@@ -754,7 +778,7 @@ export function DashboardScreen() {
             </>
           }
         >
-          <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
+          <div className="h-[320px] divide-y divide-slate-100 overflow-y-auto">
             {isInitialLoading ? (
               <ListMessage>Yükleniyor...</ListMessage>
             ) : sortedClosureItems.length === 0 ? (
@@ -765,7 +789,7 @@ export function DashboardScreen() {
               sortedClosureItems.map((document) => (
                 <div
                   key={document.id}
-                  className="flex items-start justify-between gap-4 py-3"
+                  className="flex items-start justify-between gap-4 px-5 py-3"
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
@@ -775,17 +799,11 @@ export function DashboardScreen() {
                         {document.company.name}
                       </p>
 
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Belge No:{" "}
-                        <strong className="text-slate-700">
-                          {document.documentNumber || "—"}
-                        </strong>
-                        {" · "}
-                        Uzatma tarihi:{" "}
-                        <strong className="text-red-600">
-                          {formatDate(document.extensionDate)}
-                        </strong>
-                      </p>
+                      <DocumentMeta
+                        documentNumber={document.documentNumber}
+                        endDate={document.documentEndDate}
+                        extensionDate={document.extensionDate}
+                      />
                     </div>
                   </div>
 
@@ -819,7 +837,7 @@ export function DashboardScreen() {
               </>
             }
           >
-            <div className="max-h-[264px] divide-y divide-slate-100 overflow-y-auto px-5">
+            <div className="h-[320px] divide-y divide-slate-100 overflow-y-auto">
               {isInitialLoading ? (
                 <ListMessage>Yükleniyor...</ListMessage>
               ) : sortedExtensionItems.length === 0 ? (
@@ -830,7 +848,7 @@ export function DashboardScreen() {
                 sortedExtensionItems.map((document) => (
                   <div
                     key={document.id}
-                    className="flex items-start justify-between gap-4 py-3"
+                    className="flex items-start justify-between gap-4 px-5 py-3"
                   >
                     <div className="flex min-w-0 items-start gap-3">
                       <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
@@ -840,22 +858,14 @@ export function DashboardScreen() {
                           {document.company.name}
                         </p>
 
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          Belge No:{" "}
-                          <strong className="text-slate-700">
-                            {document.documentNumber || "—"}
-                          </strong>
-                          {" · "}
-                          Başvuru:{" "}
-                          <strong className="text-slate-700">
-                            {formatDate(document.extensionApplicationStartDate)}
-                          </strong>
-                          {" · "}
-                          Uzatma tarihi:{" "}
-                          <strong className="text-blue-600">
-                            {formatDate(document.extensionDate)}
-                          </strong>
-                        </p>
+                        <DocumentMeta
+                          documentNumber={document.documentNumber}
+                          applicationDate={
+                            document.extensionApplicationStartDate
+                          }
+                          endDate={document.documentEndDate}
+                          extensionDate={document.extensionDate}
+                        />
                       </div>
                     </div>
 

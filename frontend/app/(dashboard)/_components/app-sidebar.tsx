@@ -62,6 +62,7 @@ export function AppSidebar({
   const [collapsed, setCollapsed] = useState(false);
 
   const [supportUnreadCount, setSupportUnreadCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   // Mobil drawer'da daralt/genişlet mantığı devre dışı — drawer'ın kendi genişliği var,
   // içeride ayrıca daraltmak anlamsız. Sadece desktop varyantta `collapsed` görsel olarak
@@ -265,6 +266,68 @@ export function AppSidebar({
     };
   }, [role]);
 
+  // Okunmamış bildirim sayısı — headerdaki zille aynı API ve güncelleme olayı
+  useEffect(() => {
+    if (role !== "ADMIN" && role !== "OPERATION") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUnreadNotificationCount(0);
+      return;
+    }
+
+    let active = true;
+    let loading = false;
+
+    const loadUnreadCount = async () => {
+      if (loading) return;
+
+      if (!getAccessToken()) {
+        if (active) setUnreadNotificationCount(0);
+        return;
+      }
+
+      loading = true;
+
+      try {
+        const response = await apiFetch<{
+          success: boolean;
+          data: { unreadCount: number };
+        }>("/notifications?limit=1");
+
+        if (active) {
+          setUnreadNotificationCount(response.data.unreadCount ?? 0);
+        }
+      } catch {
+        if (active) setUnreadNotificationCount(0);
+      } finally {
+        loading = false;
+      }
+    };
+
+    const handleNotificationsUpdated = () => {
+      void loadUnreadCount();
+    };
+
+    void loadUnreadCount();
+
+    window.addEventListener(
+      "notifications-updated",
+      handleNotificationsUpdated,
+    );
+    window.addEventListener("focus", handleNotificationsUpdated);
+
+    const intervalId = window.setInterval(handleNotificationsUpdated, 60_000);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener(
+        "notifications-updated",
+        handleNotificationsUpdated,
+      );
+      window.removeEventListener("focus", handleNotificationsUpdated);
+    };
+  }, [role]);
+
   const showDocumentWarning = () => {
     setDocumentWarning(true);
 
@@ -385,6 +448,13 @@ export function AppSidebar({
 
           const isDocumentDetailItem = documentContextPaths.has(item.href);
 
+          const hasUnreadNotifications =
+            item.href === "/notifications" &&
+            (role === "ADMIN" || role === "OPERATION") &&
+            unreadNotificationCount > 0;
+
+          const shouldAnimateNotifications = hasUnreadNotifications && !active;
+
           const showDocumentSection =
             item.href === "/documents/investment-type";
 
@@ -480,13 +550,47 @@ export function AppSidebar({
                       active
                         ? "text-white"
                         : "text-blue-200 transition group-hover:text-white dark:text-slate-400 dark:group-hover:text-white"
-                    }`}
+                    } ${shouldAnimateNotifications ? "animate-ring-shake" : ""}`}
                   />
 
                   {!isCollapsed && <span>{item.label}</span>}
 
-                  {active && !isCollapsed && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                  {!isCollapsed && (
+                    <div className="ml-auto flex items-center gap-2">
+                      {hasUnreadNotifications && (
+                        <span
+                          aria-label={`${unreadNotificationCount} okunmamış bildirim`}
+                          className={`flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                            active
+                              ? "bg-white text-red-600"
+                              : "bg-red-500 text-white"
+                          } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
+                        >
+                          {unreadNotificationCount > 99
+                            ? "99+"
+                            : unreadNotificationCount}
+                        </span>
+                      )}
+
+                      {active && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                      )}
+                    </div>
+                  )}
+
+                  {isCollapsed && hasUnreadNotifications && (
+                    <span
+                      aria-label={`${unreadNotificationCount} okunmamış bildirim`}
+                      className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full px-1 py-0.5 text-[9px] font-bold ${
+                        active
+                          ? "bg-white text-red-600"
+                          : "bg-red-500 text-white"
+                      } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
+                    >
+                      {unreadNotificationCount > 9
+                        ? "9+"
+                        : unreadNotificationCount}
+                    </span>
                   )}
                 </Link>
               )}
