@@ -40,33 +40,6 @@ function isPastDate(date: Date): boolean {
   return target < today;
 }
 
-/** Ay ekler; hedef ayda o gün yoksa ayın son gününe sabitler */
-function addMonthsUTC(date: Date, months: number): Date {
-  const y = date.getUTCFullYear();
-  const m = date.getUTCMonth() + months;
-  const d = date.getUTCDate();
-  const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(y, m, Math.min(d, lastDay)));
-}
-
-/** Bugünden verilen tarihe kalan süreyi "X ay Y gün" olarak yazar */
-function formatRemaining(until: Date): string {
-  const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
-  let months =
-    (until.getUTCFullYear() - today.getUTCFullYear()) * 12 +
-    (until.getUTCMonth() - today.getUTCMonth());
-  if (addMonthsUTC(today, months).getTime() > until.getTime()) months--;
-  const days = Math.round(
-    (until.getTime() - addMonthsUTC(today, months).getTime()) / 86_400_000,
-  );
-  const parts: string[] = [];
-  if (months > 0) parts.push(`${months} ay`);
-  if (days > 0) parts.push(`${days} gün`);
-  return parts.length ? parts.join(" ") : "0 gün";
-}
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -240,68 +213,43 @@ export function createExtensionEmailTemplate(
   const targetDate = formatDate(params.targetDate);
   const authorizationExpired = params.authorizationExpired === true;
   const expired = isPastDate(params.targetDate);
-
-  // Son hak tarihi = süre uzatım tarihi + 18 ay
-  const deadline = addMonthsUTC(params.targetDate, 18);
-  const deadlineText = formatDate(deadline);
-
-  const extensionSentence = expired
-    ? `Süre uzatım hakkınız ${deadlineText} tarihinde sona erecektir. Bu tarihe kadar süre uzatımı yapılması hâlinde belgeniz en fazla ${deadlineText} tarihine kadar uzatılabilecek olup bugün itibarıyla kalan süreniz ${formatRemaining(deadline)} olacaktır.`
-    : `Süre bitimine müteakip ilave bir buçuk yıl süre uzatım hakkınız mevcut.`;
+  const status = expired ? "dolmuştur" : "dolacaktır";
 
   const subject = `${getShortCompanyName(companyName)} Yatırım Teşvik Belgesi Süre Uzatma İşlemleri Hk.`;
 
-  const text = `Merhabalar,
+  const text = `Merhaba,
 
-Yatırım teşvik belgenizin üç yıllık süresi ${targetDate} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}. ${extensionSentence}
+Yatırım teşvik belgenizin süresi ${targetDate} tarihinde ${status}. Belgenizin Bakanlık tarafından iptal edilmemesi adına 1,5 yıllık ek süre uzatımı veya belge kapatma işlemlerinden birinin yapılması zorunludur.
 
-Süre uzatımı için güncel aya ait SGK borcu yoktur yazısı (Sanayi ve Teknoloji Bakanlığı’na verilmek üzere ibaresi eklenmelidir.) gerekmektedir.
+Ek süre talebi için güncel aya ait, "Sanayi ve Teknoloji Bakanlığı’na verilmek üzere" ibareli SGK borcu yoktur yazısı paylaşmanız yeterli olacaktır.
 
-İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında uzmanlarımız sizi ayrıca bilgilendirecektir.
+İşlem detayları ve masraflar hakkında uzmanımız sizinle iletişime geçecektir.
 
-***Bakanlıkça yayınlanan tebliğ ve karara istinaden belge süresi dolan firmaların süre bitimi ardından 6 ay içerisinde belge kapatma işlemi ya da mevcutta süre uzatma hakları varsa bu işlemi gerçekleştirilmesi gerekliliği bulunduğunu ve aksi durumda bakanlığın herhangi bir işlem gerçekleştirmeyen firmaların belgelerini iptal etme hakkı bulunduğu bilgisini de hatırlatmak isteriz.
-
-${authNoticeText(authorizationExpired)}Saygılarımla,
-
-İyi Çalışmalar Dilerim.`;
+${authNoticeText(authorizationExpired)}Sağlıklı günler dileriz.`;
 
   const html = `
-    <p>Merhabalar,</p>
+    <p>Merhaba,</p>
 
     <p>
-      Yatırım teşvik belgenizin üç yıllık süresi
-      ${escapeHtml(targetDate)} tarihinde ${expired ? "dolmuştur" : "dolacaktır"}.
-      ${escapeHtml(extensionSentence)}
+      Yatırım teşvik belgenizin süresi
+      <strong>${escapeHtml(targetDate)}</strong> tarihinde ${status}.
+      Belgenizin Bakanlık tarafından iptal edilmemesi adına 1,5 yıllık ek
+      süre uzatımı veya belge kapatma işlemlerinden birinin yapılması
+      zorunludur.
     </p>
 
     <p>
-      Süre uzatımı için güncel aya ait SGK borcu yoktur yazısı
-      (Sanayi ve Teknoloji Bakanlığı’na verilmek üzere ibaresi
-      eklenmelidir.) gerekmektedir.
-    </p>
-
-        <p>
-      İşlemlere ilişkin hizmet bedeli ve harç masrafları hakkında
-      uzmanlarımız sizi ayrıca bilgilendirecektir.
+      Ek süre talebi için güncel aya ait, "Sanayi ve Teknoloji Bakanlığı’na
+      verilmek üzere" ibareli SGK borcu yoktur yazısı paylaşmanız yeterli
+      olacaktır.
     </p>
 
     <p>
-      <strong>
-        ***Bakanlıkça yayınlanan tebliğ ve karara istinaden belge süresi
-        dolan firmaların süre bitimi ardından 6 ay içerisinde belge
-        kapatma işlemi ya da mevcutta süre uzatma hakları varsa bu işlemi
-        gerçekleştirilmesi gerekliliği bulunduğunu ve aksi durumda
-        bakanlığın herhangi bir işlem gerçekleştirmeyen firmaların
-        belgelerini iptal etme hakkı bulunduğu bilgisini de hatırlatmak
-        isteriz.
-      </strong>
+      İşlem detayları ve masraflar hakkında uzmanımız sizinle iletişime
+      geçecektir.
     </p>
     ${authNoticeHtml(authorizationExpired)}
-    <p>
-     Saygılarımla,
-      <br /><br />
-      İyi Çalışmalar Dilerim.
-    </p>
+    <p>Sağlıklı günler dileriz.</p>
   `;
 
   return {
