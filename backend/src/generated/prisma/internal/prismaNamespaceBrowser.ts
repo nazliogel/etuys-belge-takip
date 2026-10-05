@@ -77,7 +77,9 @@ export const ModelName = {
   CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
   SupportRequest: 'SupportRequest',
   SupportRequestAttachment: 'SupportRequestAttachment',
-  AuthSession: 'AuthSession'
+  AuthSession: 'AuthSession',
+  CompanyNotification: 'CompanyNotification',
+  CompanyNotificationRead: 'CompanyNotificationRead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -676,6 +678,33 @@ export const AuthSessionScalarFieldEnum = {
 } as const
 
 export type AuthSessionScalarFieldEnum = (typeof AuthSessionScalarFieldEnum)[keyof typeof AuthSessionScalarFieldEnum]
+
+
+export const CompanyNotificationScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  type: 'type',
+  title: 'title',
+  description: 'description',
+  dedupeKey: 'dedupeKey',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  targetDate: 'targetDate',
+  period: 'period',
+  createdAt: 'createdAt'
+} as const
+
+export type CompanyNotificationScalarFieldEnum = (typeof CompanyNotificationScalarFieldEnum)[keyof typeof CompanyNotificationScalarFieldEnum]
+
+
+export const CompanyNotificationReadScalarFieldEnum = {
+  id: 'id',
+  notificationId: 'notificationId',
+  userId: 'userId',
+  readAt: 'readAt'
+} as const
+
+export type CompanyNotificationReadScalarFieldEnum = (typeof CompanyNotificationReadScalarFieldEnum)[keyof typeof CompanyNotificationReadScalarFieldEnum]
 
 
 export const SortOrder = {

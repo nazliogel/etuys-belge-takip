@@ -103,21 +103,24 @@ export function AppHeader({
   }, [mobileMenuOpen]);
 
   useEffect(() => {
-    if (showConsultantInfo) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUnreadNotificationCount(0);
-      return;
-    }
+    let cancelled = false;
+
+    const endpoint =
+      role === "COMPANY"
+        ? "/company-notifications?limit=1"
+        : "/notifications?limit=1";
 
     async function loadUnreadCount() {
       try {
-        const response = await apiFetch<NotificationCountResponse>(
-          "/notifications?limit=1",
-        );
+        const response = await apiFetch<NotificationCountResponse>(endpoint);
 
-        setUnreadNotificationCount(response.data.unreadCount);
+        if (!cancelled) {
+          setUnreadNotificationCount(Math.max(0, response.data.unreadCount));
+        }
       } catch {
-        setUnreadNotificationCount(0);
+        if (!cancelled) {
+          setUnreadNotificationCount(0);
+        }
       }
     }
 
@@ -137,13 +140,14 @@ export function AppHeader({
     );
 
     return () => {
+      cancelled = true;
       window.clearInterval(intervalId);
       window.removeEventListener(
         "notifications-updated",
         handleNotificationsUpdated,
       );
     };
-  }, [showConsultantInfo]);
+  }, [role]);
 
   const displayedConsultantName = consultantName?.trim() || "—";
   const displayedConsultantPhone = consultantPhone?.trim() || null;
@@ -169,11 +173,11 @@ export function AppHeader({
         </div>
 
         {/*
-          SAĞ GRUP — sağdaki tüm butonlar (tema toggle, bildirim, avatar) ve
-          mobil banttaki butonlar (WhatsApp/Mail/Telefon) AYNI 9x9 kare boyuta
-          ve aynı gap-2'ye sahip. Bu sayede farklı satırlarda olsalar bile aynı
-          dikey ekseni takip ediyorlar — kaymış / hizasız görüntü kaybolur.
-        */}
+            SAĞ GRUP — sağdaki tüm butonlar (tema toggle, bildirim, avatar) ve
+            mobil banttaki butonlar (WhatsApp/Mail/Telefon) AYNI 9x9 kare boyuta
+            ve aynı gap-2'ye sahip. Bu sayede farklı satırlarda olsalar bile aynı
+            dikey ekseni takip ediyorlar — kaymış / hizasız görüntü kaybolur.
+          */}
         <div className="flex items-center gap-2">
           {showConsultantInfo && (
             <div className="hidden items-center gap-6 lg:flex">
@@ -269,37 +273,33 @@ export function AppHeader({
           )}
 
           {/* TEMA TOGGLE — sadece firma kullanıcısı için, sadece mobil/tablet'te
-              (CompanyThemeToggle bileşeni içinde `md:hidden` olduğu için
-              lg üstü ekranda kendiliğinden gizleniyor). Avatar'ın hemen solunda
-              duruyor, h-9 w-9 boyutuyla diğer butonlarla aynı hizada. */}
+                (CompanyThemeToggle bileşeni içinde `md:hidden` olduğu için
+                lg üstü ekranda kendiliğinden gizleniyor). Avatar'ın hemen solunda
+                duruyor, h-9 w-9 boyutuyla diğer butonlarla aynı hizada. */}
           {showConsultantInfo ? <CompanyThemeToggle /> : null}
 
-          {!showConsultantInfo && (
-            <Link
-              href="/notifications"
-              className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-blue-700/80 bg-blue-700/50 text-white transition hover:bg-blue-700 dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-100 dark:hover:bg-slate-800"
-              title="Bildirimler"
-              aria-label={`${unreadNotificationCount} okunmamış bildirim`}
-            >
-              <Bell size={18} />
+          <Link
+            href="/notifications"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-blue-700/80 bg-blue-700/50 text-white transition hover:bg-blue-700 dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-100 dark:hover:bg-slate-800"
+            title="Bildirimler"
+            aria-label={`${unreadNotificationCount} okunmamış bildirim`}
+          >
+            <Bell size={18} />
 
-              {unreadNotificationCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-                  {unreadNotificationCount > 99
-                    ? "99+"
-                    : unreadNotificationCount}
-                </span>
-              )}
-            </Link>
-          )}
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+              </span>
+            )}
+          </Link>
 
           {/*
-            KULLANICI CHIP'İ
-            ================
-            Mobilde SADECE avatar dairesi görünür (h-9 w-9) — bant butonlarıyla
-            birebir aynı boyut, aynı sağ kenar. Chip'in görsel kutu-border-bg'si
-            sm+ üzerinde açılır. Böylece mobilde kayma yaşanmaz.
-          */}
+              KULLANICI CHIP'İ
+              ================
+              Mobilde SADECE avatar dairesi görünür (h-9 w-9) — bant butonlarıyla
+              birebir aynı boyut, aynı sağ kenar. Chip'in görsel kutu-border-bg'si
+              sm+ üzerinde açılır. Böylece mobilde kayma yaşanmaz.
+            */}
           <div className="flex items-center gap-2 rounded-xl border border-transparent bg-transparent px-0 py-0 transition sm:gap-3 sm:border-blue-700/80 sm:bg-blue-700/50 sm:px-3.5 sm:py-1.5 sm:hover:bg-blue-700/70 dark:sm:border-slate-700/80 dark:sm:bg-slate-800/50 dark:sm:hover:bg-slate-800/70">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold leading-tight text-white dark:text-slate-100">

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import type { UserRole } from "../../_lib/permissions";
 
 type NotificationFilter = "ALL" | "UNREAD" | "READ";
 type NotificationSeverity = "critical" | "warning" | "info";
@@ -173,7 +174,10 @@ function NotificationSkeletonRow() {
   );
 }
 
-export function NotificationsScreen() {
+export function NotificationsScreen({ role }: { role: UserRole }) {
+  const notificationEndpoint =
+    role === "COMPANY" ? "/company-notifications" : "/notifications";
+
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeFilter, setActiveFilter] = useState<NotificationFilter>("ALL");
@@ -188,11 +192,11 @@ export function NotificationsScreen() {
         setErrorMessage(null);
 
         const response = await apiFetch<NotificationListResponse>(
-          "/notifications?limit=100",
+          `${notificationEndpoint}?limit=100`,
         );
 
         setNotifications(response.data.notifications);
-        setUnreadCount(response.data.unreadCount);
+        setUnreadCount(Math.max(0, response.data.unreadCount ?? 0));
       } catch (error) {
         setErrorMessage(getErrorMessage(error));
       } finally {
@@ -201,15 +205,15 @@ export function NotificationsScreen() {
     }
 
     void loadNotifications();
-  }, []);
+  }, [notificationEndpoint]);
 
   const filterCounts = useMemo(
     () => ({
       ALL: notifications.length,
-      UNREAD: unreadCount,
-      READ: notifications.length - unreadCount,
+      UNREAD: notifications.filter((item) => !item.isRead).length,
+      READ: notifications.filter((item) => item.isRead).length,
     }),
-    [notifications.length, unreadCount],
+    [notifications],
   );
 
   const filteredNotifications = useMemo(() => {
@@ -227,7 +231,7 @@ export function NotificationsScreen() {
   async function markAsRead(id: number) {
     const notification = notifications.find((item) => item.id === id);
 
-    if (!notification || notification.isRead) {
+    if (isUpdating || !notification || notification.isRead) {
       return;
     }
 
@@ -235,7 +239,7 @@ export function NotificationsScreen() {
       setIsUpdating(true);
       setErrorMessage(null);
 
-      await apiFetch(`/notifications/${id}/read`, {
+      await apiFetch(`${notificationEndpoint}/${id}/read`, {
         method: "PATCH",
       });
 
@@ -262,7 +266,7 @@ export function NotificationsScreen() {
   }
 
   async function markAllAsRead() {
-    if (unreadCount === 0) {
+    if (isUpdating || unreadCount === 0) {
       return;
     }
 
@@ -270,7 +274,7 @@ export function NotificationsScreen() {
       setIsUpdating(true);
       setErrorMessage(null);
 
-      await apiFetch("/notifications/read-all", {
+      await apiFetch(`${notificationEndpoint}/read-all`, {
         method: "PATCH",
       });
 
@@ -328,7 +332,7 @@ export function NotificationsScreen() {
 
           <div className="min-w-0">
             <p className="text-xs font-medium text-muted-foreground">
-              Toplam Bildirim
+              Listelenen Bildirim
             </p>
             <p className="text-lg font-bold text-foreground">
               {notifications.length}
@@ -359,7 +363,7 @@ export function NotificationsScreen() {
           <div className="min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Okundu</p>
             <p className="text-lg font-bold text-foreground">
-              {notifications.length - unreadCount}
+              {filterCounts.READ}
             </p>
           </div>
         </div>

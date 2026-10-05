@@ -284,6 +284,7 @@ export type UserWhereInput = {
   notifications?: Prisma.NotificationListRelationFilter
   companyNotes?: Prisma.CompanyNoteListRelationFilter
   authSessions?: Prisma.AuthSessionListRelationFilter
+  companyNotificationReads?: Prisma.CompanyNotificationReadListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -307,6 +308,7 @@ export type UserOrderByWithRelationInput = {
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   companyNotes?: Prisma.CompanyNoteOrderByRelationAggregateInput
   authSessions?: Prisma.AuthSessionOrderByRelationAggregateInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -333,6 +335,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   notifications?: Prisma.NotificationListRelationFilter
   companyNotes?: Prisma.CompanyNoteListRelationFilter
   authSessions?: Prisma.AuthSessionListRelationFilter
+  companyNotificationReads?: Prisma.CompanyNotificationReadListRelationFilter
 }, "id" | "username" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -392,6 +395,7 @@ export type UserCreateInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -414,6 +418,7 @@ export type UserUncheckedCreateInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -435,6 +440,7 @@ export type UserUpdateInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -457,6 +463,7 @@ export type UserUncheckedUpdateInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -763,6 +770,20 @@ export type UserUpdateOneRequiredWithoutAuthSessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuthSessionsInput, Prisma.UserUpdateWithoutAuthSessionsInput>, Prisma.UserUncheckedUpdateWithoutAuthSessionsInput>
 }
 
+export type UserCreateNestedOneWithoutCompanyNotificationReadsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotificationReadsInput, Prisma.UserUncheckedCreateWithoutCompanyNotificationReadsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCompanyNotificationReadsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCompanyNotificationReadsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotificationReadsInput, Prisma.UserUncheckedCreateWithoutCompanyNotificationReadsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCompanyNotificationReadsInput
+  upsert?: Prisma.UserUpsertWithoutCompanyNotificationReadsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCompanyNotificationReadsInput, Prisma.UserUpdateWithoutCompanyNotificationReadsInput>, Prisma.UserUncheckedUpdateWithoutCompanyNotificationReadsInput>
+}
+
 export type UserCreateWithoutConsultantCompaniesInput = {
   firstName: string
   lastName: string
@@ -781,6 +802,7 @@ export type UserCreateWithoutConsultantCompaniesInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConsultantCompaniesInput = {
@@ -802,6 +824,7 @@ export type UserUncheckedCreateWithoutConsultantCompaniesInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConsultantCompaniesInput = {
@@ -827,6 +850,7 @@ export type UserCreateWithoutCompanyInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCompanyInput = {
@@ -848,6 +872,7 @@ export type UserUncheckedCreateWithoutCompanyInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCompanyInput = {
@@ -889,6 +914,7 @@ export type UserUpdateWithoutConsultantCompaniesInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsultantCompaniesInput = {
@@ -910,6 +936,7 @@ export type UserUncheckedUpdateWithoutConsultantCompaniesInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutCompanyInput = {
@@ -964,6 +991,7 @@ export type UserCreateWithoutCompanyNotesInput = {
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCompanyNotesInput = {
@@ -985,6 +1013,7 @@ export type UserUncheckedCreateWithoutCompanyNotesInput = {
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCompanyNotesInput = {
@@ -1021,6 +1050,7 @@ export type UserUpdateWithoutCompanyNotesInput = {
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompanyNotesInput = {
@@ -1042,6 +1072,7 @@ export type UserUncheckedUpdateWithoutCompanyNotesInput = {
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUploadedImportsInput = {
@@ -1062,6 +1093,7 @@ export type UserCreateWithoutUploadedImportsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUploadedImportsInput = {
@@ -1083,6 +1115,7 @@ export type UserUncheckedCreateWithoutUploadedImportsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUploadedImportsInput = {
@@ -1119,6 +1152,7 @@ export type UserUpdateWithoutUploadedImportsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUploadedImportsInput = {
@@ -1140,6 +1174,7 @@ export type UserUncheckedUpdateWithoutUploadedImportsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutChangeHistoryInput = {
@@ -1160,6 +1195,7 @@ export type UserCreateWithoutChangeHistoryInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutChangeHistoryInput = {
@@ -1181,6 +1217,7 @@ export type UserUncheckedCreateWithoutChangeHistoryInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChangeHistoryInput = {
@@ -1217,6 +1254,7 @@ export type UserUpdateWithoutChangeHistoryInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChangeHistoryInput = {
@@ -1238,6 +1276,7 @@ export type UserUncheckedUpdateWithoutChangeHistoryInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -1258,6 +1297,7 @@ export type UserCreateWithoutNotificationsInput = {
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -1279,6 +1319,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1315,6 +1356,7 @@ export type UserUpdateWithoutNotificationsInput = {
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1336,6 +1378,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAssignedSupportRequestsInput = {
@@ -1356,6 +1399,7 @@ export type UserCreateWithoutAssignedSupportRequestsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedSupportRequestsInput = {
@@ -1377,6 +1421,7 @@ export type UserUncheckedCreateWithoutAssignedSupportRequestsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
   authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedSupportRequestsInput = {
@@ -1413,6 +1458,7 @@ export type UserUpdateWithoutAssignedSupportRequestsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedSupportRequestsInput = {
@@ -1434,6 +1480,7 @@ export type UserUncheckedUpdateWithoutAssignedSupportRequestsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuthSessionsInput = {
@@ -1454,6 +1501,7 @@ export type UserCreateWithoutAuthSessionsInput = {
   changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuthSessionsInput = {
@@ -1475,6 +1523,7 @@ export type UserUncheckedCreateWithoutAuthSessionsInput = {
   changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuthSessionsInput = {
@@ -1511,6 +1560,7 @@ export type UserUpdateWithoutAuthSessionsInput = {
   changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuthSessionsInput = {
@@ -1532,6 +1582,109 @@ export type UserUncheckedUpdateWithoutAuthSessionsInput = {
   changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutCompanyNotificationReadsInput = {
+  firstName: string
+  lastName: string
+  username?: string | null
+  email?: string | null
+  passwordHash: string
+  mustChangePassword?: boolean
+  role?: $Enums.UserRole
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  company?: Prisma.CompanyCreateNestedOneWithoutUsersInput
+  consultantCompanies?: Prisma.CompanyCreateNestedManyWithoutConsultantUserInput
+  assignedSupportRequests?: Prisma.SupportRequestCreateNestedManyWithoutAssignedToInput
+  uploadedImports?: Prisma.ImportBatchCreateNestedManyWithoutUploadedByInput
+  changeHistory?: Prisma.ChangeHistoryCreateNestedManyWithoutChangedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteCreateNestedManyWithoutAuthorInput
+  authSessions?: Prisma.AuthSessionCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCompanyNotificationReadsInput = {
+  id?: number
+  firstName: string
+  lastName: string
+  username?: string | null
+  email?: string | null
+  passwordHash: string
+  mustChangePassword?: boolean
+  role?: $Enums.UserRole
+  isActive?: boolean
+  companyId?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  consultantCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutConsultantUserInput
+  assignedSupportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutAssignedToInput
+  uploadedImports?: Prisma.ImportBatchUncheckedCreateNestedManyWithoutUploadedByInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedCreateNestedManyWithoutChangedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  companyNotes?: Prisma.CompanyNoteUncheckedCreateNestedManyWithoutAuthorInput
+  authSessions?: Prisma.AuthSessionUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCompanyNotificationReadsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotificationReadsInput, Prisma.UserUncheckedCreateWithoutCompanyNotificationReadsInput>
+}
+
+export type UserUpsertWithoutCompanyNotificationReadsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCompanyNotificationReadsInput, Prisma.UserUncheckedUpdateWithoutCompanyNotificationReadsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCompanyNotificationReadsInput, Prisma.UserUncheckedCreateWithoutCompanyNotificationReadsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCompanyNotificationReadsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCompanyNotificationReadsInput, Prisma.UserUncheckedUpdateWithoutCompanyNotificationReadsInput>
+}
+
+export type UserUpdateWithoutCompanyNotificationReadsInput = {
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  company?: Prisma.CompanyUpdateOneWithoutUsersNestedInput
+  consultantCompanies?: Prisma.CompanyUpdateManyWithoutConsultantUserNestedInput
+  assignedSupportRequests?: Prisma.SupportRequestUpdateManyWithoutAssignedToNestedInput
+  uploadedImports?: Prisma.ImportBatchUpdateManyWithoutUploadedByNestedInput
+  changeHistory?: Prisma.ChangeHistoryUpdateManyWithoutChangedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
+  authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCompanyNotificationReadsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  consultantCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutConsultantUserNestedInput
+  assignedSupportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutAssignedToNestedInput
+  uploadedImports?: Prisma.ImportBatchUncheckedUpdateManyWithoutUploadedByNestedInput
+  changeHistory?: Prisma.ChangeHistoryUncheckedUpdateManyWithoutChangedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
+  authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyCompanyInput = {
@@ -1566,6 +1719,7 @@ export type UserUpdateWithoutCompanyInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompanyInput = {
@@ -1587,6 +1741,7 @@ export type UserUncheckedUpdateWithoutCompanyInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   companyNotes?: Prisma.CompanyNoteUncheckedUpdateManyWithoutAuthorNestedInput
   authSessions?: Prisma.AuthSessionUncheckedUpdateManyWithoutUserNestedInput
+  companyNotificationReads?: Prisma.CompanyNotificationReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutCompanyInput = {
@@ -1616,6 +1771,7 @@ export type UserCountOutputType = {
   notifications: number
   companyNotes: number
   authSessions: number
+  companyNotificationReads: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1626,6 +1782,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   companyNotes?: boolean | UserCountOutputTypeCountCompanyNotesArgs
   authSessions?: boolean | UserCountOutputTypeCountAuthSessionsArgs
+  companyNotificationReads?: boolean | UserCountOutputTypeCountCompanyNotificationReadsArgs
 }
 
 /**
@@ -1687,6 +1844,13 @@ export type UserCountOutputTypeCountAuthSessionsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.AuthSessionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCompanyNotificationReadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CompanyNotificationReadWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1709,6 +1873,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   companyNotes?: boolean | Prisma.User$companyNotesArgs<ExtArgs>
   authSessions?: boolean | Prisma.User$authSessionsArgs<ExtArgs>
+  companyNotificationReads?: boolean | Prisma.User$companyNotificationReadsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1769,6 +1934,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   companyNotes?: boolean | Prisma.User$companyNotesArgs<ExtArgs>
   authSessions?: boolean | Prisma.User$authSessionsArgs<ExtArgs>
+  companyNotificationReads?: boolean | Prisma.User$companyNotificationReadsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1789,6 +1955,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     companyNotes: Prisma.$CompanyNotePayload<ExtArgs>[]
     authSessions: Prisma.$AuthSessionPayload<ExtArgs>[]
+    companyNotificationReads: Prisma.$CompanyNotificationReadPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2205,6 +2372,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   companyNotes<T extends Prisma.User$companyNotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$companyNotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   authSessions<T extends Prisma.User$authSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$authSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuthSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  companyNotificationReads<T extends Prisma.User$companyNotificationReadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$companyNotificationReadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CompanyNotificationReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2831,6 +2999,30 @@ export type User$authSessionsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.AuthSessionScalarFieldEnum | Prisma.AuthSessionScalarFieldEnum[]
+}
+
+/**
+ * User.companyNotificationReads
+ */
+export type User$companyNotificationReadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CompanyNotificationRead
+   */
+  select?: Prisma.CompanyNotificationReadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CompanyNotificationRead
+   */
+  omit?: Prisma.CompanyNotificationReadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyNotificationReadInclude<ExtArgs> | null
+  where?: Prisma.CompanyNotificationReadWhereInput
+  orderBy?: Prisma.CompanyNotificationReadOrderByWithRelationInput | Prisma.CompanyNotificationReadOrderByWithRelationInput[]
+  cursor?: Prisma.CompanyNotificationReadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CompanyNotificationReadScalarFieldEnum | Prisma.CompanyNotificationReadScalarFieldEnum[]
 }
 
 /**

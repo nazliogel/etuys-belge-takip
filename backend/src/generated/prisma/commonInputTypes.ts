@@ -637,6 +637,23 @@ export type EnumSupportRequestStatusWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
 }
 
+export type EnumCompanyNotificationTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyNotificationType | Prisma.EnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyNotificationTypeFilter<$PrismaModel> | $Enums.CompanyNotificationType
+}
+
+export type EnumCompanyNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyNotificationType | Prisma.EnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.CompanyNotificationType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCompanyNotificationTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCompanyNotificationTypeFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -1217,6 +1234,23 @@ export type NestedEnumSupportRequestStatusWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSupportRequestStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumCompanyNotificationTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyNotificationType | Prisma.EnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyNotificationTypeFilter<$PrismaModel> | $Enums.CompanyNotificationType
+}
+
+export type NestedEnumCompanyNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CompanyNotificationType | Prisma.EnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CompanyNotificationType[] | Prisma.ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCompanyNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.CompanyNotificationType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCompanyNotificationTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCompanyNotificationTypeFilter<$PrismaModel>
 }
 
 

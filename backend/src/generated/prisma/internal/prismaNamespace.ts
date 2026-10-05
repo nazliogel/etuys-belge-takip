@@ -423,7 +423,9 @@ export const ModelName = {
   CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
   SupportRequest: 'SupportRequest',
   SupportRequestAttachment: 'SupportRequestAttachment',
-  AuthSession: 'AuthSession'
+  AuthSession: 'AuthSession',
+  CompanyNotification: 'CompanyNotification',
+  CompanyNotificationRead: 'CompanyNotificationRead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -439,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2441,6 +2443,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CompanyNotification: {
+      payload: Prisma.$CompanyNotificationPayload<ExtArgs>
+      fields: Prisma.CompanyNotificationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CompanyNotificationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CompanyNotificationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>
+        }
+        findFirst: {
+          args: Prisma.CompanyNotificationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CompanyNotificationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>
+        }
+        findMany: {
+          args: Prisma.CompanyNotificationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>[]
+        }
+        create: {
+          args: Prisma.CompanyNotificationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>
+        }
+        createMany: {
+          args: Prisma.CompanyNotificationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CompanyNotificationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>[]
+        }
+        delete: {
+          args: Prisma.CompanyNotificationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>
+        }
+        update: {
+          args: Prisma.CompanyNotificationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>
+        }
+        deleteMany: {
+          args: Prisma.CompanyNotificationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CompanyNotificationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CompanyNotificationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>[]
+        }
+        upsert: {
+          args: Prisma.CompanyNotificationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationPayload>
+        }
+        aggregate: {
+          args: Prisma.CompanyNotificationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCompanyNotification>
+        }
+        groupBy: {
+          args: Prisma.CompanyNotificationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyNotificationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CompanyNotificationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyNotificationCountAggregateOutputType> | number
+        }
+      }
+    }
+    CompanyNotificationRead: {
+      payload: Prisma.$CompanyNotificationReadPayload<ExtArgs>
+      fields: Prisma.CompanyNotificationReadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CompanyNotificationReadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CompanyNotificationReadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>
+        }
+        findFirst: {
+          args: Prisma.CompanyNotificationReadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CompanyNotificationReadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>
+        }
+        findMany: {
+          args: Prisma.CompanyNotificationReadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>[]
+        }
+        create: {
+          args: Prisma.CompanyNotificationReadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>
+        }
+        createMany: {
+          args: Prisma.CompanyNotificationReadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CompanyNotificationReadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>[]
+        }
+        delete: {
+          args: Prisma.CompanyNotificationReadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>
+        }
+        update: {
+          args: Prisma.CompanyNotificationReadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>
+        }
+        deleteMany: {
+          args: Prisma.CompanyNotificationReadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CompanyNotificationReadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CompanyNotificationReadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>[]
+        }
+        upsert: {
+          args: Prisma.CompanyNotificationReadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CompanyNotificationReadPayload>
+        }
+        aggregate: {
+          args: Prisma.CompanyNotificationReadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCompanyNotificationRead>
+        }
+        groupBy: {
+          args: Prisma.CompanyNotificationReadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyNotificationReadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CompanyNotificationReadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CompanyNotificationReadCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3062,6 +3212,33 @@ export const AuthSessionScalarFieldEnum = {
 export type AuthSessionScalarFieldEnum = (typeof AuthSessionScalarFieldEnum)[keyof typeof AuthSessionScalarFieldEnum]
 
 
+export const CompanyNotificationScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  type: 'type',
+  title: 'title',
+  description: 'description',
+  dedupeKey: 'dedupeKey',
+  externalDocumentId: 'externalDocumentId',
+  documentNumber: 'documentNumber',
+  targetDate: 'targetDate',
+  period: 'period',
+  createdAt: 'createdAt'
+} as const
+
+export type CompanyNotificationScalarFieldEnum = (typeof CompanyNotificationScalarFieldEnum)[keyof typeof CompanyNotificationScalarFieldEnum]
+
+
+export const CompanyNotificationReadScalarFieldEnum = {
+  id: 'id',
+  notificationId: 'notificationId',
+  userId: 'userId',
+  readAt: 'readAt'
+} as const
+
+export type CompanyNotificationReadScalarFieldEnum = (typeof CompanyNotificationReadScalarFieldEnum)[keyof typeof CompanyNotificationReadScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3432,6 +3609,20 @@ export type ListEnumSupportRequestStatusFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'CompanyNotificationType'
+ */
+export type EnumCompanyNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CompanyNotificationType'>
+    
+
+
+/**
+ * Reference to a field of type 'CompanyNotificationType[]'
+ */
+export type ListEnumCompanyNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CompanyNotificationType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3622,6 +3813,8 @@ export type GlobalOmitConfig = {
   supportRequest?: Prisma.SupportRequestOmit
   supportRequestAttachment?: Prisma.SupportRequestAttachmentOmit
   authSession?: Prisma.AuthSessionOmit
+  companyNotification?: Prisma.CompanyNotificationOmit
+  companyNotificationRead?: Prisma.CompanyNotificationReadOmit
 }
 
 /* Types for Logging */

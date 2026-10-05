@@ -268,11 +268,10 @@ export function AppSidebar({
 
   // Okunmamış bildirim sayısı — headerdaki zille aynı API ve güncelleme olayı
   useEffect(() => {
-    if (role !== "ADMIN" && role !== "OPERATION") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUnreadNotificationCount(0);
-      return;
-    }
+    const endpoint =
+      role === "COMPANY"
+        ? "/company-notifications?limit=1"
+        : "/notifications?limit=1";
 
     let active = true;
     let loading = false;
@@ -291,10 +290,12 @@ export function AppSidebar({
         const response = await apiFetch<{
           success: boolean;
           data: { unreadCount: number };
-        }>("/notifications?limit=1");
+        }>(endpoint);
 
         if (active) {
-          setUnreadNotificationCount(response.data.unreadCount ?? 0);
+          setUnreadNotificationCount(
+            Math.max(0, response.data.unreadCount ?? 0),
+          );
         }
       } catch {
         if (active) setUnreadNotificationCount(0);
@@ -449,9 +450,7 @@ export function AppSidebar({
           const isDocumentDetailItem = documentContextPaths.has(item.href);
 
           const hasUnreadNotifications =
-            item.href === "/notifications" &&
-            (role === "ADMIN" || role === "OPERATION") &&
-            unreadNotificationCount > 0;
+            item.href === "/notifications" && unreadNotificationCount > 0;
 
           const shouldAnimateNotifications = hasUnreadNotifications && !active;
 

@@ -176,3 +176,13 @@ export type SupportRequestAttachment = Prisma.SupportRequestAttachmentModel
  * 
  */
 export type AuthSession = Prisma.AuthSessionModel
+/**
+ * Model CompanyNotification
+ * 
+ */
+export type CompanyNotification = Prisma.CompanyNotificationModel
+/**
+ * Model CompanyNotificationRead
+ * 
+ */
+export type CompanyNotificationRead = Prisma.CompanyNotificationReadModel

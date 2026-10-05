@@ -1,16 +1,22 @@
 import app from "./app.js";
 import { env, prisma } from "./config/env.js";
 import { reminderSchedulerService } from "./services/reminder-scheduler.service.js";
+import { companyNotificationSchedulerService } from "./services/company-notification-scheduler.service.js";
 
 const server = app.listen(env.port, () => {
   console.log(`🚀 E-TUYS Backend running on http://localhost:${env.port}`);
+
   reminderSchedulerService.start();
+  companyNotificationSchedulerService.start();
 });
 
 async function shutdown(signal: string) {
   console.log(`\n${signal} received. Server is shutting down.`);
 
-  reminderSchedulerService.stop();
+  await Promise.all([
+    reminderSchedulerService.stop(),
+    companyNotificationSchedulerService.stop(),
+  ]);
 
   server.close(async () => {
     await prisma.$disconnect();

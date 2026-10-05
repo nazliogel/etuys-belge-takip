@@ -179,3 +179,12 @@ export const CompanyAuthorizationReminderType = {
 } as const
 
 export type CompanyAuthorizationReminderType = (typeof CompanyAuthorizationReminderType)[keyof typeof CompanyAuthorizationReminderType]
+
+
+export const CompanyNotificationType = {
+  EXTENSION_APPLICATION: 'EXTENSION_APPLICATION',
+  CLOSURE_APPLICATION: 'CLOSURE_APPLICATION',
+  AUTHORIZATION_RENEWAL: 'AUTHORIZATION_RENEWAL'
+} as const
+
+export type CompanyNotificationType = (typeof CompanyNotificationType)[keyof typeof CompanyNotificationType]
