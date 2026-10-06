@@ -18,7 +18,7 @@ import {
   isTransientEmailError,
   withAttemptPrefix,
 } from "../utils/email-retry.js";
-
+import { notifySystemAlert } from "./system-alert.service.js";
 function isSameDate(first: Date, second: Date): boolean {
   return normalizeDate(first).getTime() === normalizeDate(second).getTime();
 }
@@ -376,6 +376,27 @@ export class DocumentReminderWorkerService {
 
           await this.repository.markFailed(reminder.id, errorMessage);
 
+          // Sunucu/bağlantı kaynaklı hatalar danışmana gitmez; sistem sorumlusuna mail atılır
+          if (isTransientEmailError(error)) {
+            await notifySystemAlert({
+              kind:
+                reminder.type === "CLOSURE_APPLICATION"
+                  ? "Kapatma"
+                  : "Süre uzatma",
+              reminderId: reminder.id,
+              companyName: reminder.company.name,
+              recipient: reminder.recipient,
+              errorMessage,
+            });
+            failedCount += 1;
+            results.push({
+              id: reminder.id,
+              status: "FAILED",
+              errorMessage,
+              systemAlert: true,
+            });
+            continue;
+          }
           let consultantNotificationCreated = false;
           let consultantNotificationError: string | undefined;
 
