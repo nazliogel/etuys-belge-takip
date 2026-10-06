@@ -1,5 +1,6 @@
 import { prisma } from "../config/env.js";
 import { EmailService } from "./email.service.js";
+import { buildConsultantStatusSection } from "./consultant-status-report.js";
 
 const SETTING_KEY = "dailyEmailReport.state";
 const REPORT_HOUR = 8; // İstanbul saatiyle bu saatten sonraki ilk turda gönderilir
@@ -484,13 +485,14 @@ export class DailyEmailReportService {
         `Tekrar denenecek: ${retryingRows.length}`,
         `Kuyrukta bekleyen: ${docPending + authPending} (Belge: ${docPending}, Yetkilendirme: ${authPending})`,
       ];
-
+      const consultantSection = await buildConsultantStatusSection(since, now);
       const html = `
         <div style="font-family:Arial,sans-serif">
           <h2 style="margin:0 0 12px">Günlük mail gönderim raporu</h2>
           <p>${summaryLines.map(escapeHtml).join("<br>")}</p>
           ${failedRows.length > 0 ? `<p style="color:#b00020"><strong>Dikkat:</strong> ${failedRows.length} mail gönderilemedi, aşağıdaki işlemlerin yapılması gerekiyor.</p>` : ""}
           ${renderTable("Gönderilemeyenler", "Sebep ve yapılması gereken", failedRows)}
+                   ${consultantSection.html} 
           ${renderTable("Tekrar denenecekler", "Durum", retryingRows)}
           ${renderTable("Atlananlar", "Sebep", skippedRows)}
           ${renderTable("Gönderilenler", null, sentRows)}
@@ -501,6 +503,7 @@ export class DailyEmailReportService {
         "",
         ...summaryLines,
         renderText("GÖNDERİLEMEYENLER", failedRows, true),
+        consultantSection.text,
         renderText("TEKRAR DENENECEKLER", retryingRows, true),
         renderText("ATLANANLAR", skippedRows, true),
         renderText("GÖNDERİLENLER", sentRows, false),
