@@ -4,6 +4,7 @@ import { CompanyRequestRepository } from "../repositories/company-request.reposi
 import {
   normalizeDate,
   resolveReminderDecision,
+  getExtensionRightDeadline,
 } from "./document-reminder.service.js";
 import {
   hasOpenIncentiveDocument,
@@ -175,14 +176,22 @@ export class CompanyNotificationGeneratorService {
 
         const isExtension = type === "EXTENSION_APPLICATION";
 
+        const extendedEndDate = getExtensionRightDeadline(endDate);
+
+        const endDateText =
+          endDate < today
+            ? `${formatDate(endDate)} tarihinde dolmuştur.`
+            : endDate.getTime() === today.getTime()
+              ? "bugün dolmaktadır."
+              : `${formatDate(endDate)} tarihinde dolacaktır.`;
+
         const description = isExtension
-          ? `${documentLabel} esas alınan uzatma tarihi ${formatDate(targetDate)} tarihidir. Süre uzatma başvurusu için danışmanınızla iletişime geçiniz.`
+          ? `${documentLabel} süresi ${endDateText} Uzatma başvurunuz onaylanırsa belgenizi ${formatDate(extendedEndDate)} tarihine kadar kullanabilirsiniz.\n\nBaşvuru için danışmanınızla iletişime geçiniz.`
           : hasNoExtension
             ? `${documentLabel} süre uzatma başvurusu için tanınan ilave süre sona ermiştir. Kapatma işlemleri için danışmanınızla iletişime geçiniz.`
             : targetDate < today
               ? `${documentLabel} uzatılmış süresi ${formatDate(targetDate)} tarihinde sona ermiştir. Kapatma işlemleri için danışmanınızla iletişime geçiniz.`
               : `${documentLabel} uzatılmış süresi ${formatDate(targetDate)} tarihinde sona erecektir. Kapatma sürecine ilişkin hazırlıklar için danışmanınızla iletişime geçiniz.`;
-
         const created = await this.repository.createOnce({
           companyId: company.id,
           type,

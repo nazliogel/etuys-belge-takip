@@ -46,6 +46,31 @@ export class CompanyNotificationService {
     return this.repository.markAsRead(notificationId, companyId, userId);
   }
 
+  async markAsUnread(notificationId: number, userId: number) {
+    const companyId = await this.getCompanyId(userId);
+
+    const updated = await this.repository.markAsUnread(
+      notificationId,
+      companyId,
+      userId,
+    );
+
+    if (!updated) {
+      throw new AppError("Bildirim bulunamadı.", {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        code: "COMPANY_NOTIFICATION_NOT_FOUND",
+      });
+    }
+
+    const unreadCount = await this.repository.countUnread(companyId, userId);
+
+    return {
+      notificationId,
+      isRead: false,
+      unreadCount,
+    };
+  }
+
   async markAllAsRead(userId: number) {
     const companyId = await this.getCompanyId(userId);
 

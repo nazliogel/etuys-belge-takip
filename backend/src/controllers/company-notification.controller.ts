@@ -63,6 +63,26 @@ export class CompanyNotificationController {
     });
   };
 
+  markAsUnread = async (req: Request, res: Response<ApiResponse<unknown>>) => {
+    const userId = this.getUserId(req);
+    const notificationId = Number(req.params.id);
+
+    if (!Number.isSafeInteger(notificationId) || notificationId <= 0) {
+      throw new AppError("Geçerli bir bildirim kimliği gönderilmelidir.", {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        code: "INVALID_NOTIFICATION_ID",
+      });
+    }
+
+    const result = await this.service.markAsUnread(notificationId, userId);
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Firma bildirimi okunmadı olarak işaretlendi.",
+      data: result,
+    });
+  };
+
   markAllAsRead = async (req: Request, res: Response<ApiResponse<unknown>>) => {
     const updatedCount = await this.service.markAllAsRead(this.getUserId(req));
 

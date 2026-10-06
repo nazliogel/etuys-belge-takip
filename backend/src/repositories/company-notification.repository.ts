@@ -86,6 +86,31 @@ export class CompanyNotificationRepository {
     return result.count === 1;
   }
 
+  async markAsUnread(
+    notificationId: number,
+    companyId: number,
+    userId: number,
+  ): Promise<boolean> {
+    const notification = await prisma.companyNotification.findFirst({
+      where: {
+        id: notificationId,
+        companyId,
+      },
+      select: { id: true },
+    });
+
+    if (!notification) return false;
+
+    await prisma.companyNotificationRead.deleteMany({
+      where: {
+        notificationId: notification.id,
+        userId,
+      },
+    });
+
+    return true;
+  }
+
   async markAllAsRead(companyId: number, userId: number): Promise<number> {
     const notifications = await prisma.companyNotification.findMany({
       where: {
