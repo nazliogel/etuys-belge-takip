@@ -23,6 +23,7 @@ interface NotificationItem {
   title: string;
   description: string;
   type: string;
+  targetDate?: string | null;
   isRead: boolean;
   readAt: string | null;
   createdAt: string;
@@ -174,6 +175,78 @@ function NotificationSkeletonRow() {
   );
 }
 
+function getTurkeyDayTimestamp(now: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+
+  const get = (type: string) =>
+    Number(parts.find((part) => part.type === type)!.value);
+
+  return Date.UTC(get("year"), get("month") - 1, get("day"));
+}
+
+function getExtensionRemainingDays(
+  notification: NotificationItem,
+  today: number,
+): number | null {
+  if (
+    notification.type !== "EXTENSION_APPLICATION" ||
+    !notification.targetDate
+  ) {
+    return null;
+  }
+
+  const target = new Date(notification.targetDate);
+
+  if (Number.isNaN(target.getTime())) return null;
+
+  // Backend ile aynı hesap: hedef tarihe 18 ay ekle,
+  // gün ayın sonunu aşıyorsa son güne sabitle.
+  const firstDay = new Date(
+    Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 18, 1),
+  );
+
+  const lastDay = new Date(
+    Date.UTC(firstDay.getUTCFullYear(), firstDay.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+
+  const deadline = Date.UTC(
+    firstDay.getUTCFullYear(),
+    firstDay.getUTCMonth(),
+    Math.min(target.getUTCDate(), lastDay),
+  );
+
+  return Math.round((deadline - today) / 86_400_000);
+}
+
+function getDocumentRemainingDays(
+  notification: NotificationItem,
+  today: number,
+): number | null {
+  if (
+    notification.type !== "EXTENSION_APPLICATION" ||
+    !notification.targetDate
+  ) {
+    return null;
+  }
+
+  const date = new Date(notification.targetDate);
+
+  if (Number.isNaN(date.getTime())) return null;
+
+  const endDay = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+  );
+
+  return Math.round((endDay - today) / 86_400_000);
+}
+
 export function NotificationsScreen({ role }: { role: UserRole }) {
   const notificationEndpoint =
     role === "COMPANY" ? "/company-notifications" : "/notifications";
@@ -184,6 +257,25 @@ export function NotificationsScreen({ role }: { role: UserRole }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [today, setToday] = useState(() => getTurkeyDayTimestamp(new Date()));
+
+  useEffect(() => {
+    const updateToday = () => {
+      setToday(getTurkeyDayTimestamp(new Date()));
+    };
+
+    // Sayfa açıkken ve sekmeye geri dönüldüğünde günü güncelle.
+    const intervalId = window.setInterval(updateToday, 60_000);
+    window.addEventListener("focus", updateToday);
+    document.addEventListener("visibilitychange", updateToday);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", updateToday);
+      document.removeEventListener("visibilitychange", updateToday);
+    };
+  }, []);
 
   useEffect(() => {
     async function loadNotifications() {
@@ -256,6 +348,49 @@ export function NotificationsScreen({ role }: { role: UserRole }) {
       );
 
       setUnreadCount((currentCount) => Math.max(0, currentCount - 1));
+
+      window.dispatchEvent(new Event("notifications-updated"));
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
+  async function markAsUnread(id: number) {
+    const notification = notifications.find((item) => item.id === id);
+
+    if (
+      role !== "COMPANY" ||
+      isUpdating ||
+      !notification ||
+      !notification.isRead
+    ) {
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      setErrorMessage(null);
+
+      const response = await apiFetch<{
+        success: boolean;
+        data: {
+          notificationId: number;
+          isRead: boolean;
+          unreadCount: number;
+        };
+      }>(`/company-notifications/${id}/unread`, {
+        method: "PATCH",
+      });
+
+      setNotifications((currentNotifications) =>
+        currentNotifications.map((item) =>
+          item.id === id ? { ...item, isRead: false, readAt: null } : item,
+        ),
+      );
+
+      setUnreadCount(response.data.unreadCount);
 
       window.dispatchEvent(new Event("notifications-updated"));
     } catch (error) {
@@ -424,6 +559,16 @@ export function NotificationsScreen({ role }: { role: UserRole }) {
               const Icon = getNotificationIcon(notification.type);
               const severity = getNotificationSeverity(notification.type);
 
+              const remainingDays =
+                role === "COMPANY"
+                  ? getExtensionRemainingDays(notification, today)
+                  : null;
+
+              const documentRemainingDays =
+                role === "COMPANY"
+                  ? getDocumentRemainingDays(notification, today)
+                  : null;
+
               return (
                 <article
                   key={notification.id}
@@ -471,9 +616,37 @@ export function NotificationsScreen({ role }: { role: UserRole }) {
                         )}
                       </div>
 
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      <p className="mt-1 whitespace-pre-line text-xs leading-5 text-muted-foreground">
                         {notification.description}
                       </p>
+                      {documentRemainingDays !== null &&
+                        documentRemainingDays >= 0 && (
+                          <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">
+                            {documentRemainingDays === 0
+                              ? "Belgenizin süresi bugün dolmaktadır."
+                              : `Belgenizin süresi ${documentRemainingDays} gün sonra dolacaktır.`}
+                          </p>
+                        )}
+
+                      {remainingDays !== null && (
+                        <div
+                          className={`mt-2 inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold ${
+                            remainingDays <= 30
+                              ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+                              : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                          }`}
+                        >
+                          <Clock3 size={13} className="shrink-0" />
+
+                          <span>
+                            {remainingDays < 0
+                              ? "Süre uzatma başvuru süresi doldu"
+                              : remainingDays === 0
+                                ? "Süre uzatma başvurusu için son gün"
+                                : `Süre uzatma başvurusu için kalan: ${remainingDays} gün`}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                         <Clock3 size={12} />
@@ -483,10 +656,26 @@ export function NotificationsScreen({ role }: { role: UserRole }) {
                   </div>
 
                   {notification.isRead ? (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                      <Check size={14} />
-                      Okundu
-                    </span>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 self-start">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                        <Check size={14} />
+                        Okundu
+                      </span>
+
+                      {role === "COMPANY" && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void markAsUnread(notification.id);
+                          }}
+                          disabled={isUpdating}
+                          className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Okunmadı olarak işaretle
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <button
                       type="button"
