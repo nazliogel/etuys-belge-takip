@@ -18,3 +18,8 @@ companyNotificationRouter.patch(
   "/:id/read",
   companyNotificationController.markAsRead,
 );
+
+companyNotificationRouter.patch(
+  "/:id/unread",
+  companyNotificationController.markAsUnread,
+);
