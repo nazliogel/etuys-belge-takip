@@ -1,5 +1,6 @@
 import { prisma } from "../config/env.js";
 
+import { EMAIL_RETRY_DELAY_MINUTES } from "../utils/email-retry.js";
 type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
 type ReminderChannel =
@@ -9,6 +10,9 @@ type ReminderChannel =
   | "ADMIN_EMAIL";
 
 type ReminderStatus = "PENDING" | "SENT" | "FAILED" | "SKIPPED";
+
+/** Danışmana giden "gönderilemedi" bildirimlerinin reminderMonth değerine eklenen fark */
+const CONSULTANT_FAILURE_MONTH_OFFSET = 100;
 
 export class DocumentReminderRepository {
   async findActiveCandidates() {
@@ -150,33 +154,79 @@ export class DocumentReminderRepository {
     targetDate: Date;
     title: string;
     description: string;
+    /** "Gönderilemedi" bildirimi: her kesin başarısızlıkta yeniden oluşturulur */
+    isFailure?: boolean;
   }): Promise<boolean> {
+    const storedReminderMonth = params.isFailure
+      ? params.reminderMonth + CONSULTANT_FAILURE_MONTH_OFFSET
+      : params.reminderMonth;
+
     return prisma.$transaction(async (transaction) => {
       const now = new Date();
 
-      const reminderResult = await transaction.documentReminder.createMany({
-        data: [
-          {
-            documentId: params.documentId,
-            companyId: params.companyId,
-            contactId: params.contactId,
-            type: params.type,
-            channel: "CONSULTANT_IN_APP",
-            status: "SENT",
-            reminderMonth: params.reminderMonth,
-            targetDate: params.targetDate,
-            recipient: String(params.consultantUserId),
+      const reminderData = {
+        documentId: params.documentId,
+        companyId: params.companyId,
+        contactId: params.contactId,
+        type: params.type,
+        channel: "CONSULTANT_IN_APP" as const,
+        status: "SENT" as const,
+        reminderMonth: storedReminderMonth,
+        targetDate: params.targetDate,
+        recipient: String(params.consultantUserId),
+        subject: params.title,
+        message: params.description,
+        attemptedAt: now,
+        sentAt: now,
+      };
+
+      if (params.isFailure) {
+        // Kayıt varsa son hatayla güncellenir, bildirim her seferinde yeniden oluşturulur
+        // Aynı içerikte bildirim daha önce gittiyse tekrar gönderme
+        const existing = await transaction.documentReminder.findUnique({
+          where: {
+            documentId_type_targetDate_reminderMonth_channel: {
+              documentId: params.documentId,
+              type: params.type,
+              targetDate: params.targetDate,
+              reminderMonth: storedReminderMonth,
+              channel: "CONSULTANT_IN_APP",
+            },
+          },
+          select: { message: true },
+        });
+
+        if (existing?.message === params.description) {
+          return false;
+        }
+        await transaction.documentReminder.upsert({
+          where: {
+            documentId_type_targetDate_reminderMonth_channel: {
+              documentId: params.documentId,
+              type: params.type,
+              targetDate: params.targetDate,
+              reminderMonth: storedReminderMonth,
+              channel: "CONSULTANT_IN_APP",
+            },
+          },
+          create: reminderData,
+          update: {
             subject: params.title,
             message: params.description,
             attemptedAt: now,
             sentAt: now,
           },
-        ],
-        skipDuplicates: true,
-      });
+        });
+      } else {
+        // "1 ay kaldı" bildirimi belge/ay başına bir kez gider
+        const reminderResult = await transaction.documentReminder.createMany({
+          data: [reminderData],
+          skipDuplicates: true,
+        });
 
-      if (reminderResult.count === 0) {
-        return false;
+        if (reminderResult.count === 0) {
+          return false;
+        }
       }
 
       await transaction.notification.create({
@@ -341,6 +391,15 @@ export class DocumentReminderRepository {
       where: {
         status: "PENDING",
         channel: "EMAIL",
+        // Geçici hata alan kayıt, son denemeden 15 dk geçmeden tekrar alınmaz
+        OR: [
+          { attemptedAt: null },
+          {
+            attemptedAt: {
+              lt: new Date(Date.now() - EMAIL_RETRY_DELAY_MINUTES * 60 * 1000),
+            },
+          },
+        ],
       },
       include: {
         document: true,
@@ -433,7 +492,16 @@ export class DocumentReminderRepository {
       },
     });
   }
-
+  async markForRetry(id: number, errorMessage: string) {
+    return prisma.documentReminder.update({
+      where: { id },
+      data: {
+        status: "PENDING",
+        attemptedAt: new Date(),
+        errorMessage,
+      },
+    });
+  }
   async markFailed(id: number, errorMessage: string) {
     return prisma.documentReminder.update({
       where: { id },

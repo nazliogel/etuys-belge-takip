@@ -58,6 +58,7 @@ export class CompanyAuthorizationReminderQueueService {
               reminderMonth: preview.reminderMonth,
               targetDate: preview.targetDate,
               title: "Yetki süresi bildirimi gönderilemedi",
+              isFailure: true,
               description: [
                 `${preview.companyName} firmasının yetki süresi dolmak üzeredir.`,
                 "Firma e-postası eksik bilgiler nedeniyle gönderilemedi.",

@@ -1,7 +1,14 @@
 import { prisma } from "../config/env.js";
+import { EMAIL_RETRY_DELAY_MINUTES } from "../utils/email-retry.js";
 
 type ReminderChannel =
-  "EMAIL" | "WHATSAPP" | "CONSULTANT_IN_APP" | "ADMIN_EMAIL";
+  | "EMAIL"
+  | "WHATSAPP"
+  | "CONSULTANT_IN_APP"
+  | "ADMIN_EMAIL";
+
+/** Danışmana giden "gönderilemedi" bildirimlerinin reminderMonth değerine eklenen fark */
+const CONSULTANT_FAILURE_MONTH_OFFSET = 100;
 
 /**
  * Açık belge kontrolü için gereken alanlar. Sadece aktif ve OPEN durumdaki
@@ -34,7 +41,7 @@ export class CompanyAuthorizationReminderRepository {
         },
         company: {
           isActive: true,
-          // YENİ: En az bir aktif OPEN belgesi olmayan firma hiç gelmez.
+          // En az bir aktif OPEN belgesi olmayan firma hiç gelmez.
           // Kapalı Belgeler ile çakışma kontrolü serviste yapılır.
           documents: {
             some: {
@@ -75,7 +82,7 @@ export class CompanyAuthorizationReminderRepository {
     });
   }
 
-  /** YENİ: Gönderim anında firmanın güncel belge durumunu getirir. */
+  /** Gönderim anında firmanın güncel belge durumunu getirir. */
   async findCompanyDocumentState(companyId: number) {
     return prisma.company.findUnique({
       where: { id: companyId },
@@ -124,33 +131,83 @@ export class CompanyAuthorizationReminderRepository {
     targetDate: Date;
     title: string;
     description: string;
+    /** "Gönderilemedi" bildirimi: her kesin başarısızlıkta yeniden oluşturulur */
+    isFailure?: boolean;
   }): Promise<boolean> {
+    const storedReminderMonth = params.isFailure
+      ? params.reminderMonth + CONSULTANT_FAILURE_MONTH_OFFSET
+      : params.reminderMonth;
+
     return prisma.$transaction(async (transaction) => {
       const now = new Date();
 
-      const result = await transaction.companyAuthorizationReminder.createMany({
-        data: [
-          {
-            authorizationId: params.authorizationId,
-            companyId: params.companyId,
-            contactId: params.contactId,
-            type: "AUTHORIZATION_EXPIRY",
-            channel: "CONSULTANT_IN_APP",
-            status: "SENT",
-            reminderMonth: params.reminderMonth,
-            targetDate: params.targetDate,
-            recipient: String(params.consultantUserId),
+      const reminderData = {
+        authorizationId: params.authorizationId,
+        companyId: params.companyId,
+        contactId: params.contactId,
+        type: "AUTHORIZATION_EXPIRY" as const,
+        channel: "CONSULTANT_IN_APP" as const,
+        status: "SENT" as const,
+        reminderMonth: storedReminderMonth,
+        targetDate: params.targetDate,
+        recipient: String(params.consultantUserId),
+        subject: params.title,
+        message: params.description,
+        attemptedAt: now,
+        sentAt: now,
+      };
+
+      if (params.isFailure) {
+        // Kayıt varsa son hatayla güncellenir; içerik değiştiyse yeni bildirim oluşturulur
+
+        // Aynı içerikte bildirim daha önce gittiyse tekrar gönderme
+        const existing =
+          await transaction.companyAuthorizationReminder.findUnique({
+            where: {
+              authorizationId_type_targetDate_reminderMonth_channel: {
+                authorizationId: params.authorizationId,
+                type: "AUTHORIZATION_EXPIRY",
+                targetDate: params.targetDate,
+                reminderMonth: storedReminderMonth,
+                channel: "CONSULTANT_IN_APP",
+              },
+            },
+            select: { message: true },
+          });
+
+        if (existing?.message === params.description) {
+          return false;
+        }
+
+        await transaction.companyAuthorizationReminder.upsert({
+          where: {
+            authorizationId_type_targetDate_reminderMonth_channel: {
+              authorizationId: params.authorizationId,
+              type: "AUTHORIZATION_EXPIRY",
+              targetDate: params.targetDate,
+              reminderMonth: storedReminderMonth,
+              channel: "CONSULTANT_IN_APP",
+            },
+          },
+          create: reminderData,
+          update: {
             subject: params.title,
             message: params.description,
             attemptedAt: now,
             sentAt: now,
           },
-        ],
-        skipDuplicates: true,
-      });
+        });
+      } else {
+        // "1 ay kaldı" bildirimi yetki/ay başına bir kez gider
+        const result =
+          await transaction.companyAuthorizationReminder.createMany({
+            data: [reminderData],
+            skipDuplicates: true,
+          });
 
-      if (result.count === 0) {
-        return false;
+        if (result.count === 0) {
+          return false;
+        }
       }
 
       await transaction.notification.create({
@@ -166,6 +223,7 @@ export class CompanyAuthorizationReminderRepository {
       return true;
     });
   }
+
   async createAdminEmailReminder(params: {
     authorizationId: number;
     companyId: number;
@@ -220,6 +278,15 @@ export class CompanyAuthorizationReminderRepository {
       where: {
         status: "PENDING",
         channel: "EMAIL",
+        // Geçici hata alan kayıt, son denemeden 15 dk geçmeden tekrar alınmaz
+        OR: [
+          { attemptedAt: null },
+          {
+            attemptedAt: {
+              lt: new Date(Date.now() - EMAIL_RETRY_DELAY_MINUTES * 60 * 1000),
+            },
+          },
+        ],
       },
       include: {
         authorization: true,
@@ -270,11 +337,13 @@ export class CompanyAuthorizationReminderRepository {
     return prisma.companyAuthorizationReminder.findFirst({
       where: {
         channel: "EMAIL",
-        // YENİ: Atlanan (SKIPPED) kayıtlar gerçekte e-posta göndermez,
+        // Atlanan (SKIPPED) kayıtlar gerçekte e-posta göndermez,
         // gönderim aralığı (emailDelaySeconds) hesabına katılmamalı.
-        status: {
-          in: ["SENT", "FAILED"],
-        },
+        // Geçici hata alıp tekrar denenecek kayıtlar ise gerçek bir denemedir, sayılır.
+        OR: [
+          { status: { in: ["SENT", "FAILED"] } },
+          { status: "PENDING", errorMessage: { startsWith: "[deneme" } },
+        ],
         attemptedAt: {
           not: null,
         },
@@ -301,6 +370,18 @@ export class CompanyAuthorizationReminderRepository {
     });
   }
 
+  /** Geçici hata: kayıt kuyrukta kalır, 15 dk sonra tekrar denenir */
+  async markForRetry(id: number, errorMessage: string) {
+    return prisma.companyAuthorizationReminder.update({
+      where: { id },
+      data: {
+        status: "PENDING",
+        attemptedAt: new Date(),
+        errorMessage,
+      },
+    });
+  }
+
   async markFailed(id: number, errorMessage: string) {
     return prisma.companyAuthorizationReminder.update({
       where: { id },
@@ -312,7 +393,7 @@ export class CompanyAuthorizationReminderRepository {
     });
   }
 
-  /** YENİ: Kuyruktaki bildirimi göndermeden kapatır (örn. belge kapandıysa). */
+  /** Kuyruktaki bildirimi göndermeden kapatır (örn. belge kapandıysa). */
   async markSkipped(id: number, reason: string) {
     return prisma.companyAuthorizationReminder.update({
       where: { id },

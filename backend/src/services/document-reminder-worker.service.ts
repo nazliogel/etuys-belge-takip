@@ -12,6 +12,12 @@ import {
   normalizeDate,
   resolveReminderDecision,
 } from "./document-reminder.service.js";
+import {
+  MAX_EMAIL_ATTEMPTS,
+  getPreviousAttempts,
+  isTransientEmailError,
+  withAttemptPrefix,
+} from "../utils/email-retry.js";
 
 function isSameDate(first: Date, second: Date): boolean {
   return normalizeDate(first).getTime() === normalizeDate(second).getTime();
@@ -352,10 +358,21 @@ export class DocumentReminderWorkerService {
             consultantNotificationError,
           });
         } catch (error) {
-          const errorMessage =
+          const rawErrorMessage =
             error instanceof Error
               ? error.message
               : "Bilinmeyen e-posta gönderim hatası.";
+
+          const attempt = getPreviousAttempts(reminder.errorMessage) + 1;
+          const errorMessage = withAttemptPrefix(attempt, rawErrorMessage);
+
+          if (isTransientEmailError(error) && attempt < MAX_EMAIL_ATTEMPTS) {
+            await this.repository.markForRetry(reminder.id, errorMessage);
+            console.warn(
+              `Reminder ${reminder.id} geçici hata aldı, tekrar denenecek: ${errorMessage}`,
+            );
+            continue;
+          }
 
           await this.repository.markFailed(reminder.id, errorMessage);
 
@@ -376,6 +393,7 @@ export class DocumentReminderWorkerService {
                   reminderMonth: reminder.reminderMonth,
                   targetDate: reminder.targetDate,
                   title: "Firma e-postası gönderilemedi",
+                  isFailure: true,
                   description: [
                     `${reminder.company.name} firmasına ait belge bildirimi gönderilemedi.`,
                     `Alıcı: ${reminder.recipient}.`,

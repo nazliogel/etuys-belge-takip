@@ -26,12 +26,21 @@ export function hasOpenIncentiveDocument(company: {
 export const NO_OPEN_DOCUMENT_SKIP_REASON =
   "Firmanın açık teşvik belgesi bulunmuyor (tüm belgeler kapalı veya iptal). Yetkilendirme bildirimi gönderilmedi.";
 
+export const AUTHORIZATION_CHANGED_SKIP_REASON =
+  "Yetki bitiş tarihi değişmiş (yeni yetkilendirme yapılmış) veya hatırlatma koşulları artık geçerli değil.";
+
+/** Yetki bitişinden kaç ay önce aylık hatırlatma başlar (süre uzatmadan bağımsız) */
+export const AUTHORIZATION_REMINDER_WINDOW_MONTHS = 6;
 export function resolveAuthorizationReminderDecision(
   authorizationEndDate: Date,
   today: Date = new Date(),
 ): AuthorizationReminderDecision | null {
   const targetDate = normalizeDate(authorizationEndDate);
-  const reminderMonth = resolveReminderMonth(targetDate, today);
+  const reminderMonth = resolveReminderMonth(
+    targetDate,
+    today,
+    AUTHORIZATION_REMINDER_WINDOW_MONTHS,
+  );
 
   if (reminderMonth === null) {
     return null;

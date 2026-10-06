@@ -56,12 +56,14 @@ export function getExtensionRightDeadline(extensionDate: Date): Date {
 export function resolveReminderMonth(
   targetDate: Date,
   today: Date,
+  windowMonths: number = EXTENSION_REMINDER_WINDOW_MONTHS,
 ): number | null {
   const normalizedTarget = normalizeDate(targetDate);
   const normalizedToday = normalizeDate(today);
-  // Bitiş tarihinden önceki son EXTENSION_REMINDER_WINDOW_MONTHS aylık dönem.
+  // Bitiş tarihinden önceki son windowMonths aylık dönem.
+  // Belge bildirimleri varsayılanı (2 ay) kullanır, yetki bildirimleri 6 ay verir.
   if (normalizedToday < normalizedTarget) {
-    for (let month = EXTENSION_REMINDER_WINDOW_MONTHS; month >= 1; month -= 1) {
+    for (let month = windowMonths; month >= 1; month -= 1) {
       const periodStart = subtractMonthsClamped(normalizedTarget, month);
       const periodEnd = subtractMonthsClamped(normalizedTarget, month - 1);
 

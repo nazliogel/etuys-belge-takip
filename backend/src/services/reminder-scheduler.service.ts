@@ -5,7 +5,7 @@ import { DocumentReminderQueueService } from "./document-reminder-queue.service.
 import { DocumentReminderWorkerService } from "./document-reminder-worker.service.js";
 import { DocumentReminderWhatsAppQueueService } from "./document-reminder-whatsapp-queue.service.js";
 import { DocumentReminderWhatsAppWorkerService } from "./document-reminder-whatsapp-worker.service.js";
-
+import { DailyEmailReportService } from "./daily-email-report.service.js";
 type WorkerPriority = "DOCUMENT" | "AUTHORIZATION";
 
 /** Otomatik gönderim yalnızca hafta içi bu saatler arasında yapılır (Europe/Istanbul) */
@@ -38,6 +38,7 @@ export class ReminderSchedulerService {
   private workerCycleRunning = false;
   private nextWorkerPriority: WorkerPriority = "DOCUMENT";
   private outsideWindowLogged = false;
+  private readonly dailyEmailReportService = new DailyEmailReportService();
 
   constructor(
     private readonly documentQueueService = new DocumentReminderQueueService(),
@@ -148,6 +149,12 @@ export class ReminderSchedulerService {
       console.log("Reminder workers resumed: within sending window.");
       this.outsideWindowLogged = false;
     }
+
+        // Günlük gönderim raporu: hafta içi 08:00 sonrası ilk turda, günde bir kez
+    if (env.emailSendingEnabled) {
+      void this.dailyEmailReportService.runIfDue();
+    }
+    
     this.workerCycleRunning = true;
 
     try {

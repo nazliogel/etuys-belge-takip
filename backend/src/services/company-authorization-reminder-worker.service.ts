@@ -5,10 +5,19 @@ import { createAuthorizationExpiryEmailTemplate } from "./closure-email-template
 import {
   CompanyAuthorizationReminderService,
   NO_OPEN_DOCUMENT_SKIP_REASON,
+  resolveAuthorizationReminderDecision,
+  AUTHORIZATION_CHANGED_SKIP_REASON,
 } from "./company-authorization-reminder.service.js";
+import { normalizeDate } from "./document-reminder.service.js";
 import { DEFAULT_CC_RECIPIENTS } from "./document-reminder-preview.service.js";
 import { EmailService } from "./email.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
+import {
+  MAX_EMAIL_ATTEMPTS,
+  getPreviousAttempts,
+  isTransientEmailError,
+  withAttemptPrefix,
+} from "../utils/email-retry.js";
 
 const TURKEY_UTC_OFFSET_HOURS = 3;
 
@@ -190,7 +199,7 @@ export class CompanyAuthorizationReminderWorkerService {
 
       for (const reminder of reminders) {
         try {
-          // YENİ: Kuyruğa alındıktan sonra firmanın tüm belgeleri kapanmış
+          // Kuyruğa alındıktan sonra firmanın tüm belgeleri kapanmış
           // veya iptal olmuş olabilir. Göndermeden önce tekrar kontrol et.
           const hasOpenDocument =
             await this.authorizationService.companyHasOpenDocument(
@@ -211,7 +220,32 @@ export class CompanyAuthorizationReminderWorkerService {
             });
             continue;
           }
+          // Kuyruğa alındıktan sonra yeni yetkilendirme yapılmış olabilir.
+          // Güncel bitiş tarihine göre bu hatırlatma hâlâ geçerli değilse gönderilmez.
+          const currentEndDate = reminder.authorization.authorizationEndDate;
+          const currentDecision = currentEndDate
+            ? resolveAuthorizationReminderDecision(currentEndDate, now)
+            : null;
 
+          if (
+            !currentDecision ||
+            currentDecision.reminderMonth !== reminder.reminderMonth ||
+            normalizeDate(currentDecision.targetDate).getTime() !==
+              normalizeDate(reminder.targetDate).getTime()
+          ) {
+            await this.repository.markSkipped(
+              reminder.id,
+              AUTHORIZATION_CHANGED_SKIP_REASON,
+            );
+
+            skippedCount += 1;
+            results.push({
+              id: reminder.id,
+              status: "SKIPPED",
+              reason: AUTHORIZATION_CHANGED_SKIP_REASON,
+            });
+            continue;
+          }
           const validationErrors: string[] = [];
 
           if (!reminder.contact) {
@@ -246,7 +280,7 @@ export class CompanyAuthorizationReminderWorkerService {
             attachments: template.attachments,
           });
 
-          // YENİ: İletişim alanında birden fazla adres olabilir
+          // İletişim alanında birden fazla adres olabilir
           // ("a@x.com; b@x.com"); en az biri kabul edildiyse başarılı sayılır.
           if (!result.anyRecipientAccepted) {
             const rejectedRecipients = result.rejected.map((address) =>
@@ -311,10 +345,22 @@ export class CompanyAuthorizationReminderWorkerService {
             consultantNotificationError,
           });
         } catch (error) {
-          const errorMessage =
+          const rawErrorMessage =
             error instanceof Error
               ? error.message
               : "Bilinmeyen e-posta gönderim hatası.";
+
+          const attempt = getPreviousAttempts(reminder.errorMessage) + 1;
+          const errorMessage = withAttemptPrefix(attempt, rawErrorMessage);
+
+          // Geçici hata: kayıt kuyrukta kalır, 15 dk sonra tekrar denenir
+          if (isTransientEmailError(error) && attempt < MAX_EMAIL_ATTEMPTS) {
+            await this.repository.markForRetry(reminder.id, errorMessage);
+            console.warn(
+              `Authorization reminder ${reminder.id} geçici hata aldı, tekrar denenecek: ${errorMessage}`,
+            );
+            continue;
+          }
 
           await this.repository.markFailed(reminder.id, errorMessage);
 
@@ -334,6 +380,7 @@ export class CompanyAuthorizationReminderWorkerService {
                   reminderMonth: reminder.reminderMonth,
                   targetDate: reminder.targetDate,
                   title: "Yetki süresi e-postası gönderilemedi",
+                  isFailure: true,
                   description: [
                     `${reminder.company.name} firmasının yetki süresi dolmak üzeredir.`,
                     `Alıcı: ${reminder.recipient}.`,
