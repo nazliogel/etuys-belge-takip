@@ -342,7 +342,7 @@ export function buildSupportRequestEmailTemplate(
                   text-align: center;
                 ">
                   Bu bildirim otomatik olarak gönderilmiştir. Talebi yanıtlamak için
-                  Teşvik360 panelinize giriş yapabilirsiniz.
+                  Teşvik Akkaş panelinize giriş yapabilirsiniz.
                 </p>
               </div>
             </td>
