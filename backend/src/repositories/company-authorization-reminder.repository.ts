@@ -33,6 +33,54 @@ const OPEN_DOCUMENT_STATE_SELECT = {
 } as const;
 
 export class CompanyAuthorizationReminderRepository {
+  async findPendingWhatsApp(limit = 1) {
+    return prisma.companyAuthorizationReminder.findMany({
+      where: {
+        channel: "WHATSAPP",
+        status: "PENDING",
+      },
+      include: {
+        authorization: true,
+        company: true,
+        contact: true,
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: limit,
+    });
+  }
+
+  async enqueueWhatsApp(params: {
+  authorizationId: number;
+  companyId: number;
+  contactId?: number;
+  reminderMonth: number;
+  targetDate: Date;
+  recipient: string;
+  message: string;
+}): Promise<boolean> {
+  const result = await prisma.companyAuthorizationReminder.createMany({
+    data: [
+      {
+        authorizationId: params.authorizationId,
+        companyId: params.companyId,
+        contactId: params.contactId,
+        type: "AUTHORIZATION_EXPIRY",
+        channel: "WHATSAPP",
+        status: "PENDING",
+        reminderMonth: params.reminderMonth,
+        targetDate: params.targetDate,
+        recipient: params.recipient,
+        message: params.message,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  return result.count === 1;
+}
+
   async findActiveCandidates() {
     return prisma.companyAuthorization.findMany({
       where: {

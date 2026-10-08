@@ -11,27 +11,7 @@ import {
   createExtensionWhatsAppTemplate,
 } from "./whatsapp-template.service.js";
 import { WhatsAppService } from "./whatsapp.service.js";
-
-const TURKEY_UTC_OFFSET_HOURS = 3;
-
-function getHourStart(now: Date): Date {
-  return new Date(now.getTime() - 60 * 60 * 1000);
-}
-
-function getTurkeyDayStart(now: Date): Date {
-  const turkeyTime = new Date(
-    now.getTime() + TURKEY_UTC_OFFSET_HOURS * 60 * 60 * 1000,
-  );
-
-  return new Date(
-    Date.UTC(
-      turkeyTime.getUTCFullYear(),
-      turkeyTime.getUTCMonth(),
-      turkeyTime.getUTCDate(),
-    ) -
-      TURKEY_UTC_OFFSET_HOURS * 60 * 60 * 1000,
-  );
-}
+import { WhatsAppRateLimitService } from "./whatsapp-rate-limit.service.js";
 
 function isSameDate(first: Date, second: Date): boolean {
   return normalizeDate(first).getTime() === normalizeDate(second).getTime();
@@ -44,6 +24,7 @@ export class DocumentReminderWhatsAppWorkerService {
     private readonly repository = new DocumentReminderRepository(),
     private readonly companyRequestRepository = new CompanyRequestRepository(),
     private readonly whatsAppService = new WhatsAppService(),
+    private readonly rateLimitService = new WhatsAppRateLimitService(),
   ) {}
 
   async processPendingReminders(limit = 20) {
@@ -60,8 +41,8 @@ export class DocumentReminderWhatsAppWorkerService {
     }
 
     if (
-      !env.whatsappAccessToken ||
-      !env.whatsappPhoneNumberId ||
+      !env.kapsoApiKey ||
+      !env.kapsoPhoneNumberId ||
       !env.whatsappApiVersion
     ) {
       return {
@@ -91,19 +72,13 @@ export class DocumentReminderWhatsAppWorkerService {
 
     try {
       const now = new Date();
-      const hourStart = getHourStart(now);
-      const dayStart = getTurkeyDayStart(now);
+      const rateLimit = await this.rateLimitService.check(now);
 
-      const [sentLastHour, sentToday, latestAttempt] = await Promise.all([
-        this.repository.countWhatsAppSentSince(hourStart),
-        this.repository.countWhatsAppSentSince(dayStart),
-        this.repository.findLatestAttemptedWhatsApp(),
-      ]);
-
-      if (sentLastHour >= env.whatsappMaxMessagesPerHour) {
+      if (!rateLimit.allowed) {
         return {
           processed: false,
-          reason: "WHATSAPP_HOURLY_LIMIT_REACHED",
+          reason: rateLimit.reason ?? "WHATSAPP_RATE_LIMIT",
+          retryAfterSeconds: rateLimit.retryAfterSeconds,
           foundCount: 0,
           sentCount: 0,
           failedCount: 0,
@@ -111,39 +86,6 @@ export class DocumentReminderWhatsAppWorkerService {
           results: [],
         };
       }
-
-      if (sentToday >= env.whatsappMaxMessagesPerDay) {
-        return {
-          processed: false,
-          reason: "WHATSAPP_DAILY_LIMIT_REACHED",
-          foundCount: 0,
-          sentCount: 0,
-          failedCount: 0,
-          skippedCount: 0,
-          results: [],
-        };
-      }
-
-      if (latestAttempt?.attemptedAt) {
-        const nextAllowedAt =
-          latestAttempt.attemptedAt.getTime() + env.whatsappDelaySeconds * 1000;
-
-        const remainingMilliseconds = nextAllowedAt - now.getTime();
-
-        if (remainingMilliseconds > 0) {
-          return {
-            processed: false,
-            reason: "WHATSAPP_DELAY_ACTIVE",
-            retryAfterSeconds: Math.ceil(remainingMilliseconds / 1000),
-            foundCount: 0,
-            sentCount: 0,
-            failedCount: 0,
-            skippedCount: 0,
-            results: [],
-          };
-        }
-      }
-
       const reminders = await this.repository.findPendingWhatsApp(
         Math.min(limit, 1),
       );
@@ -177,11 +119,11 @@ export class DocumentReminderWhatsAppWorkerService {
             continue;
           }
 
-          // Yetki süresi dolmuş olsa da mesaj gönderilir;
-          // yetkilendirme notlu şablon kullanılır.
+          // Yetki süresi dolmuş olsa da belge hatırlatması gönderilir.
+          // Yetkilendirme bildirimi ayrı worker tarafından gönderilir.
           const authorizationEndDate =
             reminder.company.authorization?.authorizationEndDate ?? null;
-            
+
           const authorizationExpired =
             !authorizationEndDate ||
             normalizeDate(authorizationEndDate) < normalizeDate(now);
