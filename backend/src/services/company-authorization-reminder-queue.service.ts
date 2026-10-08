@@ -2,7 +2,6 @@ import { CompanyAuthorizationReminderRepository } from "../repositories/company-
 import { CompanyAuthorizationReminderPreviewService } from "./company-authorization-reminder-preview.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
 import { env } from "../config/env.js";
-import { createAuthorizationWhatsAppTemplate } from "./whatsapp-template.service.js";
 
 interface BlockedReminder {
   authorizationId: number;
@@ -10,6 +9,8 @@ interface BlockedReminder {
   warnings: string[];
 }
 
+// NOT: Yetkilendirme WhatsApp kuyruğu company-authorization-reminder-whatsapp-queue.service.ts
+// dosyasındadır. Bu dosya yalnızca e-posta kuyruğunu yönetir.
 export class CompanyAuthorizationReminderQueueService {
   constructor(
     private readonly repository = new CompanyAuthorizationReminderRepository(),
@@ -49,6 +50,13 @@ export class CompanyAuthorizationReminderQueueService {
           warnings: preview.warnings,
         });
 
+        // YENİ: WhatsApp açıksa ve telefon da eksikse aynı bildirimde yazılır.
+        // (Danışmana iki ayrı bildirim yerine tek bildirim gider.)
+        const whatsappMissing =
+          env.whatsappQueueEnabled && preview.whatsappWarnings.length > 0
+            ? `WhatsApp mesajı da gönderilemedi: ${preview.whatsappWarnings.join(", ")}`
+            : "";
+
         if (preview.consultantUserId && preview.consultantIsActive) {
           const notificationCreated =
             await this.repository.createConsultantNotification({
@@ -64,7 +72,10 @@ export class CompanyAuthorizationReminderQueueService {
                 `${preview.companyName} firmasının yetki süresi dolmak üzeredir.`,
                 "Firma e-postası eksik bilgiler nedeniyle gönderilemedi.",
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
-              ].join(" "),
+                whatsappMissing,
+              ]
+                .filter(Boolean)
+                .join(" "),
             });
 
           if (notificationCreated) {
@@ -96,7 +107,10 @@ export class CompanyAuthorizationReminderQueueService {
                 `Firma: ${preview.companyName}`,
                 `Firma ID: ${preview.companyId}`,
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
-              ].join("\n"),
+                whatsappMissing,
+              ]
+                .filter(Boolean)
+                .join("\n"),
             });
 
           if (adminEmailReminderId) {
@@ -104,7 +118,9 @@ export class CompanyAuthorizationReminderQueueService {
               await this.reminderNotificationService.notifyMissingConsultant({
                 companyName: preview.companyName,
                 companyId: preview.companyId,
-                errorMessage: preview.warnings.join(", "),
+                errorMessage: [preview.warnings.join(", "), whatsappMissing]
+                  .filter(Boolean)
+                  .join(" "),
               });
 
               await this.repository.markSent(adminEmailReminderId);
@@ -152,85 +168,6 @@ export class CompanyAuthorizationReminderQueueService {
       consultantNotificationCount,
       duplicateConsultantNotificationCount,
       missingConsultantCount,
-    };
-  }
-  async enqueueDueWhatsAppReminders(today: Date = new Date()) {
-    if (!env.whatsappQueueEnabled) {
-      return {
-        totalCount: 0,
-        queuedCount: 0,
-        duplicateCount: 0,
-        blockedCount: 0,
-        blocked: [] as BlockedReminder[],
-      };
-    }
-
-    const previews = await this.previewService.createPreviews(today);
-
-    let queuedCount = 0;
-    let duplicateCount = 0;
-
-    const blocked: BlockedReminder[] = [];
-
-    for (const preview of previews) {
-      if (!preview.whatsappCanSend) {
-        blocked.push({
-          authorizationId: preview.authorizationId,
-          companyName: preview.companyName,
-          warnings: preview.whatsappWarnings,
-        });
-
-        continue;
-      }
-
-      // Şablon hazırlanamazsa diğer firmaları işlemeye devam et.
-      let message: string;
-
-      try {
-        const template = createAuthorizationWhatsAppTemplate({
-          companyName: preview.companyName,
-          targetDate: preview.targetDate,
-          today,
-        });
-
-        message = template.previewText;
-      } catch (error) {
-        blocked.push({
-          authorizationId: preview.authorizationId,
-          companyName: preview.companyName,
-          warnings: [
-            error instanceof Error
-              ? error.message
-              : "Yetkilendirme WhatsApp şablonu hazırlanamadı.",
-          ],
-        });
-
-        continue;
-      }
-
-      const queued = await this.repository.enqueueWhatsApp({
-        authorizationId: preview.authorizationId,
-        companyId: preview.companyId,
-        contactId: preview.contactId,
-        reminderMonth: preview.reminderMonth,
-        targetDate: preview.targetDate,
-        recipient: preview.whatsappRecipient,
-        message,
-      });
-
-      if (queued) {
-        queuedCount += 1;
-      } else {
-        duplicateCount += 1;
-      }
-    }
-
-    return {
-      totalCount: previews.length,
-      queuedCount,
-      duplicateCount,
-      blockedCount: blocked.length,
-      blocked,
     };
   }
 }

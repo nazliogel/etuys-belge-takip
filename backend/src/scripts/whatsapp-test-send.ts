@@ -1,10 +1,9 @@
 /**
  * WhatsApp şablon testi
  *
- * Üç onaylı şablonu (süre uzatma, kapatma, yetkilendirme) örnek verilerle
- * WHATSAPP_TEST_RECIPIENT numarasına gönderir. Mail test modu gibi çalışır:
- * normal gönderim (WHATSAPP_SENDING_ENABLED) kapalı, test gönderimi açık olmalıdır.
- * Veritabanına dokunmaz, kuyruğa kayıt eklemez.
+ * Onaylı şablonları örnek verilerle WHATSAPP_TEST_RECIPIENT numarasına gönderir.
+ * Mail test modu gibi çalışır: normal gönderim (WHATSAPP_SENDING_ENABLED) kapalı,
+ * test gönderimi açık olmalıdır. Veritabanına dokunmaz, kuyruğa kayıt eklemez.
  *
  * Kullanım (backend klasöründe, npm run build sonrası):
  *   $env:WHATSAPP_TEST_SENDING_ENABLED="true"; $env:WHATSAPP_TEST_RECIPIENT="905XXXXXXXXX"; node dist/scripts/whatsapp-test-send.js
@@ -45,6 +44,15 @@ async function main() {
           companyName: "TEST FİRMA",
           documentNumber: "TEST-001",
           targetDate: daysFromToday(-10),
+          today: now,
+        }),
+    },
+    {
+      label: "Yetkilendirme (süresi henüz dolmamış)",
+      build: () =>
+        createAuthorizationWhatsAppTemplate({
+          companyName: "TEST FİRMA",
+          targetDate: daysFromToday(180),
           today: now,
         }),
     },

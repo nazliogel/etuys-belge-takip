@@ -7,26 +7,28 @@ import {
   AUTHORIZATION_CHANGED_SKIP_REASON,
 } from "./company-authorization-reminder.service.js";
 import { normalizeDate } from "./document-reminder.service.js";
-import { normalizeWhatsAppRecipient } from "./document-reminder-whatsapp-preview.service.js";
+import {
+  collectWhatsAppRecipients,
+  getWhatsAppWarnings,
+  joinWhatsAppRecipients,
+} from "./reminder-contact-check.js";
 import { createAuthorizationWhatsAppTemplate } from "./whatsapp-template.service.js";
 import { WhatsAppService } from "./whatsapp.service.js";
 import { WhatsAppRateLimitService } from "./whatsapp-rate-limit.service.js";
+import { ReminderNotificationService } from "./reminder-notification.service.js";
+import { notifySystemAlert } from "./system-alert.service.js";
+import { getTurkeyDay } from "../utils/turkey-date.js";
+import {
+  MAX_WHATSAPP_ATTEMPTS,
+  combineRecipientErrors,
+  getPreviousAttempts,
+  isTransientWhatsAppError,
+  withAttemptPrefix,
+} from "../utils/whatsapp-retry.js";
 
-function getTurkeyDay(now: Date): Date {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Istanbul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(now);
-
-  const getPart = (type: string): number =>
-    Number(parts.find((part) => part.type === type)?.value);
-
-  return new Date(
-    Date.UTC(getPart("year"), getPart("month") - 1, getPart("day")),
-  );
-}
+type PendingWhatsAppReminder = Awaited<
+  ReturnType<CompanyAuthorizationReminderRepository["findPendingWhatsApp"]>
+>[number];
 
 export class CompanyAuthorizationReminderWhatsAppWorkerService {
   private isProcessing = false;
@@ -36,6 +38,7 @@ export class CompanyAuthorizationReminderWhatsAppWorkerService {
 
     private readonly whatsAppService = new WhatsAppService(),
     private readonly rateLimitService = new WhatsAppRateLimitService(),
+    private readonly reminderNotificationService = new ReminderNotificationService(),
   ) {}
 
   async processPendingReminders(limit = 1) {
@@ -90,18 +93,13 @@ export class CompanyAuthorizationReminderWhatsAppWorkerService {
       let failedCount = 0;
       let skippedCount = 0;
 
-      const results: Array<{
-        id: number;
-        status: "SENT" | "FAILED" | "SKIPPED";
-        messageId?: string;
-        reason?: string;
-        errorMessage?: string;
-      }> = [];
+      const results: Record<string, unknown>[] = [];
 
       for (const reminder of reminders) {
         try {
           let skipReason: string | undefined;
 
+          // 1) Hatırlatma hâlâ geçerli mi?
           if (!reminder.company.isActive) {
             skipReason = "Firma artık aktif değil.";
           }
@@ -128,28 +126,12 @@ export class CompanyAuthorizationReminderWhatsAppWorkerService {
           if (
             !skipReason &&
             (!currentEndDate ||
-              normalizeDate(currentEndDate).getTime() >= today.getTime() ||
               !currentDecision ||
               currentDecision.reminderMonth !== reminder.reminderMonth ||
               normalizeDate(currentDecision.targetDate).getTime() !==
                 normalizeDate(reminder.targetDate).getTime())
           ) {
             skipReason = AUTHORIZATION_CHANGED_SKIP_REASON;
-          }
-
-          const currentRecipient = reminder.contact
-            ? normalizeWhatsAppRecipient(reminder.contact.phone)
-            : "";
-
-          if (
-            !skipReason &&
-            (!reminder.contact?.phone.trim() ||
-              reminder.contact.companyId !== reminder.companyId ||
-              !/^[1-9]\d{9,14}$/.test(currentRecipient) ||
-              currentRecipient !== reminder.recipient)
-          ) {
-            skipReason =
-              "Firma iletişim telefonu eksik, geçersiz veya kuyruk oluşturulduktan sonra değişmiş.";
           }
 
           if (skipReason) {
@@ -163,40 +145,119 @@ export class CompanyAuthorizationReminderWhatsAppWorkerService {
             continue;
           }
 
+          // 2) İletişim bilgisi: firmanın BÜTÜN iletişim kayıtlarındaki GÜNCEL
+          // cep numaraları. Kuyruğa eklendikten sonra numara eklendi/değiştiyse
+          // güncel numaralara gönderilir (eski numaralara gönderilmez).
+          // Mail worker'ı gibi, hiç numara yoksa kalıcı hatadır ve danışmana bildirilir.
+          const contacts = reminder.company.contacts;
+          const currentRecipients = collectWhatsAppRecipients(contacts);
+
+          if (currentRecipients.length === 0) {
+            throw new Error(getWhatsAppWarnings(contacts).join(" "));
+          }
+
+          if (joinWhatsAppRecipients(currentRecipients) !== reminder.recipient) {
+            console.warn(
+              `WhatsApp authorization reminder ${reminder.id}: numaralar kuyruktan sonra değişmiş, güncel numaralara gönderiliyor.`,
+            );
+          }
+
           const template = createAuthorizationWhatsAppTemplate({
             companyName: reminder.company.name,
             targetDate: reminder.targetDate,
             today: now,
           });
 
-          const sendResult = await this.whatsAppService.sendTemplate({
-            to: reminder.recipient,
-            templateName: template.templateName,
-            languageCode: template.languageCode,
-            parameters: template.parameters,
-          });
+          // Firmanın bütün cep numaralarına gönderilir.
+          // Mailde olduğu gibi en az birine gittiyse başarılı sayılır.
+          const { sent, failed } =
+            await this.whatsAppService.sendTemplateToRecipients(
+              currentRecipients,
+              {
+                templateName: template.templateName,
+                languageCode: template.languageCode,
+                parameters: template.parameters,
+              },
+            );
 
-          await this.repository.markSent(reminder.id, sendResult.messageId);
+          if (sent.length === 0) {
+            throw combineRecipientErrors(failed);
+          }
+
+          const messageIds = sent.map((item) => item.messageId).join(",");
+          await this.repository.markSent(reminder.id, messageIds);
+
+          if (failed.length > 0) {
+            console.warn(
+              `WhatsApp authorization reminder ${reminder.id}: ${sent.length} numaraya gönderildi, ${failed.length} numaraya gönderilemedi.`,
+              failed.map((item) => item.to),
+            );
+          }
 
           sentCount += 1;
           results.push({
             id: reminder.id,
             status: "SENT",
-            messageId: sendResult.messageId,
+            messageId: messageIds,
+            sentTo: sent.map((item) => item.to),
+            failedTo: failed.map((item) => item.to),
           });
         } catch (error) {
-          const errorMessage =
+          // Mail worker'ı ile birebir aynı hata mantığı.
+          const rawErrorMessage =
             error instanceof Error
               ? error.message
               : "Bilinmeyen WhatsApp gönderim hatası.";
 
-          await this.repository.markFailed(reminder.id, errorMessage);
+          const attempt = getPreviousAttempts(reminder.errorMessage) + 1;
+          const errorMessage = withAttemptPrefix(attempt, rawErrorMessage);
 
+          // Geçici hata: kayıt kuyrukta kalır, 15 dk sonra tekrar denenir.
+          if (
+            isTransientWhatsAppError(error) &&
+            attempt < MAX_WHATSAPP_ATTEMPTS
+          ) {
+            await this.repository.markForRetry(reminder.id, errorMessage);
+            console.warn(
+              `WhatsApp authorization reminder ${reminder.id} geçici hata aldı, tekrar denenecek: ${errorMessage}`,
+            );
+            continue;
+          }
+
+          await this.repository.markFailed(reminder.id, errorMessage);
           failedCount += 1;
+
+          // 3 denemenin sonunda hâlâ geçici hata: danışmana değil sistem sorumlusuna.
+          if (isTransientWhatsAppError(error)) {
+            await notifySystemAlert({
+              kind: "Yetkilendirme (WhatsApp)",
+              reminderId: reminder.id,
+              companyName: reminder.company.name,
+              recipient: reminder.recipient,
+              errorMessage,
+              channel: "WHATSAPP",
+            });
+
+            results.push({
+              id: reminder.id,
+              status: "FAILED",
+              errorMessage,
+              systemAlert: true,
+            });
+            continue;
+          }
+
+          // Kalıcı hata: danışmana bildirim, danışman yoksa admin'e mail.
+          const notification = await this.notifyPermanentFailure(
+            reminder,
+            errorMessage,
+          );
+
           results.push({
             id: reminder.id,
             status: "FAILED",
             errorMessage,
+            ...notification,
           });
         }
       }
@@ -212,5 +273,99 @@ export class CompanyAuthorizationReminderWhatsAppWorkerService {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  /** Mail worker'ındaki kalıcı hata bildiriminin WhatsApp karşılığı. */
+  private async notifyPermanentFailure(
+    reminder: PendingWhatsAppReminder,
+    errorMessage: string,
+  ) {
+    let consultantNotificationCreated = false;
+    let consultantNotificationError: string | undefined;
+
+    const consultant = reminder.company.consultantUser;
+
+    if (consultant && consultant.isActive) {
+      try {
+        consultantNotificationCreated =
+          await this.repository.createConsultantNotification({
+            authorizationId: reminder.authorizationId,
+            companyId: reminder.companyId,
+            contactId: reminder.contactId ?? undefined,
+            consultantUserId: consultant.id,
+            reminderMonth: reminder.reminderMonth,
+            targetDate: reminder.targetDate,
+            title: "Firma WhatsApp mesajı gönderilemedi",
+            description: [
+              `${reminder.company.name} firmasına ait yetki süresi WhatsApp bildirimi gönderilemedi.`,
+              `Alıcı: ${reminder.recipient || "-"}.`,
+              `Hata: ${errorMessage}`,
+            ].join(" "),
+            channel: "WHATSAPP",
+          });
+      } catch (notificationError) {
+        consultantNotificationError =
+          notificationError instanceof Error
+            ? notificationError.message
+            : "Danışman bildirimi oluşturulamadı.";
+      }
+
+      return { consultantNotificationCreated, consultantNotificationError };
+    }
+
+    if (!env.adminFallbackEmail) {
+      return {
+        consultantNotificationCreated,
+        consultantNotificationError:
+          "ADMIN_FALLBACK_EMAIL tanımlı değil. Admin bildirimi gönderilemedi.",
+      };
+    }
+
+    // Firma ve ay başına tek kayıt: mail tarafı aynı ay için zaten admin'e
+    // yazdıysa yeni kayıt oluşmaz, ikinci mail gitmez.
+    const adminEmailReminderId = await this.repository.createAdminEmailReminder(
+      {
+        authorizationId: reminder.authorizationId,
+        companyId: reminder.companyId,
+        contactId: reminder.contactId ?? undefined,
+        reminderMonth: reminder.reminderMonth,
+        targetDate: reminder.targetDate,
+        recipient: env.adminFallbackEmail,
+        subject: `${reminder.company.name} - Danışman Bilgisi Eksik`,
+        message: [
+          `${reminder.company.name} firmasına ait bildirim işlemi sırasında aktif bir danışman bulunamadı.`,
+          "Lütfen firma danışman bilgilerini kontrol ederek gerekli danışman atamasını yapınız.",
+          `Firma: ${reminder.company.name}`,
+          `Firma ID: ${reminder.companyId}`,
+          `Hata (WhatsApp): ${errorMessage}`,
+        ].join("\n"),
+      },
+    );
+
+    if (adminEmailReminderId) {
+      try {
+        await this.reminderNotificationService.notifyMissingConsultant({
+          companyName: reminder.company.name,
+          companyId: reminder.companyId,
+          errorMessage: `WhatsApp mesajı gönderilemedi: ${errorMessage}`,
+        });
+
+        await this.repository.markSent(adminEmailReminderId);
+      } catch (notificationError) {
+        const adminErrorMessage =
+          notificationError instanceof Error
+            ? notificationError.message
+            : "Eksik danışman bildirimi gönderilemedi.";
+
+        consultantNotificationError = adminErrorMessage;
+
+        await this.repository.markFailed(
+          adminEmailReminderId,
+          adminErrorMessage,
+        );
+      }
+    }
+
+    return { consultantNotificationCreated, consultantNotificationError };
   }
 }

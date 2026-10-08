@@ -1,6 +1,7 @@
 import { prisma } from "../config/env.js";
 
 import { EMAIL_RETRY_DELAY_MINUTES } from "../utils/email-retry.js";
+import { WHATSAPP_RETRY_DELAY_MINUTES } from "../utils/whatsapp-retry.js";
 type ReminderType = "EXTENSION_APPLICATION" | "CLOSURE_APPLICATION";
 
 type ReminderChannel =
@@ -13,6 +14,12 @@ type ReminderStatus = "PENDING" | "SENT" | "FAILED" | "SKIPPED";
 
 /** Danışmana giden "gönderilemedi" bildirimlerinin reminderMonth değerine eklenen fark */
 const CONSULTANT_FAILURE_MONTH_OFFSET = 100;
+
+/**
+ * YENİ: Danışmana giden "WhatsApp gönderilemedi" bildirimlerinin reminderMonth farkı.
+ * Mail bildirimleriyle aynı anahtarı paylaşıp birbirinin üzerine yazmasınlar diye ayrıdır.
+ */
+const WHATSAPP_CONSULTANT_MONTH_OFFSET = 200;
 
 export class DocumentReminderRepository {
   async findActiveCandidates() {
@@ -55,7 +62,6 @@ export class DocumentReminderRepository {
                   id: "desc",
                 },
               ],
-              take: 1,
             },
           },
         },
@@ -156,10 +162,19 @@ export class DocumentReminderRepository {
     description: string;
     /** "Gönderilemedi" bildirimi: her kesin başarısızlıkta yeniden oluşturulur */
     isFailure?: boolean;
+    /** YENİ: "WHATSAPP" ise bildirim WhatsApp'a ait ayrı bir anahtarla tutulur. */
+    channel?: "EMAIL" | "WHATSAPP";
   }): Promise<boolean> {
-    const storedReminderMonth = params.isFailure
-      ? params.reminderMonth + CONSULTANT_FAILURE_MONTH_OFFSET
-      : params.reminderMonth;
+    // YENİ: WhatsApp bildirimleri her zaman "gönderilemedi" bildirimidir ve
+    // mail bildirimleriyle karışmasın diye ayrı bir anahtarla tutulur.
+    const isWhatsApp = params.channel === "WHATSAPP";
+    const isFailure = params.isFailure === true || isWhatsApp;
+
+    const storedReminderMonth = isWhatsApp
+      ? params.reminderMonth + WHATSAPP_CONSULTANT_MONTH_OFFSET
+      : isFailure
+        ? params.reminderMonth + CONSULTANT_FAILURE_MONTH_OFFSET
+        : params.reminderMonth;
 
     return prisma.$transaction(async (transaction) => {
       const now = new Date();
@@ -180,7 +195,7 @@ export class DocumentReminderRepository {
         sentAt: now,
       };
 
-      if (params.isFailure) {
+      if (isFailure) {
         // Kayıt varsa son hatayla güncellenir, bildirim her seferinde yeniden oluşturulur
         // Aynı içerikte bildirim daha önce gittiyse tekrar gönderme
         const existing = await transaction.documentReminder.findUnique({
@@ -328,6 +343,18 @@ export class DocumentReminderRepository {
       where: {
         status: "PENDING",
         channel: "WHATSAPP",
+        // YENİ: Geçici hata alan kayıt, son denemeden 15 dk geçmeden tekrar alınmaz
+        // (mail kuyruğundaki findPending ile aynı kural).
+        OR: [
+          { attemptedAt: null },
+          {
+            attemptedAt: {
+              lt: new Date(
+                Date.now() - WHATSAPP_RETRY_DELAY_MINUTES * 60 * 1000,
+              ),
+            },
+          },
+        ],
       },
       include: {
         document: true,
@@ -346,6 +373,11 @@ export class DocumentReminderRepository {
                 role: true,
                 isActive: true,
               },
+            },
+            // YENİ: Gönderim anında güncel numaralar firmanın bütün
+            // iletişim kayıtlarından alınır.
+            contacts: {
+              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
             },
           },
         },

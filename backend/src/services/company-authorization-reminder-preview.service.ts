@@ -1,7 +1,14 @@
 import { createAuthorizationExpiryEmailTemplate } from "./closure-email-template.service.js";
 import { CompanyAuthorizationReminderService } from "./company-authorization-reminder.service.js";
 import { DEFAULT_CC_RECIPIENTS } from "./document-reminder-preview.service.js";
-import { normalizeWhatsAppRecipient } from "./document-reminder-whatsapp-preview.service.js";
+import {
+  collectEmailRecipients,
+  collectWhatsAppRecipients,
+  getEmailWarnings,
+  getWhatsAppWarnings,
+  joinEmailRecipients,
+  joinWhatsAppRecipients,
+} from "./reminder-contact-check.js";
 
 export class CompanyAuthorizationReminderPreviewService {
   constructor(
@@ -14,32 +21,16 @@ export class CompanyAuthorizationReminderPreviewService {
     return candidates.map((candidate) => {
       const { authorization, company, contact, decision } = candidate;
 
+      // YENİ: Firmanın BÜTÜN iletişim kayıtları (en yeni önce).
+      const contacts = company.contacts;
+
       const template = createAuthorizationExpiryEmailTemplate({
         companyName: company.name,
         targetDate: decision.targetDate,
       });
 
-      const warnings: string[] = [];
-
-      if (!contact) {
-        warnings.push("Firma iletişim kaydı bulunamadı.");
-      } else if (!contact.email.trim()) {
-        warnings.push("Firmanın iletişim e-posta adresi boş.");
-      }
-
-      const whatsappWarnings: string[] = [];
-
-      const whatsappRecipient = contact
-        ? normalizeWhatsAppRecipient(contact.phone ?? "")
-        : "";
-
-      if (!contact) {
-        whatsappWarnings.push("Firma iletişim kaydı bulunamadı.");
-      } else if (!contact.phone?.trim()) {
-        whatsappWarnings.push("Firmanın iletişim telefon numarası boş.");
-      } else if (!/^[1-9]\d{9,14}$/.test(whatsappRecipient)) {
-        whatsappWarnings.push("Firmanın iletişim telefon numarası geçersiz.");
-      }
+      const warnings = getEmailWarnings(contacts);
+      const whatsappWarnings = getWhatsAppWarnings(contacts);
 
       return {
         authorizationId: authorization.id,
@@ -52,8 +43,10 @@ export class CompanyAuthorizationReminderPreviewService {
           : "",
         consultantIsActive: company.consultantUser?.isActive ?? false,
         consultantRole: company.consultantUser?.role,
+        // Kayıtta bağlantı için en yeni iletişim kişisi tutulur.
         contactId: contact?.id,
-        recipient: contact?.email.trim() ?? "",
+        // YENİ: Bütün kişilerin bütün geçerli e-posta adresleri ("a@x.com; b@y.com").
+        recipient: joinEmailRecipients(collectEmailRecipients(contacts)),
 
         cc: [...DEFAULT_CC_RECIPIENTS],
 
@@ -72,7 +65,10 @@ export class CompanyAuthorizationReminderPreviewService {
         canSend: warnings.length === 0,
         warnings,
 
-        whatsappRecipient,
+        // YENİ: Bütün kişilerin bütün cep numaraları ("905…,905…").
+        whatsappRecipient: joinWhatsAppRecipients(
+          collectWhatsAppRecipients(contacts),
+        ),
         whatsappCanSend: whatsappWarnings.length === 0,
         whatsappWarnings,
       };

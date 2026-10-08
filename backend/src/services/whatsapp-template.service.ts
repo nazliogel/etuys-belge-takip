@@ -1,3 +1,5 @@
+import { getTurkeyDay, getUtcDay } from "../utils/turkey-date.js";
+
 interface WhatsAppTemplateResult {
   templateName: string;
   languageCode: "tr";
@@ -28,40 +30,10 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-// Veritabanındaki @db.Date alanını gün olarak karşılaştırır.
-function getTargetDay(date: Date): number {
-  return Date.UTC(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
-  );
-}
-
-// Bugünü Türkiye saatine göre belirler.
-function getTurkeyDay(date: Date): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Istanbul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-
-  const getPart = (type: string): number =>
-    Number(parts.find((part) => part.type === type)?.value);
-
-  return Date.UTC(
-    getPart("year"),
-    getPart("month") - 1,
-    getPart("day"),
-  );
-}
-
-function resolveExpiryText(
-  targetDate: Date,
-  today: Date,
-): string {
-  const targetDay = getTargetDay(targetDate);
-  const currentDay = getTurkeyDay(today);
+/** Hedef tarih (@db.Date) ile Türkiye takvimine göre bugünü karşılaştırır. */
+function resolveExpiryText(targetDate: Date, today: Date): string {
+  const targetDay = getUtcDay(targetDate).getTime();
+  const currentDay = getTurkeyDay(today).getTime();
 
   if (targetDay < currentDay) {
     return "dolmuştur";
@@ -74,19 +46,19 @@ function resolveExpiryText(
   return "dolacaktır";
 }
 
+const ALREADY_DONE_TEXT =
+  "İlgili işlemleri tamamladıysanız lütfen bu mesajı dikkate almayınız.";
+
 const CONTACT_TEXT =
   "İşlemler için bizimle iletişime geçebilirsiniz:\n" +
   "📞 0216 450 60 07 – 📱 0553 350 72 30";
 
 const SIGNATURE = "AKKAŞ GROUP - SALİH ŞAHİN";
 
-const WHATSAPP_AUTHORIZATION_NOTICE =
-  "Yatırım Teşvik Belgesi otomasyon ekranlarındaki yetki süremiz dolmuştur.\n" +
-  "Süre uzatma, kapatma ve genel süreçlerinizin aksamaması adına " +
-  "ekran yetkilendirmemizin acilen yenilenmesi gerekmektedir. " +
-  "Sürelerin geçmesinden kaynaklı oluşabilecek her türlü idari para " +
-  "cezalarından firmamız sorumlu değildir.";
-
+/**
+ * Süre uzatma hatırlatması.
+ * Kapso: document_extension_reminder_v2 · {{1}} durum ifadesi, {{2}} süre sonu.
+ */
 export function createExtensionWhatsAppTemplate(
   params: ReminderTemplateParams,
 ): WhatsAppTemplateResult {
@@ -97,11 +69,12 @@ export function createExtensionWhatsAppTemplate(
   );
 
   return {
-    templateName: "document_extension_reminder",
+    templateName: "document_extension_reminder_v2",
     languageCode: "tr",
 
-    // Kapso: {{1}} durum ifadesi, {{2}} bitiş tarihi.
-    parameters: [expiryText, targetDate],
+    // DİKKAT: Bu şablonda {{1}}'den sonra nokta yok; nokta parametreye eklenir.
+    // Şablon ileride "{{1}}." olarak düzeltilirse buradaki nokta kaldırılmalı.
+    parameters: [`${expiryText}.`, targetDate],
 
     previewText: [
       "Sn. Yetkili Merhaba,",
@@ -110,59 +83,73 @@ export function createExtensionWhatsAppTemplate(
       "Bu aşamada acil olarak süre uzatım ya da kapatma işlemlerinin " +
         "yapılması gerekmektedir. İşlemlerin yasal süre içinde yapılmaması " +
         "durumunda idari para cezası uygulanmaktadır.",
+      ALREADY_DONE_TEXT,
       CONTACT_TEXT,
       SIGNATURE,
     ].join("\n"),
   };
 }
 
+/**
+ * Kapatma hatırlatması.
+ * Kapso: document_closure_reminder_v2 · {{1}} durum ifadesi, {{2}} bitiş tarihi.
+ */
 export function createClosureWhatsAppTemplate(
   params: ReminderTemplateParams,
 ): WhatsAppTemplateResult {
   const targetDate = formatDate(params.targetDate);
+  const expiryText = resolveExpiryText(
+    params.targetDate,
+    params.today ?? new Date(),
+  );
 
   return {
-    templateName: "document_closure_reminder",
+    templateName: "document_closure_reminder_v2",
     languageCode: "tr",
 
-    // Kapso: {{1}} bitiş tarihi.
-    parameters: [targetDate],
+    parameters: [expiryText, targetDate],
 
     previewText: [
       "Sn. Yetkili Merhaba,",
-      "Yatırım Teşvik Belgenizin süresi dolmuştur.",
+      `Yatırım Teşvik Belgenizin süresi ${expiryText}.`,
       `📅 Bitiş Tarihi: ${targetDate}`,
       "Süre bitimini takip eden 3 ay içerisinde belgenizin kapanış " +
         "işlemlerinin yapılması gerekmektedir. Yasal süre içinde " +
         "yapılmadığı takdirde idari para cezası uygulanmaktadır.",
+      ALREADY_DONE_TEXT,
       CONTACT_TEXT,
       SIGNATURE,
     ].join("\n"),
   };
 }
 
+/**
+ * Yetkilendirme hatırlatması. Yetki süresi dolmadan önce de (6 ay kala) ve
+ * dolduktan sonra da aynı şablon kullanılır; durum ifadesini kod belirler.
+ * Kapso: company_authorization_reminder_v2 · {{1}} durum ifadesi.
+ */
 export function createAuthorizationWhatsAppTemplate(
   params: AuthorizationTemplateParams,
 ): WhatsAppTemplateResult {
-  const targetDay = getTargetDay(params.targetDate);
-  const currentDay = getTurkeyDay(params.today ?? new Date());
-
-  if (targetDay >= currentDay) {
-    throw new Error(
-      "Yetkilendirme WhatsApp şablonu yalnızca yetki süresi dolmuş firmalar için kullanılabilir.",
-    );
-  }
+  const expiryText = resolveExpiryText(
+    params.targetDate,
+    params.today ?? new Date(),
+  );
 
   return {
-    templateName: "company_authorization_reminder_expired",
+    templateName: "company_authorization_reminder_v2",
     languageCode: "tr",
 
-    // Kapso: Bu şablonda değişken bulunmuyor.
-    parameters: [],
+    parameters: [expiryText],
 
     previewText: [
       "Sn. Yetkili Merhaba,",
-      WHATSAPP_AUTHORIZATION_NOTICE,
+      `Yatırım Teşvik Belgesi otomasyon ekranlarındaki yetki süremiz ${expiryText}.`,
+      "Süre uzatma, kapatma ve genel süreçlerinizin aksamaması adına " +
+        "ekran yetkilendirmemizin yenilenmesi gerekmektedir. " +
+        "Sürelerin geçmesinden kaynaklı oluşabilecek her türlü idari para " +
+        "cezalarından firmamız sorumlu değildir.",
+      ALREADY_DONE_TEXT,
       CONTACT_TEXT,
       SIGNATURE,
     ].join("\n"),

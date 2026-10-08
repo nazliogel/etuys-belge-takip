@@ -1,17 +1,10 @@
 import { env, prisma } from "../config/env.js";
+import { getTurkeyDayStart } from "../utils/turkey-date.js";
 
 export class WhatsAppRateLimitService {
   async check(now: Date = new Date()) {
     const hourStart = new Date(now.getTime() - 60 * 60 * 1000);
-
-    const turkeyTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    const dayStart = new Date(
-      Date.UTC(
-        turkeyTime.getUTCFullYear(),
-        turkeyTime.getUTCMonth(),
-        turkeyTime.getUTCDate(),
-      ) - 3 * 60 * 60 * 1000,
-    );
+    const dayStart = getTurkeyDayStart(now);
 
     const sentWhere = (since: Date) => ({
       channel: "WHATSAPP" as const,
@@ -19,10 +12,17 @@ export class WhatsAppRateLimitService {
       sentAt: { gte: since },
     });
 
+    // Gerçekten denenmiş kayıtlar: gönderilen, kesin başarısız olan ve
+    // geçici hata alıp tekrar denenmeyi bekleyen ("[deneme" önekli) kayıtlar.
+    // Atlanan (SKIPPED) kayıtlar mesaj göndermediği için sayılmaz.
+    // (Mailin yetkilendirme repository'sindeki findLatestAttemptedEmail ile aynı kural.)
     const attemptWhere = {
       channel: "WHATSAPP" as const,
-      status: { in: ["SENT", "FAILED"] as ("SENT" | "FAILED")[] },
       attemptedAt: { not: null },
+      OR: [
+        { status: { in: ["SENT", "FAILED"] as ("SENT" | "FAILED")[] } },
+        { status: "PENDING" as const, errorMessage: { startsWith: "[deneme" } },
+      ],
     };
 
     const [

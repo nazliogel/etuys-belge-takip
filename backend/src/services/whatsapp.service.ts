@@ -1,5 +1,6 @@
 import { env } from "../config/env.js";
 import { normalizeWhatsAppRecipient } from "./document-reminder-whatsapp-preview.service.js";
+import { WhatsAppApiError } from "../utils/whatsapp-retry.js";
 
 interface SendWhatsAppTemplateParams {
   to: string;
@@ -92,8 +93,10 @@ export class WhatsAppService {
     try {
       result = JSON.parse(responseText) as WhatsAppApiResponse;
     } catch {
-      throw new Error(
+      // HTTP durumu hata nesnesinde taşınır (5xx ise tekrar denenir).
+      throw new WhatsAppApiError(
         `Kapso API geçerli JSON döndürmedi: HTTP ${response.status}`,
+        { httpStatus: response.status },
       );
     }
 
@@ -110,14 +113,22 @@ export class WhatsAppService {
         .filter(Boolean)
         .join(" - ");
 
-      throw new Error(
+      // HTTP durumu ve Meta hata kodu ayrı alanlarda taşınır;
+      // geçici/kalıcı hata ayrımı bunlara göre yapılır.
+      throw new WhatsAppApiError(
         details || `Kapso API isteği başarısız: HTTP ${response.status}`,
+        {
+          httpStatus: response.status,
+          metaCode: result.error?.code,
+          metaSubcode: result.error?.error_subcode,
+        },
       );
     }
 
     const messageId = result?.messages?.[0]?.id;
 
     if (!messageId) {
+      // Başarılı cevap ama mesaj kimliği yok: tekrar denenmez (çift mesaj riski).
       throw new Error("Kapso API mesaj kimliği döndürmedi.");
     }
 
@@ -125,7 +136,7 @@ export class WhatsAppService {
   }
 
   /**
-   * YENİ: Test gönderimi (EmailService.sendTest'in WhatsApp karşılığı).
+   * Test gönderimi (EmailService.sendTest'in WhatsApp karşılığı).
    * Mesaj gerçek firmaya değil, WHATSAPP_TEST_RECIPIENT numarasına gider.
    * Onaylı şablonun metni değiştirilemediği için "[TEST]" ibaresi mesaja
    * eklenemez; gerçek alıcı bilgisi dönüş değerinde ve log'da yer alır.
@@ -170,5 +181,29 @@ export class WhatsAppService {
     }
 
     return this.postTemplate(params.to, params);
+  }
+
+  /**
+   * YENİ: Aynı mesajı birden fazla numaraya sırayla gönderir (mailde bütün
+   * adreslere gönderildiği gibi). Bir numaradaki hata diğerlerini durdurmaz.
+   * Hangi numaraya gidip hangisine gitmediği ayrı ayrı döner.
+   */
+  async sendTemplateToRecipients(
+    recipients: string[],
+    params: Omit<SendWhatsAppTemplateParams, "to">,
+  ) {
+    const sent: Array<{ to: string; messageId: string }> = [];
+    const failed: Array<{ to: string; error: unknown }> = [];
+
+    for (const to of recipients) {
+      try {
+        const result = await this.sendTemplate({ ...params, to });
+        sent.push({ to, messageId: result.messageId });
+      } catch (error) {
+        failed.push({ to, error });
+      }
+    }
+
+    return { sent, failed };
   }
 }
