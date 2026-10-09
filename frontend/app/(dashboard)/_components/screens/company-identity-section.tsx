@@ -98,7 +98,7 @@ const DANISMAN_OPTIONS = [
 const NAME_REGEX = /^[A-Za-zÇĞİÖŞÜçğıöşü\s'-]+$/;
 const EMAIL_REGEX =
   /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z]{2,})+$/;
-const PHONE_REGEX = /^0?5\d{9}$/;
+const PHONE_REGEX = /^0?[2345]\d{9}$/;
 
 const initialIdentityForm: IdentityForm = {
   investorStatus: "",
@@ -124,27 +124,32 @@ const initialContactForm: ContactForm = {
 
 // Kullanıcı ne yazarsa yazsın numarayı "0" ile başlatıp hemen ardından "5"
 // gelecek şekilde kurar ve "05xx xxx xx xx" biçiminde gruplar.
+// Cep telefonu ve sabit hat numaralarını "0xxx xxx xx xx" biçiminde gruplar.
 function formatPhoneInput(rawValue: string): string {
   const digits = rawValue.replace(/\D/g, "");
 
-  if (digits.length === 0) {
-    return "";
-  }
+  if (!digits) return "";
 
-  let normalized = digits.startsWith("0") ? digits : `0${digits}`;
+  const normalized = (digits.startsWith("0") ? digits : `0${digits}`).slice(
+    0,
+    11,
+  );
 
-  if (normalized.length >= 2 && normalized[1] !== "5") {
-    normalized = `05${normalized.slice(1)}`;
-  }
+  return [
+    normalized.slice(0, 4),
+    normalized.slice(4, 7),
+    normalized.slice(7, 9),
+    normalized.slice(9, 11),
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
-  normalized = normalized.slice(0, 11);
-
-  const block1 = normalized.slice(0, 4);
-  const block2 = normalized.slice(4, 7);
-  const block3 = normalized.slice(7, 9);
-  const block4 = normalized.slice(9, 11);
-
-  return [block1, block2, block3, block4].filter(Boolean).join(" ");
+function splitContactEmails(value: string): string[] {
+  return value
+    .split(";")
+    .map((email) => email.trim())
+    .filter(Boolean);
 }
 
 function validateContactForm(form: ContactForm): ContactErrors {
@@ -164,16 +169,27 @@ function validateContactForm(form: ContactForm): ContactErrors {
     errors.fullName = "Ad soyad alanında yalnızca harf kullanabilirsiniz.";
   }
 
-  if (!email) {
+  const emails = splitContactEmails(email);
+
+  if (emails.length === 0) {
     errors.email = "E-posta zorunludur.";
-  } else if (!EMAIL_REGEX.test(email) || email.includes("..")) {
-    errors.email = "Geçerli bir e-posta adresi girin.";
+  } else if (
+    emails.some(
+      (address) =>
+        address.length > 254 ||
+        !EMAIL_REGEX.test(address) ||
+        address.includes(".."),
+    )
+  ) {
+    errors.email =
+      "Geçerli e-posta adresleri girin. Birden fazla adresi noktalı virgülle (;) ayırın.";
   }
 
   if (!phoneDigits) {
     errors.phone = "Telefon numarası zorunludur.";
   } else if (!PHONE_REGEX.test(phoneDigits)) {
-    errors.phone = "Geçerli bir cep telefonu numarası girin (05xx xxx xx xx).";
+    errors.phone =
+      "Geçerli bir cep telefonu veya sabit hat numarası girin (0533 123 45 67 / 0282 123 45 67).";
   }
 
   if (!form.position.trim()) {
@@ -397,7 +413,7 @@ export function CompanyIdentitySection({
         method: "POST",
         body: JSON.stringify({
           fullName: contact.fullName.trim(),
-          email: contact.email.trim(),
+          email: splitContactEmails(contact.email).join(";"),
           phone: contact.phone.trim(),
           position: contact.position.trim(),
         }),
@@ -459,7 +475,7 @@ export function CompanyIdentitySection({
         method: "PATCH",
         body: JSON.stringify({
           fullName: editDraft.fullName.trim(),
-          email: editDraft.email.trim(),
+          email: splitContactEmails(editDraft.email).join(";"),
           phone: editDraft.phone.trim(),
           position: editDraft.position.trim(),
         }),
@@ -927,13 +943,13 @@ export function CompanyIdentitySection({
                 E-posta
               </label>
               <input
-                type="email"
+                type="text"
+                inputMode="email"
                 value={contact.email}
                 onChange={(event) =>
                   handleContactFieldChange("email", event.target.value)
                 }
-                placeholder="ornek@firma.com"
-                maxLength={254}
+                placeholder="bir@firma.com; iki@firma.com"
                 aria-invalid={Boolean(contactErrors.email)}
                 className={`h-6 w-full rounded-md border bg-white px-1.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
                   contactErrors.email
@@ -961,7 +977,7 @@ export function CompanyIdentitySection({
                     formatPhoneInput(event.target.value),
                   )
                 }
-                placeholder="05xx xxx xx xx"
+                placeholder="0xxx xxx xx xx"
                 maxLength={14}
                 aria-invalid={Boolean(contactErrors.phone)}
                 className={`h-6 w-full rounded-md border bg-white px-1.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
@@ -1061,7 +1077,8 @@ export function CompanyIdentitySection({
                               }`}
                             />
                             <input
-                              type="email"
+                              type="text"
+                              inputMode="email"
                               value={editDraft.email}
                               onChange={(e) =>
                                 handleEditFieldChange("email", e.target.value)
