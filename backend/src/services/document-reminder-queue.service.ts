@@ -47,6 +47,13 @@ export class DocumentReminderQueueService {
           warnings: preview.warnings,
         });
 
+        // YENİ: WhatsApp açıksa ve telefon da eksikse aynı bildirimde yazılır.
+        // (Danışmana iki ayrı bildirim yerine tek bildirim gider.)
+        const whatsappMissing =
+          env.whatsappQueueEnabled && preview.whatsappWarnings.length > 0
+            ? `WhatsApp mesajı da gönderilemedi: ${preview.whatsappWarnings.join(", ")}`
+            : "";
+
         if (preview.consultantUserId && preview.consultantIsActive) {
           const notificationCreated =
             await this.repository.createConsultantNotification({
@@ -61,7 +68,10 @@ export class DocumentReminderQueueService {
               description: [
                 `${preview.companyName} firmasına ait bildirim eksik bilgiler nedeniyle gönderilemedi.`,
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
-              ].join(" "),
+                whatsappMissing,
+              ]
+                .filter(Boolean)
+                .join(" "),
             });
 
           if (notificationCreated) {
@@ -96,7 +106,10 @@ export class DocumentReminderQueueService {
                 `Firma: ${preview.companyName}`,
                 `Firma ID: ${preview.companyId}`,
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
-              ].join("\n"),
+                whatsappMissing,
+              ]
+                .filter(Boolean)
+                .join("\n"),
             });
 
           if (adminEmailReminderId) {
@@ -104,7 +117,9 @@ export class DocumentReminderQueueService {
               await this.reminderNotificationService.notifyMissingConsultant({
                 companyName: preview.companyName,
                 companyId: preview.companyId,
-                errorMessage: preview.warnings.join(", "),
+                errorMessage: [preview.warnings.join(", "), whatsappMissing]
+                  .filter(Boolean)
+                  .join(" "),
               });
 
               await this.repository.markSent(adminEmailReminderId);

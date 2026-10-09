@@ -19,6 +19,8 @@ import {
   withAttemptPrefix,
 } from "../utils/email-retry.js";
 import { notifySystemAlert } from "./system-alert.service.js";
+import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
+
 function isSameDate(first: Date, second: Date): boolean {
   return normalizeDate(first).getTime() === normalizeDate(second).getTime();
 }
@@ -50,6 +52,7 @@ export class DocumentReminderWorkerService {
     private readonly companyRequestRepository = new CompanyRequestRepository(),
     private readonly emailService = new EmailService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
+    private readonly authorizationRepository = new CompanyAuthorizationReminderRepository(),
   ) {}
 
   async processPendingReminders(limit = 20) {
@@ -82,11 +85,30 @@ export class DocumentReminderWorkerService {
       const hourStart = getHourStart(now);
       const dayStart = getTurkeyDayStart(now);
 
-      const [sentLastHour, sentToday, latestAttempt] = await Promise.all([
+      const [
+        documentHourCount,
+        authorizationHourCount,
+        documentDayCount,
+        authorizationDayCount,
+        documentAttempt,
+        authorizationAttempt,
+      ] = await Promise.all([
         this.repository.countSentSince(hourStart),
+        this.authorizationRepository.countSentSince(hourStart),
         this.repository.countSentSince(dayStart),
+        this.authorizationRepository.countSentSince(dayStart),
         this.repository.findLatestAttemptedEmail(),
+        this.authorizationRepository.findLatestAttemptedEmail(),
       ]);
+
+      const sentLastHour = documentHourCount + authorizationHourCount;
+      const sentToday = documentDayCount + authorizationDayCount;
+
+      const latestAttempt =
+        (documentAttempt?.attemptedAt?.getTime() ?? 0) >=
+        (authorizationAttempt?.attemptedAt?.getTime() ?? 0)
+          ? documentAttempt
+          : authorizationAttempt;
 
       const recipientsPerMessage = 1 + DEFAULT_CC_RECIPIENTS.length;
 

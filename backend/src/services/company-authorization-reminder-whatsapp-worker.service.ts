@@ -1,23 +1,23 @@
 import { env } from "../config/env.js";
-import { CompanyRequestRepository } from "../repositories/company-request.repository.js";
-import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
+import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
 import {
-  normalizeDate,
-  resolveReminderDecision,
-} from "./document-reminder.service.js";
+  hasOpenIncentiveDocument,
+  resolveAuthorizationReminderDecision,
+  NO_OPEN_DOCUMENT_SKIP_REASON,
+  AUTHORIZATION_CHANGED_SKIP_REASON,
+} from "./company-authorization-reminder.service.js";
+import { normalizeDate } from "./document-reminder.service.js";
 import {
   collectWhatsAppRecipients,
   getWhatsAppWarnings,
   joinWhatsAppRecipients,
 } from "./reminder-contact-check.js";
-import {
-  createClosureWhatsAppTemplate,
-  createExtensionWhatsAppTemplate,
-} from "./whatsapp-template.service.js";
+import { createAuthorizationWhatsAppTemplate } from "./whatsapp-template.service.js";
 import { WhatsAppService } from "./whatsapp.service.js";
 import { WhatsAppRateLimitService } from "./whatsapp-rate-limit.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
 import { notifySystemAlert } from "./system-alert.service.js";
+import { getTurkeyDay } from "../utils/turkey-date.js";
 import {
   MAX_WHATSAPP_ATTEMPTS,
   combineRecipientErrors,
@@ -26,36 +26,35 @@ import {
   withAttemptPrefix,
 } from "../utils/whatsapp-retry.js";
 
-function isSameDate(first: Date, second: Date): boolean {
-  return normalizeDate(first).getTime() === normalizeDate(second).getTime();
-}
-
 type PendingWhatsAppReminder = Awaited<
-  ReturnType<DocumentReminderRepository["findPendingWhatsApp"]>
+  ReturnType<CompanyAuthorizationReminderRepository["findPendingWhatsApp"]>
 >[number];
 
-export class DocumentReminderWhatsAppWorkerService {
+export class CompanyAuthorizationReminderWhatsAppWorkerService {
   private isProcessing = false;
 
   constructor(
-    private readonly repository = new DocumentReminderRepository(),
-    private readonly companyRequestRepository = new CompanyRequestRepository(),
+    private readonly repository = new CompanyAuthorizationReminderRepository(),
+
     private readonly whatsAppService = new WhatsAppService(),
     private readonly rateLimitService = new WhatsAppRateLimitService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
   ) {}
 
-  async processPendingReminders(limit = 20) {
+  async processPendingReminders(limit = 1) {
+    const paused = (reason: string, retryAfterSeconds?: number) => ({
+      processed: false,
+      reason,
+      retryAfterSeconds,
+      foundCount: 0,
+      sentCount: 0,
+      failedCount: 0,
+      skippedCount: 0,
+      results: [],
+    });
+
     if (!env.whatsappSendingEnabled) {
-      return {
-        processed: false,
-        reason: "WHATSAPP_SENDING_ENABLED=false",
-        foundCount: 0,
-        sentCount: 0,
-        failedCount: 0,
-        skippedCount: 0,
-        results: [],
-      };
+      return paused("WHATSAPP_SENDING_ENABLED=false");
     }
 
     if (
@@ -63,50 +62,32 @@ export class DocumentReminderWhatsAppWorkerService {
       !env.kapsoPhoneNumberId ||
       !env.whatsappApiVersion
     ) {
-      return {
-        processed: false,
-        reason: "WHATSAPP_CONFIGURATION_MISSING",
-        foundCount: 0,
-        sentCount: 0,
-        failedCount: 0,
-        skippedCount: 0,
-        results: [],
-      };
+      return paused("WHATSAPP_CONFIGURATION_MISSING");
     }
 
     if (this.isProcessing) {
-      return {
-        processed: false,
-        reason: "WORKER_ALREADY_RUNNING",
-        foundCount: 0,
-        sentCount: 0,
-        failedCount: 0,
-        skippedCount: 0,
-        results: [],
-      };
+      return paused("WORKER_ALREADY_RUNNING");
+    }
+
+    if (!Number.isInteger(limit) || limit <= 0) {
+      return paused("INVALID_LIMIT");
     }
 
     this.isProcessing = true;
 
     try {
       const now = new Date();
+      const today = getTurkeyDay(now);
       const rateLimit = await this.rateLimitService.check(now);
 
       if (!rateLimit.allowed) {
-        return {
-          processed: false,
-          reason: rateLimit.reason ?? "WHATSAPP_RATE_LIMIT",
-          retryAfterSeconds: rateLimit.retryAfterSeconds,
-          foundCount: 0,
-          sentCount: 0,
-          failedCount: 0,
-          skippedCount: 0,
-          results: [],
-        };
+        return paused(
+          rateLimit.reason ?? "WHATSAPP_RATE_LIMIT",
+          rateLimit.retryAfterSeconds,
+        );
       }
-      const reminders = await this.repository.findPendingWhatsApp(
-        Math.min(limit, 1),
-      );
+
+      const reminders = await this.repository.findPendingWhatsApp(1);
 
       let sentCount = 0;
       let failedCount = 0;
@@ -116,63 +97,52 @@ export class DocumentReminderWhatsAppWorkerService {
 
       for (const reminder of reminders) {
         try {
-          const skip = async (reason: string) => {
-            await this.repository.markSkipped(reminder.id, reason);
-            skippedCount += 1;
-            results.push({ id: reminder.id, status: "SKIPPED", reason });
-          };
+          let skipReason: string | undefined;
 
-          const document = reminder.document;
-
-          // 1) Hatırlatma hâlâ geçerli mi? (Mail worker'ı ile aynı sıra ve aynı kontroller.)
-          if (
-            !document.isActive ||
-            document.status !== "OPEN" ||
-            !document.documentEndDate ||
-            !document.extensionDate
-          ) {
-            await skip("Belge artık aktif ve açık durumda değil.");
-            continue;
+          // 1) Hatırlatma hâlâ geçerli mi?
+          if (!reminder.company.isActive) {
+            skipReason = "Firma artık aktif değil.";
           }
 
-          const currentDecision = resolveReminderDecision(
-            document.documentEndDate,
-            document.extensionDate,
-            now,
-          );
-
-          if (
-            !currentDecision ||
-            currentDecision.type !== reminder.type ||
-            currentDecision.reminderMonth !== reminder.reminderMonth ||
-            !isSameDate(currentDecision.targetDate, reminder.targetDate)
-          ) {
-            await skip("Hatırlatma koşulları artık geçerli değil.");
-            continue;
-          }
-
-          const closureRequest =
-            await this.companyRequestRepository.findLatestClosureRequest({
-              companyId: reminder.companyId,
-              externalDocumentId: document.externalDocumentId,
-            });
-
-          if (reminder.type === "EXTENSION_APPLICATION" && closureRequest) {
-            await skip("Firma için kapatma başvurusu bulundu.");
-            continue;
-          }
-
-          if (reminder.type === "CLOSURE_APPLICATION" && closureRequest) {
-            const requestStatus = closureRequest.requestStatus
-              ?.trim()
-              .toLocaleUpperCase("tr-TR");
-
-            if (requestStatus !== "REDDEDİLDİ") {
-              await skip(
-                "Firma için reddedilmemiş bir kapatma başvurusu bulundu.",
+          const documentState = skipReason
+            ? null
+            : await this.repository.findCompanyDocumentState(
+                reminder.companyId,
               );
-              continue;
-            }
+
+          if (
+            !skipReason &&
+            (!documentState || !hasOpenIncentiveDocument(documentState))
+          ) {
+            skipReason = NO_OPEN_DOCUMENT_SKIP_REASON;
+          }
+
+          const currentEndDate = reminder.authorization.authorizationEndDate;
+
+          const currentDecision = currentEndDate
+            ? resolveAuthorizationReminderDecision(currentEndDate, today)
+            : null;
+
+          if (
+            !skipReason &&
+            (!currentEndDate ||
+              !currentDecision ||
+              currentDecision.reminderMonth !== reminder.reminderMonth ||
+              normalizeDate(currentDecision.targetDate).getTime() !==
+                normalizeDate(reminder.targetDate).getTime())
+          ) {
+            skipReason = AUTHORIZATION_CHANGED_SKIP_REASON;
+          }
+
+          if (skipReason) {
+            await this.repository.markSkipped(reminder.id, skipReason);
+            skippedCount += 1;
+            results.push({
+              id: reminder.id,
+              status: "SKIPPED",
+              reason: skipReason,
+            });
+            continue;
           }
 
           // 2) İletişim bilgisi: firmanın BÜTÜN iletişim kayıtlarındaki GÜNCEL
@@ -188,33 +158,15 @@ export class DocumentReminderWhatsAppWorkerService {
 
           if (joinWhatsAppRecipients(currentRecipients) !== reminder.recipient) {
             console.warn(
-              `WhatsApp reminder ${reminder.id}: numaralar kuyruktan sonra değişmiş, güncel numaralara gönderiliyor.`,
+              `WhatsApp authorization reminder ${reminder.id}: numaralar kuyruktan sonra değişmiş, güncel numaralara gönderiliyor.`,
             );
           }
 
-          // Yetki süresi dolmuş olsa da belge hatırlatması gönderilir.
-          // Yetkilendirme bildirimi ayrı worker tarafından gönderilir.
-          const authorizationEndDate =
-            reminder.company.authorization?.authorizationEndDate ?? null;
-
-          const authorizationExpired =
-            !authorizationEndDate ||
-            normalizeDate(authorizationEndDate) < normalizeDate(now);
-
-          const template =
-            reminder.type === "CLOSURE_APPLICATION"
-              ? createClosureWhatsAppTemplate({
-                  companyName: reminder.company.name,
-                  documentNumber: document.documentNumber,
-                  targetDate: reminder.targetDate,
-                  authorizationExpired,
-                })
-              : createExtensionWhatsAppTemplate({
-                  companyName: reminder.company.name,
-                  documentNumber: document.documentNumber,
-                  targetDate: reminder.targetDate,
-                  authorizationExpired,
-                });
+          const template = createAuthorizationWhatsAppTemplate({
+            companyName: reminder.company.name,
+            targetDate: reminder.targetDate,
+            today: now,
+          });
 
           // Firmanın bütün cep numaralarına gönderilir.
           // Mailde olduğu gibi en az birine gittiyse başarılı sayılır.
@@ -237,7 +189,7 @@ export class DocumentReminderWhatsAppWorkerService {
 
           if (failed.length > 0) {
             console.warn(
-              `WhatsApp reminder ${reminder.id}: ${sent.length} numaraya gönderildi, ${failed.length} numaraya gönderilemedi.`,
+              `WhatsApp authorization reminder ${reminder.id}: ${sent.length} numaraya gönderildi, ${failed.length} numaraya gönderilemedi.`,
               failed.map((item) => item.to),
             );
           }
@@ -267,7 +219,7 @@ export class DocumentReminderWhatsAppWorkerService {
           ) {
             await this.repository.markForRetry(reminder.id, errorMessage);
             console.warn(
-              `WhatsApp reminder ${reminder.id} geçici hata aldı, tekrar denenecek: ${errorMessage}`,
+              `WhatsApp authorization reminder ${reminder.id} geçici hata aldı, tekrar denenecek: ${errorMessage}`,
             );
             continue;
           }
@@ -278,10 +230,7 @@ export class DocumentReminderWhatsAppWorkerService {
           // 3 denemenin sonunda hâlâ geçici hata: danışmana değil sistem sorumlusuna.
           if (isTransientWhatsAppError(error)) {
             await notifySystemAlert({
-              kind:
-                reminder.type === "CLOSURE_APPLICATION"
-                  ? "Kapatma (WhatsApp)"
-                  : "Süre uzatma (WhatsApp)",
+              kind: "Yetkilendirme (WhatsApp)",
               reminderId: reminder.id,
               companyName: reminder.company.name,
               recipient: reminder.recipient,
@@ -340,16 +289,15 @@ export class DocumentReminderWhatsAppWorkerService {
       try {
         consultantNotificationCreated =
           await this.repository.createConsultantNotification({
-            documentId: reminder.documentId,
+            authorizationId: reminder.authorizationId,
             companyId: reminder.companyId,
             contactId: reminder.contactId ?? undefined,
             consultantUserId: consultant.id,
-            type: reminder.type,
             reminderMonth: reminder.reminderMonth,
             targetDate: reminder.targetDate,
             title: "Firma WhatsApp mesajı gönderilemedi",
             description: [
-              `${reminder.company.name} firmasına ait belge WhatsApp bildirimi gönderilemedi.`,
+              `${reminder.company.name} firmasına ait yetki süresi WhatsApp bildirimi gönderilemedi.`,
               `Alıcı: ${reminder.recipient || "-"}.`,
               `Hata: ${errorMessage}`,
             ].join(" "),
@@ -377,10 +325,9 @@ export class DocumentReminderWhatsAppWorkerService {
     // yazdıysa yeni kayıt oluşmaz, ikinci mail gitmez.
     const adminEmailReminderId = await this.repository.createAdminEmailReminder(
       {
-        documentId: reminder.documentId,
+        authorizationId: reminder.authorizationId,
         companyId: reminder.companyId,
         contactId: reminder.contactId ?? undefined,
-        type: reminder.type,
         reminderMonth: reminder.reminderMonth,
         targetDate: reminder.targetDate,
         recipient: env.adminFallbackEmail,

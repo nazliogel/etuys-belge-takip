@@ -4,6 +4,12 @@ import {
 } from "./closure-email-template.service.js";
 
 import { DocumentReminderService } from "./document-reminder.service.js";
+import {
+  collectEmailRecipients,
+  getDocumentEmailWarnings,
+  getWhatsAppWarnings,
+  joinEmailRecipients,
+} from "./reminder-contact-check.js";
 
 export const DEFAULT_CC_RECIPIENTS = [
   "salihsahin@akkasgroup.com",
@@ -27,12 +33,15 @@ export class DocumentReminderPreviewService {
     return candidates.map((candidate) => {
       const { document, company, contact, decision } = candidate;
 
+      // YENİ: Firmanın BÜTÜN iletişim kayıtları (en yeni önce).
+      const contacts = company.contacts;
+
       const authorizationExpired = candidate.authorizationExpired;
       const template =
         decision.type === "CLOSURE_APPLICATION"
           ? createClosureEmailTemplate({
               companyName: company.name,
-                 authorizationExpired,
+              authorizationExpired,
               documentNumber:
                 document.documentNumber ?? "Belge numarası bulunamadı",
               targetDate: decision.targetDate,
@@ -41,27 +50,19 @@ export class DocumentReminderPreviewService {
           : createExtensionEmailTemplate({
               companyName: company.name,
               targetDate: decision.targetDate,
-                 authorizationExpired,
+              authorizationExpired,
             });
 
-      const warnings: string[] = [];
+      const warnings = getDocumentEmailWarnings({
+        contacts,
+        type: decision.type,
+        documentNumber: document.documentNumber,
+        investorAddress: company.identity?.investorAddress,
+      });
 
-      if (!contact) {
-        warnings.push("Firma iletişim kaydı bulunamadı.");
-      } else if (!contact.email.trim()) {
-        warnings.push("Firmanın iletişim e-posta adresi boş.");
-      }
-
-      if (decision.type === "CLOSURE_APPLICATION" && !document.documentNumber) {
-        warnings.push("Belge numarası bulunamadı.");
-      }
-
-      if (
-        decision.type === "CLOSURE_APPLICATION" &&
-        !company.identity?.investorAddress
-      ) {
-        warnings.push("Firma adresi bulunamadı.");
-      }
+      // Mail engellendiğinde danışmana giden bildirimde telefon eksikliği
+      // de yazılabilsin diye WhatsApp eksikleri de hesaplanır.
+      const whatsappWarnings = getWhatsAppWarnings(contacts);
 
       return {
         documentId: document.id,
@@ -73,9 +74,12 @@ export class DocumentReminderPreviewService {
           : "",
         consultantIsActive: company.consultantUser?.isActive ?? false,
         consultantRole: company.consultantUser?.role,
+        // Kayıtta bağlantı için en yeni iletişim kişisi tutulur.
         contactId: contact?.id,
-        contactName: contact?.fullName ?? "",
-        recipient: contact?.email.trim() ?? "",
+        contactName: contacts.map((item) => item.fullName).join(", "),
+        // YENİ: Bütün kişilerin bütün geçerli e-posta adresleri ("a@x.com; b@y.com").
+        // Mail worker'ı bu alanı ayırıp hepsine tek mail olarak gönderir.
+        recipient: joinEmailRecipients(collectEmailRecipients(contacts)),
         cc: [...DEFAULT_CC_RECIPIENTS],
         type: decision.type,
         reminderMonth: decision.reminderMonth,
@@ -90,6 +94,7 @@ export class DocumentReminderPreviewService {
         })),
         canSend: warnings.length === 0,
         warnings,
+        whatsappWarnings,
       };
     });
   }

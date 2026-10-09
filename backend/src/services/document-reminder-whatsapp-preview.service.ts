@@ -3,30 +3,16 @@ import {
   createClosureWhatsAppTemplate,
   createExtensionWhatsAppTemplate,
 } from "./whatsapp-template.service.js";
+import {
+  collectWhatsAppRecipients,
+  getDocumentEmailWarnings,
+  getWhatsAppWarnings,
+  joinWhatsAppRecipients,
+} from "./reminder-contact-check.js";
 
-export function normalizeWhatsAppRecipient(phone: string): string {
-  let digits = phone.replace(/\D/g, "");
-
-  if (digits.startsWith("00")) {
-    digits = digits.slice(2);
-  }
-
-  // 05XXXXXXXXX → 905XXXXXXXXX
-  if (digits.startsWith("0")) {
-    digits = `90${digits.slice(1)}`;
-  }
-
-  // 5XXXXXXXXX → 905XXXXXXXXX
-  if (digits.length === 10 && digits.startsWith("5")) {
-    digits = `90${digits}`;
-  }
-
-  return digits;
-}
-
-function isValidWhatsAppRecipient(phone: string): boolean {
-  return /^[1-9]\d{9,14}$/.test(phone);
-}
+// Diğer dosyalar bu fonksiyonu buradan import ediyor; yeri değişti ama
+// eski import yolları çalışmaya devam etsin diye buradan da dışa veriliyor.
+export { normalizeWhatsAppRecipient } from "./reminder-contact-check.js";
 
 export class DocumentReminderWhatsAppPreviewService {
   constructor(
@@ -38,6 +24,10 @@ export class DocumentReminderWhatsAppPreviewService {
 
     return candidates.map((candidate) => {
       const { document, company, contact, decision } = candidate;
+
+      // YENİ: Firmanın BÜTÜN iletişim kayıtları (en yeni önce).
+      const contacts = company.contacts;
+
       const authorizationExpired = candidate.authorizationExpired;
       const template =
         decision.type === "CLOSURE_APPLICATION"
@@ -45,36 +35,37 @@ export class DocumentReminderWhatsAppPreviewService {
               companyName: company.name,
               documentNumber: document.documentNumber,
               targetDate: decision.targetDate,
-              authorizationExpired, // YENİ
+              authorizationExpired,
             })
           : createExtensionWhatsAppTemplate({
               companyName: company.name,
               documentNumber: document.documentNumber,
               targetDate: decision.targetDate,
-              authorizationExpired, // YENİ
+              authorizationExpired,
             });
 
-      const warnings: string[] = [];
+      const warnings = getWhatsAppWarnings(contacts);
 
-      const recipient = contact
-        ? normalizeWhatsAppRecipient(contact.phone)
-        : "";
-
-      if (!contact) {
-        warnings.push("Firma iletişim kaydı bulunamadı.");
-      } else if (!contact.phone.trim()) {
-        warnings.push("Firmanın iletişim telefon numarası boş.");
-      } else if (!isValidWhatsAppRecipient(recipient)) {
-        warnings.push("Firmanın iletişim telefon numarası geçersiz.");
-      }
+      // Mail de engelliyse danışmana tek (birleşik) bildirim gitsin diye
+      // mailin eksikleri de hesaplanır (mail kuyruğuyla aynı kurallar).
+      const emailWarnings = getDocumentEmailWarnings({
+        contacts,
+        type: decision.type,
+        documentNumber: document.documentNumber,
+        investorAddress: company.identity?.investorAddress,
+      });
 
       return {
         documentId: document.id,
         companyId: company.id,
         companyName: company.name,
+        consultantUserId: company.consultantUser?.id,
+        consultantIsActive: company.consultantUser?.isActive ?? false,
+        // Kayıtta bağlantı için en yeni iletişim kişisi tutulur.
         contactId: contact?.id,
-        contactName: contact?.fullName ?? "",
-        recipient,
+        contactName: contacts.map((item) => item.fullName).join(", "),
+        // YENİ: Bütün kişilerin bütün cep numaraları ("905…,905…").
+        recipient: joinWhatsAppRecipients(collectWhatsAppRecipients(contacts)),
         type: decision.type,
         reminderMonth: decision.reminderMonth,
         targetDate: decision.targetDate,
@@ -84,6 +75,8 @@ export class DocumentReminderWhatsAppPreviewService {
         message: template.previewText,
         canSend: warnings.length === 0,
         warnings,
+        emailCanSend: emailWarnings.length === 0,
+        emailWarnings,
       };
     });
   }

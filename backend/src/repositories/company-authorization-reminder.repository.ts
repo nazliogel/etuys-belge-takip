@@ -1,5 +1,6 @@
 import { prisma } from "../config/env.js";
 import { EMAIL_RETRY_DELAY_MINUTES } from "../utils/email-retry.js";
+import { WHATSAPP_RETRY_DELAY_MINUTES } from "../utils/whatsapp-retry.js";
 
 type ReminderChannel =
   | "EMAIL"
@@ -9,6 +10,12 @@ type ReminderChannel =
 
 /** Danışmana giden "gönderilemedi" bildirimlerinin reminderMonth değerine eklenen fark */
 const CONSULTANT_FAILURE_MONTH_OFFSET = 100;
+
+/**
+ * YENİ: Danışmana giden "WhatsApp gönderilemedi" bildirimlerinin reminderMonth farkı.
+ * Mail bildirimleriyle aynı anahtarı paylaşıp birbirinin üzerine yazmasınlar diye ayrıdır.
+ */
+const WHATSAPP_CONSULTANT_MONTH_OFFSET = 200;
 
 /**
  * Açık belge kontrolü için gereken alanlar. Sadece aktif ve OPEN durumdaki
@@ -33,6 +40,84 @@ const OPEN_DOCUMENT_STATE_SELECT = {
 } as const;
 
 export class CompanyAuthorizationReminderRepository {
+  async findPendingWhatsApp(limit = 1) {
+    return prisma.companyAuthorizationReminder.findMany({
+      where: {
+        channel: "WHATSAPP",
+        status: "PENDING",
+        // YENİ: Geçici hata alan kayıt, son denemeden 15 dk geçmeden tekrar alınmaz
+        // (mail kuyruğundaki findPending ile aynı kural).
+        OR: [
+          { attemptedAt: null },
+          {
+            attemptedAt: {
+              lt: new Date(
+                Date.now() - WHATSAPP_RETRY_DELAY_MINUTES * 60 * 1000,
+              ),
+            },
+          },
+        ],
+      },
+      include: {
+        authorization: true,
+        // YENİ: Kalıcı hatada danışmana bildirim gidebilsin diye danışman bilgisi de alınır.
+        company: {
+          include: {
+            consultantUser: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                isActive: true,
+              },
+            },
+            // YENİ: Gönderim anında güncel numaralar firmanın bütün
+            // iletişim kayıtlarından alınır.
+            contacts: {
+              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            },
+          },
+        },
+        contact: true,
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: limit,
+    });
+  }
+
+  async enqueueWhatsApp(params: {
+    authorizationId: number;
+    companyId: number;
+    contactId?: number;
+    reminderMonth: number;
+    targetDate: Date;
+    recipient: string;
+    message: string;
+  }): Promise<boolean> {
+    const result = await prisma.companyAuthorizationReminder.createMany({
+      data: [
+        {
+          authorizationId: params.authorizationId,
+          companyId: params.companyId,
+          contactId: params.contactId,
+          type: "AUTHORIZATION_EXPIRY",
+          channel: "WHATSAPP",
+          status: "PENDING",
+          reminderMonth: params.reminderMonth,
+          targetDate: params.targetDate,
+          recipient: params.recipient,
+          message: params.message,
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    return result.count === 1;
+  }
+
   async findActiveCandidates() {
     return prisma.companyAuthorization.findMany({
       where: {
@@ -73,7 +158,6 @@ export class CompanyAuthorizationReminderRepository {
                   id: "desc",
                 },
               ],
-              take: 1,
             },
             ...OPEN_DOCUMENT_STATE_SELECT,
           },
@@ -133,10 +217,19 @@ export class CompanyAuthorizationReminderRepository {
     description: string;
     /** "Gönderilemedi" bildirimi: her kesin başarısızlıkta yeniden oluşturulur */
     isFailure?: boolean;
+    /** YENİ: "WHATSAPP" ise bildirim WhatsApp'a ait ayrı bir anahtarla tutulur. */
+    channel?: "EMAIL" | "WHATSAPP";
   }): Promise<boolean> {
-    const storedReminderMonth = params.isFailure
-      ? params.reminderMonth + CONSULTANT_FAILURE_MONTH_OFFSET
-      : params.reminderMonth;
+    // YENİ: WhatsApp bildirimleri her zaman "gönderilemedi" bildirimidir ve
+    // mail bildirimleriyle karışmasın diye ayrı bir anahtarla tutulur.
+    const isWhatsApp = params.channel === "WHATSAPP";
+    const isFailure = params.isFailure === true || isWhatsApp;
+
+    const storedReminderMonth = isWhatsApp
+      ? params.reminderMonth + WHATSAPP_CONSULTANT_MONTH_OFFSET
+      : isFailure
+        ? params.reminderMonth + CONSULTANT_FAILURE_MONTH_OFFSET
+        : params.reminderMonth;
 
     return prisma.$transaction(async (transaction) => {
       const now = new Date();
@@ -157,7 +250,7 @@ export class CompanyAuthorizationReminderRepository {
         sentAt: now,
       };
 
-      if (params.isFailure) {
+      if (isFailure) {
         // Kayıt varsa son hatayla güncellenir; içerik değiştiyse yeni bildirim oluşturulur
 
         // Aynı içerikte bildirim daha önce gittiyse tekrar gönderme

@@ -1,24 +1,32 @@
-import { DocumentReminderRepository } from "../repositories/document-reminder.repository.js";
-import { DocumentReminderWhatsAppPreviewService } from "./document-reminder-whatsapp-preview.service.js";
+import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
+import { CompanyAuthorizationReminderPreviewService } from "./company-authorization-reminder-preview.service.js";
 import { ReminderNotificationService } from "./reminder-notification.service.js";
+import { createAuthorizationWhatsAppTemplate } from "./whatsapp-template.service.js";
 import { env } from "../config/env.js";
 
-interface BlockedWhatsAppReminder {
-  documentId: number;
+interface BlockedReminder {
+  authorizationId: number;
   companyName: string;
   warnings: string[];
 }
 
-export class DocumentReminderWhatsAppQueueService {
+/**
+ * Yetkilendirme WhatsApp kuyruğu.
+ *
+ * Firma, ay, iletişim kişisi ve telefon kontrolü mail kuyruğuyla aynı
+ * kaynaktan (CompanyAuthorizationReminderPreviewService) gelir. Böylece
+ * hangi firmaya hangi dönemde hatırlatma gideceği mail ile birebir aynıdır.
+ */
+export class CompanyAuthorizationReminderWhatsAppQueueService {
   constructor(
-    private readonly repository = new DocumentReminderRepository(),
-    private readonly previewService =
-      new DocumentReminderWhatsAppPreviewService(),
+    private readonly repository = new CompanyAuthorizationReminderRepository(),
+    private readonly previewService = new CompanyAuthorizationReminderPreviewService(),
     private readonly reminderNotificationService = new ReminderNotificationService(),
   ) {}
 
-  async enqueueDueReminders(today: Date = new Date()) {
-    const previews = await this.previewService.createPreviews(today);
+  async enqueueDueReminders(now: Date = new Date()) {
+    // Mail kuyruğu ile aynı çağrı (aynı "now" değeri, aynı aday listesi).
+    const previews = await this.previewService.createPreviews(now);
 
     let queuedCount = 0;
     let duplicateCount = 0;
@@ -26,38 +34,38 @@ export class DocumentReminderWhatsAppQueueService {
     let duplicateConsultantNotificationCount = 0;
     let missingConsultantCount = 0;
 
-    const blocked: BlockedWhatsAppReminder[] = [];
+    const blocked: BlockedReminder[] = [];
 
+    // Yetki süresi dolmadan önce de (mail ile aynı dönemlerde) WhatsApp gider.
     for (const preview of previews) {
-      if (!preview.canSend) {
+      if (!preview.whatsappCanSend) {
         blocked.push({
-          documentId: preview.documentId,
+          authorizationId: preview.authorizationId,
           companyName: preview.companyName,
-          warnings: preview.warnings,
+          warnings: preview.whatsappWarnings,
         });
 
-        // YENİ: Mail de engelliyse bildirimi mail kuyruğu gönderir ve telefon
+        // Mail de engelliyse bildirimi mail kuyruğu gönderir ve telefon
         // eksikliğini de yazar (tek bildirim). Burada ayrıca bildirim gönderilmez.
-        if (!preview.emailCanSend) {
+        if (!preview.canSend) {
           continue;
         }
 
-        // YENİ: Mail gidiyor ama WhatsApp gidemiyor: mail kuyruğu ile aynı
+        // Mail gidiyor ama WhatsApp gidemiyor: mail kuyruğu ile aynı
         // şekilde danışmana bildirim, danışman yoksa admin'e mail.
         if (preview.consultantUserId && preview.consultantIsActive) {
           const notificationCreated =
             await this.repository.createConsultantNotification({
-              documentId: preview.documentId,
+              authorizationId: preview.authorizationId,
               companyId: preview.companyId,
               contactId: preview.contactId,
               consultantUserId: preview.consultantUserId,
-              type: preview.type,
               reminderMonth: preview.reminderMonth,
               targetDate: preview.targetDate,
-              title: "Belge WhatsApp bildirimi gönderilemedi",
+              title: "Yetki süresi WhatsApp bildirimi gönderilemedi",
               description: [
-                `${preview.companyName} firmasına ait WhatsApp bildirimi eksik bilgiler nedeniyle gönderilemedi (e-posta gönderildi).`,
-                `Eksik bilgiler: ${preview.warnings.join(", ")}`,
+                `${preview.companyName} firmasına ait yetki süresi WhatsApp bildirimi eksik bilgiler nedeniyle gönderilemedi (e-posta gönderildi).`,
+                `Eksik bilgiler: ${preview.whatsappWarnings.join(", ")}`,
               ].join(" "),
               channel: "WHATSAPP",
             });
@@ -81,10 +89,9 @@ export class DocumentReminderWhatsAppQueueService {
           // admin'e yazdıysa bu çağrı yeni kayıt oluşturmaz, ikinci mail gitmez.
           const adminEmailReminderId =
             await this.repository.createAdminEmailReminder({
-              documentId: preview.documentId,
+              authorizationId: preview.authorizationId,
               companyId: preview.companyId,
               contactId: preview.contactId,
-              type: preview.type,
               reminderMonth: preview.reminderMonth,
               targetDate: preview.targetDate,
               recipient: env.adminFallbackEmail,
@@ -94,7 +101,7 @@ export class DocumentReminderWhatsAppQueueService {
                 "Lütfen firma danışman bilgilerini kontrol ederek gerekli danışman atamasını yapınız.",
                 `Firma: ${preview.companyName}`,
                 `Firma ID: ${preview.companyId}`,
-                `Eksik bilgiler (WhatsApp): ${preview.warnings.join(", ")}`,
+                `Eksik bilgiler (WhatsApp): ${preview.whatsappWarnings.join(", ")}`,
               ].join("\n"),
             });
 
@@ -103,7 +110,7 @@ export class DocumentReminderWhatsAppQueueService {
               await this.reminderNotificationService.notifyMissingConsultant({
                 companyName: preview.companyName,
                 companyId: preview.companyId,
-                errorMessage: `WhatsApp mesajı gönderilemedi: ${preview.warnings.join(", ")}`,
+                errorMessage: `WhatsApp mesajı gönderilemedi: ${preview.whatsappWarnings.join(", ")}`,
               });
 
               await this.repository.markSent(adminEmailReminderId);
@@ -124,15 +131,38 @@ export class DocumentReminderWhatsAppQueueService {
         continue;
       }
 
+      // Şablon hazırlanamazsa bu firma atlanır, diğerleri işlenmeye devam eder.
+      let message: string;
+
+      try {
+        const template = createAuthorizationWhatsAppTemplate({
+          companyName: preview.companyName,
+          targetDate: preview.targetDate,
+          today: now,
+        });
+
+        message = template.previewText;
+      } catch (error) {
+        blocked.push({
+          authorizationId: preview.authorizationId,
+          companyName: preview.companyName,
+          warnings: [
+            error instanceof Error
+              ? error.message
+              : "Yetkilendirme WhatsApp şablonu hazırlanamadı.",
+          ],
+        });
+        continue;
+      }
+
       const queued = await this.repository.enqueueWhatsApp({
-        documentId: preview.documentId,
+        authorizationId: preview.authorizationId,
         companyId: preview.companyId,
         contactId: preview.contactId,
-        type: preview.type,
         reminderMonth: preview.reminderMonth,
         targetDate: preview.targetDate,
-        recipient: preview.recipient,
-        message: preview.message,
+        recipient: preview.whatsappRecipient,
+        message,
       });
 
       if (queued) {
