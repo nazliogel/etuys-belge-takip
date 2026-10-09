@@ -121,7 +121,11 @@ export class DocumentReminderWhatsAppWorkerService {
             skippedCount += 1;
             results.push({ id: reminder.id, status: "SKIPPED", reason });
           };
-
+          // Firma kuyruğa alındıktan sonra pasif yapıldıysa mesaj gitmez.
+          if (!reminder.company.isActive) {
+            await skip("Firma artık aktif değil.");
+            continue;
+          }
           const document = reminder.document;
 
           // 1) Hatırlatma hâlâ geçerli mi? (Mail worker'ı ile aynı sıra ve aynı kontroller.)
@@ -186,7 +190,9 @@ export class DocumentReminderWhatsAppWorkerService {
             throw new Error(getWhatsAppWarnings(contacts).join(" "));
           }
 
-          if (joinWhatsAppRecipients(currentRecipients) !== reminder.recipient) {
+          if (
+            joinWhatsAppRecipients(currentRecipients) !== reminder.recipient
+          ) {
             console.warn(
               `WhatsApp reminder ${reminder.id}: numaralar kuyruktan sonra değişmiş, güncel numaralara gönderiliyor.`,
             );
