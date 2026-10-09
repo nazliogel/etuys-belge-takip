@@ -62,10 +62,19 @@ export class AuthService {
       throw this.createInvalidCredentialsError();
     }
 
-    const isPasswordValid = await comparePassword(
+    let isPasswordValid = await comparePassword(
       payload.password,
       user.passwordHash,
     );
+
+    const trimmedPassword = payload.password.trim();
+
+    if (!isPasswordValid && trimmedPassword !== payload.password) {
+      isPasswordValid = await comparePassword(
+        trimmedPassword,
+        user.passwordHash,
+      );
+    }
 
     if (!isPasswordValid) {
       throw this.createInvalidCredentialsError();
