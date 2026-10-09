@@ -27,6 +27,10 @@ export class DocumentReminderRepository {
       where: {
         isActive: true,
         status: "OPEN",
+        // YENİ: Pasif firmalara hiçbir şekilde mail/WhatsApp gitmez.
+        company: {
+          isActive: true,
+        },
         documentEndDate: {
           not: null,
         },
@@ -53,7 +57,9 @@ export class DocumentReminderRepository {
                 isActive: true,
               },
             },
+            // YENİ: Mail ve WhatsApp sadece AKTİF iletişim kişilerine gider.
             contacts: {
+              where: { isActive: true },
               orderBy: [
                 {
                   createdAt: "desc",
@@ -375,8 +381,9 @@ export class DocumentReminderRepository {
               },
             },
             // YENİ: Gönderim anında güncel numaralar firmanın bütün
-            // iletişim kayıtlarından alınır.
+            // AKTİF iletişim kayıtlarından alınır (pasif kişilere gönderilmez).
             contacts: {
+              where: { isActive: true },
               orderBy: [{ createdAt: "desc" }, { id: "desc" }],
             },
           },
@@ -454,6 +461,12 @@ export class DocumentReminderRepository {
                 isActive: true,
               },
             },
+            // YENİ: Mail gönderilmeden önce alıcılar firmanın GÜNCEL AKTİF
+            // iletişim kişilerinden yeniden alınır (sonradan pasif yapılana gitmez).
+            contacts: {
+              where: { isActive: true },
+              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            },
           },
         },
         contact: true,
@@ -464,6 +477,14 @@ export class DocumentReminderRepository {
       take: limit,
     });
   }
+  /** YENİ: Gönderim anındaki güncel alıcılar kayda yazılır (rapor doğru görünsün). */
+  async updateRecipient(id: number, recipient: string) {
+    return prisma.documentReminder.update({
+      where: { id },
+      data: { recipient },
+    });
+  }
+
   async countPending(): Promise<number> {
     return prisma.documentReminder.count({
       where: {

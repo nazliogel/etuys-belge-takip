@@ -20,6 +20,11 @@ import {
 } from "../utils/email-retry.js";
 import { notifySystemAlert } from "./system-alert.service.js";
 import { CompanyAuthorizationReminderRepository } from "../repositories/company-authorization-reminder.repository.js";
+import {
+  collectEmailRecipients,
+  getEmailWarnings,
+  joinEmailRecipients,
+} from "./reminder-contact-check.js";
 
 function isSameDate(first: Date, second: Date): boolean {
   return normalizeDate(first).getTime() === normalizeDate(second).getTime();
@@ -197,6 +202,11 @@ export class DocumentReminderWorkerService {
             skippedCount += 1;
             results.push({ id: reminder.id, status: "SKIPPED", reason });
           };
+          // YENİ: Firma kuyruğa alındıktan sonra pasif yapıldıysa mail gitmez.
+          if (!reminder.company.isActive) {
+            await skip("Firma artık aktif değil.");
+            continue;
+          }
 
           const document = reminder.document;
 
@@ -249,13 +259,16 @@ export class DocumentReminderWorkerService {
               continue;
             }
           }
+          // YENİ: Alıcılar gönderim anında firmanın GÜNCEL AKTİF iletişim
+          // kişilerinden yeniden alınır. Kuyruğa alındıktan sonra pasif yapılan
+          // kişiye mail gitmez; yeni eklenen aktif kişiye gider.
+          const contacts = reminder.company.contacts;
+          const currentRecipients = collectEmailRecipients(contacts);
 
           const validationErrors: string[] = [];
 
-          if (!reminder.contact) {
-            validationErrors.push("Firma iletişim kaydı bulunamadı.");
-          } else if (!reminder.recipient.trim()) {
-            validationErrors.push("Firma iletişim e-posta adresi boş.");
+          if (currentRecipients.length === 0) {
+            validationErrors.push(...getEmailWarnings(contacts));
           }
 
           if (
@@ -279,6 +292,17 @@ export class DocumentReminderWorkerService {
               )}`,
             );
           }
+
+          const recipient = joinEmailRecipients(currentRecipients);
+
+          if (recipient !== reminder.recipient) {
+            console.warn(
+              `Reminder ${reminder.id}: alıcılar kuyruğa alındıktan sonra değişti (${reminder.recipient} -> ${recipient}). Güncel aktif adreslere gönderiliyor.`,
+            );
+            await this.repository.updateRecipient(reminder.id, recipient);
+            reminder.recipient = recipient;
+          }
+
           // Yetki durumu gönderim anında hesaplanır (findDueCandidates ile aynı mantık).
           const authorizationEndDate =
             reminder.company.authorization?.authorizationEndDate ?? null;
@@ -304,7 +328,7 @@ export class DocumentReminderWorkerService {
                 });
 
           const result = await this.emailService.send({
-            to: reminder.recipient,
+            to: recipient,
             cc: [...DEFAULT_CC_RECIPIENTS],
             subject: reminder.subject ?? template.subject,
             text: template.text,
