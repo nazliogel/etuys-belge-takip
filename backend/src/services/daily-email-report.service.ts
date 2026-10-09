@@ -181,13 +181,52 @@ function toRow(
   };
 }
 
+// ---- Görünüm (mail programları için: sadece tablo + satır içi stil, kod çalışmaz) ----
+type Tone = "ok" | "bad" | "warn" | "muted" | "info";
+
+const TONES: Record<Tone, { bg: string; fg: string; line: string }> = {
+  ok: { bg: "#e6f6ec", fg: "#17663a", line: "#2f9e5b" },
+  bad: { bg: "#fdecec", fg: "#a3222b", line: "#d14343" },
+  warn: { bg: "#fff4e0", fg: "#8a5a00", line: "#e0a020" },
+  muted: { bg: "#eef1f5", fg: "#4a5263", line: "#9aa3b2" },
+  info: { bg: "#eef2ff", fg: "#3341a3", line: "#5b6ad0" },
+};
+
+const FONT = "font-family:'Segoe UI',Arial,sans-serif";
+const BORDER = "#e3e7ef";
+
+function badge(text: string, tone: Tone): string {
+  const t = TONES[tone];
+  return `<span style="display:inline-block;background:${t.bg};color:${t.fg};border-radius:5px;padding:2px 7px;font-size:12px;white-space:nowrap">${escapeHtml(text)}</span>`;
+}
+
+function notificationTone(text: string): Tone {
+  if (text.startsWith("Gitti") || text.includes("maili gitti")) return "ok";
+  if (text.startsWith("Gitmedi") || text.includes("gönderilemedi")) return "bad";
+  return "muted";
+}
+
+/** "Sebep: X → yapılacak" metnini iki satıra ayırır: sebep (gri) + yapılacak (kalın). */
+function renderDetail(detail: string, tone: Tone): string {
+  const [reason, action] = detail.split(" → ");
+  const t = TONES[tone];
+  return [
+    `<div style="color:#5b6475;font-size:12px">${escapeHtml(reason.replace(/^Sebep:\s*/, ""))}</div>`,
+    action
+      ? `<div style="color:${t.fg};font-weight:600;margin-top:3px">${escapeHtml(action)}</div>`
+      : "",
+  ].join("");
+}
+
 function renderTable(
   title: string,
   detailHeader: string | null,
   rows: ReportRow[],
+  tone: Tone = "muted",
 ): string {
   if (rows.length === 0) return "";
 
+  const t = TONES[tone];
   const headers = [
     "Tür",
     "Firma",
@@ -197,24 +236,63 @@ function renderTable(
     "Danışman bildirimi",
     ...(detailHeader ? [detailHeader] : []),
   ];
+  const th = `style="background:#f4f6fa;color:#1d2433;text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid ${BORDER};white-space:nowrap"`;
+  const td = `style="padding:8px 10px;border-bottom:1px solid ${BORDER};vertical-align:top"`;
 
   return `
-    <h3 style="margin:24px 0 8px">${escapeHtml(title)} (${rows.length})</h3>
-    <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:13px">
-      <tr>${headers.map((header) => `<th style="background:#f0f0f0">${header}</th>`).join("")}</tr>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0 8px">
+      <tr><td style="border-left:4px solid ${t.line};padding:2px 0 2px 10px;${FONT};font-size:15px;font-weight:600;color:#1d2433">
+        ${escapeHtml(title)} ${badge(String(rows.length), tone)}
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid ${BORDER};${FONT};font-size:13px;color:#1d2433">
+      <tr>${headers.map((header) => `<th ${th}>${header}</th>`).join("")}</tr>
       ${rows
         .map(
           (row) => `<tr>
-            <td>${escapeHtml(row.kind)}</td>
-            <td>${escapeHtml(row.companyName)}</td>
-            <td>${escapeHtml(row.consultant)}</td>
-            <td>${escapeHtml(row.recipient)}</td>
-            <td>${escapeHtml(formatIstanbul(row.time))}</td>
-            <td>${escapeHtml(row.notification)}</td>
-            ${detailHeader ? `<td>${escapeHtml(row.detail)}</td>` : ""}
+            <td ${td}>${badge(row.kind, "info")}</td>
+            <td ${td}><b>${escapeHtml(row.companyName)}</b></td>
+            <td ${td}>${escapeHtml(row.consultant)}</td>
+            <td ${td}><span style="color:#5b6475;font-size:12px">${escapeHtml(row.recipient)}</span></td>
+            <td ${td}><span style="white-space:nowrap">${escapeHtml(formatIstanbul(row.time))}</span></td>
+            <td ${td}>${row.notification === "-" ? "-" : badge(row.notification, notificationTone(row.notification))}</td>
+            ${detailHeader ? `<td ${td}>${renderDetail(row.detail, tone)}</td>` : ""}
           </tr>`,
         )
         .join("")}
+    </table>`;
+}
+
+/** Üstteki özet kutusu: büyük sayılar + türlere göre dağılım. */
+function renderSummaryCard(report: ChannelReport, label: string): string {
+  const count = (rows: ReportRow[], kind: string) =>
+    rows.filter((row) => row.kind === kind).length;
+  const pending = report.docPending + report.authPending;
+
+  const stat = (value: number, text: string, tone: Tone) => {
+    const t = TONES[tone];
+    return `<td style="padding:4px" width="20%"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="background:${t.bg};border-radius:8px;padding:10px 8px;text-align:center;${FONT}">
+      <div style="font-size:22px;font-weight:700;color:${t.fg};line-height:1.1">${value}</div>
+      <div style="font-size:11.5px;color:${t.fg};margin-top:3px">${text}</div>
+    </td></tr></table></td>`;
+  };
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BORDER};border-radius:10px;margin:0 0 14px">
+      <tr><td style="padding:12px 12px 4px;${FONT};font-size:14px;font-weight:600;color:#1d2433">${escapeHtml(label)}</td></tr>
+      <tr><td style="padding:0 8px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+          ${stat(report.sentRows.length, "Gönderildi", "ok")}
+          ${stat(report.failedRows.length, "Gönderilemedi", report.failedRows.length > 0 ? "bad" : "muted")}
+          ${stat(report.retryingRows.length, "Tekrar denenecek", report.retryingRows.length > 0 ? "warn" : "muted")}
+          ${stat(report.skippedRows.length, "Atlandı", "muted")}
+          ${stat(pending, "Kuyrukta bekliyor", "info")}
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:6px 12px 12px;${FONT};font-size:12px;color:#5b6475">
+        Gönderilenler: Kapatma ${count(report.sentRows, "Kapatma")} · Süre uzatma ${count(report.sentRows, "Süre uzatma")} · Yetkilendirme ${count(report.sentRows, "Yetkilendirme")}
+        &nbsp;|&nbsp; Kuyrukta: Belge ${report.docPending} · Yetkilendirme ${report.authPending}
+      </td></tr>
     </table>`;
 }
 
@@ -355,7 +433,11 @@ async function buildChannelReport(
 
   const failedNotification = (r: DocumentReminderLike): string => {
     if (
-      findNotification(r, r.reminderMonth + failureOffset, "CONSULTANT_IN_APP")
+      findNotification(
+        r,
+        r.reminderMonth + failureOffset,
+        "CONSULTANT_IN_APP",
+      )
     ) {
       return "Gitti: gönderilemedi bildirimi";
     }
@@ -479,39 +561,30 @@ function renderChannel(
   const summary = summaryLinesFor(report);
   const noun = report.channel === "WHATSAPP" ? "WhatsApp mesajı" : "mail";
 
+  const hasRows =
+    report.failedRows.length +
+      report.retryingRows.length +
+      report.skippedRows.length +
+      (options.includeSentList ? report.sentRows.length : 0) >
+    0;
+
   const html = `
-    ${options.title ? `<h2 style="margin:32px 0 12px">${escapeHtml(options.title)}</h2>` : ""}
-    <p>${summary.map(escapeHtml).join("<br>")}</p>
-    ${report.failedRows.length > 0 ? `<p style="color:#b00020"><strong>Dikkat:</strong> ${report.failedRows.length} ${noun} gönderilemedi, aşağıdaki işlemlerin yapılması gerekiyor.</p>` : ""}
-    ${renderTable(`${options.label} - Gönderilemeyenler`, "Sebep ve yapılması gereken", report.failedRows)}
-    ${renderTable(`${options.label} - Tekrar denenecekler`, "Durum", report.retryingRows)}
-    ${renderTable(`${options.label} - Atlananlar`, "Sebep", report.skippedRows)}
-    ${options.includeSentList ? renderTable(`${options.label} - Gönderilenler`, null, report.sentRows) : ""}`;
+    ${options.title ? `<div style="${FONT};font-size:18px;font-weight:700;color:#1d2433;margin:30px 0 4px;padding-bottom:6px;border-bottom:2px solid ${BORDER}">${escapeHtml(options.title)}</div>` : ""}
+    ${report.failedRows.length > 0 ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0"><tr><td style="background:${TONES.bad.bg};color:${TONES.bad.fg};border-radius:8px;padding:10px 14px;${FONT};font-size:13px"><b>Dikkat:</b> ${report.failedRows.length} ${noun} gönderilemedi, aşağıdaki işlemlerin yapılması gerekiyor.</td></tr></table>` : ""}
+    ${renderTable(`${options.label} - Gönderilemeyenler`, "Sebep ve yapılması gereken", report.failedRows, "bad")}
+    ${renderTable(`${options.label} - Tekrar denenecekler`, "Durum", report.retryingRows, "warn")}
+    ${renderTable(`${options.label} - Atlananlar`, "Sebep", report.skippedRows, "muted")}
+    ${options.includeSentList ? renderTable(`${options.label} - Gönderilenler`, null, report.sentRows, "ok") : ""}
+    ${hasRows ? "" : `<div style="${FONT};font-size:13px;color:#5b6475;margin:10px 0">Bu dönemde listelenecek kayıt yok.</div>`}`;
 
   const text = [
     ...(options.title ? ["", options.title.toLocaleUpperCase("tr-TR")] : []),
     ...summary,
-    renderText(
-      `${options.label.toLocaleUpperCase("tr-TR")} - GÖNDERİLEMEYENLER`,
-      report.failedRows,
-      true,
-    ),
-    renderText(
-      `${options.label.toLocaleUpperCase("tr-TR")} - TEKRAR DENENECEKLER`,
-      report.retryingRows,
-      true,
-    ),
-    renderText(
-      `${options.label.toLocaleUpperCase("tr-TR")} - ATLANANLAR`,
-      report.skippedRows,
-      true,
-    ),
+    renderText(`${options.label.toLocaleUpperCase("tr-TR")} - GÖNDERİLEMEYENLER`, report.failedRows, true),
+    renderText(`${options.label.toLocaleUpperCase("tr-TR")} - TEKRAR DENENECEKLER`, report.retryingRows, true),
+    renderText(`${options.label.toLocaleUpperCase("tr-TR")} - ATLANANLAR`, report.skippedRows, true),
     options.includeSentList
-      ? renderText(
-          `${options.label.toLocaleUpperCase("tr-TR")} - GÖNDERİLENLER`,
-          report.sentRows,
-          false,
-        )
+      ? renderText(`${options.label.toLocaleUpperCase("tr-TR")} - GÖNDERİLENLER`, report.sentRows, false)
       : "",
   ].join("\n");
 
@@ -548,13 +621,7 @@ export async function buildReport(
   const notificationStatus = new Map<string, string>();
   for (const n of docNotifications) {
     notificationStatus.set(
-      notificationKey(
-        n.documentId,
-        n.type,
-        n.targetDate,
-        n.reminderMonth,
-        n.channel,
-      ),
+      notificationKey(n.documentId, n.type, n.targetDate, n.reminderMonth, n.channel),
       n.status,
     );
   }
@@ -597,14 +664,27 @@ export async function buildReport(
       })
     : null;
 
+  // Özet kutuları en üstte: mail ve WhatsApp yan yana (dar ekranda alt alta).
+  const summaryCards = includeWhatsApp
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="50%" style="vertical-align:top;padding-right:7px">${renderSummaryCard(emailReport, "Mail")}</td>
+        <td width="50%" style="vertical-align:top;padding-left:7px">${renderSummaryCard(whatsappReport, "WhatsApp")}</td>
+      </tr></table>`
+    : renderSummaryCard(emailReport, "Mail");
+
   const html = `
-    <div style="font-family:Arial,sans-serif">
-      <h2 style="margin:0 0 12px">${escapeHtml(options.heading)}</h2>
-      <p>${escapeHtml(periodText)}</p>
-      ${emailPart.html}
-      ${consultantSection.html}
-      ${whatsappPart?.html ?? ""}
-      ${options.includeSentList ? "" : `<p style="color:#666;margin-top:24px">Haftalık raporda gönderilenler tek tek listelenmez; ayrıntılar günlük raporlardadır.</p>`}
+    <div style="background:#ffffff;padding:4px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:1100px;margin:0 auto">
+      <tr><td style="${FONT};color:#1d2433;padding:8px 4px">
+        <div style="font-size:22px;font-weight:700;margin:0 0 4px">${escapeHtml(options.heading)}</div>
+        <div style="font-size:13px;color:#5b6475;margin-bottom:16px">${escapeHtml(periodText)}</div>
+        ${summaryCards}
+        ${emailPart.html}
+        ${consultantSection.html}
+        ${whatsappPart?.html ?? ""}
+        ${options.includeSentList ? "" : `<div style="font-size:12px;color:#5b6475;margin-top:24px">Haftalık raporda gönderilenler tek tek listelenmez; ayrıntılar günlük raporlardadır.</div>`}
+      </td></tr>
+    </table>
     </div>`;
 
   const text = [
@@ -636,14 +716,20 @@ export class DailyEmailReportService {
 
   constructor(private readonly emailService = new EmailService()) {}
 
-  /** Zamanlayıcı her turda çağırır: günlük rapor ve (pazartesi) haftalık rapor. */
+  /**
+   * Zamanlayıcı her turda çağırır.
+   * Sadece pazartesi haftalık rapor gönderilir. Günlük rapor kapalıdır;
+   * tekrar açmak için .env'e DAILY_REPORT_ENABLED=true yazılır.
+   */
   async runIfDue(now: Date = new Date()): Promise<void> {
     if (this.isRunning) return;
 
     this.isRunning = true;
 
     try {
-      await this.runDailyIfDue(now);
+      if (process.env.DAILY_REPORT_ENABLED === "true") {
+        await this.runDailyIfDue(now);
+      }
       await this.runWeeklyIfDue(now);
     } finally {
       this.isRunning = false;
@@ -671,14 +757,10 @@ export class DailyEmailReportService {
       // İlk kurulum: geçmişe dönük rapor gönderilmez.
       // Bugünün başlangıcı kaydedilir; ilk rapor yarın sabah bugünü kapsar.
       if (!state?.lastSentAt) {
-        await this.saveState(
-          SETTING_KEY,
-          {
-            lastSentAt: new Date(`${date}T00:00:00+03:00`).toISOString(),
-            lastReportDate: date,
-          },
-          "Günlük mail gönderim raporunun son gönderim bilgisi",
-        );
+        await this.saveState(SETTING_KEY, {
+          lastSentAt: new Date(`${date}T00:00:00+03:00`).toISOString(),
+          lastReportDate: date,
+        }, "Günlük mail gönderim raporunun son gönderim bilgisi");
         this.completedReportDate = date;
         console.log(
           "Daily email report initialized; first report will be sent next weekday.",
@@ -700,14 +782,10 @@ export class DailyEmailReportService {
         html: report.html,
       });
 
-      await this.saveState(
-        SETTING_KEY,
-        {
-          lastSentAt: now.toISOString(),
-          lastReportDate: date,
-        },
-        "Günlük mail gönderim raporunun son gönderim bilgisi",
-      );
+      await this.saveState(SETTING_KEY, {
+        lastSentAt: now.toISOString(),
+        lastReportDate: date,
+      }, "Günlük mail gönderim raporunun son gönderim bilgisi");
       this.completedReportDate = date;
       console.log(
         `Daily email report sent: mail ${report.emailReport.sentRows.length} sent, ${report.emailReport.failedRows.length} failed; whatsapp ${report.whatsappReport.sentRows.length} sent, ${report.whatsappReport.failedRows.length} failed.`,
@@ -743,9 +821,10 @@ export class DailyEmailReportService {
         ? new Date(state.lastSentAt)
         : new Date(now.getTime() - WEEK_MS);
 
+      // Günlük rapor kapalı olduğu için gönderilenler de haftalıkta tek tek listelenir.
       const report = await buildReport(since, now, {
         heading: "Haftalık gönderim raporu",
-        includeSentList: false,
+        includeSentList: true,
       });
 
       await this.emailService.send({
@@ -755,14 +834,10 @@ export class DailyEmailReportService {
         html: report.html,
       });
 
-      await this.saveState(
-        WEEKLY_SETTING_KEY,
-        {
-          lastSentAt: now.toISOString(),
-          lastReportDate: date,
-        },
-        "Haftalık gönderim raporunun son gönderim bilgisi",
-      );
+      await this.saveState(WEEKLY_SETTING_KEY, {
+        lastSentAt: now.toISOString(),
+        lastReportDate: date,
+      }, "Haftalık gönderim raporunun son gönderim bilgisi");
       this.completedWeeklyReportDate = date;
       console.log("Weekly email report sent.");
     } catch (error) {
