@@ -64,15 +64,6 @@ type CompanyDetailResponse = {
 
 const PAGE_SIZE = 20;
 
-type StatusFilter = "all" | "active" | "expiring" | "expired";
-
-const statusOptions: { key: StatusFilter; label: string }[] = [
-  { key: "all", label: "Tümü" },
-  { key: "active", label: "Aktif" },
-  { key: "expiring", label: "Süresi Yaklaşan" },
-  { key: "expired", label: "Süresi Dolmuş" },
-];
-
 type ActivityFilter = "all" | "active" | "inactive";
 
 const activityOptions: { key: ActivityFilter; label: string }[] = [
@@ -130,27 +121,6 @@ function writePersistedTabs(value: PersistedTabs) {
 function parseIdList(value: string | null): string[] {
   if (!value) return [];
   return value.split(",").filter(Boolean);
-}
-
-function getFirmaStatus(
-  dateStr: string | null,
-): Exclude<StatusFilter, "all"> | null {
-  if (!dateStr) return null;
-
-  const end = new Date(dateStr);
-  const today = new Date();
-
-  today.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-
-  const remainingDays = Math.ceil(
-    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (remainingDays < 0) return "expired";
-  if (remainingDays <= 180) return "expiring";
-
-  return "active";
 }
 
 function formatDate(dateStr: string | null): string {
@@ -295,6 +265,7 @@ export function CompaniesScreen() {
   const statusUpdateLock = useRef(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsAdmin(getSessionUser()?.role === "ADMIN");
   }, []);
 
@@ -329,13 +300,10 @@ export function CompaniesScreen() {
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  const activeFilterCount =
-    (statusFilter !== "all" ? 1 : 0) +
-    (companyActivityFilter !== "all" ? 1 : 0);
+  const activeFilterCount = companyActivityFilter !== "all" ? 1 : 0;
 
   const detailRef = useRef<HTMLDivElement>(null);
 
@@ -537,14 +505,7 @@ export function CompaniesScreen() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isFilterOpen]);
 
-  const filteredFirmalar = useMemo(() => {
-    return firmalar.filter((firma) => {
-      return (
-        statusFilter === "all" ||
-        getFirmaStatus(firma.yetkiBitisTarihi) === statusFilter
-      );
-    });
-  }, [firmalar, statusFilter]);
+  const filteredFirmalar = firmalar;
 
   function handleCloseTab(firmaId: string) {
     const closedTabIndex = openFirmaIds.indexOf(firmaId);
@@ -785,33 +746,6 @@ export function CompaniesScreen() {
                       onClick={() => {
                         setCompanyActivityFilter(option.key);
                         setPage(1);
-                        setIsFilterOpen(false);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-medium transition ${
-                        isActive
-                          ? "bg-red-50 text-red-700"
-                          : "text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {option.label}
-                      {isActive && <Check size={15} />}
-                    </button>
-                  );
-                })}
-
-                <div className="my-1 border-t border-slate-100" />
-
-                <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Yetki Durumu
-                </p>
-                {statusOptions.map((option) => {
-                  const isActive = statusFilter === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => {
-                        setStatusFilter(option.key);
                         setIsFilterOpen(false);
                       }}
                       className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-medium transition ${
