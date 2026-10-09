@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Building2,
@@ -9,12 +10,18 @@ import {
   X,
   ChevronRight,
   Check,
+  Power,
+  PowerOff,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
 import { DocumentsScreen } from "@/app/(dashboard)/_components/screens/documents-screen";
 import { CompanyIdentitySection } from "@/app/(dashboard)/_components/screens/company-identity-section";
 import { CompanyRequestList } from "@/app/(dashboard)/_components/screens/company-request-list-screen";
 import { apiFetch } from "@/lib/api";
+import { getSessionUser } from "@/lib/mock-auth";
 
 type Firma = {
   id: string;
@@ -64,6 +71,14 @@ const statusOptions: { key: StatusFilter; label: string }[] = [
   { key: "active", label: "Aktif" },
   { key: "expiring", label: "Süresi Yaklaşan" },
   { key: "expired", label: "Süresi Dolmuş" },
+];
+
+type ActivityFilter = "all" | "active" | "inactive";
+
+const activityOptions: { key: ActivityFilter; label: string }[] = [
+  { key: "all", label: "Tüm Firmalar" },
+  { key: "active", label: "Aktif Firmalar" },
+  { key: "inactive", label: "Pasif Firmalar" },
 ];
 
 const QUERY_KEYS = {
@@ -144,6 +159,119 @@ function formatDate(dateStr: string | null): string {
   return new Intl.DateTimeFormat("tr-TR").format(new Date(dateStr));
 }
 
+/* ------------------------------------------------------------------ */
+/* Aktif / Pasif durum göstergesi (isimle aynı satırda, küçük)         */
+/* ------------------------------------------------------------------ */
+function StatusIndicator({ isActive }: { isActive: boolean }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1 text-[10px] font-medium ${
+        isActive ? "text-emerald-600" : "text-red-600"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`h-1.5 w-1.5 rounded-full ${
+          isActive ? "bg-emerald-500" : "bg-red-500"
+        }`}
+      />
+      {isActive ? "Aktif" : "Pasif"}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pasife Al / Aktife Al butonu                                        */
+/* ------------------------------------------------------------------ */
+function StatusToggleButton({
+  isActive,
+  isUpdating,
+  disabled,
+  firmaAdi,
+  onClick,
+}: {
+  isActive: boolean;
+  isUpdating: boolean;
+  disabled: boolean;
+  firmaAdi: string;
+  onClick: () => void;
+}) {
+  const label = isActive ? "Pasife Al" : "Aktife Al";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={`${firmaAdi}: ${label.toLocaleLowerCase("tr-TR")}`}
+      aria-busy={isUpdating}
+      className={`inline-flex min-w-[84px] shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 py-1 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+        isActive
+          ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-red-500/20"
+          : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 focus-visible:ring-emerald-500/20"
+      }`}
+    >
+      {isUpdating ? (
+        <Loader2 size={12} className="animate-spin" />
+      ) : isActive ? (
+        <PowerOff size={12} />
+      ) : (
+        <Power size={12} />
+      )}
+      {label}
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Toast bildirimi                                                     */
+/* ------------------------------------------------------------------ */
+const TOAST_DURATION = 4000;
+
+function Toast({
+  variant,
+  message,
+  onClose,
+}: {
+  variant: "success" | "error";
+  message: string;
+  onClose: () => void;
+}) {
+  const [shown, setShown] = useState(false);
+  const isSuccess = variant === "success";
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setShown(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      role={isSuccess ? "status" : "alert"}
+      title={message}
+      className={`pointer-events-auto flex max-w-full items-center gap-2 rounded-full border bg-white py-1.5 pl-2 pr-3 text-xs font-medium text-slate-700 shadow-md shadow-slate-900/10 transition-all duration-300 ease-out ${
+        isSuccess ? "border-emerald-200" : "border-red-200"
+      } ${shown ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}
+    >
+      {isSuccess ? (
+        <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
+      ) : (
+        <AlertCircle size={15} className="shrink-0 text-red-600" />
+      )}
+      <span className="truncate">{message}</span>
+      <button
+        type="button"
+        onClick={onClose}
+        className="-mr-1 shrink-0 rounded-full p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+        aria-label="Bildirimi kapat"
+      >
+        <X size={12} />
+      </button>
+    </div>
+  );
+}
+
 export function CompaniesScreen() {
   const router = useRouter();
   const pathname = usePathname();
@@ -154,6 +282,33 @@ export function CompaniesScreen() {
   const [loadError, setLoadError] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [updatingFirmaId, setUpdatingFirmaId] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const [companyActivityFilter, setCompanyActivityFilter] =
+    useState<ActivityFilter>("all");
+
+  const statusUpdateLock = useRef(false);
+
+  useEffect(() => {
+    setIsAdmin(getSessionUser()?.role === "ADMIN");
+  }, []);
+
+  // Bildirimler 4 saniye sonra kendiliğinden kapanır
+  useEffect(() => {
+    if (!statusMessage && !statusError) return;
+
+    const timer = window.setTimeout(() => {
+      setStatusMessage("");
+      setStatusError("");
+    }, TOAST_DURATION);
+
+    return () => window.clearTimeout(timer);
+  }, [statusMessage, statusError]);
 
   const [firmaCache, setFirmaCache] = useState<Record<string, Firma>>({});
 
@@ -177,6 +332,10 @@ export function CompaniesScreen() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  const activeFilterCount =
+    (statusFilter !== "all" ? 1 : 0) +
+    (companyActivityFilter !== "all" ? 1 : 0);
 
   const detailRef = useRef<HTMLDivElement>(null);
 
@@ -232,6 +391,8 @@ export function CompaniesScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
+    let cancelled = false;
+
     async function loadCompanies() {
       setIsLoading(true);
       setLoadError("");
@@ -246,9 +407,18 @@ export function CompaniesScreen() {
           params.set("search", searchQuery.trim());
         }
 
+        if (companyActivityFilter !== "all") {
+          params.set(
+            "isActive",
+            companyActivityFilter === "active" ? "true" : "false",
+          );
+        }
+
         const response = await apiFetch<CompanyListResponse>(
           `/companies?${params.toString()}`,
         );
+
+        if (cancelled) return;
 
         const mappedFirmalar: Firma[] = response.data.items.map((company) => ({
           id: String(company.id),
@@ -271,18 +441,25 @@ export function CompaniesScreen() {
           return next;
         });
       } catch (error) {
+        if (cancelled) return;
+
         setLoadError(
           error instanceof Error ? error.message : "Firmalar yüklenemedi.",
         );
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     }
 
     const timer = window.setTimeout(loadCompanies, 300);
 
-    return () => window.clearTimeout(timer);
-  }, [page, searchQuery]);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [page, searchQuery, companyActivityFilter, refreshKey]);
 
   useEffect(() => {
     const idsToLoad = Array.from(
@@ -388,6 +565,71 @@ export function CompaniesScreen() {
     }
   }
 
+  async function handleToggleFirmaStatus(firma: Firma) {
+    if (!isAdmin || statusUpdateLock.current || isLoading) return;
+
+    statusUpdateLock.current = true;
+    setUpdatingFirmaId(firma.id);
+    setStatusError("");
+    setStatusMessage("");
+
+    try {
+      const response = await apiFetch<CompanyDetailResponse>(
+        `/companies/${firma.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            isActive: !firma.isActive,
+          }),
+        },
+      );
+
+      if (!response.success) {
+        throw new Error(response.message || "Firma durumu güncellenemedi.");
+      }
+
+      const updatedFirma: Firma = {
+        id: String(response.data.id),
+        firmaAdi: response.data.name,
+        vergiNo: response.data.taxNumber,
+        yetkiBitisTarihi: response.data.authorizationEndDate,
+        uzman: response.data.consultant,
+        isActive: response.data.isActive,
+        documentCount: response.data.documentCount,
+      };
+
+      setFirmalar((current) =>
+        current.map((item) =>
+          item.id === updatedFirma.id ? updatedFirma : item,
+        ),
+      );
+
+      setFirmaCache((current) => ({
+        ...current,
+        [updatedFirma.id]: updatedFirma,
+      }));
+
+      setStatusMessage(
+        `${updatedFirma.firmaAdi} ${
+          updatedFirma.isActive ? "aktif" : "pasif"
+        } olarak kaydedildi.`,
+      );
+
+      // Liste zaten yerinde güncellendi. Sadece aktif/pasif filtresi
+      // seçiliyse (firma artık filtreye uymayabilir) aynı sayfayı tazele.
+      if (companyActivityFilter !== "all") {
+        setRefreshKey((current) => current + 1);
+      }
+    } catch (error) {
+      setStatusError(
+        error instanceof Error ? error.message : "Firma durumu güncellenemedi.",
+      );
+    } finally {
+      statusUpdateLock.current = false;
+      setUpdatingFirmaId(null);
+    }
+  }
+
   function handleSelect(firma: Firma) {
     setFirmaCache((prev) => ({ ...prev, [firma.id]: firma }));
 
@@ -422,8 +664,35 @@ export function CompaniesScreen() {
   const showError = !isLoading && Boolean(loadError);
   const showEmpty = !isLoading && !loadError && filteredFirmalar.length === 0;
 
+  const toasts =
+    (statusError || statusMessage) && typeof document !== "undefined"
+      ? createPortal(
+          <div className="pointer-events-none fixed inset-x-4 top-20 z-[100] flex flex-col items-center gap-2 sm:top-24">
+            {statusError && (
+              <Toast
+                key={`error-${statusError}`}
+                variant="error"
+                message={statusError}
+                onClose={() => setStatusError("")}
+              />
+            )}
+            {statusMessage && (
+              <Toast
+                key={`success-${statusMessage}`}
+                variant="success"
+                message={statusMessage}
+                onClose={() => setStatusMessage("")}
+              />
+            )}
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <div className="space-y-4 pb-5 sm:space-y-5">
+      {toasts}
+
       {/* BAŞLIK */}
       <section
         className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${
@@ -488,22 +757,50 @@ export function CompaniesScreen() {
               type="button"
               onClick={() => setIsFilterOpen((current) => !current)}
               className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition sm:w-auto ${
-                statusFilter !== "all"
+                activeFilterCount > 0
                   ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                   : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 active:bg-slate-200"
               }`}
             >
               <Filter size={16} />
               Filtrele
-              {statusFilter !== "all" && (
+              {activeFilterCount > 0 && (
                 <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                  1
+                  {activeFilterCount}
                 </span>
               )}
             </button>
 
             {isFilterOpen && (
               <div className="absolute left-0 right-0 z-20 mt-1.5 rounded-xl border border-slate-200 bg-white p-1 shadow-lg sm:left-auto sm:w-52">
+                <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Firma Durumu
+                </p>
+                {activityOptions.map((option) => {
+                  const isActive = companyActivityFilter === option.key;
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => {
+                        setCompanyActivityFilter(option.key);
+                        setPage(1);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-medium transition ${
+                        isActive
+                          ? "bg-red-50 text-red-700"
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {option.label}
+                      {isActive && <Check size={15} />}
+                    </button>
+                  );
+                })}
+
+                <div className="my-1 border-t border-slate-100" />
+
                 <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Yetki Durumu
                 </p>
@@ -586,9 +883,12 @@ export function CompaniesScreen() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-slate-900">
-                            {firma.firmaAdi}
-                          </p>
+                          <div className="flex min-w-0 items-center gap-2">
+                            <p className="truncate text-sm font-semibold text-slate-900">
+                              {firma.firmaAdi}
+                            </p>
+                            <StatusIndicator isActive={firma.isActive} />
+                          </div>
                           <p className="mt-0.5 font-mono text-[11px] text-slate-500">
                             VKN: {firma.vergiNo}
                           </p>
@@ -625,6 +925,18 @@ export function CompaniesScreen() {
                         </div>
                       </div>
                     </button>
+
+                    {isAdmin && (
+                      <div className="flex justify-end px-3 pb-3">
+                        <StatusToggleButton
+                          isActive={firma.isActive}
+                          isUpdating={updatingFirmaId === firma.id}
+                          disabled={updatingFirmaId !== null || isLoading}
+                          firmaAdi={firma.firmaAdi}
+                          onClick={() => void handleToggleFirmaStatus(firma)}
+                        />
+                      </div>
+                    )}
                   </li>
                 );
               })}
@@ -641,7 +953,7 @@ export function CompaniesScreen() {
                   <th className="px-4 py-2">Firma Adı</th>
                   <th className="px-4 py-2">Uzman</th>
                   <th className="px-4 py-2">Vergi No</th>
-                  <th className="px-4 py-2">Yetki Bitiş</th>
+                  <th className="whitespace-nowrap px-4 py-2">Yetki Bitiş</th>
                   <th className="px-4 py-2 text-right">İşlemler</th>
                 </tr>
               </thead>
@@ -693,9 +1005,12 @@ export function CompaniesScreen() {
                         }`}
                       >
                         <td className="px-4 py-2">
-                          <p className="text-xs font-semibold text-slate-900">
-                            {firma.firmaAdi}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold text-slate-900">
+                              {firma.firmaAdi}
+                            </p>
+                            <StatusIndicator isActive={firma.isActive} />
+                          </div>
                         </td>
 
                         <td className="px-4 py-2 text-xs font-medium text-slate-700">
@@ -706,12 +1021,24 @@ export function CompaniesScreen() {
                           {firma.vergiNo}
                         </td>
 
-                        <td className="px-4 py-2 text-xs font-medium text-slate-600">
+                        <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-slate-600">
                           {formatDate(firma.yetkiBitisTarihi)}
                         </td>
 
                         <td className="px-4 py-2">
-                          <div className="flex items-center justify-end">
+                          <div className="flex items-center justify-end gap-2">
+                            {isAdmin && (
+                              <StatusToggleButton
+                                isActive={firma.isActive}
+                                isUpdating={updatingFirmaId === firma.id}
+                                disabled={updatingFirmaId !== null || isLoading}
+                                firmaAdi={firma.firmaAdi}
+                                onClick={() =>
+                                  void handleToggleFirmaStatus(firma)
+                                }
+                              />
+                            )}
+
                             <button
                               type="button"
                               onClick={() => handleSelect(firma)}

@@ -147,9 +147,7 @@ export class DocumentService {
 
     return {
       companyId: requestedCompanyId,
-      // OPERATION için uzman filtresi her zaman geçerli kalır:
-      // başka uzmanın firmasını isterse boş liste döner.
-      consultantUserId: role === "OPERATION" ? userId : undefined,
+      consultantUserId: undefined,
     };
   }
 
@@ -172,10 +170,6 @@ export class DocumentService {
     if (role === "COMPANY") {
       const company = await this.getAuthorizedCompany(userId);
       if (document.companyId !== company.id) throw forbiddenError();
-    }
-
-    if (role === "OPERATION" && document.company.consultantUserId !== userId) {
-      throw forbiddenError();
     }
 
     return document;
