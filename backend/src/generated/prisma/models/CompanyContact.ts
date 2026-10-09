@@ -42,6 +42,8 @@ export type CompanyContactMinAggregateOutputType = {
   fullName: string | null
   email: string | null
   phone: string | null
+  position: string | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +54,8 @@ export type CompanyContactMaxAggregateOutputType = {
   fullName: string | null
   email: string | null
   phone: string | null
+  position: string | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +66,8 @@ export type CompanyContactCountAggregateOutputType = {
   fullName: number
   email: number
   phone: number
+  position: number
+  isActive: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +90,8 @@ export type CompanyContactMinAggregateInputType = {
   fullName?: true
   email?: true
   phone?: true
+  position?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +102,8 @@ export type CompanyContactMaxAggregateInputType = {
   fullName?: true
   email?: true
   phone?: true
+  position?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -104,6 +114,8 @@ export type CompanyContactCountAggregateInputType = {
   fullName?: true
   email?: true
   phone?: true
+  position?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -201,6 +213,8 @@ export type CompanyContactGroupByOutputType = {
   fullName: string
   email: string
   phone: string
+  position: string | null
+  isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: CompanyContactCountAggregateOutputType | null
@@ -234,6 +248,8 @@ export type CompanyContactWhereInput = {
   fullName?: Prisma.StringFilter<"CompanyContact"> | string
   email?: Prisma.StringFilter<"CompanyContact"> | string
   phone?: Prisma.StringFilter<"CompanyContact"> | string
+  position?: Prisma.StringNullableFilter<"CompanyContact"> | string | null
+  isActive?: Prisma.BoolFilter<"CompanyContact"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   documentReminders?: Prisma.DocumentReminderListRelationFilter
@@ -247,6 +263,8 @@ export type CompanyContactOrderByWithRelationInput = {
   fullName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  position?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   documentReminders?: Prisma.DocumentReminderOrderByRelationAggregateInput
@@ -263,6 +281,8 @@ export type CompanyContactWhereUniqueInput = Prisma.AtLeast<{
   fullName?: Prisma.StringFilter<"CompanyContact"> | string
   email?: Prisma.StringFilter<"CompanyContact"> | string
   phone?: Prisma.StringFilter<"CompanyContact"> | string
+  position?: Prisma.StringNullableFilter<"CompanyContact"> | string | null
+  isActive?: Prisma.BoolFilter<"CompanyContact"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   documentReminders?: Prisma.DocumentReminderListRelationFilter
@@ -276,6 +296,8 @@ export type CompanyContactOrderByWithAggregationInput = {
   fullName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  position?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CompanyContactCountOrderByAggregateInput
@@ -294,6 +316,8 @@ export type CompanyContactScalarWhereWithAggregatesInput = {
   fullName?: Prisma.StringWithAggregatesFilter<"CompanyContact"> | string
   email?: Prisma.StringWithAggregatesFilter<"CompanyContact"> | string
   phone?: Prisma.StringWithAggregatesFilter<"CompanyContact"> | string
+  position?: Prisma.StringNullableWithAggregatesFilter<"CompanyContact"> | string | null
+  isActive?: Prisma.BoolWithAggregatesFilter<"CompanyContact"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CompanyContact"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CompanyContact"> | Date | string
 }
@@ -302,6 +326,8 @@ export type CompanyContactCreateInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutContactInput
@@ -315,6 +341,8 @@ export type CompanyContactUncheckedCreateInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutContactInput
@@ -325,6 +353,8 @@ export type CompanyContactUpdateInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutContactNestedInput
@@ -338,6 +368,8 @@ export type CompanyContactUncheckedUpdateInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutContactNestedInput
@@ -350,6 +382,8 @@ export type CompanyContactCreateManyInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -358,6 +392,8 @@ export type CompanyContactUpdateManyMutationInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -368,6 +404,8 @@ export type CompanyContactUncheckedUpdateManyInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -388,6 +426,8 @@ export type CompanyContactCountOrderByAggregateInput = {
   fullName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  position?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -403,6 +443,8 @@ export type CompanyContactMaxOrderByAggregateInput = {
   fullName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  position?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -413,6 +455,8 @@ export type CompanyContactMinOrderByAggregateInput = {
   fullName?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  position?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -505,6 +549,8 @@ export type CompanyContactCreateWithoutCompanyInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutContactInput
@@ -516,6 +562,8 @@ export type CompanyContactUncheckedCreateWithoutCompanyInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutContactInput
@@ -557,6 +605,8 @@ export type CompanyContactScalarWhereInput = {
   fullName?: Prisma.StringFilter<"CompanyContact"> | string
   email?: Prisma.StringFilter<"CompanyContact"> | string
   phone?: Prisma.StringFilter<"CompanyContact"> | string
+  position?: Prisma.StringNullableFilter<"CompanyContact"> | string | null
+  isActive?: Prisma.BoolFilter<"CompanyContact"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CompanyContact"> | Date | string
 }
@@ -565,6 +615,8 @@ export type CompanyContactCreateWithoutDocumentRemindersInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   authorizationReminders?: Prisma.CompanyAuthorizationReminderCreateNestedManyWithoutContactInput
@@ -577,6 +629,8 @@ export type CompanyContactUncheckedCreateWithoutDocumentRemindersInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedCreateNestedManyWithoutContactInput
@@ -602,6 +656,8 @@ export type CompanyContactUpdateWithoutDocumentRemindersInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authorizationReminders?: Prisma.CompanyAuthorizationReminderUpdateManyWithoutContactNestedInput
@@ -614,6 +670,8 @@ export type CompanyContactUncheckedUpdateWithoutDocumentRemindersInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authorizationReminders?: Prisma.CompanyAuthorizationReminderUncheckedUpdateManyWithoutContactNestedInput
@@ -623,6 +681,8 @@ export type CompanyContactCreateWithoutAuthorizationRemindersInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   documentReminders?: Prisma.DocumentReminderCreateNestedManyWithoutContactInput
@@ -635,6 +695,8 @@ export type CompanyContactUncheckedCreateWithoutAuthorizationRemindersInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   documentReminders?: Prisma.DocumentReminderUncheckedCreateNestedManyWithoutContactInput
@@ -660,6 +722,8 @@ export type CompanyContactUpdateWithoutAuthorizationRemindersInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutContactNestedInput
@@ -672,6 +736,8 @@ export type CompanyContactUncheckedUpdateWithoutAuthorizationRemindersInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutContactNestedInput
@@ -682,6 +748,8 @@ export type CompanyContactCreateManyCompanyInput = {
   fullName: string
   email: string
   phone: string
+  position?: string | null
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -690,6 +758,8 @@ export type CompanyContactUpdateWithoutCompanyInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentReminders?: Prisma.DocumentReminderUpdateManyWithoutContactNestedInput
@@ -701,6 +771,8 @@ export type CompanyContactUncheckedUpdateWithoutCompanyInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentReminders?: Prisma.DocumentReminderUncheckedUpdateManyWithoutContactNestedInput
@@ -712,6 +784,8 @@ export type CompanyContactUncheckedUpdateManyWithoutCompanyInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -762,6 +836,8 @@ export type CompanyContactSelect<ExtArgs extends runtime.Types.Extensions.Intern
   fullName?: boolean
   email?: boolean
   phone?: boolean
+  position?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   documentReminders?: boolean | Prisma.CompanyContact$documentRemindersArgs<ExtArgs>
@@ -776,6 +852,8 @@ export type CompanyContactSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   fullName?: boolean
   email?: boolean
   phone?: boolean
+  position?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -787,6 +865,8 @@ export type CompanyContactSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   fullName?: boolean
   email?: boolean
   phone?: boolean
+  position?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -798,11 +878,13 @@ export type CompanyContactSelectScalar = {
   fullName?: boolean
   email?: boolean
   phone?: boolean
+  position?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CompanyContactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "fullName" | "email" | "phone" | "createdAt" | "updatedAt", ExtArgs["result"]["companyContact"]>
+export type CompanyContactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "fullName" | "email" | "phone" | "position" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["companyContact"]>
 export type CompanyContactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentReminders?: boolean | Prisma.CompanyContact$documentRemindersArgs<ExtArgs>
   authorizationReminders?: boolean | Prisma.CompanyContact$authorizationRemindersArgs<ExtArgs>
@@ -829,6 +911,8 @@ export type $CompanyContactPayload<ExtArgs extends runtime.Types.Extensions.Inte
     fullName: string
     email: string
     phone: string
+    position: string | null
+    isActive: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["companyContact"]>
@@ -1262,6 +1346,8 @@ export interface CompanyContactFieldRefs {
   readonly fullName: Prisma.FieldRef<"CompanyContact", 'String'>
   readonly email: Prisma.FieldRef<"CompanyContact", 'String'>
   readonly phone: Prisma.FieldRef<"CompanyContact", 'String'>
+  readonly position: Prisma.FieldRef<"CompanyContact", 'String'>
+  readonly isActive: Prisma.FieldRef<"CompanyContact", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"CompanyContact", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CompanyContact", 'DateTime'>
 }

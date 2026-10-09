@@ -264,6 +264,8 @@ model CompanyContact {
   fullName               String
   email                  String
   phone                  String
+  position               String?
+  isActive               Boolean                        @default(true)
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 

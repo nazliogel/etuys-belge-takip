@@ -5,14 +5,18 @@ import {
   Building2,
   Check,
   ChevronDown,
+  Loader2,
   Pencil,
   Plus,
+  Power,
+  PowerOff,
   UserRound,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
+import { getSessionUser } from "@/lib/mock-auth";
 
 type CompanyIdentitySectionProps = {
   companyId: string;
@@ -22,10 +26,13 @@ type ContactForm = {
   fullName: string;
   email: string;
   phone: string;
+  position: string;
 };
 
-type CompanyContact = ContactForm & {
+type CompanyContact = Omit<ContactForm, "position"> & {
   id: number;
+  position: string | null;
+  isActive: boolean;
 };
 
 type ContactErrors = Partial<Record<keyof ContactForm, string>>;
@@ -80,7 +87,12 @@ type CompanyNote = {
 
 type IdentityErrors = Partial<Record<keyof IdentityForm, string>>;
 
-const DANISMAN_OPTIONS = ["Beyza Başaran", "Emin Kutay İnangu", "Salih Şahin","Ezgi Temel","Murathan Aracı"
+const DANISMAN_OPTIONS = [
+  "Beyza Başaran",
+  "Emin Kutay İnangu",
+  "Salih Şahin",
+  "Ezgi Temel",
+  "Murathan Aracı",
 ];
 
 const NAME_REGEX = /^[A-Za-zÇĞİÖŞÜçğıöşü\s'-]+$/;
@@ -107,6 +119,7 @@ const initialContactForm: ContactForm = {
   fullName: "",
   email: "",
   phone: "",
+  position: "",
 };
 
 // Kullanıcı ne yazarsa yazsın numarayı "0" ile başlatıp hemen ardından "5"
@@ -163,6 +176,10 @@ function validateContactForm(form: ContactForm): ContactErrors {
     errors.phone = "Geçerli bir cep telefonu numarası girin (05xx xxx xx xx).";
   }
 
+  if (!form.position.trim()) {
+    errors.position = "Görev alanı zorunludur.";
+  }
+
   return errors;
 }
 
@@ -174,6 +191,71 @@ function validateIdentityForm(form: IdentityForm): IdentityErrors {
   }
 
   return errors;
+}
+
+/* ------------------------------------------------------------------ */
+/* Aktif / Pasif durum göstergesi (companies-screen'den kopya)         */
+/* ------------------------------------------------------------------ */
+function StatusIndicator({ isActive }: { isActive: boolean }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1 text-[10px] font-medium ${
+        isActive ? "text-emerald-600" : "text-red-600"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`h-1.5 w-1.5 rounded-full ${
+          isActive ? "bg-emerald-500" : "bg-red-500"
+        }`}
+      />
+      {isActive ? "Aktif" : "Pasif"}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pasife Al / Aktife Al butonu (companies-screen'den kopya)           */
+/* ------------------------------------------------------------------ */
+function StatusToggleButton({
+  isActive,
+  isUpdating,
+  disabled,
+  fullName,
+  onClick,
+}: {
+  isActive: boolean;
+  isUpdating: boolean;
+  disabled: boolean;
+  fullName: string;
+  onClick: () => void;
+}) {
+  const label = isActive ? "Pasife Al" : "Aktife Al";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={`${fullName}: ${label.toLocaleLowerCase("tr-TR")}`}
+      aria-busy={isUpdating}
+      className={`inline-flex h-5 min-w-[72px] shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-md border px-1.5 text-[10px] font-semibold transition focus:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+        isActive
+          ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-red-500/20"
+          : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 focus-visible:ring-emerald-500/20"
+      }`}
+    >
+      {isUpdating ? (
+        <Loader2 size={10} className="animate-spin" />
+      ) : isActive ? (
+        <PowerOff size={10} />
+      ) : (
+        <Power size={10} />
+      )}
+      {label}
+    </button>
+  );
 }
 
 export function CompanyIdentitySection({
@@ -246,6 +328,18 @@ export function CompanyIdentitySection({
   const [editDraft, setEditDraft] = useState<ContactForm>(initialContactForm);
   const [editErrors, setEditErrors] = useState<ContactErrors>({});
 
+  // Yetkili aktif/pasif (backend'de requireAdmin var)
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [updatingContactId, setUpdatingContactId] = useState<number | null>(
+    null,
+  );
+  const contactStatusLock = useRef(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsAdmin(getSessionUser()?.role === "ADMIN");
+  }, []);
+
   const [noteText, setNoteText] = useState("");
   const [noteError, setNoteError] = useState<string | null>(null);
   const [notes, setNotes] = useState<CompanyNote[]>([]);
@@ -305,6 +399,7 @@ export function CompanyIdentitySection({
           fullName: contact.fullName.trim(),
           email: contact.email.trim(),
           phone: contact.phone.trim(),
+          position: contact.position.trim(),
         }),
       });
 
@@ -324,7 +419,12 @@ export function CompanyIdentitySection({
 
   function handleStartEdit(index: number) {
     setEditingIndex(index);
-    setEditDraft(contacts[index]);
+    setEditDraft({
+      fullName: contacts[index].fullName,
+      email: contacts[index].email,
+      phone: contacts[index].phone,
+      position: contacts[index].position ?? "",
+    });
     setEditErrors({});
   }
 
@@ -361,6 +461,7 @@ export function CompanyIdentitySection({
           fullName: editDraft.fullName.trim(),
           email: editDraft.email.trim(),
           phone: editDraft.phone.trim(),
+          position: editDraft.position.trim(),
         }),
       });
 
@@ -373,6 +474,39 @@ export function CompanyIdentitySection({
       handleCancelEdit();
     } catch (error) {
       console.error("Yetkili güncellenemedi:", error);
+    }
+  }
+
+  async function handleToggleContactStatus(item: CompanyContact) {
+    if (!isAdmin || contactStatusLock.current) return;
+
+    contactStatusLock.current = true;
+    setUpdatingContactId(item.id);
+
+    try {
+      const result = await apiFetch<{
+        success: boolean;
+        message?: string;
+        data: CompanyContact;
+      }>(`/companies/${companyId}/contacts/${item.id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          isActive: !item.isActive,
+        }),
+      });
+
+      if (!result.success) {
+        throw new Error(result.message || "Yetkili durumu güncellenemedi.");
+      }
+
+      setContacts((current) =>
+        current.map((c) => (c.id === item.id ? result.data : c)),
+      );
+    } catch (error) {
+      console.error("Yetkili durumu güncellenemedi:", error);
+    } finally {
+      contactStatusLock.current = false;
+      setUpdatingContactId(null);
     }
   }
 
@@ -761,7 +895,7 @@ export function CompanyIdentitySection({
         </div>
 
         <div className="p-2">
-          <div className="grid items-start gap-1.5 lg:grid-cols-[1fr_1fr_1fr_auto]">
+          <div className="grid items-start gap-1.5 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
             <div>
               <label className="mb-0.5 block text-[11px] font-semibold text-slate-600">
                 Ad Soyad
@@ -844,6 +978,31 @@ export function CompanyIdentitySection({
             </div>
 
             <div>
+              <label className="mb-0.5 block text-[11px] font-semibold text-slate-600">
+                Görev
+              </label>
+              <input
+                type="text"
+                value={contact.position}
+                onChange={(event) =>
+                  handleContactFieldChange("position", event.target.value)
+                }
+                placeholder="Görev"
+                aria-invalid={Boolean(contactErrors.position)}
+                className={`h-6 w-full rounded-md border bg-white px-1.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-300 focus:ring-1 ${
+                  contactErrors.position
+                    ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10"
+                    : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
+                }`}
+              />
+              {contactErrors.position && (
+                <p className="mt-1 text-[10px] font-medium text-red-600">
+                  {contactErrors.position}
+                </p>
+              )}
+            </div>
+
+            <div>
               <label
                 aria-hidden="true"
                 className="mb-0.5 hidden text-[11px] font-semibold text-transparent lg:block"
@@ -863,10 +1022,11 @@ export function CompanyIdentitySection({
 
           {contacts.length > 0 && (
             <div className="mt-1.5 overflow-hidden rounded-lg border border-slate-200">
-              <div className="grid grid-cols-[1fr_1fr_1fr_50px] border-b border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="grid grid-cols-[1fr_1fr_1fr_1fr_110px] border-b border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 <span>Ad Soyad</span>
                 <span>E-posta</span>
                 <span>Telefon</span>
+                <span>Görev</span>
                 <span className="text-right">İşlem</span>
               </div>
 
@@ -881,7 +1041,7 @@ export function CompanyIdentitySection({
                         isEditing ? "bg-red-50/40" : "hover:bg-slate-50/60"
                       }`}
                     >
-                      <div className="grid grid-cols-[1fr_1fr_1fr_50px] items-center gap-1">
+                      <div className="grid grid-cols-[1fr_1fr_1fr_1fr_110px] items-center gap-1">
                         {isEditing ? (
                           <>
                             <input
@@ -929,6 +1089,22 @@ export function CompanyIdentitySection({
                                   : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
                               }`}
                             />
+                            <input
+                              type="text"
+                              value={editDraft.position}
+                              onChange={(e) =>
+                                handleEditFieldChange(
+                                  "position",
+                                  e.target.value,
+                                )
+                              }
+                              aria-invalid={Boolean(editErrors.position)}
+                              className={`h-5 w-full rounded border bg-white px-1 text-xs text-slate-900 outline-none focus:ring-1 ${
+                                editErrors.position
+                                  ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
+                                  : "border-slate-200 focus:border-red-500 focus:ring-red-500/10"
+                              }`}
+                            />
 
                             <div className="flex items-center justify-end gap-1">
                               <button
@@ -951,17 +1127,34 @@ export function CompanyIdentitySection({
                           </>
                         ) : (
                           <>
-                            <span className="truncate font-semibold text-slate-800">
-                              {item.fullName || "-"}
-                            </span>
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <span className="truncate font-semibold text-slate-800">
+                                {item.fullName || "-"}
+                              </span>
+                              <StatusIndicator isActive={item.isActive} />
+                            </div>
                             <span className="truncate text-slate-600">
                               {item.email || "-"}
                             </span>
                             <span className="truncate text-slate-600">
                               {item.phone || "-"}
                             </span>
+                            <span className="truncate text-slate-600">
+                              {item.position || "-"}
+                            </span>
 
-                            <div className="flex items-center justify-end">
+                            <div className="flex items-center justify-end gap-1">
+                              {isAdmin && (
+                                <StatusToggleButton
+                                  isActive={item.isActive}
+                                  isUpdating={updatingContactId === item.id}
+                                  disabled={updatingContactId !== null}
+                                  fullName={item.fullName}
+                                  onClick={() =>
+                                    void handleToggleContactStatus(item)
+                                  }
+                                />
+                              )}
                               <button
                                 type="button"
                                 onClick={() => handleStartEdit(index)}

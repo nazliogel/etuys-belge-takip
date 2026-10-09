@@ -2712,6 +2712,8 @@ export const CompanyContactScalarFieldEnum = {
   fullName: 'fullName',
   email: 'email',
   phone: 'phone',
+  position: 'position',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

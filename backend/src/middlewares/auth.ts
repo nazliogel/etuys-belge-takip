@@ -70,3 +70,20 @@ export const authenticate = async (
     next(error);
   }
 };
+export const requireAdmin = (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void => {
+  if (req.user?.role !== "ADMIN") {
+    next(
+      new AppError("Bu işlem için yetkiniz bulunmuyor.", {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        code: "FORBIDDEN",
+      }),
+    );
+    return;
+  }
+
+  next();
+};

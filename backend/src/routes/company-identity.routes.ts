@@ -5,7 +5,7 @@ import { CompanyIdentityController } from "../controllers/company-identity.contr
 import { CompanyContactController } from "../controllers/company-contact.controller.js";
 import { CompanyNoteController } from "../controllers/company-note.controller.js";
 import { CompanyCredentialController } from "../controllers/company-credential.controller.js";
-import { authenticate } from "../middlewares/auth.js";
+import { authenticate, requireAdmin } from "../middlewares/auth.js";
 import { CompanyIdentityRepository } from "../repositories/company-identity.repository.js";
 import { CompanyRepository } from "../repositories/company.repository.js";
 import { UserRepository } from "../repositories/user.repository.js";
@@ -92,6 +92,12 @@ router.post("/:companyId/contacts", companyContactController.create);
 router.patch(
   "/:companyId/contacts/:contactId",
   companyContactController.update,
+);
+
+router.patch(
+  "/:companyId/contacts/:contactId/status",
+  requireAdmin,
+  companyContactController.updateStatus,
 );
 
 router.get("/:companyId/notes", companyNoteController.list);
