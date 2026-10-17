@@ -1,5 +1,6 @@
 import { prisma } from "../config/env.js";
 import type { Prisma } from "../generated/prisma/client.js";
+import { PushNotificationService } from "../services/push-notification.service.js";
 
 export class CompanyNotificationRepository {
   async findCompanyUser(userId: number) {
@@ -18,15 +19,39 @@ export class CompanyNotificationRepository {
   }
 
   // Kullanıcı hesabı gerektirmez; bildirim companyId ile kaydedilir.
+  // Bildirim companyId ile kaydedilir; yeni kayıtta push gönderimi denenir.
   async createOnce(data: Prisma.CompanyNotificationCreateManyInput) {
     const result = await prisma.companyNotification.createMany({
       data: [data],
       skipDuplicates: true,
     });
 
-    return result.count === 1;
-  }
+    if (result.count !== 1) return false;
 
+    try {
+      const notification = await prisma.companyNotification.findUnique({
+        where: {
+          dedupeKey: data.dedupeKey,
+        },
+      });
+
+      if (notification) {
+        await new PushNotificationService().sendToCompany({
+          notificationId: notification.id,
+          companyId: notification.companyId,
+          title: notification.title,
+          description: notification.description,
+          type: notification.type,
+        });
+      }
+    } catch (error) {
+      console.error("Yeni bildirim için push işlemi başlatılamadı:", {
+        message: error instanceof Error ? error.message : "Bilinmeyen hata",
+      });
+    }
+
+    return true;
+  }
   async findByCompanyId(companyId: number, userId: number, limit = 50) {
     const notifications = await prisma.companyNotification.findMany({
       where: { companyId },

@@ -162,3 +162,8 @@ export type CompanyNotification = Prisma.CompanyNotificationModel
  * 
  */
 export type CompanyNotificationRead = Prisma.CompanyNotificationReadModel
+/**
+ * Model PushDevice
+ * 
+ */
+export type PushDevice = Prisma.PushDeviceModel

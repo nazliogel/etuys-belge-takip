@@ -20,6 +20,7 @@ import { authenticate } from "./middlewares/auth.js";
 import { requireActiveCompanyAuthorization } from "./middlewares/company-authorization.js";
 import { companyMeRouter } from "./routes/company-me.routes.js";
 import { companyNotificationRouter } from "./routes/company-notification.routes.js";
+import { pushDeviceRouter } from "./routes/push-device.routes.js";
 
 const app = express();
 
@@ -59,6 +60,8 @@ app.use("/api/support-requests", supportRequestRouter);
 app.use("/api/companies/me", authenticate, companyMeRouter);
 
 app.use("/api/company-notifications", companyNotificationRouter);
+app.use("/api/push-devices", pushDeviceRouter);
+
 app.use("/api", authenticate, requireActiveCompanyAuthorization);
 
 app.use("/api/companies", companyRouter);
