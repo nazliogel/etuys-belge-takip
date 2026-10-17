@@ -79,7 +79,8 @@ export const ModelName = {
   SupportRequestAttachment: 'SupportRequestAttachment',
   AuthSession: 'AuthSession',
   CompanyNotification: 'CompanyNotification',
-  CompanyNotificationRead: 'CompanyNotificationRead'
+  CompanyNotificationRead: 'CompanyNotificationRead',
+  PushDevice: 'PushDevice'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -707,6 +708,20 @@ export const CompanyNotificationReadScalarFieldEnum = {
 } as const
 
 export type CompanyNotificationReadScalarFieldEnum = (typeof CompanyNotificationReadScalarFieldEnum)[keyof typeof CompanyNotificationReadScalarFieldEnum]
+
+
+export const PushDeviceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  platform: 'platform',
+  isActive: 'isActive',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PushDeviceScalarFieldEnum = (typeof PushDeviceScalarFieldEnum)[keyof typeof PushDeviceScalarFieldEnum]
 
 
 export const SortOrder = {

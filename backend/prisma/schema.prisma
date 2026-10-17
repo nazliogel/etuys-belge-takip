@@ -156,6 +156,7 @@ model User {
   companyNotes             CompanyNote[]
   authSessions             AuthSession[]
   companyNotificationReads CompanyNotificationRead[]
+  pushDevices              PushDevice[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -991,4 +992,20 @@ model CompanyNotificationRead {
 
   @@unique([notificationId, userId])
   @@index([userId])
+}
+
+model PushDevice {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  token      String   @unique
+  platform   String
+  isActive   Boolean  @default(true)
+  lastSeenAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, isActive])
 }
