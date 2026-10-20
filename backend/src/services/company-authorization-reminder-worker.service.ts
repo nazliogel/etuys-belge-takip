@@ -19,7 +19,15 @@ import {
   withAttemptPrefix,
 } from "../utils/email-retry.js";
 import { notifySystemAlert } from "./system-alert.service.js";
+import {
+  collectEmailRecipients,
+  getEmailWarnings,
+  joinEmailRecipients,
+} from "./reminder-contact-check.js";
 const TURKEY_UTC_OFFSET_HOURS = 3;
+
+/** YENİ: Firma kuyruğa alındıktan sonra pasif yapıldıysa gönderilmez. */
+const COMPANY_INACTIVE_SKIP_REASON = "Firma artık aktif değil.";
 
 function getHourStart(now: Date): Date {
   return new Date(now.getTime() - 60 * 60 * 1000);
@@ -199,6 +207,22 @@ export class CompanyAuthorizationReminderWorkerService {
 
       for (const reminder of reminders) {
         try {
+          // YENİ: Firma kuyruğa alındıktan sonra pasif yapıldıysa mail gitmez.
+          if (!reminder.company.isActive) {
+            await this.repository.markSkipped(
+              reminder.id,
+              COMPANY_INACTIVE_SKIP_REASON,
+            );
+
+            skippedCount += 1;
+            results.push({
+              id: reminder.id,
+              status: "SKIPPED",
+              reason: COMPANY_INACTIVE_SKIP_REASON,
+            });
+            continue;
+          }
+
           // Kuyruğa alındıktan sonra firmanın tüm belgeleri kapanmış
           // veya iptal olmuş olabilir. Göndermeden önce tekrar kontrol et.
           const hasOpenDocument =
@@ -246,12 +270,17 @@ export class CompanyAuthorizationReminderWorkerService {
             });
             continue;
           }
+
+          // YENİ: Alıcılar gönderim anında firmanın GÜNCEL AKTİF iletişim
+          // kişilerinden yeniden alınır. Kuyruğa alındıktan sonra pasif yapılan
+          // kişiye mail gitmez; yeni eklenen aktif kişiye gider.
+          const contacts = reminder.company.contacts;
+          const currentRecipients = collectEmailRecipients(contacts);
+
           const validationErrors: string[] = [];
 
-          if (!reminder.contact) {
-            validationErrors.push("Firma iletişim kaydı bulunamadı.");
-          } else if (!reminder.recipient.trim()) {
-            validationErrors.push("Firmanın iletişim e-posta adresi boştur.");
+          if (currentRecipients.length === 0) {
+            validationErrors.push(...getEmailWarnings(contacts));
           }
 
           if (!reminder.authorization.authorizationEndDate) {
@@ -266,13 +295,23 @@ export class CompanyAuthorizationReminderWorkerService {
             );
           }
 
+          const recipient = joinEmailRecipients(currentRecipients);
+
+          if (recipient !== reminder.recipient) {
+            console.warn(
+              `Authorization reminder ${reminder.id}: alıcılar kuyruğa alındıktan sonra değişti (${reminder.recipient} -> ${recipient}). Güncel aktif adreslere gönderiliyor.`,
+            );
+            await this.repository.updateRecipient(reminder.id, recipient);
+            reminder.recipient = recipient;
+          }
+
           const template = createAuthorizationExpiryEmailTemplate({
             companyName: reminder.company.name,
             targetDate: reminder.targetDate,
           });
 
           const result = await this.emailService.send({
-            to: reminder.recipient,
+            to: recipient,
             cc: [...DEFAULT_CC_RECIPIENTS],
             subject: reminder.subject ?? template.subject,
             text: reminder.message,
@@ -290,7 +329,7 @@ export class CompanyAuthorizationReminderWorkerService {
             throw new Error(
               [
                 "Firma e-posta adresi SMTP sunucusu tarafından kabul edilmedi.",
-                `Alıcı: ${reminder.recipient}.`,
+                `Alıcı: ${recipient}.`,
                 rejectedRecipients.length > 0
                   ? `Reddedilenler: ${rejectedRecipients.join(", ")}`
                   : "",
@@ -324,7 +363,7 @@ export class CompanyAuthorizationReminderWorkerService {
                   title: "Firma yetki süresinin dolmasına 1 ay kaldı",
                   description: [
                     `${reminder.company.name} firmasının yetki süresinin dolmasına son 1 ay kaldı.`,
-                    `Firma alıcısına yetki yenileme e-postası gönderildi: ${reminder.recipient}.`,
+                    `Firma alıcısına yetki yenileme e-postası gönderildi: ${recipient}.`,
                   ].join(" "),
                 });
             } catch (notificationError) {

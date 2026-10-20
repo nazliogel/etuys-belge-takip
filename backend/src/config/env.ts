@@ -36,9 +36,14 @@ const whatsappQueueEnabled = process.env.WHATSAPP_QUEUE_ENABLED === "true";
 
 const whatsappSendingEnabled = process.env.WHATSAPP_SENDING_ENABLED === "true";
 
-const whatsappAccessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-const whatsappPhoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-const whatsappApiVersion = process.env.WHATSAPP_API_VERSION;
+// YENİ: Mail test modunun WhatsApp karşılığı.
+const whatsappTestSendingEnabled =
+  process.env.WHATSAPP_TEST_SENDING_ENABLED === "true";
+const whatsappTestRecipient = process.env.WHATSAPP_TEST_RECIPIENT;
+
+const whatsappApiVersion = process.env.WHATSAPP_API_VERSION ?? "v24.0";
+const kapsoApiKey = process.env.KAPSO_API_KEY;
+const kapsoPhoneNumberId = process.env.KAPSO_PHONE_NUMBER_ID;
 
 const whatsappMaxMessagesPerHour = parsePositiveInteger(
   process.env.WHATSAPP_MAX_MESSAGES_PER_HOUR,
@@ -125,6 +130,36 @@ if (emailTestSendingEnabled && !emailTestRecipient) {
   );
 }
 
+// YENİ: WhatsApp ayar kontrolleri (mail kontrollerinin aynısı).
+if (whatsappSendingEnabled && whatsappTestSendingEnabled) {
+  throw new Error(
+    "WHATSAPP_SENDING_ENABLED and WHATSAPP_TEST_SENDING_ENABLED cannot both be true.",
+  );
+}
+
+if (whatsappTestSendingEnabled && !whatsappTestRecipient?.trim()) {
+  throw new Error(
+    "WHATSAPP_TEST_RECIPIENT must be defined when WHATSAPP_TEST_SENDING_ENABLED is true.",
+  );
+}
+
+// YENİ: Gönderim açıkken Kapso ayarı eksikse uygulama açılmaz.
+// Önceden worker sessizce duruyordu ve kimse fark etmiyordu.
+if (whatsappSendingEnabled || whatsappTestSendingEnabled) {
+  const missingWhatsAppFields: string[] = [];
+
+  if (!kapsoApiKey?.trim()) missingWhatsAppFields.push("KAPSO_API_KEY");
+  if (!kapsoPhoneNumberId?.trim()) {
+    missingWhatsAppFields.push("KAPSO_PHONE_NUMBER_ID");
+  }
+
+  if (missingWhatsAppFields.length > 0) {
+    throw new Error(
+      `WhatsApp gönderimi açık ama ayarlar eksik: ${missingWhatsAppFields.join(", ")}`,
+    );
+  }
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port,
@@ -145,12 +180,14 @@ export const env = {
   adminFallbackEmail,
   whatsappQueueEnabled,
   whatsappSendingEnabled,
-  whatsappAccessToken,
-  whatsappPhoneNumberId,
+  whatsappTestSendingEnabled,
+  whatsappTestRecipient,
   whatsappApiVersion,
   whatsappMaxMessagesPerHour,
   whatsappMaxMessagesPerDay,
   whatsappDelaySeconds,
+  kapsoApiKey,
+  kapsoPhoneNumberId,
   emailMaxMessagesPerHour,
   emailMaxRecipientsPerHour,
   emailMaxMessagesPerDay,

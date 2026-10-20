@@ -12,6 +12,8 @@ export async function notifySystemAlert(params: {
   companyName: string;
   recipient: string;
   errorMessage: string;
+  /** YENİ: Verilmezse "EMAIL" kabul edilir; mail uyarılarının metni değişmez. */
+  channel?: "EMAIL" | "WHATSAPP";
 }): Promise<void> {
   const to = process.env.SYSTEM_ALERT_EMAIL?.trim();
 
@@ -20,12 +22,18 @@ export async function notifySystemAlert(params: {
     return;
   }
 
+  const isWhatsApp = params.channel === "WHATSAPP";
+
   try {
     await emailService.send({
       to,
-      subject: `[Sistem uyarısı] Mail gönderilemedi: ${params.companyName}`,
+      subject: isWhatsApp
+        ? `[Sistem uyarısı] WhatsApp mesajı gönderilemedi: ${params.companyName}`
+        : `[Sistem uyarısı] Mail gönderilemedi: ${params.companyName}`,
       text: [
-        "Bir mail, mail sunucusu/bağlantı kaynaklı bir hata nedeniyle 3 denemenin sonunda gönderilemedi.",
+        isWhatsApp
+          ? "Bir WhatsApp mesajı, Kapso/WhatsApp servisi ya da bağlantı kaynaklı bir hata nedeniyle 3 denemenin sonunda gönderilemedi."
+          : "Bir mail, mail sunucusu/bağlantı kaynaklı bir hata nedeniyle 3 denemenin sonunda gönderilemedi.",
         "Bu hata danışmana bildirilmedi.",
         "",
         `Tür: ${params.kind}`,
@@ -34,7 +42,9 @@ export async function notifySystemAlert(params: {
         `Alıcı: ${params.recipient}`,
         `Hata: ${params.errorMessage}`,
         "",
-        "Mail sunucusu düzeldikten sonra kayıt tekrar kuyruğa alınmalı.",
+        isWhatsApp
+          ? "WhatsApp servisi düzeldikten sonra kayıt tekrar kuyruğa alınmalı."
+          : "Mail sunucusu düzeldikten sonra kayıt tekrar kuyruğa alınmalı.",
       ].join("\n"),
     });
   } catch (error) {

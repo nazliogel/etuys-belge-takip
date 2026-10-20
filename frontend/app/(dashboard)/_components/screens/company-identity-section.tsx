@@ -97,7 +97,7 @@ const DANISMAN_OPTIONS = [
 
 const NAME_REGEX = /^[A-Za-zÇĞİÖŞÜçğıöşü\s'-]+$/;
 const EMAIL_REGEX =
-  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z]{2,})+$/;
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/;
 const PHONE_REGEX = /^0?[2345]\d{9}$/;
 
 const initialIdentityForm: IdentityForm = {

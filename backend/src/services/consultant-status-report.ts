@@ -1,19 +1,41 @@
 import { env, prisma } from "../config/env.js";
-import { parseEmailRecipients } from "./email-recipients.js";
+import { collectEmailRecipients } from "./reminder-contact-check.js";
 
 /** Repository'deki "gönderilemedi" bildirimi farkıyla aynı olmalı */
 const FAILURE_MONTH_OFFSET = 100;
+/** WhatsApp "gönderilemedi" bildirimleri +200 ile tutulur; bu bölüm sadece maili izler. */
+const WHATSAPP_MONTH_OFFSET = 200;
 const ADDRESS_ERROR_PATTERNS = ["geçerli bir e-posta", "kabul edilmedi"];
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type IssueStatus = "SENT" | "QUEUED" | "SKIPPED" | "FIXED" | "OPEN";
 
 const STATUS_LABEL: Record<IssueStatus, string> = {
-  SENT: "✅ Çözüldü: mail gönderildi",
-  QUEUED: "✅ Çözüldü: mail gönderilecek",
-  SKIPPED: "✅ Gerek kalmadı",
-  FIXED: "🔄 Düzeltildi, mail tekrar kuyruğa alınmalı",
-  OPEN: "⏳ Bekliyor",
+  SENT: "Çözüldü: mail gönderildi",
+  QUEUED: "Çözüldü: mail gönderilecek",
+  SKIPPED: "Gerek kalmadı",
+  FIXED: "Düzeltildi, mail tekrar kuyruğa alınmalı",
+  OPEN: "Bekliyor",
+};
+
+// ---- Görünüm (rapordaki diğer bölümlerle aynı renkler) ----
+type Tone = "ok" | "bad" | "warn" | "muted" | "info";
+const TONES: Record<Tone, { bg: string; fg: string; line: string }> = {
+  ok: { bg: "#e6f6ec", fg: "#17663a", line: "#2f9e5b" },
+  bad: { bg: "#fdecec", fg: "#a3222b", line: "#d14343" },
+  warn: { bg: "#fff4e0", fg: "#8a5a00", line: "#e0a020" },
+  muted: { bg: "#eef1f5", fg: "#4a5263", line: "#9aa3b2" },
+  info: { bg: "#eef2ff", fg: "#3341a3", line: "#5b6ad0" },
+};
+const FONT = "font-family:'Segoe UI',Arial,sans-serif";
+const BORDER = "#e3e7ef";
+
+const STATUS_TONE: Record<IssueStatus, Tone> = {
+  SENT: "ok",
+  QUEUED: "ok",
+  SKIPPED: "muted",
+  FIXED: "warn",
+  OPEN: "bad",
 };
 
 interface Issue {
@@ -51,9 +73,10 @@ const companySelect = {
       },
     },
     identity: { select: { investorAddress: true as const } },
+    // YENİ: Mail firmanın bütün AKTİF iletişim kişilerine gider; durum da hepsine bakılarak hesaplanır.
     contacts: {
+      where: { isActive: true as const },
       orderBy: [{ createdAt: "desc" as const }, { id: "desc" as const }],
-      take: 1,
       select: { email: true as const },
     },
   },
@@ -65,6 +88,11 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function badge(text: string, tone: Tone): string {
+  const t = TONES[tone];
+  return `<span style="display:inline-block;background:${t.bg};color:${t.fg};border-radius:5px;padding:2px 7px;font-size:12px;white-space:nowrap">${escapeHtml(text)}</span>`;
 }
 
 function formatDate(date: Date | null): string {
@@ -104,12 +132,15 @@ function evaluate(params: {
   }
 
   const problems: string[] = [];
-  const contact = company.contacts[0];
+  // YENİ: Firmanın bütün aktif kişilerindeki geçerli adresler
+  const addresses = collectEmailRecipients(company.contacts);
 
-  if (!contact) {
-    problems.push("İletişim kaydı yok");
-  } else if (parseEmailRecipients(contact.email).length === 0) {
-    problems.push(`Geçersiz e-posta: "${contact.email}"`);
+  if (company.contacts.length === 0) {
+    problems.push("Aktif iletişim kaydı yok");
+  } else if (addresses.length === 0) {
+    problems.push(
+      `Geçersiz e-posta: "${company.contacts.map((c) => c.email).join(" | ")}"`,
+    );
   }
 
   if (params.needsClosureData) {
@@ -124,7 +155,15 @@ function evaluate(params: {
   const message = params.notificationMessage.toLocaleLowerCase("tr-TR");
   const wasAddressError = ADDRESS_ERROR_PATTERNS.some((p) => message.includes(p));
 
-  if (wasAddressError && email && contact && contact.email.trim() === email.recipient.trim()) {
+  // Hatalı adres(ler) hâlâ aynıysa sorun çözülmemiştir
+  const normalize = (list: string[]) =>
+    list.map((a) => a.trim().toLowerCase()).sort().join(";");
+  const sameAddresses =
+    email &&
+    normalize(addresses) ===
+      normalize(email.recipient.split(/[;,]/).filter((a) => a.trim()));
+
+  if (wasAddressError && sameAddresses) {
     return { status: "OPEN", detail: "Hatalı e-posta adresi henüz değiştirilmedi." };
   }
 
@@ -140,14 +179,22 @@ export async function buildConsultantStatusSection(
   now: Date,
 ): Promise<{ html: string; text: string }> {
   try {
+    // YENİ: Sadece MAIL "gönderilemedi" bildirimleri (WhatsApp bildirimleri +200 ile
+    // tutulur ve raporun WhatsApp bölümünde görünür).
+    const mailNotificationFilter = {
+      channel: "CONSULTANT_IN_APP" as const,
+      subject: { contains: "gönderilemedi" },
+      reminderMonth: { lt: WHATSAPP_MONTH_OFFSET },
+    };
+
     const [docNotifs, authNotifs, docAdmin, authAdmin] = await Promise.all([
       prisma.documentReminder.findMany({
-        where: { channel: "CONSULTANT_IN_APP", subject: { contains: "gönderilemedi" } },
+        where: mailNotificationFilter,
         include: { company: companySelect, document: { select: { documentNumber: true } } },
         orderBy: { attemptedAt: "asc" },
       }),
       prisma.companyAuthorizationReminder.findMany({
-        where: { channel: "CONSULTANT_IN_APP", subject: { contains: "gönderilemedi" } },
+        where: mailNotificationFilter,
         include: { company: companySelect },
         orderBy: { attemptedAt: "asc" },
       }),
@@ -309,46 +356,60 @@ export async function buildConsultantStatusSection(
     const daysSince = (date: Date | null) =>
       date ? `${Math.floor((now.getTime() - date.getTime()) / DAY_MS)} gün` : "-";
 
-    // HTML
-    const th = (t: string) => `<th style="background:#f0f0f0">${t}</th>`;
-    const td = (t: string) => `<td>${escapeHtml(t)}</td>`;
+    // ---- HTML (raporun yeni görünümü) ----
+    const thStyle = `style="background:#f4f6fa;color:#1d2433;text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid ${BORDER};white-space:nowrap"`;
+    const tdStyle = `style="padding:8px 10px;border-bottom:1px solid ${BORDER};vertical-align:top"`;
+    const th = (t: string) => `<th ${thStyle}>${t}</th>`;
+    const td = (t: string) => `<td ${tdStyle}>${escapeHtml(t)}</td>`;
+    const tdRaw = (html: string) => `<td ${tdStyle}>${html}</td>`;
+    const table = (inner: string) =>
+      `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid ${BORDER};${FONT};font-size:13px;color:#1d2433">${inner}</table>`;
+    const subTitle = (text: string, tone: Tone, count?: number) => {
+      const t = TONES[tone];
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0 8px">
+        <tr><td style="border-left:4px solid ${t.line};padding:2px 0 2px 10px;${FONT};font-size:15px;font-weight:600;color:#1d2433">
+          ${escapeHtml(text)} ${count === undefined ? "" : badge(String(count), tone)}
+        </td></tr></table>`;
+    };
+    const note = (text: string) =>
+      `<div style="${FONT};font-size:13px;color:#5b6475;margin:6px 0">${escapeHtml(text)}</div>`;
+    const countCell = (value: number, tone: Tone) =>
+      tdRaw(value > 0 ? badge(String(value), tone) : `<span style="color:#9aa3b2">0</span>`);
 
     const html = `
-      <h3 style="margin:24px 0 8px">Danışman durumu</h3>
+      <div style="${FONT};font-size:18px;font-weight:700;color:#1d2433;margin:30px 0 4px;padding-bottom:6px;border-bottom:2px solid ${BORDER}">Danışman durumu</div>
       ${
         summaryRows.length === 0
-          ? "<p>Danışmanlara giden \"gönderilemedi\" bildirimi yok.</p>"
-          : `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:13px">
+          ? note('Danışmanlara giden "mail gönderilemedi" bildirimi yok.')
+          : `${subTitle("Danışman bazında", "info")}
+        ${table(`
           <tr>${["Danışman", "Bildirim (toplam)", "Yeni", "Çözüldü", "Düzeltildi, gönderilmeli", "Bekliyor", "En eski bekleyen"].map(th).join("")}</tr>
           ${summaryRows
-            .map(([name, s]) => `<tr>${td(name)}${td(String(s.total))}${td(String(s.newSince))}${td(String(s.resolved))}${td(String(s.fixed))}${td(String(s.open))}${td(s.open > 0 ? daysSince(s.oldestOpen) : "-")}</tr>`)
-            .join("")}
-        </table>`
+            .map(([name, s]) => `<tr>${tdRaw(`<b>${escapeHtml(name)}</b>`)}${td(String(s.total))}${countCell(s.newSince, "info")}${countCell(s.resolved, "ok")}${countCell(s.fixed, "warn")}${countCell(s.open, "bad")}${td(s.open > 0 ? daysSince(s.oldestOpen) : "-")}</tr>`)
+            .join("")}`)}`
       }
       ${
         pendingIssues.length === 0
           ? ""
-          : `<h4 style="margin:16px 0 8px">Bekleyen ve düzeltilmiş sorunlar (${pendingIssues.length})</h4>
-        <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:13px">
+          : `${subTitle("Bekleyen ve düzeltilmiş sorunlar", "bad", pendingIssues.length)}
+        ${table(`
           <tr>${["Danışman", "Firma", "Tür", "Bildirim", "Durum", "Açıklama"].map(th).join("")}</tr>
           ${pendingIssues
-            .map((i) => `<tr>${td(i.consultantName)}${td(i.companyName)}${td(i.kind)}${td(`${formatDate(i.notifiedAt)} (${daysSince(i.notifiedAt)})`)}${td(STATUS_LABEL[i.status])}${td(i.detail)}</tr>`)
-            .join("")}
-        </table>`
+            .map((i) => `<tr>${td(i.consultantName)}${tdRaw(`<b>${escapeHtml(i.companyName)}</b>`)}${tdRaw(badge(i.kind, "info"))}${td(`${formatDate(i.notifiedAt)} (${daysSince(i.notifiedAt)})`)}${tdRaw(badge(STATUS_LABEL[i.status], STATUS_TONE[i.status]))}${tdRaw(`<span style="color:#5b6475;font-size:12px">${escapeHtml(i.detail)}</span>`)}</tr>`)
+            .join("")}`)}`
       }
       ${
         adminRows.length === 0
           ? ""
-          : `<h4 style="margin:16px 0 8px">Danışmanı olmayan firmalar (bildirim: ${escapeHtml(adminLabel)}): ${adminRows.length - adminOpen.length}/${adminRows.length} çözüldü</h4>
+          : `${subTitle(`Danışmanı olmayan firmalar (bildirim: ${adminLabel}) — ${adminRows.length - adminOpen.length}/${adminRows.length} çözüldü`, adminOpen.length > 0 ? "warn" : "ok")}
         ${
           adminOpen.length === 0
-            ? "<p>Hepsine danışman atanmış.</p>"
-            : `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:13px">
+            ? note("Hepsine danışman atanmış.")
+            : table(`
           <tr>${["Firma", "Bildirim", "Durum"].map(th).join("")}</tr>
           ${adminOpen
-            .map((r) => `<tr>${td(r.companyName)}${td(`${formatDate(r.notifiedAt)} (${daysSince(r.notifiedAt)})`)}${td(r.detail)}</tr>`)
-            .join("")}
-        </table>`
+            .map((r) => `<tr>${tdRaw(`<b>${escapeHtml(r.companyName)}</b>`)}${td(`${formatDate(r.notifiedAt)} (${daysSince(r.notifiedAt)})`)}${tdRaw(badge(r.detail, "warn"))}</tr>`)
+            .join("")}`)
         }`
       }`;
 
@@ -356,7 +417,7 @@ export async function buildConsultantStatusSection(
     const text = [
       "\nDANIŞMAN DURUMU",
       ...(summaryRows.length === 0
-        ? ["Danışmanlara giden \"gönderilemedi\" bildirimi yok."]
+        ? ["Danışmanlara giden \"mail gönderilemedi\" bildirimi yok."]
         : summaryRows.map(
             ([name, s]) =>
               `- ${name}: ${s.total} bildirim (yeni ${s.newSince}), çözüldü ${s.resolved}, düzeltildi/gönderilmeli ${s.fixed}, bekliyor ${s.open}` +
@@ -381,7 +442,7 @@ export async function buildConsultantStatusSection(
 
     return { html, text };
   } catch (error) {
-    // Bu bölüm hata verse bile günlük rapor gönderilmeye devam eder
+    // Bu bölüm hata verse bile rapor gönderilmeye devam eder
     console.error("Consultant status section could not be built.", error);
     return {
       html: "<p><em>Danışman durumu bölümü hazırlanamadı (sistem loglarına bakın).</em></p>",

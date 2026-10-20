@@ -9,6 +9,8 @@ interface BlockedReminder {
   warnings: string[];
 }
 
+// NOT: Yetkilendirme WhatsApp kuyruğu company-authorization-reminder-whatsapp-queue.service.ts
+// dosyasındadır. Bu dosya yalnızca e-posta kuyruğunu yönetir.
 export class CompanyAuthorizationReminderQueueService {
   constructor(
     private readonly repository = new CompanyAuthorizationReminderRepository(),
@@ -48,6 +50,13 @@ export class CompanyAuthorizationReminderQueueService {
           warnings: preview.warnings,
         });
 
+        // YENİ: WhatsApp açıksa ve telefon da eksikse aynı bildirimde yazılır.
+        // (Danışmana iki ayrı bildirim yerine tek bildirim gider.)
+        const whatsappMissing =
+          env.whatsappQueueEnabled && preview.whatsappWarnings.length > 0
+            ? `WhatsApp mesajı da gönderilemedi: ${preview.whatsappWarnings.join(", ")}`
+            : "";
+
         if (preview.consultantUserId && preview.consultantIsActive) {
           const notificationCreated =
             await this.repository.createConsultantNotification({
@@ -63,7 +72,10 @@ export class CompanyAuthorizationReminderQueueService {
                 `${preview.companyName} firmasının yetki süresi dolmak üzeredir.`,
                 "Firma e-postası eksik bilgiler nedeniyle gönderilemedi.",
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
-              ].join(" "),
+                whatsappMissing,
+              ]
+                .filter(Boolean)
+                .join(" "),
             });
 
           if (notificationCreated) {
@@ -95,7 +107,10 @@ export class CompanyAuthorizationReminderQueueService {
                 `Firma: ${preview.companyName}`,
                 `Firma ID: ${preview.companyId}`,
                 `Eksik bilgiler: ${preview.warnings.join(", ")}`,
-              ].join("\n"),
+                whatsappMissing,
+              ]
+                .filter(Boolean)
+                .join("\n"),
             });
 
           if (adminEmailReminderId) {
@@ -103,7 +118,9 @@ export class CompanyAuthorizationReminderQueueService {
               await this.reminderNotificationService.notifyMissingConsultant({
                 companyName: preview.companyName,
                 companyId: preview.companyId,
-                errorMessage: preview.warnings.join(", "),
+                errorMessage: [preview.warnings.join(", "), whatsappMissing]
+                  .filter(Boolean)
+                  .join(" "),
               });
 
               await this.repository.markSent(adminEmailReminderId);
