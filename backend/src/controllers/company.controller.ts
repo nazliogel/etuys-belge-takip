@@ -37,6 +37,7 @@ export class CompanyController {
         limit,
         search,
         isActive,
+        onlyAssigned: String(req.query.onlyAssigned) === "true",
       },
       req.user.id,
       req.user.role,

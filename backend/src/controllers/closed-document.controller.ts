@@ -35,6 +35,7 @@ export class ClosedDocumentController {
         limit,
         search,
         companyId,
+        onlyAssigned: String(req.query.onlyAssigned) === "true",
       },
       req.user.id,
       req.user.role,

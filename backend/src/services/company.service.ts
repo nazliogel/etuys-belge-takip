@@ -60,16 +60,21 @@ export class CompanyService {
     const limit = query.limit;
     const skip = (page - 1) * limit;
 
+    const consultantUserId =
+      role === "OPERATION" && query.onlyAssigned ? userId : undefined;
+
     const [companies, totalCount] = await Promise.all([
       this.companyRepository.findMany({
         skip,
         take: limit,
         search: query.search,
         isActive: query.isActive,
+        consultantUserId,
       }),
       this.companyRepository.count({
         search: query.search,
         isActive: query.isActive,
+        consultantUserId,
       }),
     ]);
 

@@ -12,6 +12,7 @@ export const companyListSchema = z.object({
     limit: positiveIntegerSchema.max(100).default(20),
     search: z.string().trim().optional(),
     isActive: booleanQuerySchema.optional(),
+    onlyAssigned: booleanQuerySchema.optional(),
   }),
 });
 

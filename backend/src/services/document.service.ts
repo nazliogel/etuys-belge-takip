@@ -23,6 +23,7 @@ type DocumentListQuery = {
   isActive?: boolean | "all";
   status?: CalculatedDocumentStatus;
   companyId?: number;
+  onlyAssigned?: boolean;
 };
 
 type StatusSource = {
@@ -138,16 +139,17 @@ export class DocumentService {
     userId: number,
     role: UserRole,
     requestedCompanyId?: number,
+    onlyAssigned = false,
   ) {
     if (role === "COMPANY") {
-      // Firma kullanıcısı başka firma isteyemez; her zaman kendi firması.
       const company = await this.getAuthorizedCompany(userId);
       return { companyId: company.id, consultantUserId: undefined };
     }
 
     return {
       companyId: requestedCompanyId,
-      consultantUserId: undefined,
+      consultantUserId:
+        role === "OPERATION" && onlyAssigned ? userId : undefined,
     };
   }
 
@@ -176,7 +178,12 @@ export class DocumentService {
   }
 
   async getDocuments(query: DocumentListQuery, userId: number, role: UserRole) {
-    const scope = await this.resolveScope(userId, role, query.companyId);
+    const scope = await this.resolveScope(
+      userId,
+      role,
+      query.companyId,
+      query.onlyAssigned,
+    );
     const today = todayInIstanbul();
 
     const requestedIsActive =
@@ -273,8 +280,17 @@ export class DocumentService {
     };
   }
 
-  async getExtensionEligibleDocuments(userId: number, role: UserRole) {
-    const scope = await this.resolveScope(userId, role);
+  async getExtensionEligibleDocuments(
+    userId: number,
+    role: UserRole,
+    onlyAssigned = false,
+  ) {
+    const scope = await this.resolveScope(
+      userId,
+      role,
+      undefined,
+      onlyAssigned,
+    );
     const today = todayInIstanbul();
 
     const documents = await this.documentRepository.findMany({
@@ -308,8 +324,17 @@ export class DocumentService {
     return { items, totalCount: items.length };
   }
 
-  async getClosureEligibleDocuments(userId: number, role: UserRole) {
-    const scope = await this.resolveScope(userId, role);
+  async getClosureEligibleDocuments(
+    userId: number,
+    role: UserRole,
+    onlyAssigned = false,
+  ) {
+    const scope = await this.resolveScope(
+      userId,
+      role,
+      undefined,
+      onlyAssigned,
+    );
     const today = todayInIstanbul();
 
     const documents = await this.documentRepository.findMany({

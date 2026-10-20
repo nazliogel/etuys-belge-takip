@@ -3,6 +3,7 @@ export type CompanyListQuery = {
   limit: number;
   search?: string;
   isActive?: boolean;
+  onlyAssigned?: boolean;
 };
 
 export type UpdateCompanyInput = {

@@ -135,10 +135,10 @@ const EMPTY_DASHBOARD: DashboardData = {
 // Cache şekli değiştiği için sürüm v6'ya yükseltildi (eski v5 verisi okunmaz).
 function getDashboardCacheKey(user: SessionUser): string {
   if (!user) {
-    return "dashboard-overview-cache-v6-guest";
+    return "dashboard-overview-cache-v7-guest";
   }
 
-  return `dashboard-overview-cache-v6-${user.role}-${user.id}`;
+  return `dashboard-overview-cache-v7-${user.role}-${user.id}`;
 }
 
 function readDashboardCache(key: string): DashboardData | null {
@@ -186,7 +186,13 @@ function sortByDate<T>(
   });
 }
 
-async function fetchDashboardData(): Promise<DashboardData> {
+async function fetchDashboardData(user: SessionUser): Promise<DashboardData> {
+  const dashboardPath = (path: string) => {
+    if (user?.role !== "OPERATION") return path;
+
+    return `${path}${path.includes("?") ? "&" : "?"}onlyAssigned=true`;
+  };
+
   const [
     companyResponse,
     activeDocumentResponse,
@@ -197,13 +203,19 @@ async function fetchDashboardData(): Promise<DashboardData> {
     authorizationRequiredResponse,
   ] = await Promise.all([
     apiFetch<ItemsResponse<ApiCompany>>("/companies?page=1&limit=1"),
-    apiFetch<DocumentListResponse>("/documents?status=ACTIVE&page=1&limit=20"),
-    apiFetch<DocumentListResponse>("/documents"),
-    apiFetch<ItemsResponse<ApiDocument>>("/closed-documents?page=1&limit=20"),
-    apiFetch<ItemsResponse<ExtensionEligibleDocument>>(
-      "/documents/extension-eligible",
+    apiFetch<DocumentListResponse>(
+      dashboardPath("/documents?status=ACTIVE&page=1&limit=20"),
     ),
-    apiFetch<ItemsResponse<ApiDocument>>("/documents/closure-eligible"),
+    apiFetch<DocumentListResponse>(dashboardPath("/documents")),
+    apiFetch<ItemsResponse<ApiDocument>>(
+      dashboardPath("/closed-documents?page=1&limit=20"),
+    ),
+    apiFetch<ItemsResponse<ExtensionEligibleDocument>>(
+      dashboardPath("/documents/extension-eligible"),
+    ),
+    apiFetch<ItemsResponse<ApiDocument>>(
+      dashboardPath("/documents/closure-eligible"),
+    ),
     apiFetch<ItemsResponse<ApiCompany>>("/companies/authorization-required"),
   ]);
 
@@ -400,7 +412,7 @@ export function DashboardScreen() {
 
     async function load() {
       try {
-        const fresh = await fetchDashboardData();
+        const fresh = await fetchDashboardData(sessionUser);
 
         if (cancelled) return;
 

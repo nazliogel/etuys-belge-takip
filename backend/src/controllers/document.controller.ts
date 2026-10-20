@@ -70,6 +70,7 @@ export class DocumentController {
         isActive,
         status,
         companyId,
+        onlyAssigned: String(req.query.onlyAssigned) === "true",
       },
       req.user.id,
       req.user.role,
@@ -96,8 +97,8 @@ export class DocumentController {
     const data = await this.service.getExtensionEligibleDocuments(
       req.user.id,
       req.user.role,
+      String(req.query.onlyAssigned) === "true",
     );
-
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: "Extension eligible documents fetched successfully.",
@@ -119,6 +120,7 @@ export class DocumentController {
     const data = await this.service.getClosureEligibleDocuments(
       req.user.id,
       req.user.role,
+      String(req.query.onlyAssigned) === "true",
     );
 
     return sendSuccessResponse(res, {

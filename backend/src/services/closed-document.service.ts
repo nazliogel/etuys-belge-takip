@@ -9,6 +9,7 @@ type ClosedDocumentListQuery = {
   limit: number;
   search?: string;
   companyId?: number;
+  onlyAssigned?: boolean;
 };
 
 export class ClosedDocumentService {
@@ -71,16 +72,21 @@ export class ClosedDocumentService {
       companyId = company.id;
     }
 
+    const consultantUserId =
+      role === "OPERATION" && query.onlyAssigned ? userId : undefined;
+
     const [documents, totalCount] = await Promise.all([
       this.closedDocumentRepository.findMany({
         skip,
         take: limit,
         search: query.search,
         companyId,
+        consultantUserId,
       }),
       this.closedDocumentRepository.count({
         search: query.search,
         companyId,
+        consultantUserId,
       }),
     ]);
 
