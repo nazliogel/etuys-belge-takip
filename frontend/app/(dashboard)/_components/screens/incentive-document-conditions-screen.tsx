@@ -89,6 +89,10 @@ export function IncentiveDocumentConditionsScreen() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  // Silme onay penceresi (tarayıcının "localhost diyor ki" kutusu yerine).
+  const [pendingDelete, setPendingDelete] =
+    useState<IncentiveDocumentCondition | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -141,6 +145,18 @@ export function IncentiveDocumentConditionsScreen() {
     const timeoutId = window.setTimeout(() => setMessage(""), 4000);
     return () => window.clearTimeout(timeoutId);
   }, [message]);
+
+  // Onay penceresi açıkken Esc tuşu pencereyi kapatır (silme sürerken değil).
+  useEffect(() => {
+    if (!pendingDelete || isDeleting) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPendingDelete(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pendingDelete, isDeleting]);
 
   function resetForm() {
     setEditingId(null);
@@ -241,15 +257,9 @@ export function IncentiveDocumentConditionsScreen() {
     }
   }
 
+  // Onay penceresinde "Evet, sil"e basılınca çalışır.
   async function handleDeactivate(item: IncentiveDocumentCondition) {
-    if (
-      !window.confirm(
-        `"${item.title}" şart maddesi silinsin mi?\nSonraki maddelerin sıra numaraları bir kayacak.`,
-      )
-    ) {
-      return;
-    }
-
+    setIsDeleting(true);
     setError("");
     setMessage("");
 
@@ -271,6 +281,8 @@ export function IncentiveDocumentConditionsScreen() {
     } finally {
       // Hata olsa bile listeyi sunucudaki güncel haliyle göster.
       await loadConditions();
+      setIsDeleting(false);
+      setPendingDelete(null);
     }
   }
 
@@ -551,7 +563,7 @@ export function IncentiveDocumentConditionsScreen() {
 
                     <button
                       type="button"
-                      onClick={() => void handleDeactivate(item)}
+                      onClick={() => setPendingDelete(item)}
                       className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950"
                     >
                       Sil
@@ -563,6 +575,58 @@ export function IncentiveDocumentConditionsScreen() {
           </div>
         )}
       </section>
+
+      {/* Silme onay penceresi */}
+      {pendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm dark:bg-black/70">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-condition-title"
+            aria-describedby="delete-condition-description"
+            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+          >
+            <h2
+              id="delete-condition-title"
+              className="text-lg font-semibold text-slate-900 dark:text-white"
+            >
+              Şart maddesi silinsin mi?
+            </h2>
+
+            <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+              {pendingDelete.title}
+            </p>
+
+            <p
+              id="delete-condition-description"
+              className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400"
+            >
+              Bu madde listeden kaldırılacak ve sonraki maddelerin sıra
+              numaraları bir kayacak.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setPendingDelete(null)}
+                disabled={isDeleting}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeactivate(pendingDelete)}
+                disabled={isDeleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {isDeleting ? "Siliniyor..." : "Evet, sil"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
