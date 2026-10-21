@@ -128,6 +128,11 @@ export type DocumentImportedMachine = Prisma.DocumentImportedMachineModel
  */
 export type DocumentSpecialCondition = Prisma.DocumentSpecialConditionModel
 /**
+ * Model IncentiveDocumentCondition
+ * 
+ */
+export type IncentiveDocumentCondition = Prisma.IncentiveDocumentConditionModel
+/**
  * Model DocumentReminder
  * 
  */

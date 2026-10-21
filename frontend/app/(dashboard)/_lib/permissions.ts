@@ -11,6 +11,7 @@ export type Permission =
   | "imports:manage"
   | "notifications:view"
   | "users:manage"
+  | "incentive-document-conditions:view"
   | "settings:manage";
 
 const rolePermissions: Record<UserRole, Permission[]> = {
@@ -23,6 +24,8 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     "notifications:view",
     "users:manage",
     "settings:manage",
+    "incentive-document-conditions:view",
+    
   ],
 
   OPERATION: [
@@ -34,6 +37,7 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     "imports:manage",
     "notifications:view",
     "users:manage",
+    "incentive-document-conditions:view",
   ],
 
   COMPANY: [
@@ -41,6 +45,7 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     "company-documents:view",
     "document-details:view",
     "notifications:view",
+    "incentive-document-conditions:view",
   ],
 };
 

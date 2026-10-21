@@ -73,6 +73,7 @@ export const ModelName = {
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
   DocumentSpecialCondition: 'DocumentSpecialCondition',
+  IncentiveDocumentCondition: 'IncentiveDocumentCondition',
   DocumentReminder: 'DocumentReminder',
   CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
   SupportRequest: 'SupportRequest',
@@ -586,6 +587,20 @@ export const DocumentSpecialConditionScalarFieldEnum = {
 } as const
 
 export type DocumentSpecialConditionScalarFieldEnum = (typeof DocumentSpecialConditionScalarFieldEnum)[keyof typeof DocumentSpecialConditionScalarFieldEnum]
+
+
+export const IncentiveDocumentConditionScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IncentiveDocumentConditionScalarFieldEnum = (typeof IncentiveDocumentConditionScalarFieldEnum)[keyof typeof IncentiveDocumentConditionScalarFieldEnum]
 
 
 export const DocumentReminderScalarFieldEnum = {

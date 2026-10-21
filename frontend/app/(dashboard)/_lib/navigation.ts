@@ -47,6 +47,12 @@ export const navigationItems = [
     icon: Archive,
     permission: "company-documents:view",
   },
+   {
+    label: "Teşvik Belgesi Şartları",
+    href: "/incentive-document-conditions",
+    icon: FileText,
+    permission: "incentive-document-conditions:view",
+  },
   {
     label: "Yatırım Cinsi",
     href: "/documents/investment-type",
@@ -101,12 +107,7 @@ export const navigationItems = [
     icon: Bell,
     permission: "notifications:view",
   },
-  {
-    label: "Kullanıcı Yönetimi",
-    href: "/users",
-    icon: Users,
-    permission: "users:manage",
-  },
+ 
 ] satisfies Array<{
   label: string;
   href: string;

@@ -21,6 +21,7 @@ import { requireActiveCompanyAuthorization } from "./middlewares/company-authori
 import { companyMeRouter } from "./routes/company-me.routes.js";
 import { companyNotificationRouter } from "./routes/company-notification.routes.js";
 import { pushDeviceRouter } from "./routes/push-device.routes.js";
+import { incentiveDocumentConditionRouter } from "./routes/incentive-document-condition.routes.js";
 
 const app = express();
 
@@ -78,7 +79,7 @@ app.use(
   companyAuthorizationReminderRouter,
 );
 app.use("/api/notifications", notificationRouter);
-
+app.use("/api/incentive-document-conditions", incentiveDocumentConditionRouter);
 app.use(errorHandler);
 
 export default app;

@@ -419,6 +419,7 @@ export const ModelName = {
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
   DocumentSpecialCondition: 'DocumentSpecialCondition',
+  IncentiveDocumentCondition: 'IncentiveDocumentCondition',
   DocumentReminder: 'DocumentReminder',
   CompanyAuthorizationReminder: 'CompanyAuthorizationReminder',
   SupportRequest: 'SupportRequest',
@@ -442,7 +443,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2074,6 +2075,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    IncentiveDocumentCondition: {
+      payload: Prisma.$IncentiveDocumentConditionPayload<ExtArgs>
+      fields: Prisma.IncentiveDocumentConditionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IncentiveDocumentConditionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IncentiveDocumentConditionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>
+        }
+        findFirst: {
+          args: Prisma.IncentiveDocumentConditionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IncentiveDocumentConditionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>
+        }
+        findMany: {
+          args: Prisma.IncentiveDocumentConditionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>[]
+        }
+        create: {
+          args: Prisma.IncentiveDocumentConditionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>
+        }
+        createMany: {
+          args: Prisma.IncentiveDocumentConditionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IncentiveDocumentConditionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>[]
+        }
+        delete: {
+          args: Prisma.IncentiveDocumentConditionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>
+        }
+        update: {
+          args: Prisma.IncentiveDocumentConditionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>
+        }
+        deleteMany: {
+          args: Prisma.IncentiveDocumentConditionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IncentiveDocumentConditionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IncentiveDocumentConditionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>[]
+        }
+        upsert: {
+          args: Prisma.IncentiveDocumentConditionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IncentiveDocumentConditionPayload>
+        }
+        aggregate: {
+          args: Prisma.IncentiveDocumentConditionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIncentiveDocumentCondition>
+        }
+        groupBy: {
+          args: Prisma.IncentiveDocumentConditionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IncentiveDocumentConditionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IncentiveDocumentConditionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IncentiveDocumentConditionCountAggregateOutputType> | number
+        }
+      }
+    }
     DocumentReminder: {
       payload: Prisma.$DocumentReminderPayload<ExtArgs>
       fields: Prisma.DocumentReminderFieldRefs
@@ -3194,6 +3269,20 @@ export const DocumentSpecialConditionScalarFieldEnum = {
 export type DocumentSpecialConditionScalarFieldEnum = (typeof DocumentSpecialConditionScalarFieldEnum)[keyof typeof DocumentSpecialConditionScalarFieldEnum]
 
 
+export const IncentiveDocumentConditionScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  sortOrder: 'sortOrder',
+  status: 'status',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IncentiveDocumentConditionScalarFieldEnum = (typeof IncentiveDocumentConditionScalarFieldEnum)[keyof typeof IncentiveDocumentConditionScalarFieldEnum]
+
+
 export const DocumentReminderScalarFieldEnum = {
   id: 'id',
   documentId: 'documentId',
@@ -3602,6 +3691,20 @@ export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMo
 
 
 /**
+ * Reference to a field of type 'IncentiveDocumentConditionStatus'
+ */
+export type EnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncentiveDocumentConditionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'IncentiveDocumentConditionStatus[]'
+ */
+export type ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncentiveDocumentConditionStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'DocumentReminderType'
  */
 export type EnumDocumentReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentReminderType'>
@@ -3899,6 +4002,7 @@ export type GlobalOmitConfig = {
   documentDomesticMachine?: Prisma.DocumentDomesticMachineOmit
   documentImportedMachine?: Prisma.DocumentImportedMachineOmit
   documentSpecialCondition?: Prisma.DocumentSpecialConditionOmit
+  incentiveDocumentCondition?: Prisma.IncentiveDocumentConditionOmit
   documentReminder?: Prisma.DocumentReminderOmit
   companyAuthorizationReminder?: Prisma.CompanyAuthorizationReminderOmit
   supportRequest?: Prisma.SupportRequestOmit

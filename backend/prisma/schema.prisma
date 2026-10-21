@@ -69,6 +69,11 @@ enum DocumentStatus {
   CANCELLED
 }
 
+enum IncentiveDocumentConditionStatus {
+  DRAFT
+  PUBLISHED
+}
+
 enum NotificationType {
   AUTHORIZATION_EXPIRING
   AUTHORIZATION_EXPIRED
@@ -829,6 +834,20 @@ model DocumentSpecialCondition {
   updatedAt DateTime @updatedAt
 
   @@index([detailId])
+}
+
+model IncentiveDocumentCondition {
+  id          Int                                @id @default(autoincrement())
+  title       String
+  description String                             @db.Text
+  sortOrder   Int                                @default(0)
+  status      IncentiveDocumentConditionStatus   @default(DRAFT)
+  isActive    Boolean                            @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, status, sortOrder])
 }
 
 model DocumentReminder {

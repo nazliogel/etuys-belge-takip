@@ -98,6 +98,14 @@ export const DocumentStatus = {
 export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus]
 
 
+export const IncentiveDocumentConditionStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED'
+} as const
+
+export type IncentiveDocumentConditionStatus = (typeof IncentiveDocumentConditionStatus)[keyof typeof IncentiveDocumentConditionStatus]
+
+
 export const NotificationType = {
   AUTHORIZATION_EXPIRING: 'AUTHORIZATION_EXPIRING',
   AUTHORIZATION_EXPIRED: 'AUTHORIZATION_EXPIRED',

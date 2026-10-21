@@ -518,6 +518,23 @@ export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
 }
 
+export type EnumIncentiveDocumentConditionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.IncentiveDocumentConditionStatus | Prisma.EnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel> | $Enums.IncentiveDocumentConditionStatus
+}
+
+export type EnumIncentiveDocumentConditionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IncentiveDocumentConditionStatus | Prisma.EnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIncentiveDocumentConditionStatusWithAggregatesFilter<$PrismaModel> | $Enums.IncentiveDocumentConditionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel>
+}
+
 export type EnumDocumentReminderTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.DocumentReminderType | Prisma.EnumDocumentReminderTypeFieldRefInput<$PrismaModel>
   in?: $Enums.DocumentReminderType[] | Prisma.ListEnumDocumentReminderTypeFieldRefInput<$PrismaModel>
@@ -1115,6 +1132,23 @@ export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.IncentiveDocumentConditionStatus | Prisma.EnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel> | $Enums.IncentiveDocumentConditionStatus
+}
+
+export type NestedEnumIncentiveDocumentConditionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IncentiveDocumentConditionStatus | Prisma.EnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IncentiveDocumentConditionStatus[] | Prisma.ListEnumIncentiveDocumentConditionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIncentiveDocumentConditionStatusWithAggregatesFilter<$PrismaModel> | $Enums.IncentiveDocumentConditionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIncentiveDocumentConditionStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumDocumentReminderTypeFilter<$PrismaModel = never> = {
