@@ -282,10 +282,68 @@ export class ClosedDocumentService {
 
     const financialInfo = document.detail?.financialInfo ?? null;
 
+    const realizationInfo = document.detail?.realizationInfo ?? null;
+
     return {
       documentId: document.id,
       externalDocumentId: document.externalDocumentId,
       documentNumber: document.documentNumber,
+
+      realizationInfo: realizationInfo
+        ? {
+            id: realizationInfo.id,
+            landRealization:
+              realizationInfo.landRealization?.toString() ?? null,
+            totalLandRealization:
+              realizationInfo.totalLandRealization?.toString() ?? null,
+            mainBuildingRealization:
+              realizationInfo.mainBuildingRealization?.toString() ?? null,
+            auxiliaryFacilitiesRealization:
+              realizationInfo.auxiliaryFacilitiesRealization?.toString() ??
+              null,
+            administrativeBuildingsRealization:
+              realizationInfo.administrativeBuildingsRealization?.toString() ??
+              null,
+            undergroundGalleriesRealization:
+              realizationInfo.undergroundGalleriesRealization?.toString() ??
+              null,
+            totalBuildingRealization:
+              realizationInfo.totalBuildingRealization?.toString() ?? null,
+            auxiliaryMachineryRealization:
+              realizationInfo.auxiliaryMachineryRealization?.toString() ?? null,
+            importCustomsRealization:
+              realizationInfo.importCustomsRealization?.toString() ?? null,
+            transportInsuranceRealization:
+              realizationInfo.transportInsuranceRealization?.toString() ?? null,
+            assemblyRealization:
+              realizationInfo.assemblyRealization?.toString() ?? null,
+            studyProjectRealization:
+              realizationInfo.studyProjectRealization?.toString() ?? null,
+            otherExpensesRealization:
+              realizationInfo.otherExpensesRealization?.toString() ?? null,
+            expenseDocumentRealization:
+              realizationInfo.expenseDocumentRealization?.toString() ?? null,
+            totalOtherInvestmentRealization:
+              realizationInfo.totalOtherInvestmentRealization?.toString() ??
+              null,
+            domesticRealization:
+              realizationInfo.domesticRealization?.toString() ?? null,
+            importedRealization:
+              realizationInfo.importedRealization?.toString() ?? null,
+            exchangeDifferenceRealization:
+              realizationInfo.exchangeDifferenceRealization?.toString() ?? null,
+            totalRealizedAmount:
+              realizationInfo.totalRealizedAmount?.toString() ?? null,
+            updatedTotalLandRealization:
+              realizationInfo.updatedTotalLandRealization?.toString() ?? null,
+            updatedTotalBuildingRealization:
+              realizationInfo.updatedTotalBuildingRealization?.toString() ??
+              null,
+            updatedTotalOtherInvestmentRealization:
+              realizationInfo.updatedTotalOtherInvestmentRealization?.toString() ??
+              null,
+          }
+        : null,
 
       financialInfo: financialInfo
         ? {

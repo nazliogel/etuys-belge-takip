@@ -237,6 +237,7 @@ export type DocumentDetailWhereInput = {
   products?: Prisma.DocumentProductListRelationFilter
   supports?: Prisma.DocumentSupportListRelationFilter
   financialInfo?: Prisma.XOR<Prisma.DocumentFinancialInfoNullableScalarRelationFilter, Prisma.DocumentFinancialInfoWhereInput> | null
+  realizationInfo?: Prisma.XOR<Prisma.DocumentRealizationInfoNullableScalarRelationFilter, Prisma.DocumentRealizationInfoWhereInput> | null
   domesticMachines?: Prisma.DocumentDomesticMachineListRelationFilter
   importedMachines?: Prisma.DocumentImportedMachineListRelationFilter
   specialConditions?: Prisma.DocumentSpecialConditionListRelationFilter
@@ -254,6 +255,7 @@ export type DocumentDetailOrderByWithRelationInput = {
   products?: Prisma.DocumentProductOrderByRelationAggregateInput
   supports?: Prisma.DocumentSupportOrderByRelationAggregateInput
   financialInfo?: Prisma.DocumentFinancialInfoOrderByWithRelationInput
+  realizationInfo?: Prisma.DocumentRealizationInfoOrderByWithRelationInput
   domesticMachines?: Prisma.DocumentDomesticMachineOrderByRelationAggregateInput
   importedMachines?: Prisma.DocumentImportedMachineOrderByRelationAggregateInput
   specialConditions?: Prisma.DocumentSpecialConditionOrderByRelationAggregateInput
@@ -274,6 +276,7 @@ export type DocumentDetailWhereUniqueInput = Prisma.AtLeast<{
   products?: Prisma.DocumentProductListRelationFilter
   supports?: Prisma.DocumentSupportListRelationFilter
   financialInfo?: Prisma.XOR<Prisma.DocumentFinancialInfoNullableScalarRelationFilter, Prisma.DocumentFinancialInfoWhereInput> | null
+  realizationInfo?: Prisma.XOR<Prisma.DocumentRealizationInfoNullableScalarRelationFilter, Prisma.DocumentRealizationInfoWhereInput> | null
   domesticMachines?: Prisma.DocumentDomesticMachineListRelationFilter
   importedMachines?: Prisma.DocumentImportedMachineListRelationFilter
   specialConditions?: Prisma.DocumentSpecialConditionListRelationFilter
@@ -314,6 +317,7 @@ export type DocumentDetailCreateInput = {
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
@@ -329,6 +333,7 @@ export type DocumentDetailUncheckedCreateInput = {
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
@@ -343,6 +348,7 @@ export type DocumentDetailUpdateInput = {
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
@@ -358,6 +364,7 @@ export type DocumentDetailUncheckedUpdateInput = {
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
@@ -584,6 +591,20 @@ export type DocumentDetailUpdateOneRequiredWithoutSpecialConditionsNestedInput =
   update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentDetailUpdateToOneWithWhereWithoutSpecialConditionsInput, Prisma.DocumentDetailUpdateWithoutSpecialConditionsInput>, Prisma.DocumentDetailUncheckedUpdateWithoutSpecialConditionsInput>
 }
 
+export type DocumentDetailCreateNestedOneWithoutRealizationInfoInput = {
+  create?: Prisma.XOR<Prisma.DocumentDetailCreateWithoutRealizationInfoInput, Prisma.DocumentDetailUncheckedCreateWithoutRealizationInfoInput>
+  connectOrCreate?: Prisma.DocumentDetailCreateOrConnectWithoutRealizationInfoInput
+  connect?: Prisma.DocumentDetailWhereUniqueInput
+}
+
+export type DocumentDetailUpdateOneRequiredWithoutRealizationInfoNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentDetailCreateWithoutRealizationInfoInput, Prisma.DocumentDetailUncheckedCreateWithoutRealizationInfoInput>
+  connectOrCreate?: Prisma.DocumentDetailCreateOrConnectWithoutRealizationInfoInput
+  upsert?: Prisma.DocumentDetailUpsertWithoutRealizationInfoInput
+  connect?: Prisma.DocumentDetailWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentDetailUpdateToOneWithWhereWithoutRealizationInfoInput, Prisma.DocumentDetailUpdateWithoutRealizationInfoInput>, Prisma.DocumentDetailUncheckedUpdateWithoutRealizationInfoInput>
+}
+
 export type DocumentDetailCreateWithoutDocumentInput = {
   investmentType?: string | null
   createdAt?: Date | string
@@ -592,6 +613,7 @@ export type DocumentDetailCreateWithoutDocumentInput = {
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
@@ -606,6 +628,7 @@ export type DocumentDetailUncheckedCreateWithoutDocumentInput = {
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
@@ -635,6 +658,7 @@ export type DocumentDetailUpdateWithoutDocumentInput = {
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
@@ -649,6 +673,7 @@ export type DocumentDetailUncheckedUpdateWithoutDocumentInput = {
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
@@ -662,6 +687,7 @@ export type DocumentDetailCreateWithoutClosedDocumentInput = {
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
@@ -676,6 +702,7 @@ export type DocumentDetailUncheckedCreateWithoutClosedDocumentInput = {
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
@@ -705,6 +732,7 @@ export type DocumentDetailUpdateWithoutClosedDocumentInput = {
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
@@ -719,6 +747,7 @@ export type DocumentDetailUncheckedUpdateWithoutClosedDocumentInput = {
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
@@ -732,6 +761,7 @@ export type DocumentDetailCreateWithoutProductsInput = {
   closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
@@ -746,6 +776,7 @@ export type DocumentDetailUncheckedCreateWithoutProductsInput = {
   updatedAt?: Date | string
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
@@ -775,6 +806,7 @@ export type DocumentDetailUpdateWithoutProductsInput = {
   closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
@@ -789,6 +821,7 @@ export type DocumentDetailUncheckedUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
@@ -802,6 +835,7 @@ export type DocumentDetailCreateWithoutSupportsInput = {
   closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
@@ -816,6 +850,7 @@ export type DocumentDetailUncheckedCreateWithoutSupportsInput = {
   updatedAt?: Date | string
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
@@ -845,6 +880,7 @@ export type DocumentDetailUpdateWithoutSupportsInput = {
   closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
@@ -859,6 +895,7 @@ export type DocumentDetailUncheckedUpdateWithoutSupportsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
@@ -872,6 +909,7 @@ export type DocumentDetailCreateWithoutFinancialInfoInput = {
   closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
@@ -886,6 +924,7 @@ export type DocumentDetailUncheckedCreateWithoutFinancialInfoInput = {
   updatedAt?: Date | string
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
@@ -915,6 +954,7 @@ export type DocumentDetailUpdateWithoutFinancialInfoInput = {
   closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
@@ -929,6 +969,7 @@ export type DocumentDetailUncheckedUpdateWithoutFinancialInfoInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
@@ -943,6 +984,7 @@ export type DocumentDetailCreateWithoutDomesticMachinesInput = {
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
 }
@@ -957,6 +999,7 @@ export type DocumentDetailUncheckedCreateWithoutDomesticMachinesInput = {
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
 }
@@ -986,6 +1029,7 @@ export type DocumentDetailUpdateWithoutDomesticMachinesInput = {
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
 }
@@ -1000,6 +1044,7 @@ export type DocumentDetailUncheckedUpdateWithoutDomesticMachinesInput = {
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
 }
@@ -1013,6 +1058,7 @@ export type DocumentDetailCreateWithoutImportedMachinesInput = {
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
 }
@@ -1027,6 +1073,7 @@ export type DocumentDetailUncheckedCreateWithoutImportedMachinesInput = {
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
 }
@@ -1056,6 +1103,7 @@ export type DocumentDetailUpdateWithoutImportedMachinesInput = {
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
 }
@@ -1070,6 +1118,7 @@ export type DocumentDetailUncheckedUpdateWithoutImportedMachinesInput = {
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
 }
@@ -1083,6 +1132,7 @@ export type DocumentDetailCreateWithoutSpecialConditionsInput = {
   products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
 }
@@ -1097,6 +1147,7 @@ export type DocumentDetailUncheckedCreateWithoutSpecialConditionsInput = {
   products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
   supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedCreateNestedOneWithoutDetailInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
 }
@@ -1126,6 +1177,7 @@ export type DocumentDetailUpdateWithoutSpecialConditionsInput = {
   products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
 }
@@ -1140,8 +1192,83 @@ export type DocumentDetailUncheckedUpdateWithoutSpecialConditionsInput = {
   products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
   supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
   financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  realizationInfo?: Prisma.DocumentRealizationInfoUncheckedUpdateOneWithoutDetailNestedInput
   domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
   importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
+}
+
+export type DocumentDetailCreateWithoutRealizationInfoInput = {
+  investmentType?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  document?: Prisma.IncentiveDocumentCreateNestedOneWithoutDetailInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentCreateNestedOneWithoutDetailInput
+  products?: Prisma.DocumentProductCreateNestedManyWithoutDetailInput
+  supports?: Prisma.DocumentSupportCreateNestedManyWithoutDetailInput
+  financialInfo?: Prisma.DocumentFinancialInfoCreateNestedOneWithoutDetailInput
+  domesticMachines?: Prisma.DocumentDomesticMachineCreateNestedManyWithoutDetailInput
+  importedMachines?: Prisma.DocumentImportedMachineCreateNestedManyWithoutDetailInput
+  specialConditions?: Prisma.DocumentSpecialConditionCreateNestedManyWithoutDetailInput
+}
+
+export type DocumentDetailUncheckedCreateWithoutRealizationInfoInput = {
+  id?: number
+  documentId?: number | null
+  closedDocumentId?: number | null
+  investmentType?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.DocumentProductUncheckedCreateNestedManyWithoutDetailInput
+  supports?: Prisma.DocumentSupportUncheckedCreateNestedManyWithoutDetailInput
+  financialInfo?: Prisma.DocumentFinancialInfoUncheckedCreateNestedOneWithoutDetailInput
+  domesticMachines?: Prisma.DocumentDomesticMachineUncheckedCreateNestedManyWithoutDetailInput
+  importedMachines?: Prisma.DocumentImportedMachineUncheckedCreateNestedManyWithoutDetailInput
+  specialConditions?: Prisma.DocumentSpecialConditionUncheckedCreateNestedManyWithoutDetailInput
+}
+
+export type DocumentDetailCreateOrConnectWithoutRealizationInfoInput = {
+  where: Prisma.DocumentDetailWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentDetailCreateWithoutRealizationInfoInput, Prisma.DocumentDetailUncheckedCreateWithoutRealizationInfoInput>
+}
+
+export type DocumentDetailUpsertWithoutRealizationInfoInput = {
+  update: Prisma.XOR<Prisma.DocumentDetailUpdateWithoutRealizationInfoInput, Prisma.DocumentDetailUncheckedUpdateWithoutRealizationInfoInput>
+  create: Prisma.XOR<Prisma.DocumentDetailCreateWithoutRealizationInfoInput, Prisma.DocumentDetailUncheckedCreateWithoutRealizationInfoInput>
+  where?: Prisma.DocumentDetailWhereInput
+}
+
+export type DocumentDetailUpdateToOneWithWhereWithoutRealizationInfoInput = {
+  where?: Prisma.DocumentDetailWhereInput
+  data: Prisma.XOR<Prisma.DocumentDetailUpdateWithoutRealizationInfoInput, Prisma.DocumentDetailUncheckedUpdateWithoutRealizationInfoInput>
+}
+
+export type DocumentDetailUpdateWithoutRealizationInfoInput = {
+  investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  document?: Prisma.IncentiveDocumentUpdateOneWithoutDetailNestedInput
+  closedDocument?: Prisma.ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput
+  products?: Prisma.DocumentProductUpdateManyWithoutDetailNestedInput
+  supports?: Prisma.DocumentSupportUpdateManyWithoutDetailNestedInput
+  financialInfo?: Prisma.DocumentFinancialInfoUpdateOneWithoutDetailNestedInput
+  domesticMachines?: Prisma.DocumentDomesticMachineUpdateManyWithoutDetailNestedInput
+  importedMachines?: Prisma.DocumentImportedMachineUpdateManyWithoutDetailNestedInput
+  specialConditions?: Prisma.DocumentSpecialConditionUpdateManyWithoutDetailNestedInput
+}
+
+export type DocumentDetailUncheckedUpdateWithoutRealizationInfoInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  closedDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  investmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.DocumentProductUncheckedUpdateManyWithoutDetailNestedInput
+  supports?: Prisma.DocumentSupportUncheckedUpdateManyWithoutDetailNestedInput
+  financialInfo?: Prisma.DocumentFinancialInfoUncheckedUpdateOneWithoutDetailNestedInput
+  domesticMachines?: Prisma.DocumentDomesticMachineUncheckedUpdateManyWithoutDetailNestedInput
+  importedMachines?: Prisma.DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput
+  specialConditions?: Prisma.DocumentSpecialConditionUncheckedUpdateManyWithoutDetailNestedInput
 }
 
 
@@ -1223,6 +1350,7 @@ export type DocumentDetailSelect<ExtArgs extends runtime.Types.Extensions.Intern
   products?: boolean | Prisma.DocumentDetail$productsArgs<ExtArgs>
   supports?: boolean | Prisma.DocumentDetail$supportsArgs<ExtArgs>
   financialInfo?: boolean | Prisma.DocumentDetail$financialInfoArgs<ExtArgs>
+  realizationInfo?: boolean | Prisma.DocumentDetail$realizationInfoArgs<ExtArgs>
   domesticMachines?: boolean | Prisma.DocumentDetail$domesticMachinesArgs<ExtArgs>
   importedMachines?: boolean | Prisma.DocumentDetail$importedMachinesArgs<ExtArgs>
   specialConditions?: boolean | Prisma.DocumentDetail$specialConditionsArgs<ExtArgs>
@@ -1267,6 +1395,7 @@ export type DocumentDetailInclude<ExtArgs extends runtime.Types.Extensions.Inter
   products?: boolean | Prisma.DocumentDetail$productsArgs<ExtArgs>
   supports?: boolean | Prisma.DocumentDetail$supportsArgs<ExtArgs>
   financialInfo?: boolean | Prisma.DocumentDetail$financialInfoArgs<ExtArgs>
+  realizationInfo?: boolean | Prisma.DocumentDetail$realizationInfoArgs<ExtArgs>
   domesticMachines?: boolean | Prisma.DocumentDetail$domesticMachinesArgs<ExtArgs>
   importedMachines?: boolean | Prisma.DocumentDetail$importedMachinesArgs<ExtArgs>
   specialConditions?: boolean | Prisma.DocumentDetail$specialConditionsArgs<ExtArgs>
@@ -1289,6 +1418,7 @@ export type $DocumentDetailPayload<ExtArgs extends runtime.Types.Extensions.Inte
     products: Prisma.$DocumentProductPayload<ExtArgs>[]
     supports: Prisma.$DocumentSupportPayload<ExtArgs>[]
     financialInfo: Prisma.$DocumentFinancialInfoPayload<ExtArgs> | null
+    realizationInfo: Prisma.$DocumentRealizationInfoPayload<ExtArgs> | null
     domesticMachines: Prisma.$DocumentDomesticMachinePayload<ExtArgs>[]
     importedMachines: Prisma.$DocumentImportedMachinePayload<ExtArgs>[]
     specialConditions: Prisma.$DocumentSpecialConditionPayload<ExtArgs>[]
@@ -1699,6 +1829,7 @@ export interface Prisma__DocumentDetailClient<T, Null = never, ExtArgs extends r
   products<T extends Prisma.DocumentDetail$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   supports<T extends Prisma.DocumentDetail$supportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$supportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentSupportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   financialInfo<T extends Prisma.DocumentDetail$financialInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$financialInfoArgs<ExtArgs>>): Prisma.Prisma__DocumentFinancialInfoClient<runtime.Types.Result.GetResult<Prisma.$DocumentFinancialInfoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  realizationInfo<T extends Prisma.DocumentDetail$realizationInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$realizationInfoArgs<ExtArgs>>): Prisma.Prisma__DocumentRealizationInfoClient<runtime.Types.Result.GetResult<Prisma.$DocumentRealizationInfoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   domesticMachines<T extends Prisma.DocumentDetail$domesticMachinesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$domesticMachinesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentDomesticMachinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   importedMachines<T extends Prisma.DocumentDetail$importedMachinesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$importedMachinesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentImportedMachinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   specialConditions<T extends Prisma.DocumentDetail$specialConditionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetail$specialConditionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentSpecialConditionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2240,6 +2371,25 @@ export type DocumentDetail$financialInfoArgs<ExtArgs extends runtime.Types.Exten
    */
   include?: Prisma.DocumentFinancialInfoInclude<ExtArgs> | null
   where?: Prisma.DocumentFinancialInfoWhereInput
+}
+
+/**
+ * DocumentDetail.realizationInfo
+ */
+export type DocumentDetail$realizationInfoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentRealizationInfo
+   */
+  select?: Prisma.DocumentRealizationInfoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentRealizationInfo
+   */
+  omit?: Prisma.DocumentRealizationInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentRealizationInfoInclude<ExtArgs> | null
+  where?: Prisma.DocumentRealizationInfoWhereInput
 }
 
 /**

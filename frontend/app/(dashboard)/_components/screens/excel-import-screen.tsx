@@ -34,7 +34,8 @@ type ExcelImportType =
   | "CLOSED_DOCUMENTS"
   | "COMPANY_IDENTITY"
   | "COMPANY_REQUEST"
-  | "DOCUMENT_DETAIL";
+  | "DOCUMENT_DETAIL"
+  | "DOCUMENT_REALIZATION";
 
 type ImportBatchType =
   | "OPEN"
@@ -159,6 +160,19 @@ export function ExcelImportScreen() {
   const [invalidRowsLoading, setInvalidRowsLoading] = useState(false);
   const [importType, setImportType] =
     useState<ExcelImportType>("OPEN_DOCUMENTS");
+  const [realizationResult, setRealizationResult] = useState<{
+    totalRowCount: number;
+    validRowCount: number;
+    invalidRowCount: number;
+    newRowCount: number;
+    changedRowCount: number;
+    unchangedRowCount: number;
+    errors: {
+      rowNumber: number;
+      externalDocumentId: number | null;
+      message: string;
+    }[];
+  } | null>(null);
   async function loadImports() {
     try {
       const response = await apiFetch<ImportListResponse>(
@@ -255,6 +269,7 @@ export function ExcelImportScreen() {
     setSelectedFile(null);
     setFileError("");
     setUploadProgress(0);
+    setRealizationResult(null);
   }
 
   function handleViewExcel(importId: number) {
@@ -308,6 +323,25 @@ export function ExcelImportScreen() {
           method: "POST",
           body: formData,
         });
+      } else if (importType === "DOCUMENT_REALIZATION") {
+        setRealizationResult(null);
+
+        const response = await apiFetch<{
+          success: boolean;
+          message: string;
+          data: NonNullable<typeof realizationResult>;
+        }>("/document-realization-import/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.success) {
+          throw new Error(
+            response.message || "Gerçekleşme aktarımı başarısız.",
+          );
+        }
+
+        setRealizationResult(response.data);
       } else {
         const backendImportType =
           importType === "COMPANY_REQUEST"
@@ -379,7 +413,7 @@ export function ExcelImportScreen() {
             sürükleyin.
           </p>
         </div>
-        <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <button
             type="button"
             disabled={isUploading}
@@ -589,6 +623,43 @@ export function ExcelImportScreen() {
               </div>
             </div>
           </button>
+
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => {
+              setImportType("DOCUMENT_REALIZATION");
+              clearSelectedFile();
+            }}
+            className={`group rounded-2xl border p-4 text-left transition-all ${
+              importType === "DOCUMENT_REALIZATION"
+                ? "border-teal-300 bg-teal-50 shadow-sm"
+                : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/40"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  importType === "DOCUMENT_REALIZATION"
+                    ? "bg-teal-100 text-teal-700"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                <BarChart3 size={20} />
+              </div>
+
+              <div>
+                <p className="text-sm font-bold text-slate-800">
+                  Gerçekleşme Bilgileri
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Açık ve kapalı belge gerçekleşme Excel’lerini ayrı ayrı
+                  yükleyin. Öngörülen yatırım tutarları korunur.
+                </p>
+              </div>
+            </div>
+          </button>
         </div>
 
         {/* DRAG & DROP AREA */}
@@ -711,6 +782,52 @@ export function ExcelImportScreen() {
           )}
         </div>
 
+        {importType === "DOCUMENT_REALIZATION" && realizationResult && (
+          <div
+            role="status"
+            className={`mt-4 rounded-xl border p-4 ${
+              realizationResult.invalidRowCount > 0
+                ? "border-amber-200 bg-amber-50"
+                : "border-emerald-200 bg-emerald-50"
+            }`}
+          >
+            <p className="text-sm font-bold text-slate-900">
+              {realizationResult.validRowCount === 0
+                ? "Hiçbir kayıt aktarılamadı"
+                : realizationResult.invalidRowCount > 0
+                  ? "Aktarım tamamlandı; hatalı satırları kontrol edin"
+                  : "Gerçekleşme bilgileri aktarıldı"}
+            </p>
+
+            <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-700">
+              <span>Toplam: {realizationResult.totalRowCount}</span>
+              <span>Yeni: {realizationResult.newRowCount}</span>
+              <span>Güncellenen: {realizationResult.changedRowCount}</span>
+              <span>Değişmeyen: {realizationResult.unchangedRowCount}</span>
+              <span>Hatalı: {realizationResult.invalidRowCount}</span>
+            </div>
+
+            {realizationResult.errors.length > 0 && (
+              <details className="mt-3">
+                <summary className="cursor-pointer text-xs font-semibold text-amber-900">
+                  Hatalı satırları göster
+                </summary>
+
+                <ul className="mt-2 max-h-60 space-y-2 overflow-auto text-xs text-slate-700">
+                  {realizationResult.errors.map((error) => (
+                    <li key={error.rowNumber}>
+                      <strong>Satır {error.rowNumber}</strong>
+                      {" · "}Belge: {error.externalDocumentId ?? "—"}
+                      {" · "}
+                      {error.message}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        )}
+
         {/* HATA MESAJI */}
         {fileError && (
           <div
@@ -742,20 +859,24 @@ export function ExcelImportScreen() {
           >
             <Upload size={15} />
             {isUploading
-              ? importType === "COMPANY_IDENTITY"
-                ? "Künye Bilgileri Aktarılıyor..."
-                : importType === "COMPANY_REQUEST"
-                  ? "Talepler Aktarılıyor..."
-                  : importType === "DOCUMENT_DETAIL"
-                    ? "Belge Detayları Aktarılıyor..."
-                    : "Karşılaştırılıyor..."
-              : importType === "COMPANY_IDENTITY"
-                ? "Künye Bilgilerini Yükle"
-                : importType === "COMPANY_REQUEST"
-                  ? "Gönderilmiş Talepleri Yükle"
-                  : importType === "DOCUMENT_DETAIL"
-                    ? "Belge Detaylarını Yükle"
-                    : "Yükle ve Karşılaştır"}
+              ? importType === "DOCUMENT_REALIZATION"
+                ? "Gerçekleşmeler Aktarılıyor..."
+                : importType === "COMPANY_IDENTITY"
+                  ? "Künye Bilgileri Aktarılıyor..."
+                  : importType === "COMPANY_REQUEST"
+                    ? "Talepler Aktarılıyor..."
+                    : importType === "DOCUMENT_DETAIL"
+                      ? "Belge Detayları Aktarılıyor..."
+                      : "Karşılaştırılıyor..."
+              : importType === "DOCUMENT_REALIZATION"
+                ? "Gerçekleşme Excel’ini Yükle"
+                : importType === "COMPANY_IDENTITY"
+                  ? "Künye Bilgilerini Yükle"
+                  : importType === "COMPANY_REQUEST"
+                    ? "Gönderilmiş Talepleri Yükle"
+                    : importType === "DOCUMENT_DETAIL"
+                      ? "Belge Detaylarını Yükle"
+                      : "Yükle ve Karşılaştır"}
           </button>
         </div>
       </section>

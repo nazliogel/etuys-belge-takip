@@ -127,6 +127,7 @@ export class ClosedDocumentRepository {
             products: true,
             supports: true,
             financialInfo: true,
+            realizationInfo: true,
             domesticMachines: true,
             importedMachines: true,
             specialConditions: true,
