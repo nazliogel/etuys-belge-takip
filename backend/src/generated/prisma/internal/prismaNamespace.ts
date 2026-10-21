@@ -427,7 +427,8 @@ export const ModelName = {
   AuthSession: 'AuthSession',
   CompanyNotification: 'CompanyNotification',
   CompanyNotificationRead: 'CompanyNotificationRead',
-  PushDevice: 'PushDevice'
+  PushDevice: 'PushDevice',
+  DocumentRealizationInfo: 'DocumentRealizationInfo'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -443,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2741,6 +2742,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DocumentRealizationInfo: {
+      payload: Prisma.$DocumentRealizationInfoPayload<ExtArgs>
+      fields: Prisma.DocumentRealizationInfoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentRealizationInfoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentRealizationInfoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentRealizationInfoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentRealizationInfoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentRealizationInfoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentRealizationInfoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentRealizationInfoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentRealizationInfoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentRealizationInfoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>
+        }
+        update: {
+          args: Prisma.DocumentRealizationInfoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentRealizationInfoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentRealizationInfoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentRealizationInfoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentRealizationInfoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRealizationInfoPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentRealizationInfoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentRealizationInfo>
+        }
+        groupBy: {
+          args: Prisma.DocumentRealizationInfoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentRealizationInfoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentRealizationInfoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentRealizationInfoCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3419,6 +3494,39 @@ export const PushDeviceScalarFieldEnum = {
 export type PushDeviceScalarFieldEnum = (typeof PushDeviceScalarFieldEnum)[keyof typeof PushDeviceScalarFieldEnum]
 
 
+export const DocumentRealizationInfoScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  landRealization: 'landRealization',
+  totalLandRealization: 'totalLandRealization',
+  mainBuildingRealization: 'mainBuildingRealization',
+  auxiliaryFacilitiesRealization: 'auxiliaryFacilitiesRealization',
+  administrativeBuildingsRealization: 'administrativeBuildingsRealization',
+  undergroundGalleriesRealization: 'undergroundGalleriesRealization',
+  totalBuildingRealization: 'totalBuildingRealization',
+  auxiliaryMachineryRealization: 'auxiliaryMachineryRealization',
+  importCustomsRealization: 'importCustomsRealization',
+  transportInsuranceRealization: 'transportInsuranceRealization',
+  assemblyRealization: 'assemblyRealization',
+  studyProjectRealization: 'studyProjectRealization',
+  otherExpensesRealization: 'otherExpensesRealization',
+  expenseDocumentRealization: 'expenseDocumentRealization',
+  totalOtherInvestmentRealization: 'totalOtherInvestmentRealization',
+  domesticRealization: 'domesticRealization',
+  importedRealization: 'importedRealization',
+  exchangeDifferenceRealization: 'exchangeDifferenceRealization',
+  totalRealizedAmount: 'totalRealizedAmount',
+  updatedTotalLandRealization: 'updatedTotalLandRealization',
+  updatedTotalBuildingRealization: 'updatedTotalBuildingRealization',
+  updatedTotalOtherInvestmentRealization: 'updatedTotalOtherInvestmentRealization',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentRealizationInfoScalarFieldEnum = (typeof DocumentRealizationInfoScalarFieldEnum)[keyof typeof DocumentRealizationInfoScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4011,6 +4119,7 @@ export type GlobalOmitConfig = {
   companyNotification?: Prisma.CompanyNotificationOmit
   companyNotificationRead?: Prisma.CompanyNotificationReadOmit
   pushDevice?: Prisma.PushDeviceOmit
+  documentRealizationInfo?: Prisma.DocumentRealizationInfoOmit
 }
 
 /* Types for Logging */

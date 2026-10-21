@@ -523,6 +523,7 @@ model DocumentDetail {
   products          DocumentProduct[]
   supports          DocumentSupport[]
   financialInfo     DocumentFinancialInfo?
+  realizationInfo   DocumentRealizationInfo?
   domesticMachines  DocumentDomesticMachine[]
   importedMachines  DocumentImportedMachine[]
   specialConditions DocumentSpecialCondition[]
@@ -1027,4 +1028,50 @@ model PushDevice {
   updatedAt DateTime @updatedAt
 
   @@index([userId, isActive])
+}
+
+model DocumentRealizationInfo {
+  id       Int @id @default(autoincrement())
+  detailId Int @unique
+
+  // Arazi / arsa gerçekleşmesi
+  landRealization      Decimal?
+  totalLandRealization Decimal?
+
+  // Bina / inşaat gerçekleşmesi
+  mainBuildingRealization            Decimal?
+  auxiliaryFacilitiesRealization     Decimal?
+  administrativeBuildingsRealization Decimal?
+  undergroundGalleriesRealization    Decimal?
+  totalBuildingRealization           Decimal?
+
+  // Diğer yatırım giderleri gerçekleşmesi
+  auxiliaryMachineryRealization   Decimal?
+  importCustomsRealization        Decimal?
+  transportInsuranceRealization   Decimal?
+  assemblyRealization             Decimal?
+  studyProjectRealization         Decimal?
+  otherExpensesRealization        Decimal?
+  expenseDocumentRealization      Decimal?
+  totalOtherInvestmentRealization Decimal?
+
+  // Yerli, ithal ve kur farkı gerçekleşmesi
+  domesticRealization           Decimal?
+  importedRealization           Decimal?
+  exchangeDifferenceRealization Decimal?
+
+  // Toplam gerçekleşen son tutar
+  totalRealizedAmount Decimal?
+
+  // Güncellenmiş toplamlar
+  updatedTotalLandRealization            Decimal?
+  updatedTotalBuildingRealization        Decimal?
+  updatedTotalOtherInvestmentRealization Decimal?
+
+  rawData Json?
+
+  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

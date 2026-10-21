@@ -81,7 +81,8 @@ export const ModelName = {
   AuthSession: 'AuthSession',
   CompanyNotification: 'CompanyNotification',
   CompanyNotificationRead: 'CompanyNotificationRead',
-  PushDevice: 'PushDevice'
+  PushDevice: 'PushDevice',
+  DocumentRealizationInfo: 'DocumentRealizationInfo'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -737,6 +738,39 @@ export const PushDeviceScalarFieldEnum = {
 } as const
 
 export type PushDeviceScalarFieldEnum = (typeof PushDeviceScalarFieldEnum)[keyof typeof PushDeviceScalarFieldEnum]
+
+
+export const DocumentRealizationInfoScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  landRealization: 'landRealization',
+  totalLandRealization: 'totalLandRealization',
+  mainBuildingRealization: 'mainBuildingRealization',
+  auxiliaryFacilitiesRealization: 'auxiliaryFacilitiesRealization',
+  administrativeBuildingsRealization: 'administrativeBuildingsRealization',
+  undergroundGalleriesRealization: 'undergroundGalleriesRealization',
+  totalBuildingRealization: 'totalBuildingRealization',
+  auxiliaryMachineryRealization: 'auxiliaryMachineryRealization',
+  importCustomsRealization: 'importCustomsRealization',
+  transportInsuranceRealization: 'transportInsuranceRealization',
+  assemblyRealization: 'assemblyRealization',
+  studyProjectRealization: 'studyProjectRealization',
+  otherExpensesRealization: 'otherExpensesRealization',
+  expenseDocumentRealization: 'expenseDocumentRealization',
+  totalOtherInvestmentRealization: 'totalOtherInvestmentRealization',
+  domesticRealization: 'domesticRealization',
+  importedRealization: 'importedRealization',
+  exchangeDifferenceRealization: 'exchangeDifferenceRealization',
+  totalRealizedAmount: 'totalRealizedAmount',
+  updatedTotalLandRealization: 'updatedTotalLandRealization',
+  updatedTotalBuildingRealization: 'updatedTotalBuildingRealization',
+  updatedTotalOtherInvestmentRealization: 'updatedTotalOtherInvestmentRealization',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentRealizationInfoScalarFieldEnum = (typeof DocumentRealizationInfoScalarFieldEnum)[keyof typeof DocumentRealizationInfoScalarFieldEnum]
 
 
 export const SortOrder = {
