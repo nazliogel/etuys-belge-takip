@@ -60,6 +60,7 @@ export const STATUS_LABELS: Record<string, string> = {
   INACTIVE: "Kapalı-İptal",
   EXTENSION_ELIGIBLE: "Uzatma Yapılabilir",
   CLOSURE_ELIGIBLE: "Kapatma Yapılacak",
+  CLOSURE_APPLICATION_SUBMITTED: "Kap.Mür.Yapıldı",
   AUTHORIZATION_EXPIRED: "Yetkisi Bitmiş",
 };
 // `extraParams` ile (ör. search) filtrelenmiş kapalı/iptal belgelerin
@@ -271,6 +272,9 @@ export function getBadgeStatus(
 
   // displayStatus gelmeyen kaynaklar (firma detayı, uzatma/kapatma listeleri)
   if (opts.authorizationExpired) return "AUTHORIZATION_EXPIRED";
+  if (doc.displayStatus === "CLOSURE_APPLICATION_SUBMITTED") {
+  return "CLOSURE_APPLICATION_SUBMITTED";
+}
   if (opts.isClosureEligibleView || opts.closureEligibleIds.has(doc.id))
     return "CLOSURE_ELIGIBLE";
   if (opts.isExtensionEligibleView || opts.extensionEligibleIds.has(doc.id))
@@ -375,6 +379,7 @@ export type DocumentStatusKey =
   | "AUTHORIZATION_EXPIRED"
   | "CLOSURE_ELIGIBLE"
   | "EXTENSION_ELIGIBLE"
+  | "CLOSURE_APPLICATION_SUBMITTED"
   | "EXPIRED"
   | "ACTIVE";
 
@@ -386,6 +391,7 @@ const STATUS_TONES: Record<DocumentStatusKey, StatusTone> = {
   CLOSED: "blue",
   AUTHORIZATION_EXPIRED: "blue",
   CLOSURE_ELIGIBLE: "red",
+  CLOSURE_APPLICATION_SUBMITTED: "green",
   EXTENSION_ELIGIBLE: "amber",
   EXPIRED: "red",
   ACTIVE: "green",
@@ -417,6 +423,7 @@ export function getDocumentStatusInfo(document: {
   } else if (
     document.displayStatus === "AUTHORIZATION_EXPIRED" ||
     document.displayStatus === "CLOSURE_ELIGIBLE" ||
+    document.displayStatus === "CLOSURE_APPLICATION_SUBMITTED" ||
     document.displayStatus === "EXTENSION_ELIGIBLE" ||
     document.displayStatus === "EXPIRED"
   ) {

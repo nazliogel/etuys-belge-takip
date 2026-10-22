@@ -255,6 +255,37 @@ export class CompanyRequestRepository {
       ],
     });
   }
+
+  async findClosureRequestsForDocuments(externalDocumentIds: number[]) {
+  const ids = [...new Set(externalDocumentIds)];
+
+  if (ids.length === 0) {
+    return [];
+  }
+
+  return prisma.companyRequest.findMany({
+    where: {
+      externalDocumentId: { in: ids },
+      requestType: {
+        equals: "Belge Kapatma Başvurusu",
+        mode: "insensitive",
+      },
+    },
+    select: {
+      id: true,
+      companyId: true,
+      externalDocumentId: true,
+      requestStatus: true,
+      applicationDate: true,
+    },
+    orderBy: [
+      { applicationDate: { sort: "desc", nulls: "last" } },
+      { id: "desc" },
+    ],
+  });
+}
+
+
   async findMany(params: CompanyRequestListParams) {
     const where = this.createWhereInput(params);
 

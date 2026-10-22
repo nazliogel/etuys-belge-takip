@@ -36,4 +36,8 @@ documentRouter.get(
   "/:id/special-conditions",
   documentController.getSpecialConditions,
 );
+documentRouter.get(
+  "/closure-application-submitted",
+  documentController.closureApplicationSubmitted,
+);
 documentRouter.get("/:id", documentController.getById);

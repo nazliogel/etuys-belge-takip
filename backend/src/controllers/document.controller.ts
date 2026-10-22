@@ -129,6 +129,30 @@ export class DocumentController {
       data,
     });
   };
+  closureApplicationSubmitted = async (
+    req: Request,
+    res: Response<ApiResponse<unknown>>,
+  ) => {
+    if (!req.user) {
+      throw new AppError("Authentication required.", {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        code: "AUTH_REQUIRED",
+      });
+    }
+
+    const data = await this.service.getClosureApplicationSubmittedDocuments(
+      req.user.id,
+      req.user.role,
+      String(req.query.onlyAssigned) === "true",
+    );
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Closure application submitted documents fetched successfully.",
+      data,
+    });
+  };
+
   getById = async (
     req: Request<{ id: string }>,
     res: Response<ApiResponse<unknown>>,

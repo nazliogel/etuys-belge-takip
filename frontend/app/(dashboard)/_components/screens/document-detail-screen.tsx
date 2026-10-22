@@ -114,6 +114,7 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     CLOSED: "Belge kapatılmıştır.",
     AUTHORIZATION_EXPIRED: "Firmanın yetki süresi dolmuştur.",
     CLOSURE_ELIGIBLE: "Uzatılan süre sona ermiştir.",
+    CLOSURE_APPLICATION_SUBMITTED: "Belge için kapatma müracaatı yapılmıştır.",
     EXTENSION_ELIGIBLE: "Süre uzatma müracaatı yapılabilir.",
     EXPIRED: "Belge bitiş tarihi geçmiştir.",
     ACTIVE:

@@ -30,6 +30,7 @@ export type UseDocumentsDataParams = {
   status: DocumentStatus | undefined;
   debouncedSearch: string;
   isExtensionEligibleView: boolean;
+  isClosureApplicationSubmittedView: boolean;
   isClosureEligibleView: boolean;
   isAuthorizationRequiredView: boolean;
 };
@@ -41,6 +42,7 @@ export function useDocumentsData({
   status,
   debouncedSearch,
   isExtensionEligibleView,
+  isClosureApplicationSubmittedView,
   isClosureEligibleView,
   isAuthorizationRequiredView,
 }: UseDocumentsDataParams) {
@@ -59,6 +61,10 @@ export function useDocumentsData({
   const [closedDocumentCount, setClosedDocumentCount] = useState(0);
   const [extensionEligibleCount, setExtensionEligibleCount] = useState(0);
   const [closureEligibleCount, setClosureEligibleCount] = useState(0);
+  const [
+    closureApplicationSubmittedCount,
+    setClosureApplicationSubmittedCount,
+  ] = useState(0);
   const [authorizationRequiredCount, setAuthorizationRequiredCount] =
     useState(0);
   const [authorizationRequiredCompanies, setAuthorizationRequiredCompanies] =
@@ -67,10 +73,13 @@ export function useDocumentsData({
   // Firma detayında "Süre Uzatma" / "Kapatma Yapılacaklar" kartları için
   const [companyExtensionEligibleIds, setCompanyExtensionEligibleIds] =
     useState<Set<number>>(new Set());
-  const [companyClosureEligibleIds, setCompanyClosureEligibleIds] =
-    useState<Set<number>>(new Set());
+  const [companyClosureEligibleIds, setCompanyClosureEligibleIds] = useState<
+    Set<number>
+  >(new Set());
 
-  const [authorizationEndDate, setAuthorizationEndDate] = useState<string | null>(null);
+  const [authorizationEndDate, setAuthorizationEndDate] = useState<
+    string | null
+  >(null);
   const [isAuthorizationLoading, setIsAuthorizationLoading] = useState(
     variant === "company",
   );
@@ -218,6 +227,9 @@ export function useDocumentsData({
           setCompanyClosureEligibleIds(closureIds);
           setExtensionEligibleCount(extensionIds.size);
           setClosureEligibleCount(closureIds.size);
+          setClosureApplicationSubmittedCount(
+            countWithStatus("CLOSURE_APPLICATION_SUBMITTED"),
+          );
 
           setSummary({
             total: mappedDocuments.length,
@@ -283,6 +295,9 @@ export function useDocumentsData({
           setSummary(nextSummary);
           setExtensionEligibleCount(nextSummary.extensionEligible ?? 0);
           setClosureEligibleCount(nextSummary.closureEligible ?? 0);
+          setClosureApplicationSubmittedCount(
+            nextSummary.closureApplicationSubmitted ?? 0,
+          );
           setClosedDocumentCount(closedResponse.data.totalCount);
           setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
           setAuthorizationRequiredCompanies(authorizationResponse.data.items);
@@ -295,11 +310,16 @@ export function useDocumentsData({
           return;
         }
 
-        if (isExtensionEligibleView || isClosureEligibleView) {
+        if (
+          isExtensionEligibleView ||
+          isClosureEligibleView ||
+          isClosureApplicationSubmittedView
+        ) {
           const endpoint = isExtensionEligibleView
             ? "/documents/extension-eligible"
-            : "/documents/closure-eligible";
-
+            : isClosureApplicationSubmittedView
+              ? "/documents/closure-application-submitted"
+              : "/documents/closure-eligible";
           const [listResponse, counts] = await Promise.all([
             apiFetch<ExtensionEligibleResponse>(endpoint),
             loadCounts(true),
@@ -410,6 +430,7 @@ export function useDocumentsData({
     status,
     debouncedSearch,
     isExtensionEligibleView,
+    isClosureApplicationSubmittedView,
     isClosureEligibleView,
     isAuthorizationRequiredView,
     variant,
@@ -430,6 +451,7 @@ export function useDocumentsData({
     authorizationRequiredCompanies,
     companyExtensionEligibleIds,
     companyClosureEligibleIds,
+    closureApplicationSubmittedCount,
     authorizationEndDate,
     isAuthorizationLoading,
     authorizationAllowsFetch,

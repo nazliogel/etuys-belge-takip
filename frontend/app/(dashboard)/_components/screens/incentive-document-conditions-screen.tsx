@@ -251,9 +251,7 @@ export function IncentiveDocumentConditionsScreen() {
       setMessage("Şart maddesinin durumu güncellendi.");
       await loadConditions();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Durum güncellenemedi.",
-      );
+      setError(err instanceof Error ? err.message : "Durum güncellenemedi.");
     }
   }
 
@@ -275,9 +273,7 @@ export function IncentiveDocumentConditionsScreen() {
 
       setMessage("Şart maddesi silindi, sıra numaraları güncellendi.");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Şart maddesi silinemedi.",
-      );
+      setError(err instanceof Error ? err.message : "Şart maddesi silinemedi.");
     } finally {
       // Hata olsa bile listeyi sunucudaki güncel haliyle göster.
       await loadConditions();
@@ -304,7 +300,7 @@ export function IncentiveDocumentConditionsScreen() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Teşvik Belgesi Şartları
+            Dikkat Edilecek Hususlar
           </h1>
         </div>
 
@@ -315,10 +311,6 @@ export function IncentiveDocumentConditionsScreen() {
         )}
 
         <article className="rounded-xl border border-slate-200 bg-white px-5 py-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-8 sm:py-8">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Dikkat Edilmesi Gereken Hususlar
-          </h2>
-
           {isLoading ? (
             <p className="mt-6 text-sm text-slate-500">
               Şart maddeleri yükleniyor...
@@ -359,7 +351,7 @@ export function IncentiveDocumentConditionsScreen() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          Teşvik Belgesi Şartları
+          Dikkat Edilecek Hususlar
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Firmaların gördüğü şart maddelerini ekleyin, düzenleyin veya yayından

@@ -2,7 +2,9 @@ import { AppError } from "../errors/app-error.js";
 import type { UserRole } from "../generated/prisma/client.js";
 import type { DocumentRepository } from "../repositories/document.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
+import type { CompanyRequestRepository } from "../repositories/company-request.repository.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
+
 import {
   addMonths,
   computeDocumentStatus,
@@ -109,6 +111,7 @@ export class DocumentService {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly companyRepository: CompanyRepository,
+    private readonly companyRequestRepository: CompanyRequestRepository,
   ) {}
 
   private async getAuthorizedCompany(userId: number) {
@@ -151,6 +154,62 @@ export class DocumentService {
       consultantUserId:
         role === "OPERATION" && onlyAssigned ? userId : undefined,
     };
+  }
+
+  private async withClosureApplicationStatus<
+    T extends {
+      document: { companyId: number; externalDocumentId: number };
+      displayStatus: DisplayStatus;
+    },
+  >(rows: T[]) {
+    const eligibleRows = rows.filter(
+      (row) => row.displayStatus === "CLOSURE_ELIGIBLE",
+    );
+
+    if (eligibleRows.length === 0) {
+      return rows;
+    }
+
+    const eligibleKeys = new Set(
+      eligibleRows.map(
+        ({ document }) =>
+          `${document.companyId}:${document.externalDocumentId}`,
+      ),
+    );
+
+    const requests =
+      await this.companyRequestRepository.findClosureRequestsForDocuments(
+        eligibleRows.map(({ document }) => document.externalDocumentId),
+      );
+
+    const latestStatusByDocument = new Map<string, string | null>();
+
+    // Repository sonuçları en yeni başvuru önce gelecek şekilde sıralı.
+    for (const request of requests) {
+      if (request.externalDocumentId === null) continue;
+
+      const key = `${request.companyId}:${request.externalDocumentId}`;
+
+      if (!eligibleKeys.has(key) || latestStatusByDocument.has(key)) continue;
+
+      latestStatusByDocument.set(key, request.requestStatus);
+    }
+
+    return rows.map((row) => {
+      if (row.displayStatus !== "CLOSURE_ELIGIBLE") return row;
+
+      const key = `${row.document.companyId}:${row.document.externalDocumentId}`;
+      const latestStatus = latestStatusByDocument.get(key);
+      const isRejected =
+        latestStatus?.toLocaleUpperCase("tr-TR").includes("REDDED") ?? false;
+
+      if (latestStatus === undefined || isRejected) return row;
+
+      return {
+        ...row,
+        displayStatus: "CLOSURE_APPLICATION_SUBMITTED" as const,
+      };
+    });
   }
 
   /** Belgeyi getirir ve kullanıcının erişim yetkisini kontrol eder (tek yer) */
@@ -196,8 +255,10 @@ export class DocumentService {
       isActive: requestedIsActive,
       ...scope,
     });
-
-    const rows = documents.map((document) => evaluate(document, today));
+    const evaluatedRows = documents.map((document) =>
+      evaluate(document, today),
+    );
+    const rows = await this.withClosureApplicationStatus(evaluatedRows);
     type Row = (typeof rows)[number];
 
     const matchesStatus = (row: Row): boolean => {
@@ -261,6 +322,7 @@ export class DocumentService {
       total: rows.length,
       active: count("ACTIVE"),
       expiring: count("EXPIRING"),
+      closureApplicationSubmitted: count("CLOSURE_APPLICATION_SUBMITTED"),
       expired: count("EXPIRED"), // artık yetki kontrolü de yapılıyor (hata düzeltmesi)
       inactive: rows.filter((row) => row.legacyStatus === "INACTIVE").length,
 
@@ -343,8 +405,12 @@ export class DocumentService {
       ...scope,
     });
 
-    const items = documents
-      .map((document) => evaluate(document, today))
+    const evaluatedRows = documents.map((document) =>
+      evaluate(document, today),
+    );
+    const rows = await this.withClosureApplicationStatus(evaluatedRows);
+
+    const items = rows
       .filter((row) => row.displayStatus === "CLOSURE_ELIGIBLE")
       .map(({ document, closureApplicationStartDate }) => ({
         id: document.id,
@@ -364,10 +430,56 @@ export class DocumentService {
 
     return { items, totalCount: items.length };
   }
+  async getClosureApplicationSubmittedDocuments(
+    userId: number,
+    role: UserRole,
+    onlyAssigned = false,
+  ) {
+    const scope = await this.resolveScope(
+      userId,
+      role,
+      undefined,
+      onlyAssigned,
+    );
+    const today = todayInIstanbul();
 
+    const documents = await this.documentRepository.findMany({
+      isActive: true,
+      status: "OPEN",
+      ...scope,
+    });
+
+    const evaluatedRows = documents.map((document) =>
+      evaluate(document, today),
+    );
+    const rows = await this.withClosureApplicationStatus(evaluatedRows);
+
+    const items = rows
+      .filter((row) => row.displayStatus === "CLOSURE_APPLICATION_SUBMITTED")
+      .map(({ document, displayStatus }) => ({
+        id: document.id,
+        externalDocumentId: document.externalDocumentId,
+        documentNumber: document.documentNumber,
+        documentStartDate: toDateOnly(document.documentStartDate),
+        documentEndDate: toDateOnly(document.documentEndDate),
+        extensionDate: toDateOnly(document.extensionDate),
+        supportClass: document.supportClass,
+        isActive: document.isActive,
+        displayStatus,
+        company: toCompanyDto(document.company),
+      }));
+
+    items.sort((a, b) =>
+      (a.extensionDate ?? "").localeCompare(b.extensionDate ?? ""),
+    );
+
+    return { items, totalCount: items.length };
+  }
   async getDocumentById(id: number, userId: number, role: UserRole) {
     const document = await this.getAccessibleDocument(id, userId, role);
-    const row = evaluate(document, todayInIstanbul());
+    const [row] = await this.withClosureApplicationStatus([
+      evaluate(document, todayInIstanbul()),
+    ]);
 
     return {
       id: document.id,

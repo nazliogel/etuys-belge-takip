@@ -63,7 +63,8 @@ export function DocumentsScreen({
   const requestedView = searchParams.get("view");
   const isExtensionEligibleView = requestedView === "extension-eligible";
   const isClosureEligibleView = requestedView === "closure-eligible";
-
+  const isClosureApplicationSubmittedView =
+    requestedView === "closure-application-submitted";
   const isAuthorizationRequiredView =
     requestedView === "authorization-required";
   const status: DocumentStatus | undefined =
@@ -100,6 +101,7 @@ export function DocumentsScreen({
     summary,
     closedDocumentCount,
     extensionEligibleCount,
+    closureApplicationSubmittedCount,
     closureEligibleCount,
     authorizationRequiredCount,
     authorizationRequiredCompanies,
@@ -115,6 +117,7 @@ export function DocumentsScreen({
     status,
     debouncedSearch,
     isExtensionEligibleView,
+    isClosureApplicationSubmittedView,
     isClosureEligibleView,
     isAuthorizationRequiredView,
   });
@@ -122,11 +125,9 @@ export function DocumentsScreen({
   const [openFilterColumn, setOpenFilterColumn] = useState<
     "consultant" | "supportClass" | "status" | null
   >(null);
-
   const [filterAnchorRect, setFilterAnchorRect] = useState<DOMRect | null>(
     null,
   );
-
   useEffect(() => {
     if (!openFilterColumn) return;
 
@@ -405,9 +406,6 @@ export function DocumentsScreen({
       .map((value) => ({ value, label: value }));
   }, [visibleDocumentsByStatusFilter]);
 
-  // Bir belgenin ekranda görünen durum rozeti. Mobil kart, masaüstü tablo,
-  // Durum filtresi seçenekleri ve filtrenin kendisi hep bu fonksiyonu kullanır;
-  // böylece rozet ile filtre her zaman aynı kalır.
   function getRowBadge(doc: ApiDocument): string {
     return getBadgeStatus(doc, {
       isClosureEligibleView,
@@ -420,7 +418,6 @@ export function DocumentsScreen({
       }),
     });
   }
-
   // Satır çizerken gereken her şey tek yerden: rozet, satır anahtarı, seçili mi.
   function getRowView(doc: ApiDocument) {
     const documentKey = `${doc.status === "INACTIVE" ? "closed" : "open"}-${doc.id}`;
@@ -710,7 +707,15 @@ export function DocumentsScreen({
                 }
               }}
             />
-
+            <OperationStat
+              label="Kap.Mür.Yapıldı"
+              value={String(closureApplicationSubmittedCount)}
+              icon={<CalendarDays size={15} />}
+              valueClass="text-green-600 dark:text-green-400"
+              onClick={() => {
+                router.push("/documents?view=closure-application-submitted");
+              }}
+            />
             {!companyId && (
               <OperationStat
                 label="Yetkilendirme Yapılacaklar"
@@ -840,7 +845,8 @@ export function DocumentsScreen({
           ) : (
             <ul className="divide-y divide-border">
               {paginatedVisibleDocuments.map((doc) => {
-                const { badgeStatus, documentKey, isSelected } = getRowView(doc);
+                const { badgeStatus, documentKey, isSelected } =
+                  getRowView(doc);
 
                 return (
                   <DocumentCard
@@ -860,9 +866,7 @@ export function DocumentsScreen({
         {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
         <div className="hidden lg:block">
           <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
-            <table
-              className="w-full table-fixed text-left text-sm"
-            >
+            <table className="w-full table-fixed text-left text-sm">
               {isAuthorizationRequiredView ? (
                 <colgroup>
                   <col className="w-[13%]" />
@@ -1100,7 +1104,8 @@ export function DocumentsScreen({
                   </tr>
                 ) : (
                   paginatedVisibleDocuments.map((doc) => {
-                    const { badgeStatus, documentKey, isSelected } = getRowView(doc);
+                    const { badgeStatus, documentKey, isSelected } =
+                      getRowView(doc);
 
                     return (
                       <DocumentRow

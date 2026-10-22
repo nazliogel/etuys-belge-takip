@@ -2,7 +2,13 @@
 
 // Belgeler ekranının görsel alt bileşenleri.
 
-import { ChevronDown, ChevronsUpDown, ChevronUp, ShieldAlert, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  ShieldAlert,
+  X,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { AuthorizationStatus, SortDirection } from "./types";
@@ -155,7 +161,11 @@ export function OperationStat({
   );
 }
 
-export function AuthorizationStatusBadge({ status }: { status: AuthorizationStatus }) {
+export function AuthorizationStatusBadge({
+  status,
+}: {
+  status: AuthorizationStatus;
+}) {
   const config = {
     MISSING: {
       label: "Yetki Yok",
@@ -185,7 +195,11 @@ export function AuthorizationStatusBadge({ status }: { status: AuthorizationStat
   );
 }
 
-export function AuthorizationWarning({ variant }: { variant: "admin" | "company" }) {
+export function AuthorizationWarning({
+  variant,
+}: {
+  variant: "admin" | "company";
+}) {
   return (
     <div className="mx-auto max-w-4xl rounded-xl border border-border bg-muted/40 px-3 py-2.5 text-left">
       <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
@@ -254,7 +268,13 @@ export function StatusBadge({ status }: { status: string }) {
       bg: "bg-red-50 dark:bg-red-500/10",
       border: "border-red-200 dark:border-red-500/30",
     },
-
+    CLOSURE_APPLICATION_SUBMITTED: {
+      label: "Kap.Mür.Yapıldı",
+      dot: "bg-emerald-500",
+      text: "text-emerald-700 dark:text-emerald-300",
+      bg: "bg-emerald-50 dark:bg-emerald-500/10",
+      border: "border-emerald-200 dark:border-emerald-500/30",
+    },
     // getBadgeStatus'un döndürdüğü "Uzatma Yapılabilir" görünümü
     EXTENSION_ELIGIBLE: {
       label: "Uzatma Yapılabilir",
