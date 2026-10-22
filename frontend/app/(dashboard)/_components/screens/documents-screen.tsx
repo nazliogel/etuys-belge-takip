@@ -63,14 +63,14 @@ export function DocumentsScreen({
   const requestedView = searchParams.get("view");
   const isExtensionEligibleView = requestedView === "extension-eligible";
   const isClosureEligibleView = requestedView === "closure-eligible";
-  const isClosureAppliedView = requestedView === "closure-applied";
+
   const isAuthorizationRequiredView =
     requestedView === "authorization-required";
   const status: DocumentStatus | undefined =
     requestedStatus === "ACTIVE" ||
-      requestedStatus === "EXPIRING" ||
-      requestedStatus === "EXPIRED" ||
-      requestedStatus === "INACTIVE"
+    requestedStatus === "EXPIRING" ||
+    requestedStatus === "EXPIRED" ||
+    requestedStatus === "INACTIVE"
       ? requestedStatus
       : undefined;
 
@@ -84,8 +84,6 @@ export function DocumentsScreen({
   const [showCompanyClosureEligible, setShowCompanyClosureEligible] =
     useState(false);
 
-  const [showCompanyClosureApplied, setShowCompanyClosureApplied] =
-    useState(false);
   const [companyStatusFilter, setCompanyStatusFilter] =
     useState<DocumentStatus | null>(null);
 
@@ -103,7 +101,6 @@ export function DocumentsScreen({
     closedDocumentCount,
     extensionEligibleCount,
     closureEligibleCount,
-    closureAppliedCount,
     authorizationRequiredCount,
     authorizationRequiredCompanies,
     companyExtensionEligibleIds,
@@ -118,7 +115,6 @@ export function DocumentsScreen({
     status,
     debouncedSearch,
     isExtensionEligibleView,
-    isClosureAppliedView,
     isClosureEligibleView,
     isAuthorizationRequiredView,
   });
@@ -254,7 +250,6 @@ export function DocumentsScreen({
     debouncedSearch,
     isExtensionEligibleView,
     isClosureEligibleView,
-    isClosureAppliedView,
     isAuthorizationRequiredView,
   ]);
 
@@ -273,12 +268,10 @@ export function DocumentsScreen({
     status,
     isExtensionEligibleView,
     isClosureEligibleView,
-    isClosureAppliedView,
     isAuthorizationRequiredView,
     companyStatusFilter,
     showCompanyExtensionEligible,
     showCompanyClosureEligible,
-    showCompanyClosureApplied,
   ]);
   function handleOpenDocument(
     documentId: string,
@@ -356,42 +349,36 @@ export function DocumentsScreen({
 
   const visibleDocumentsByStatusFilter = companyId
     ? documents.filter((document) => {
-      if (showCompanyClosureApplied) {
-        return (
-          document.status !== "INACTIVE" &&
-          document.displayStatus === "CLOSURE_APPLIED"
-        );
-      }
-      // Kapalı/İptal (INACTIVE) bir belge, /documents ile
-      // /closed-documents arasındaki olası id çakışması yüzünden
-      // "Süre Uzatma" ya da "Kapatma Yapılacaklar" kartlarına asla
-      // dahil edilmemeli; durumu yalnızca kapalı/iptal kaynağından gelir.
-      if (document.status === "INACTIVE") {
-        return (
-          !showCompanyExtensionEligible &&
-          !showCompanyClosureEligible &&
-          (!companyStatusFilter || companyStatusFilter === "INACTIVE")
-        );
-      }
+        // Kapalı/İptal (INACTIVE) bir belge, /documents ile
+        // /closed-documents arasındaki olası id çakışması yüzünden
+        // "Süre Uzatma" ya da "Kapatma Yapılacaklar" kartlarına asla
+        // dahil edilmemeli; durumu yalnızca kapalı/iptal kaynağından gelir.
+        if (document.status === "INACTIVE") {
+          return (
+            !showCompanyExtensionEligible &&
+            !showCompanyClosureEligible &&
+            (!companyStatusFilter || companyStatusFilter === "INACTIVE")
+          );
+        }
 
-      if (showCompanyExtensionEligible) {
-        return companyExtensionEligibleIds.has(document.id);
-      }
-      if (showCompanyClosureEligible) {
-        return companyClosureEligibleIds.has(document.id);
-      }
+        if (showCompanyExtensionEligible) {
+          return companyExtensionEligibleIds.has(document.id);
+        }
+        if (showCompanyClosureEligible) {
+          return companyClosureEligibleIds.has(document.id);
+        }
 
-      if (!companyStatusFilter) return true;
+        if (!companyStatusFilter) return true;
 
-      if (companyStatusFilter === "ACTIVE") {
-        return (
-          document.displayStatus === "ACTIVE" ||
-          document.displayStatus === "EXPIRING"
-        );
-      }
+        if (companyStatusFilter === "ACTIVE") {
+          return (
+            document.displayStatus === "ACTIVE" ||
+            document.displayStatus === "EXPIRING"
+          );
+        }
 
-      return document.status === companyStatusFilter;
-    })
+        return document.status === companyStatusFilter;
+      })
     : documents;
 
   // Sütun başlığındaki filtre kutucuklarının (Uzman / Destekleme Sınıfı /
@@ -541,7 +528,6 @@ export function DocumentsScreen({
     !status &&
     !isExtensionEligibleView &&
     !isClosureEligibleView &&
-    !isClosureAppliedView &&
     !isAuthorizationRequiredView;
 
   const isClientPaginated = isClosedDocumentsView || isTotalDocumentsView;
@@ -568,11 +554,9 @@ export function DocumentsScreen({
   const hideStatusFilter =
     isExtensionEligibleView ||
     isClosureEligibleView ||
-    isClosureAppliedView ||
     status === "INACTIVE" ||
     showCompanyExtensionEligible ||
     showCompanyClosureEligible ||
-    showCompanyClosureApplied ||
     companyStatusFilter === "INACTIVE";
 
   const documentHeadings: {
@@ -582,25 +566,25 @@ export function DocumentsScreen({
     // Küçük ekranda (1280px altı) gizlenen, daha az kritik sütunlar
     wideOnly?: boolean;
   }[] = [
-      { label: "Belge No", key: "documentNumber" },
-      { label: "Firma", key: "companyName" },
-      { label: "Uzman", key: "consultant", filterType: "consultant" },
-      { label: "Başlangıç", key: "documentStartDate", wideOnly: true },
-      { label: "Bitiş", key: "documentEndDate" },
-      { label: "Süre Uzatım", key: "extensionDate" },
-      { label: "Yetki Bitiş", key: "authorizationEndDate", wideOnly: true },
-      {
-        label: "Destek Sınıfı",
-        key: "supportClass",
-        filterType: "supportClass",
-      },
-      {
-        label: "Durum",
-        key: "status",
-        ...(hideStatusFilter ? {} : { filterType: "status" as const }),
-      },
-      { label: "Detay" },
-    ];
+    { label: "Belge No", key: "documentNumber" },
+    { label: "Firma", key: "companyName" },
+    { label: "Uzman", key: "consultant", filterType: "consultant" },
+    { label: "Başlangıç", key: "documentStartDate", wideOnly: true },
+    { label: "Bitiş", key: "documentEndDate" },
+    { label: "Süre Uzatım", key: "extensionDate" },
+    { label: "Yetki Bitiş", key: "authorizationEndDate", wideOnly: true },
+    {
+      label: "Destek Sınıfı",
+      key: "supportClass",
+      filterType: "supportClass",
+    },
+    {
+      label: "Durum",
+      key: "status",
+      ...(hideStatusFilter ? {} : { filterType: "status" as const }),
+    },
+    { label: "Detay" },
+  ];
 
   const authHeadings: { label: string; key?: AuthSortKey }[] = [
     { label: "Firma ID", key: "externalCompanyId" },
@@ -656,8 +640,9 @@ export function DocumentsScreen({
       {variant === "admin" && (
         <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <div
-            className={`grid grid-cols-1 divide-y divide-border min-[380px]:grid-cols-2 min-[380px]:divide-x sm:grid-cols-3 lg:divide-y-0 ${companyId ? "lg:grid-cols-6" : "lg:grid-cols-7"
-              }`}
+            className={`grid grid-cols-1 divide-y divide-border min-[380px]:grid-cols-2 min-[380px]:divide-x sm:grid-cols-3 lg:divide-y-0 ${
+              companyId ? "lg:grid-cols-5" : "lg:grid-cols-6"
+            }`}
           >
             <OperationStat
               label="Toplam Belge"
@@ -672,7 +657,6 @@ export function DocumentsScreen({
                   setCompanyStatusFilter(null);
                   setShowCompanyExtensionEligible(false);
                   setShowCompanyClosureEligible(false);
-                  setShowCompanyClosureApplied(false);
                 } else {
                   router.push("/documents");
                 }
@@ -688,7 +672,6 @@ export function DocumentsScreen({
                 if (companyId) {
                   setShowCompanyExtensionEligible(false);
                   setShowCompanyClosureEligible(false);
-                  setShowCompanyClosureApplied(false);
                   setCompanyStatusFilter("ACTIVE");
                 } else {
                   router.push("/documents?status=ACTIVE");
@@ -705,7 +688,6 @@ export function DocumentsScreen({
                 if (companyId) {
                   setCompanyStatusFilter(null);
                   setShowCompanyClosureEligible(false);
-                  setShowCompanyClosureApplied(false);
                   setShowCompanyExtensionEligible(true);
                 } else {
                   router.push("/documents?view=extension-eligible");
@@ -723,28 +705,12 @@ export function DocumentsScreen({
                   setCompanyStatusFilter(null);
                   setShowCompanyExtensionEligible(false);
                   setShowCompanyClosureEligible(true);
-                  setShowCompanyClosureApplied(false);
                 } else {
                   router.push("/documents?view=closure-eligible");
                 }
               }}
             />
-            <OperationStat
-              label="Kap.Mür. Yapıldı"
-              value={String(closureAppliedCount)}
-              icon={<FileText size={15} />}
-              valueClass="text-violet-600 dark:text-violet-400"
-              onClick={() => {
-                if (companyId) {
-                  setCompanyStatusFilter(null);
-                  setShowCompanyExtensionEligible(false);
-                  setShowCompanyClosureEligible(false);
-                  setShowCompanyClosureApplied(true);
-                } else {
-                  router.push("/documents?view=closure-applied");
-                }
-              }}
-            />
+
             {!companyId && (
               <OperationStat
                 label="Yetkilendirme Yapılacaklar"
@@ -766,7 +732,6 @@ export function DocumentsScreen({
                   if (companyId) {
                     setShowCompanyExtensionEligible(false);
                     setShowCompanyClosureEligible(false);
-                    setShowCompanyClosureApplied(false);
                     setCompanyStatusFilter("INACTIVE");
                   } else {
                     router.push("/documents?status=INACTIVE");
@@ -782,8 +747,9 @@ export function DocumentsScreen({
       <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:rounded-2xl">
         {/* Başlık + arama */}
         <div
-          className={`flex flex-col gap-2 border-b border-border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between ${isCompanyView ? "sm:p-5" : "sm:gap-2 sm:p-2.5"
-            }`}
+          className={`flex flex-col gap-2 border-b border-border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "sm:p-5" : "sm:gap-2 sm:p-2.5"
+          }`}
         >
           <div className="min-w-0">
             <h2 className="text-sm font-bold text-foreground">
@@ -931,13 +897,13 @@ export function DocumentsScreen({
                   ).map((heading) => {
                     const filterType = !isAuthorizationRequiredView
                       ? (
-                        heading as {
-                          filterType?:
-                          | "consultant"
-                          | "supportClass"
-                          | "status";
-                        }
-                      ).filterType
+                          heading as {
+                            filterType?:
+                              | "consultant"
+                              | "supportClass"
+                              | "status";
+                          }
+                        ).filterType
                       : undefined;
 
                     const wideOnly =
@@ -951,8 +917,9 @@ export function DocumentsScreen({
                     return (
                       <th
                         key={heading.label}
-                        className={`relative px-2 py-2 text-center xl:whitespace-nowrap ${wideOnly ? "hidden xl:table-cell" : ""
-                          }`}
+                        className={`relative px-2 py-2 text-center xl:whitespace-nowrap ${
+                          wideOnly ? "hidden xl:table-cell" : ""
+                        }`}
                       >
                         <span className="inline-flex items-center gap-1">
                           {heading.key ? (
@@ -962,8 +929,8 @@ export function DocumentsScreen({
                                 isAuthorizationRequiredView
                                   ? handleAuthSort(heading.key as AuthSortKey)
                                   : handleDocumentSort(
-                                    heading.key as DocumentSortKey,
-                                  )
+                                      heading.key as DocumentSortKey,
+                                    )
                               }
                               className="inline-flex items-center gap-1 uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
                             >
@@ -1002,10 +969,11 @@ export function DocumentsScreen({
                                   return filterType;
                                 });
                               }}
-                              className={`relative rounded p-0.5 transition-colors ${activeFilterCount > 0
-                                ? "text-red-600 dark:text-red-400"
-                                : "text-muted-foreground hover:text-foreground"
-                                }`}
+                              className={`relative rounded p-0.5 transition-colors ${
+                                activeFilterCount > 0
+                                  ? "text-red-600 dark:text-red-400"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
                               title="Filtrele"
                             >
                               <Filter size={12} />
@@ -1152,8 +1120,9 @@ export function DocumentsScreen({
 
         {/* SAYFALAMA */}
         <div
-          className={`flex flex-col gap-2 border-t border-border p-3 sm:flex-row sm:items-center sm:justify-between ${isCompanyView ? "bg-muted/30 sm:p-4" : "sm:px-3 sm:py-2"
-            }`}
+          className={`flex flex-col gap-2 border-t border-border p-3 sm:flex-row sm:items-center sm:justify-between ${
+            isCompanyView ? "bg-muted/30 sm:p-4" : "sm:px-3 sm:py-2"
+          }`}
         >
           <p className="text-xs font-medium text-muted-foreground">
             Sayfa {currentPage} / {displayedTotalPages}

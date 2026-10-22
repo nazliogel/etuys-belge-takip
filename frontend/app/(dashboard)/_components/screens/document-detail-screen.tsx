@@ -40,15 +40,15 @@ type ApiDocumentDetail = {
 
   // Backend'in hesapladığı durum (liste ekranıyla aynı kaynak)
   displayStatus?:
-  | "CLOSED"
-  | "CANCELLED"
-  | "INACTIVE"
-  | "AUTHORIZATION_EXPIRED"
-  | "CLOSURE_ELIGIBLE"
-  | "EXTENSION_ELIGIBLE"
-  | "EXPIRED"
-  | "EXPIRING"
-  | "ACTIVE";
+    | "CLOSED"
+    | "CANCELLED"
+    | "INACTIVE"
+    | "AUTHORIZATION_EXPIRED"
+    | "CLOSURE_ELIGIBLE"
+    | "EXTENSION_ELIGIBLE"
+    | "EXPIRED"
+    | "EXPIRING"
+    | "ACTIVE";
   effectiveEndDate?: string | null;
 
   company: {
@@ -86,16 +86,6 @@ const STATUS_STYLES = {
     className:
       "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30",
   },
-  violet: {
-    dot: "bg-violet-500",
-    className:
-      "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
-  },
-  orange: {
-    dot: "bg-orange-500",
-    className:
-      "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
-  },
 };
 
 // "YYYY-MM-DD" tarihine bugünden kaç gün kaldığını hesaplar
@@ -125,7 +115,6 @@ function getDocumentStatus(document: ApiDocumentDetail) {
     AUTHORIZATION_EXPIRED: "Firmanın yetki süresi dolmuştur.",
     CLOSURE_ELIGIBLE: "Uzatılan süre sona ermiştir.",
     EXTENSION_ELIGIBLE: "Süre uzatma müracaatı yapılabilir.",
-    CLOSURE_APPLIED: "Belge için kapatma müracaatı yapılmıştır.",
     EXPIRED: "Belge bitiş tarihi geçmiştir.",
     ACTIVE:
       remainingDays !== null && remainingDays >= 0

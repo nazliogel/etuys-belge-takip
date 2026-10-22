@@ -17,11 +17,6 @@ documentRouter.get(
   documentController.closureEligible,
 );
 
-documentRouter.get(
-  "/closure-applied",
-  documentController.closureApplied,
-);
-
 documentRouter.get("/:id/products", documentController.getProducts);
 
 documentRouter.get("/:id/supports", documentController.getSupports);

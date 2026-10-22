@@ -10,7 +10,6 @@ export type BackendDisplayStatus =
   | "CLOSURE_ELIGIBLE"
   | "EXTENSION_ELIGIBLE"
   | "EXPIRED"
-  | "CLOSURE_APPLIED"
   | "EXPIRING"
   | "ACTIVE";
 
@@ -118,7 +117,6 @@ export type DocumentListResponse = {
       inactive: number;
       extensionEligible?: number;
       closureEligible?: number;
-      closureApplied?: number;
       authorizationExpired?: number;
     };
   };

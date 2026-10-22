@@ -150,9 +150,9 @@ export class CompanyRequestRepository {
 
     return closedDocument
       ? {
-        ...closedDocument,
-        source: "CLOSED" as const,
-      }
+          ...closedDocument,
+          source: "CLOSED" as const,
+        }
       : null;
   }
   async upsert(params: {
@@ -255,41 +255,6 @@ export class CompanyRequestRepository {
       ],
     });
   }
-
-  /**
- * Verilen firmaların tüm Belge Kapatma Başvuruları, en yeni önce.
- * Hangi belgeye ait olduğu ve durumu servis tarafında eşleştirilir.
- */
-  async findClosureRequestsByCompanyIds(companyIds: number[]) {
-    if (companyIds.length === 0) return [];
-
-    return prisma.companyRequest.findMany({
-      where: {
-        companyId: { in: companyIds },
-        requestType: {
-          equals: "Belge Kapatma Başvurusu",
-          mode: "insensitive",
-        },
-      },
-      select: {
-        companyId: true,
-        externalDocumentId: true,
-        documentNumber: true,
-        requestStatus: true,
-      },
-      orderBy: [
-        {
-          applicationDate: {
-            sort: "desc",
-            nulls: "last",
-          },
-        },
-        {
-          id: "desc",
-        },
-      ],
-    });
-  }
   async findMany(params: CompanyRequestListParams) {
     const where = this.createWhereInput(params);
 
@@ -346,66 +311,66 @@ export class CompanyRequestRepository {
 
       requestStatus: params.requestStatus
         ? {
-          equals: params.requestStatus,
-          mode: "insensitive",
-        }
+            equals: params.requestStatus,
+            mode: "insensitive",
+          }
         : undefined,
 
       OR: search
         ? [
-          ...(numericSearch !== null && Number.isSafeInteger(numericSearch)
-            ? [
-              {
-                requestNumber: numericSearch,
-              },
-            ]
-            : []),
+            ...(numericSearch !== null && Number.isSafeInteger(numericSearch)
+              ? [
+                  {
+                    requestNumber: numericSearch,
+                  },
+                ]
+              : []),
 
-          {
-            documentNumber: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            requestType: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            requestStatus: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            department: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            assignedPersonnel: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            informationPerson: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            company: {
-              name: {
+            {
+              documentNumber: {
                 contains: search,
                 mode: "insensitive",
               },
             },
-          },
-        ]
+            {
+              requestType: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              requestStatus: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              department: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              assignedPersonnel: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              informationPerson: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              company: {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+            },
+          ]
         : undefined,
     };
   }
