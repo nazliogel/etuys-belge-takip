@@ -239,9 +239,12 @@ export function useDocumentsData({
           return;
         }
 
+        const onlyAssigned = debouncedSearch.trim() ? "false" : "true";
+
         const params = new URLSearchParams({
           page: String(currentPage),
           limit: "20",
+          onlyAssigned,
         });
 
         if (debouncedSearch) {
@@ -262,9 +265,9 @@ export function useDocumentsData({
         // Kart sayıları: summary artık uzatma/kapatma sayılarını da içeriyor.
         const loadCounts = (includeAuthorization: boolean) =>
           Promise.all([
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+            apiFetch<DocumentListResponse>("/documents?page=1&limit=1&onlyAssigned=true"),
             apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
+              "/closed-documents?page=1&limit=1&onlyAssigned=true",
             ),
             includeAuthorization
               ? apiFetch<AuthorizationRequiredResponse>(
@@ -306,10 +309,10 @@ export function useDocumentsData({
           isClosureAppliedView
         ) {
           const endpoint = isExtensionEligibleView
-            ? "/documents/extension-eligible"
+            ? `/documents/extension-eligible?onlyAssigned=${onlyAssigned}`
             : isClosureAppliedView
-              ? "/documents/closure-applied"
-              : "/documents/closure-eligible";
+              ? `/documents/closure-applied?onlyAssigned=${onlyAssigned}`
+              : `/documents/closure-eligible?onlyAssigned=${onlyAssigned}`;
 
           const [listResponse, counts] = await Promise.all([
             apiFetch<ExtensionEligibleResponse>(endpoint),
@@ -362,9 +365,13 @@ export function useDocumentsData({
         }
 
         const isTotalView = !status;
-        const searchOnlyParams = new URLSearchParams(
-          debouncedSearch ? { search: debouncedSearch } : {},
-        );
+        const searchOnlyParams = new URLSearchParams({
+          onlyAssigned,
+        });
+
+        if (debouncedSearch) {
+          searchOnlyParams.set("search", debouncedSearch);
+        }
 
         const [documentsData, allClosedDocuments, counts] = await Promise.all([
           isTotalView
