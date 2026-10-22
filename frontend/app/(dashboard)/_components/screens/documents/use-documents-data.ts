@@ -235,9 +235,12 @@ export function useDocumentsData({
           return;
         }
 
+        const onlyAssigned = debouncedSearch.trim() ? "false" : "true";
+
         const params = new URLSearchParams({
           page: String(currentPage),
           limit: "20",
+          onlyAssigned,
         });
 
         if (debouncedSearch) {
@@ -258,19 +261,19 @@ export function useDocumentsData({
         // Kart sayıları: summary artık uzatma/kapatma sayılarını da içeriyor.
         const loadCounts = (includeAuthorization: boolean) =>
           Promise.all([
-            apiFetch<DocumentListResponse>("/documents?page=1&limit=1"),
+            apiFetch<DocumentListResponse>("/documents?page=1&limit=1&onlyAssigned=true"),
             apiFetch<ClosedDocumentListResponse>(
-              "/closed-documents?page=1&limit=1",
+              "/closed-documents?page=1&limit=1&onlyAssigned=true",
             ),
             includeAuthorization
               ? apiFetch<AuthorizationRequiredResponse>(
-                  "/companies/authorization-required",
-                )
+                "/companies/authorization-required",
+              )
               : Promise.resolve<AuthorizationRequiredResponse>({
-                  success: true,
-                  message: "",
-                  data: { items: [], totalCount: 0 },
-                }),
+                success: true,
+                message: "",
+                data: { items: [], totalCount: 0 },
+              }),
           ]);
 
         const applyCounts = ([
@@ -297,8 +300,8 @@ export function useDocumentsData({
 
         if (isExtensionEligibleView || isClosureEligibleView) {
           const endpoint = isExtensionEligibleView
-            ? "/documents/extension-eligible"
-            : "/documents/closure-eligible";
+            ? `/documents/extension-eligible?onlyAssigned=${onlyAssigned}`
+            : `/documents/closure-eligible?onlyAssigned=${onlyAssigned}`;
 
           const [listResponse, counts] = await Promise.all([
             apiFetch<ExtensionEligibleResponse>(endpoint),
@@ -343,22 +346,26 @@ export function useDocumentsData({
         }
 
         const isTotalView = !status;
-        const searchOnlyParams = new URLSearchParams(
-          debouncedSearch ? { search: debouncedSearch } : {},
-        );
+        const searchOnlyParams = new URLSearchParams({
+          onlyAssigned,
+        });
+
+        if (debouncedSearch) {
+          searchOnlyParams.set("search", debouncedSearch);
+        }
 
         const [documentsData, allClosedDocuments, counts] = await Promise.all([
           isTotalView
             ? fetchAllDocuments(searchOnlyParams).then((result) => ({
-                items: result.items,
-                totalPages: 1,
-              }))
+              items: result.items,
+              totalPages: 1,
+            }))
             : apiFetch<DocumentListResponse>(
-                `/documents?${params.toString()}`,
-              ).then((response) => ({
-                items: response.data.items,
-                totalPages: response.data.totalPages,
-              })),
+              `/documents?${params.toString()}`,
+            ).then((response) => ({
+              items: response.data.items,
+              totalPages: response.data.totalPages,
+            })),
           isTotalView && variant === "admin"
             ? fetchAllClosedDocuments(searchOnlyParams)
             : Promise.resolve<ClosedApiDocument[]>([]),
