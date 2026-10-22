@@ -7,7 +7,7 @@ import { sendSuccessResponse } from "../utils/api-response.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
 export class DocumentController {
-  constructor(private readonly service: DocumentService) {}
+  constructor(private readonly service: DocumentService) { }
 
   list = async (req: Request, res: Response<ApiResponse<unknown>>) => {
     if (!req.user) {
@@ -58,7 +58,7 @@ export class DocumentController {
 
     const status =
       requestedStatus &&
-      allowedStatuses.includes(requestedStatus as DocumentStatus)
+        allowedStatuses.includes(requestedStatus as DocumentStatus)
         ? (requestedStatus as DocumentStatus)
         : undefined;
 
@@ -126,6 +126,29 @@ export class DocumentController {
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: "Closure eligible documents fetched successfully.",
+      data,
+    });
+  };
+  closureApplied = async (
+    req: Request,
+    res: Response<ApiResponse<unknown>>,
+  ) => {
+    if (!req.user) {
+      throw new AppError("Authentication required.", {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        code: "AUTH_REQUIRED",
+      });
+    }
+
+    const data = await this.service.getClosureAppliedDocuments(
+      req.user.id,
+      req.user.role,
+      String(req.query.onlyAssigned) === "true",
+    );
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: "Closure applied documents fetched successfully.",
       data,
     });
   };

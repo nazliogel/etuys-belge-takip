@@ -60,6 +60,7 @@ export const STATUS_LABELS: Record<string, string> = {
   INACTIVE: "Kapalı-İptal",
   EXTENSION_ELIGIBLE: "Uzatma Yapılabilir",
   CLOSURE_ELIGIBLE: "Kapatma Yapılacak",
+  CLOSURE_APPLIED: "Kap.Mür. Yapıldı",
   AUTHORIZATION_EXPIRED: "Yetkisi Bitmiş",
 };
 // `extraParams` ile (ör. search) filtrelenmiş kapalı/iptal belgelerin
@@ -82,7 +83,9 @@ export async function fetchAllClosedDocuments(
   const totalPages = Math.ceil(firstResponse.data.totalCount / limit);
 
   if (totalPages <= 1) {
-    return firstResponse.data.items;
+    return Array.from(
+      new Map(firstResponse.data.items.map((doc) => [doc.id, doc])).values(),
+    );
   }
 
   const remainingResponses = await Promise.all(
@@ -96,10 +99,14 @@ export async function fetchAllClosedDocuments(
     }),
   );
 
-  return [
+  const allItems = [
     ...firstResponse.data.items,
     ...remainingResponses.flatMap((response) => response.data.items),
   ];
+
+  return Array.from(
+    new Map(allItems.map((doc) => [doc.id, doc])).values(),
+  );
 }
 
 // Aynı mantık: /documents endpointinin TÜM sayfaları tek seferde çekilir.
@@ -375,16 +382,24 @@ export type DocumentStatusKey =
   | "AUTHORIZATION_EXPIRED"
   | "CLOSURE_ELIGIBLE"
   | "EXTENSION_ELIGIBLE"
+  | "CLOSURE_APPLIED"
   | "EXPIRED"
   | "ACTIVE";
 
 // Rozet rengi: her ekran bu tonu kendi stiline çevirir.
-export type StatusTone = "green" | "amber" | "red" | "blue";
+export type StatusTone =
+  | "green"
+  | "amber"
+  | "red"
+  | "blue"
+  | "violet"
+  | "orange";
 
 const STATUS_TONES: Record<DocumentStatusKey, StatusTone> = {
   CANCELLED: "red",
   CLOSED: "blue",
-  AUTHORIZATION_EXPIRED: "blue",
+  AUTHORIZATION_EXPIRED: "orange",
+CLOSURE_APPLIED: "violet",
   CLOSURE_ELIGIBLE: "red",
   EXTENSION_ELIGIBLE: "amber",
   EXPIRED: "red",
@@ -416,6 +431,7 @@ export function getDocumentStatusInfo(document: {
     key = "CLOSED";
   } else if (
     document.displayStatus === "AUTHORIZATION_EXPIRED" ||
+    document.displayStatus === "CLOSURE_APPLIED" ||
     document.displayStatus === "CLOSURE_ELIGIBLE" ||
     document.displayStatus === "EXTENSION_ELIGIBLE" ||
     document.displayStatus === "EXPIRED"

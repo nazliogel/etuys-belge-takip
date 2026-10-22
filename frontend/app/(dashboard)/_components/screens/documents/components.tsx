@@ -263,6 +263,13 @@ export function StatusBadge({ status }: { status: string }) {
       bg: "bg-amber-50 dark:bg-amber-500/10",
       border: "border-amber-200 dark:border-amber-500/30",
     },
+    CLOSURE_APPLIED: {
+      label: "Kap.Mür. Yapıldı",
+      dot: "bg-violet-500",
+      text: "text-violet-700 dark:text-violet-300",
+      bg: "bg-violet-50 dark:bg-violet-500/10",
+      border: "border-violet-200 dark:border-violet-500/30",
+    },
 
     CLOSED: {
       label: "Kapalı",
@@ -288,10 +295,10 @@ export function StatusBadge({ status }: { status: string }) {
     },
     AUTHORIZATION_EXPIRED: {
       label: "Yetkisi Bitmiş",
-      dot: "bg-blue-500",
-      text: "text-blue-700 dark:text-blue-300",
-      bg: "bg-blue-50 dark:bg-blue-500/10",
-      border: "border-blue-200 dark:border-blue-500/30",
+      dot: "bg-orange-500",
+      text: "text-orange-700 dark:text-orange-300",
+      bg: "bg-orange-50 dark:bg-orange-500/10",
+      border: "border-orange-200 dark:border-orange-500/30",
     },
   };
 
