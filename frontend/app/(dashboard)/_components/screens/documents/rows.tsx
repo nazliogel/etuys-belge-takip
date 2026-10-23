@@ -161,11 +161,10 @@ export function DocumentCard({
       >
         <div className="flex items-center gap-1.5">
           <div
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-              isSelected
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${isSelected
                 ? "border-red-600 bg-red-600 text-white"
                 : "border-border bg-muted text-muted-foreground"
-            }`}
+              }`}
           >
             <FileText size={16} />
           </div>
@@ -205,7 +204,7 @@ export function DocumentCard({
           </div>
         )}
 
-        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] min-[480px]:grid-cols-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Başlangıç
@@ -241,7 +240,7 @@ export function DocumentCard({
             </p>
           </div>
           {doc.supportClass && (
-            <div className="col-span-2">
+            <div className="col-span-2 min-[480px]:col-span-4">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Destek Sınıfı
               </p>
@@ -254,11 +253,10 @@ export function DocumentCard({
 
         <div className="mt-2.5 flex justify-end">
           <span
-            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
-              isSelected
+            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${isSelected
                 ? "bg-red-600 text-white"
                 : "bg-muted text-foreground/80"
-            }`}
+              }`}
           >
             {isSelected ? (
               "Görüntüleniyor"
@@ -284,20 +282,24 @@ export function DocumentRow({
 }: DocumentItemProps) {
   return (
     <tr
-      className={`transition-colors ${
-        isSelected
+      className={`group transition-colors ${isSelected
           ? "bg-red-500/5 dark:bg-red-500/10"
           : "hover:bg-muted/60"
-      }`}
+        }`}
     >
-      <td className="px-2 py-1.5">
+      {/* Belge No: yana kaydırırken solda sabit kalır, bu yüzden zemini opak */}
+      <td
+        className={`sticky left-0 z-[1] px-2 py-1.5 ${isSelected
+            ? "bg-red-50 dark:bg-red-950"
+            : "bg-card group-hover:bg-muted"
+          }`}
+      >
         <div className="flex items-center gap-1.5">
           <div
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-              isSelected
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors ${isSelected
                 ? "border-red-600 bg-red-600 text-white"
                 : "border-border bg-muted text-muted-foreground"
-            }`}
+              }`}
           >
             <FileText size={16} />
           </div>
@@ -337,7 +339,7 @@ export function DocumentRow({
         </p>
       </td>
 
-      <td className="hidden whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground xl:table-cell">
+      <td className="whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
         {formatDate(doc.documentStartDate)}
       </td>
       <td className="whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
@@ -348,12 +350,13 @@ export function DocumentRow({
       </td>
 
       {/* Yetki Bitiş */}
-      <td className="hidden whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground xl:table-cell">
+      <td className="whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
         {formatDate(
           doc.company?.authorizationEndDate ?? null,
         )}
       </td>
 
+      {/* Destek Sınıfı */}
       <td className="px-2 py-1.5 text-center">
         <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold text-foreground/80">
           {doc.supportClass ?? "-"}
@@ -370,11 +373,10 @@ export function DocumentRow({
           <button
             type="button"
             onClick={onOpen}
-            className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-              isSelected
+            className={`inline-flex whitespace-nowrap items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${isSelected
                 ? "bg-red-600 text-white shadow-sm shadow-red-600/20"
                 : "bg-muted text-foreground/80 hover:bg-muted/80"
-            }`}
+              }`}
           >
             {isSelected ? (
               "Görüntüleniyor"
@@ -425,11 +427,10 @@ export function DocumentTabsPanel({
           return (
             <div
               key={document.key}
-              className={`flex shrink-0 items-center rounded-t-xl border border-b-0 ${
-                isActive
+              className={`flex shrink-0 items-center rounded-t-xl border border-b-0 ${isActive
                   ? "border-border bg-card font-semibold text-red-600 dark:text-red-400"
                   : "border-transparent bg-muted text-muted-foreground"
-              }`}
+                }`}
             >
               <button
                 type="button"

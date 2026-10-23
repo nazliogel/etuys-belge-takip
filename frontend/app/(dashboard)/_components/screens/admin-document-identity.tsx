@@ -45,7 +45,19 @@ type ApiDocumentDetail = {
     processStatus: string | null;
     authorizationEndDate: string | null;
   };
+
+  // Belgenin künye bilgisi (yatırım yeri); firma bilgisinden bağımsızdır.
+  city?: string | null;
+  district?: string | null;
+  address?: string | null;
+  osbName?: string | null;
 };
+
+// Boş ya da eksik değerler için "-" gösterir.
+function displayValue(value: string | null | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : "-";
+}
 
 type DocumentDetailResponse = {
   success: boolean;
@@ -214,6 +226,20 @@ export function AdminDocumentIdentity({
                 value1={document.company.name}
                 label2="Vergi No"
                 value2={document.company.taxNumber}
+              />
+
+              <OperationRow
+                label1="İl"
+                value1={displayValue(document.city)}
+                label2="İlçe"
+                value2={displayValue(document.district)}
+              />
+
+              <OperationRow
+                label1="Adres"
+                value1={displayValue(document.address)}
+                label2="OSB Adı"
+                value2={displayValue(document.osbName)}
               />
             </tbody>
           </table>

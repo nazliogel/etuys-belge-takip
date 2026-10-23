@@ -58,7 +58,19 @@ type ApiDocumentDetail = {
     processStatus: string | null;
     authorizationEndDate: string | null;
   };
+
+  // Belgenin künye bilgisi (yatırım yeri); firma bilgisinden bağımsızdır.
+  city?: string | null;
+  district?: string | null;
+  address?: string | null;
+  osbName?: string | null;
 };
+
+// Boş ya da eksik değerler için "-" gösterir.
+function displayValue(value: string | null | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : "-";
+}
 
 type DocumentDetailResponse = {
   success: boolean;
@@ -532,6 +544,8 @@ export function DocumentDetailScreen({
                 </p>
 
                 <dl className="mt-5 divide-y divide-slate-200 border-y border-slate-200 sm:mt-8">
+                  <FormRow label="Firma Ünvanı" value={document.company.name} />
+
                   <FormRow
                     label="Belge ID"
                     value={String(document.externalDocumentId)}
@@ -556,20 +570,39 @@ export function DocumentDetailScreen({
                     label="Süre Uzatım Tarihi"
                     value={formatDate(document.extensionDate)}
                   />
-
-                  <FormRow
-                    label="Destekleme Sınıfı"
-                    value={document.supportClass ?? "-"}
-                  />
-
-                  <FormRow label="Firma Ünvanı" value={document.company.name} />
-
                   <FormRow
                     label="Yetki Bitiş Tarihi"
                     value={formatDate(document.company.authorizationEndDate)}
                   />
 
                   <FormRow label="Belge Durumu" value={status.label} />
+                  <FormRow
+                    label="Destekleme Sınıfı"
+                    value={document.supportClass ?? "-"}
+                  />
+
+
+                  <FormRow
+                    label="İl"
+                    value={displayValue(document.city)}
+                  />
+
+                  <FormRow
+                    label="İlçe"
+                    value={displayValue(document.district)}
+                  />
+
+                  <FormRow
+                    label="Adres"
+                    value={displayValue(document.address)}
+                  />
+
+                  <FormRow
+                    label="OSB Adı"
+                    value={displayValue(document.osbName)}
+                  />
+
+
                 </dl>
 
                 <p className="mt-5 text-xs leading-6 text-slate-700 sm:mt-8 sm:text-sm sm:leading-7">

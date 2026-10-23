@@ -43,9 +43,7 @@ import {
   SortIcon,
 } from "./documents/components";
 import {
-  AuthorizationCompanyCard,
   AuthorizationCompanyRow,
-  DocumentCard,
   DocumentRow,
   DocumentTabsPanel,
 } from "./documents/rows";
@@ -579,16 +577,14 @@ export function DocumentsScreen({
     label: string;
     key?: DocumentSortKey;
     filterType?: "consultant" | "supportClass" | "status";
-    // Küçük ekranda (1280px altı) gizlenen, daha az kritik sütunlar
-    wideOnly?: boolean;
   }[] = [
       { label: "Belge No", key: "documentNumber" },
       { label: "Firma", key: "companyName" },
       { label: "Uzman", key: "consultant", filterType: "consultant" },
-      { label: "Başlangıç", key: "documentStartDate", wideOnly: true },
+      { label: "Başlangıç", key: "documentStartDate" },
       { label: "Bitiş", key: "documentEndDate" },
       { label: "Süre Uzatım", key: "extensionDate" },
-      { label: "Yetki Bitiş", key: "authorizationEndDate", wideOnly: true },
+      { label: "Yetki Bitiş", key: "authorizationEndDate" },
       {
         label: "Destek Sınıfı",
         key: "supportClass",
@@ -828,74 +824,16 @@ export function DocumentsScreen({
           </div>
         )}
 
-        {/* MOBİL: KART GÖRÜNÜMÜ */}
-        <div className="lg:hidden">
-          {isLoading ? (
-            <div className="px-4 py-10 text-center">
-              <p className="text-sm font-medium text-muted-foreground">
-                Belgeler yükleniyor...
-              </p>
-            </div>
-          ) : loadError ? (
-            <div className="px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-red-700 dark:text-red-400">
-                Belgeler yüklenemedi
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{loadError}</p>
-            </div>
-          ) : isAuthorizationRequiredView ? (
-            visibleAuthorizationCompanies.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm font-medium text-muted-foreground">
-                Yetkilendirme yapılacak firma bulunamadı.
-              </div>
-            ) : (
-              <ul className="divide-y divide-border">
-                {visibleAuthorizationCompanies.map((company) => (
-                  <AuthorizationCompanyCard
-                    key={company.id}
-                    company={company}
-                    onOpen={() => openCompany(company.id)}
-                  />
-                ))}
-              </ul>
-            )
-          ) : paginatedVisibleDocuments.length === 0 ? (
-            <div className="px-3 py-6 text-center">
-              {showAuthWarning ? (
-                <AuthorizationWarning variant={variant} />
-              ) : (
-                <p className="text-sm font-medium text-muted-foreground">
-                  {documents.length > 0
-                    ? "Seçilen kritere uygun belge bulunamadı."
-                    : "Belge bulunamadı."}
-                </p>
-              )}
-            </div>
-          ) : (
-            <ul className="divide-y divide-border">
-              {paginatedVisibleDocuments.map((doc) => {
-                const { badgeStatus, documentKey, isSelected } = getRowView(doc);
-
-                return (
-                  <DocumentCard
-                    key={documentKey}
-                    doc={doc}
-                    badgeStatus={badgeStatus}
-                    isSelected={isSelected}
-                    showCompany={!companyId}
-                    onOpen={() => openDocument(doc)}
-                  />
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
-        {/* TABLET+ : TABLO GÖRÜNÜMÜ */}
-        <div className="hidden lg:block">
+        {/* TABLO GÖRÜNÜMÜ (her ekranda; dar ekranda yana kayar) */}
+        <div>
           <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
+            {/*
+              Bütün sütunlar her ekranda görünür. Tablo 1180px'in altına
+              sıkışmaz; dar ekranda kendi içinde yana kayar. Belge No sütunu
+              solda sabit kalır.
+            */}
             <table
-              className="w-full table-fixed text-left text-sm"
+              className="w-full min-w-[1180px] table-fixed text-left text-sm"
             >
               {isAuthorizationRequiredView ? (
                 <colgroup>
@@ -909,17 +847,21 @@ export function DocumentsScreen({
                 </colgroup>
               ) : (
                 <colgroup>
-                  {/* Toplam %100. Başlangıç ve Yetki Bitiş küçük ekranda gizlenir. */}
-                  <col className="w-[9%]" />
-                  <col className="w-[18%]" />
-                  <col className="w-[11%]" />
-                  <col className="hidden w-[8%] xl:table-column" />
-                  <col className="w-[8%]" />
-                  <col className="w-[8%]" />
-                  <col className="hidden w-[8%] xl:table-column" />
-                  <col className="w-[9%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[9%]" />
+                  {/*
+                    Sütunlar sabit genişlikte; kalan alanın tamamı Firma
+                    sütununa kalır. Yüzde kullanmıyoruz, çünkü dar ekranda
+                    Durum etiketi ve Görüntüle düğmesi sığmıyordu.
+                  */}
+                  <col className="w-[105px]" />
+                  <col />
+                  <col className="w-[115px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[105px]" />
+                  <col className="w-[160px]" />
+                  <col className="w-[125px]" />
                 </colgroup>
               )}
 
@@ -940,9 +882,9 @@ export function DocumentsScreen({
                       ).filterType
                       : undefined;
 
-                    const wideOnly =
-                      !isAuthorizationRequiredView &&
-                      (heading as { wideOnly?: boolean }).wideOnly;
+                    // İlk sütun (Belge No) yana kaydırırken solda sabit kalır.
+                    const isStickyColumn =
+                      !isAuthorizationRequiredView && heading.label === "Belge No";
 
                     const activeFilterCount = filterType
                       ? activeFilterCountByColumn[filterType]
@@ -951,7 +893,7 @@ export function DocumentsScreen({
                     return (
                       <th
                         key={heading.label}
-                        className={`relative px-2 py-2 text-center xl:whitespace-nowrap ${wideOnly ? "hidden xl:table-cell" : ""
+                        className={`relative whitespace-nowrap px-2 py-2 text-center ${isStickyColumn ? "sticky left-0 z-20 bg-muted" : ""
                           }`}
                       >
                         <span className="inline-flex items-center gap-1">

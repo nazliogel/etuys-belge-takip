@@ -2,6 +2,32 @@ import { prisma } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 
+// Belge künye bilgisi (yatırım yeri) alanları: city, district, address, osbName.
+const LOCATION_FIELDS = new Set(["city", "district", "address", "osbName"]);
+
+type LocationData = {
+  city?: string | null;
+  district?: string | null;
+  address?: string | null;
+  osbName?: string | null;
+};
+
+// Değişen tek konum alanını güncelleme verisine çevirir.
+function toLocationData(fieldName: string, value: string | null): LocationData {
+  switch (fieldName) {
+    case "city":
+      return { city: value };
+    case "district":
+      return { district: value };
+    case "address":
+      return { address: value };
+    case "osbName":
+      return { osbName: value };
+    default:
+      return {};
+  }
+}
+
 export class ApprovalService {
   async applyChange(
     importBatchId: number,
@@ -484,6 +510,11 @@ export class ApprovalService {
 
                     supportClass: row.supportClass,
 
+                    city: row.city,
+                    district: row.district,
+                    address: row.address,
+                    osbName: row.osbName,
+
                     isActive: true,
                   },
                 });
@@ -556,6 +587,13 @@ export class ApprovalService {
                     supportClass: change.newValue,
                   },
                 });
+              } else if (LOCATION_FIELDS.has(change.fieldName)) {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: toLocationData(change.fieldName, change.newValue),
+                });
               } else if (change.fieldName === "isActive") {
                 await tx.incentiveDocument.update({
                   where: {
@@ -618,6 +656,10 @@ export class ApprovalService {
                     documentEndDate: row.documentEndDate,
                     extensionDate: row.extensionDate,
                     supportClass: row.supportClass,
+                    city: row.city,
+                    district: row.district,
+                    address: row.address,
+                    osbName: row.osbName,
                     status: row.documentStatus,
                   },
                 });
@@ -685,6 +727,13 @@ export class ApprovalService {
                   data: {
                     supportClass: change.newValue,
                   },
+                });
+              } else if (LOCATION_FIELDS.has(change.fieldName)) {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: toLocationData(change.fieldName, change.newValue),
                 });
               } else if (change.fieldName === "status") {
                 if (

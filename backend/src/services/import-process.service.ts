@@ -73,6 +73,13 @@ export class ImportProcessService {
           supportClass: row.supportClass,
           documentStatus: row.documentStatus,
           processStatus: row.processStatus,
+
+          // Belge künye bilgisi (yatırım yeri)
+          city: row.city,
+          district: row.district,
+          address: row.address,
+          osbName: row.osbName,
+
           rawData: row.rawData as Prisma.InputJsonValue,
           errorMessage: row.errorMessage,
         }));

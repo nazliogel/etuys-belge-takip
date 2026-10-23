@@ -154,6 +154,12 @@ export class ClosedDocumentService {
       supportClass: document.supportClass,
       status: document.status,
 
+      // Belgenin künye bilgisi (yatırım yeri); firma kimliğinden bağımsızdır.
+      city: document.city ?? null,
+      district: document.district ?? null,
+      address: document.address ?? null,
+      osbName: document.osbName ?? null,
+
       company: {
         id: document.company.id,
         externalCompanyId: document.company.externalCompanyId,

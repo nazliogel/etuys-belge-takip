@@ -36,6 +36,10 @@ type ExistingCompany = Prisma.CompanyGetPayload<{
 
 type ImportRowData = Prisma.ImportRowGetPayload<Record<string, never>>;
 
+// Belge künye bilgisi (yatırım yeri) alanları. Belge tablolarında ve
+// ImportRow'da aynı adlarla duruyor.
+const LOCATION_FIELDS = ["city", "district", "address", "osbName"] as const;
+
 export class CompareService {
   /*
    * Constructor parametreleri mevcut import.module.ts yapısının
@@ -632,6 +636,10 @@ export class CompareService {
       newValue: row.supportClass,
     });
 
+    // Belge künye bilgisi (yatırım yeri). Excel'de boş gelirse mevcut değer
+    // silinmez; sadece dolu gelen ve farklı olan değerler değişiklik sayılır.
+    this.addLocationChanges(row, document, baseData, changes);
+
     if (!document.isActive) {
       changes.push({
         ...baseData,
@@ -696,6 +704,39 @@ export class CompareService {
       oldValue: document.status,
       newValue: row.documentStatus,
     });
+
+    // Belge künye bilgisi (yatırım yeri). Excel'de boş gelirse mevcut değer
+    // silinmez; sadece dolu gelen ve farklı olan değerler değişiklik sayılır.
+    this.addLocationChanges(row, document, baseData, changes);
+  }
+
+  private addLocationChanges(
+    row: ImportRowData,
+    document: {
+      city: string | null;
+      district: string | null;
+      address: string | null;
+      osbName: string | null;
+    },
+    baseData: {
+      entityType: EntityType;
+      companyId: number;
+      documentId: number | null;
+    },
+    changes: ChangeInput[],
+  ) {
+    for (const fieldName of LOCATION_FIELDS) {
+      if (this.toComparableValue(row[fieldName]) === null) {
+        continue;
+      }
+
+      this.addChangeIfDifferent(changes, {
+        ...baseData,
+        fieldName,
+        oldValue: document[fieldName],
+        newValue: row[fieldName],
+      });
+    }
   }
 
   private addChangeIfDifferent(

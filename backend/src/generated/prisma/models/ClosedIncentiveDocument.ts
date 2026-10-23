@@ -47,6 +47,10 @@ export type ClosedIncentiveDocumentMinAggregateOutputType = {
   documentEndDate: Date | null
   extensionDate: Date | null
   supportClass: string | null
+  city: string | null
+  district: string | null
+  address: string | null
+  osbName: string | null
   status: $Enums.DocumentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +65,10 @@ export type ClosedIncentiveDocumentMaxAggregateOutputType = {
   documentEndDate: Date | null
   extensionDate: Date | null
   supportClass: string | null
+  city: string | null
+  district: string | null
+  address: string | null
+  osbName: string | null
   status: $Enums.DocumentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -75,6 +83,10 @@ export type ClosedIncentiveDocumentCountAggregateOutputType = {
   documentEndDate: number
   extensionDate: number
   supportClass: number
+  city: number
+  district: number
+  address: number
+  osbName: number
   status: number
   createdAt: number
   updatedAt: number
@@ -103,6 +115,10 @@ export type ClosedIncentiveDocumentMinAggregateInputType = {
   documentEndDate?: true
   extensionDate?: true
   supportClass?: true
+  city?: true
+  district?: true
+  address?: true
+  osbName?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -117,6 +133,10 @@ export type ClosedIncentiveDocumentMaxAggregateInputType = {
   documentEndDate?: true
   extensionDate?: true
   supportClass?: true
+  city?: true
+  district?: true
+  address?: true
+  osbName?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -131,6 +151,10 @@ export type ClosedIncentiveDocumentCountAggregateInputType = {
   documentEndDate?: true
   extensionDate?: true
   supportClass?: true
+  city?: true
+  district?: true
+  address?: true
+  osbName?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -232,6 +256,10 @@ export type ClosedIncentiveDocumentGroupByOutputType = {
   documentEndDate: Date | null
   extensionDate: Date | null
   supportClass: string | null
+  city: string | null
+  district: string | null
+  address: string | null
+  osbName: string | null
   status: $Enums.DocumentStatus
   createdAt: Date
   updatedAt: Date
@@ -269,6 +297,10 @@ export type ClosedIncentiveDocumentWhereInput = {
   documentEndDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  city?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  district?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  address?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  osbName?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
   status?: Prisma.EnumDocumentStatusFilter<"ClosedIncentiveDocument"> | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
@@ -285,6 +317,10 @@ export type ClosedIncentiveDocumentOrderByWithRelationInput = {
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
   supportClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  osbName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -304,6 +340,10 @@ export type ClosedIncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
   documentEndDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  city?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  district?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  address?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  osbName?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
   status?: Prisma.EnumDocumentStatusFilter<"ClosedIncentiveDocument"> | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
@@ -320,6 +360,10 @@ export type ClosedIncentiveDocumentOrderByWithAggregationInput = {
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
   supportClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  osbName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -342,6 +386,10 @@ export type ClosedIncentiveDocumentScalarWhereWithAggregatesInput = {
   documentEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | string | null
+  district?: Prisma.StringNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | string | null
+  address?: Prisma.StringNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | string | null
+  osbName?: Prisma.StringNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | string | null
   status?: Prisma.EnumDocumentStatusWithAggregatesFilter<"ClosedIncentiveDocument"> | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string
@@ -354,6 +402,10 @@ export type ClosedIncentiveDocumentCreateInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -370,6 +422,10 @@ export type ClosedIncentiveDocumentUncheckedCreateInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -383,6 +439,10 @@ export type ClosedIncentiveDocumentUpdateInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -399,6 +459,10 @@ export type ClosedIncentiveDocumentUncheckedUpdateInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -414,6 +478,10 @@ export type ClosedIncentiveDocumentCreateManyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -426,6 +494,10 @@ export type ClosedIncentiveDocumentUpdateManyMutationInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -440,6 +512,10 @@ export type ClosedIncentiveDocumentUncheckedUpdateManyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -464,6 +540,10 @@ export type ClosedIncentiveDocumentCountOrderByAggregateInput = {
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
   supportClass?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  osbName?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -484,6 +564,10 @@ export type ClosedIncentiveDocumentMaxOrderByAggregateInput = {
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
   supportClass?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  osbName?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -498,6 +582,10 @@ export type ClosedIncentiveDocumentMinOrderByAggregateInput = {
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
   supportClass?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  osbName?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -579,6 +667,10 @@ export type ClosedIncentiveDocumentCreateWithoutCompanyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -593,6 +685,10 @@ export type ClosedIncentiveDocumentUncheckedCreateWithoutCompanyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -637,6 +733,10 @@ export type ClosedIncentiveDocumentScalarWhereInput = {
   documentEndDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   supportClass?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  city?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  district?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  address?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  osbName?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
   status?: Prisma.EnumDocumentStatusFilter<"ClosedIncentiveDocument"> | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClosedIncentiveDocument"> | Date | string
@@ -649,6 +749,10 @@ export type ClosedIncentiveDocumentCreateWithoutDetailInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -664,6 +768,10 @@ export type ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -692,6 +800,10 @@ export type ClosedIncentiveDocumentUpdateWithoutDetailInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -707,6 +819,10 @@ export type ClosedIncentiveDocumentUncheckedUpdateWithoutDetailInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -720,6 +836,10 @@ export type ClosedIncentiveDocumentCreateManyCompanyInput = {
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
   supportClass?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   status: $Enums.DocumentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -732,6 +852,10 @@ export type ClosedIncentiveDocumentUpdateWithoutCompanyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -746,6 +870,10 @@ export type ClosedIncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -760,6 +888,10 @@ export type ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyInput = {
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -776,6 +908,10 @@ export type ClosedIncentiveDocumentSelect<ExtArgs extends runtime.Types.Extensio
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -792,6 +928,10 @@ export type ClosedIncentiveDocumentSelectCreateManyAndReturn<ExtArgs extends run
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -807,6 +947,10 @@ export type ClosedIncentiveDocumentSelectUpdateManyAndReturn<ExtArgs extends run
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -822,12 +966,16 @@ export type ClosedIncentiveDocumentSelectScalar = {
   documentEndDate?: boolean
   extensionDate?: boolean
   supportClass?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ClosedIncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["closedIncentiveDocument"]>
+export type ClosedIncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "city" | "district" | "address" | "osbName" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["closedIncentiveDocument"]>
 export type ClosedIncentiveDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   detail?: boolean | Prisma.ClosedIncentiveDocument$detailArgs<ExtArgs>
@@ -854,6 +1002,10 @@ export type $ClosedIncentiveDocumentPayload<ExtArgs extends runtime.Types.Extens
     documentEndDate: Date | null
     extensionDate: Date | null
     supportClass: string | null
+    city: string | null
+    district: string | null
+    address: string | null
+    osbName: string | null
     status: $Enums.DocumentStatus
     createdAt: Date
     updatedAt: Date
@@ -1290,6 +1442,10 @@ export interface ClosedIncentiveDocumentFieldRefs {
   readonly documentEndDate: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>
   readonly extensionDate: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>
   readonly supportClass: Prisma.FieldRef<"ClosedIncentiveDocument", 'String'>
+  readonly city: Prisma.FieldRef<"ClosedIncentiveDocument", 'String'>
+  readonly district: Prisma.FieldRef<"ClosedIncentiveDocument", 'String'>
+  readonly address: Prisma.FieldRef<"ClosedIncentiveDocument", 'String'>
+  readonly osbName: Prisma.FieldRef<"ClosedIncentiveDocument", 'String'>
   readonly status: Prisma.FieldRef<"ClosedIncentiveDocument", 'DocumentStatus'>
   readonly createdAt: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>

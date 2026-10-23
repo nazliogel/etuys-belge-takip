@@ -21,6 +21,12 @@ export interface ParsedClosedImportRow {
   documentStatus: DocumentStatus | null;
   processStatus: string | null;
 
+  // Belge künye bilgisi (yatırım yeri)
+  city: string | null;
+  district: string | null;
+  address: string | null;
+  osbName: string | null;
+
   rawData: Record<string, unknown>;
   errorMessage: string | null;
 }
@@ -46,7 +52,19 @@ const EXPECTED_HEADERS = {
   processStatus: ["Belge Durumu"],
 } as const;
 
-type HeaderKey = keyof typeof EXPECTED_HEADERS;
+// Belge künye bilgisi (yatırım yeri). İsteğe bağlı: Excel'de bu sütunlar
+// yoksa yükleme yine çalışır, alanlar boş kalır. Başlık yazımı farklıysa
+// buraya yeni bir yazım eklemek yeterli.
+const OPTIONAL_HEADERS = {
+  city: ["İl", "Yatırım Yeri İl", "Yatırım İli"],
+  district: ["İlçe", "Yatırım Yeri İlçe", "Yatırım İlçesi"],
+  address: ["Adres", "Yatırım Adresi", "Yatırım Yeri Adresi"],
+  osbName: ["OSB Adı", "OSB", "Organize Sanayi Bölgesi"],
+} as const;
+
+const ALL_HEADERS = { ...EXPECTED_HEADERS, ...OPTIONAL_HEADERS };
+
+type HeaderKey = keyof typeof ALL_HEADERS;
 
 export class ClosedExcelParserService {
   async parse(storedFileName: string): Promise<ParseClosedExcelResult> {
@@ -115,7 +133,7 @@ export class ClosedExcelParserService {
     row.eachCell((cell, columnNumber) => {
       const cellValue = this.normalizeHeader(this.getStringValue(cell.value));
 
-      for (const [key, expectedHeaders] of Object.entries(EXPECTED_HEADERS)) {
+      for (const [key, expectedHeaders] of Object.entries(ALL_HEADERS)) {
         const isMatch = expectedHeaders.some(
           (header) => this.normalizeHeader(header) === cellValue,
         );
@@ -192,6 +210,12 @@ export class ClosedExcelParserService {
       row.getCell(headerMap.processStatus!).value,
     );
 
+    // İsteğe bağlı sütunlar: Excel'de yoksa null.
+    const city = this.getOptionalString(row, headerMap.city);
+    const district = this.getOptionalString(row, headerMap.district);
+    const address = this.getOptionalString(row, headerMap.address);
+    const osbName = this.getOptionalString(row, headerMap.osbName);
+
     const documentStatus = this.getDocumentStatus(processStatus);
 
     const errors: string[] = [];
@@ -236,6 +260,10 @@ export class ClosedExcelParserService {
       supportClass,
       documentStatus,
       processStatus,
+      city,
+      district,
+      address,
+      osbName,
       rawData,
       errorMessage: errors.length > 0 ? errors.join(" ") : null,
     };
@@ -267,7 +295,7 @@ export class ClosedExcelParserService {
   ): Record<string, unknown> {
     const rawData: Record<string, unknown> = {};
 
-    for (const [key, headers] of Object.entries(EXPECTED_HEADERS)) {
+    for (const [key, headers] of Object.entries(ALL_HEADERS)) {
       const columnNumber = headerMap[key as HeaderKey];
 
       const header = headers[0];
@@ -320,6 +348,15 @@ export class ClosedExcelParserService {
     }
 
     return String(value);
+  }
+
+  private getOptionalString(
+    row: ExcelJS.Row,
+    columnNumber: number | undefined,
+  ): string | null {
+    return columnNumber
+      ? this.getNullableStringValue(row.getCell(columnNumber).value)
+      : null;
   }
 
   private getNullableStringValue(value: ExcelJS.CellValue): string | null {
