@@ -428,7 +428,7 @@ export function AppSidebar({
         >
           <Image
             src="/logos/2.png"
-            alt="Teşvik 360 logo"
+            alt="Teşvik Akkaş logo"
             fill
             sizes={isCollapsed ? "40px" : "240px"}
             className="object-contain"

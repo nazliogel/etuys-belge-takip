@@ -33,10 +33,19 @@ export class CompanyCredentialController {
         });
       }
 
+      // Ekranda seçilen e-posta adresleri (isteğe bağlı).
+      const rawRecipients: unknown = req.body?.recipients;
+      const recipients = Array.isArray(rawRecipients)
+        ? rawRecipients.filter(
+            (item): item is string => typeof item === "string",
+          )
+        : undefined;
+
       const result = await this.companyCredentialService.createEmailDraft(
         companyId,
         requesterUserId,
         requesterRole,
+        recipients,
       );
 
       res.status(HTTP_STATUS.OK).json(result);

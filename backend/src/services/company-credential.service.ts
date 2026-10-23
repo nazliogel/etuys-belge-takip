@@ -13,17 +13,43 @@ import { hashPassword } from "../utils/password.js";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export class CompanyCredentialService {
   constructor(
     private readonly companyRepository: CompanyRepository,
-    private readonly contactRepository: CompanyContactRepository,
+    // Artık kullanılmıyor (bütün iletişim kişileri doğrudan okunuyor);
+    // modüldeki kurulum bozulmasın diye parametre duruyor.
+    _contactRepository: CompanyContactRepository,
     private readonly userRepository: UserRepository,
-  ) {}
+  ) { }
+
+  // Firmanın aktif iletişim kişilerinin geçerli e-posta adresleri.
+  // Bir kişinin alanında birden çok adres olabilir ("a@x.com; b@y.com");
+  // tekrarlanan adresler bir kez yazılır. En son eklenen kişi en üstte.
+  private async getContactEmails(companyId: number): Promise<string[]> {
+    const contacts = await prisma.companyContact.findMany({
+      where: { companyId, isActive: true },
+      orderBy: { createdAt: "desc" },
+      select: { email: true },
+    });
+
+    return [
+      ...new Set(
+        contacts
+          .flatMap((contact) => contact.email.split(/[;,\s]+/))
+          .map((address) => address.trim().toLowerCase())
+          .filter((address) => EMAIL_PATTERN.test(address)),
+      ),
+    ];
+  }
 
   async createEmailDraft(
     companyId: number,
-    requesterUserId: number,
+    _requesterUserId: number,
     requesterRole: UserRole,
+    // Ekranda seçilen adresler. Verilmezse bütün iletişim adresleri kullanılır.
+    selectedEmails?: string[],
   ) {
     // 1. Yetki kontrolü (aynı kalıyor)
     if (requesterRole !== "ADMIN" && requesterRole !== "OPERATION") {
@@ -44,40 +70,72 @@ export class CompanyCredentialService {
       });
     }
 
-    if (
-      requesterRole === "OPERATION" &&
-      company.consultantUserId !== requesterUserId
-    ) {
+    // Uzmanlar (OPERATION) her firma için giriş bilgisi oluşturabilir.
+
+    // 2. Mailin gideceği adresler: firmanın iletişim adreslerinden
+    // ekranda seçilenler. Listede olmayan bir adres kabul edilmez.
+    const contactEmails = await this.getContactEmails(companyId);
+
+    if (contactEmails.length === 0) {
       throw new AppError(
-        "Bu firma için giriş bilgisi oluşturma yetkiniz bulunmuyor.",
+        "Firmanın kayıtlı e-posta adresi yok. Lütfen önce firmanın iletişim bilgilerini güncelleyin.",
         {
-          statusCode: HTTP_STATUS.FORBIDDEN,
-          code: "FORBIDDEN",
+          statusCode: HTTP_STATUS.BAD_REQUEST,
+          code: "COMPANY_EMAIL_NOT_FOUND",
         },
       );
     }
 
-    // 2. Email bul
-    const latestContact =
-      await this.contactRepository.findLatestByCompanyId(companyId);
-    if (!latestContact?.email?.trim()) {
-      throw new AppError("Firmaya ait güncel bir e-posta adresi bulunamadı.", {
-        statusCode: HTTP_STATUS.BAD_REQUEST,
-        code: "COMPANY_EMAIL_NOT_FOUND",
-      });
-    }
-    const email = latestContact.email.trim().toLowerCase();
+    const selected = selectedEmails?.map((address) =>
+      address.trim().toLowerCase(),
+    );
 
-    // 3. Email başka kullanıcıda mı?
-    const existingCompanyUser =
-      await this.userRepository.findCompanyUserByCompanyId(companyId);
-    const emailOwner = await this.userRepository.findByEmailInsensitive(email);
-    if (emailOwner && emailOwner.id !== existingCompanyUser?.id) {
+    const recipients = selected
+      ? contactEmails.filter((address) => selected.includes(address))
+      : contactEmails;
+
+    if (recipients.length === 0) {
       throw new AppError(
-        `"${email}" adresi başka bir kullanıcı tarafından kullanılıyor.`,
-        { statusCode: HTTP_STATUS.CONFLICT, code: "EMAIL_ALREADY_EXISTS" },
+        "Lütfen firmanın iletişim adreslerinden en az birini seçin.",
+        {
+          statusCode: HTTP_STATUS.BAD_REQUEST,
+          code: "NO_RECIPIENT_SELECTED",
+        },
       );
     }
+
+    // 3. Giriş için hesaba tek bir e-posta yazılabilir (sistemde her adres
+    // tek kullanıcıya ait). Listede başka bir hesapta kayıtlı olmayan ilk
+    // adres seçilir. Hepsi kayıtlıysa hesap e-postasız açılır; firma
+    // kullanıcı adıyla giriş yapar.
+    const existingCompanyUser =
+      await this.userRepository.findCompanyUserByCompanyId(companyId);
+
+    let accountEmail: string | null = null;
+
+    for (const address of recipients) {
+      const owner = await this.userRepository.findByEmailInsensitive(address);
+
+      if (!owner || owner.id === existingCompanyUser?.id) {
+        accountEmail = address;
+        break;
+      }
+    }
+
+    // Uygun adres yoksa mevcut hesabın e-postası korunur.
+    if (!accountEmail && existingCompanyUser?.email) {
+      accountEmail = existingCompanyUser.email;
+    }
+
+    const emailUsedByAnotherUser = accountEmail === null;
+
+    const mainRecipient =
+      accountEmail && recipients.includes(accountEmail)
+        ? accountEmail
+        : recipients[0];
+    const ccRecipients = recipients.filter(
+      (address) => address !== mainRecipient,
+    );
 
     // 4. User yoksa yarat, varsa şifresini resetle
     let username: string;
@@ -85,7 +143,9 @@ export class CompanyCredentialService {
     let plainPassword: string;
 
     if (!existingCompanyUser) {
-      const initial = await this.createInitialCredentials(companyId, { email });
+      const initial = await this.createInitialCredentials(companyId, {
+        email: accountEmail,
+      });
       userId = initial.userId;
       username = initial.username;
       plainPassword = initial.plainPassword;
@@ -99,7 +159,7 @@ export class CompanyCredentialService {
       const reset = await this.resetPasswordAndEmail(
         existingCompanyUser.id,
         usernameToUse,
-        email,
+        accountEmail,
       );
 
       if (!reset.user.username) {
@@ -126,22 +186,33 @@ export class CompanyCredentialService {
       "Şifre:",
       plainPassword,
       "",
-      "Şifreyi kopyalarken yalnızca şifrenin bulunduğu satırı seçiniz.",
+      "(Şifreyi kopyalarken yalnızca şifrenin bulunduğu satırı seçiniz.)", "",
+      "Giriş adresi: https://tesvik.akkasgroup.com",
       "",
-      "Sisteme kullanıcı adınız veya e-posta adresiniz ile giriş yapabilirsiniz.",
+      accountEmail
+        ? `Sisteme kullanıcı adınız veya ${accountEmail} e-posta adresi ile giriş yapabilirsiniz.`
+        : "Sisteme kullanıcı adınız ile giriş yapabilirsiniz.",
+      "",
+      "İyi çalışmalar dilerim.",
       "",
       "Saygılarımla,",
-      "İyi çalışmalar dilerim.",
     ].join("\n");
-
     return {
       companyId: company.id,
       companyName: company.name,
       userId,
       username,
-      email,
+      // Hesaba yazılan giriş e-postası (yoksa ilk alıcı, bilgi notu için)
+      email: accountEmail ?? recipients[0],
+      recipients,
       password: plainPassword,
-      emailDraft: { to: email, subject, body },
+      // İlk alıcı "Kime", diğerleri "Bilgi (CC)". Kime'ye giriş e-postası
+      // konur (seçilenler arasındaysa); firmanın asıl muhatabı o.
+      emailDraft: { to: mainRecipient, cc: ccRecipients, subject, body },
+
+      // Ekranda bilgi notu göstermek için: e-posta başka bir hesapta kayıtlı
+      // olduğundan firma hesabına yazılmadı, giriş kullanıcı adıyla yapılır.
+      emailNotSavedToAccount: emailUsedByAnotherUser,
     };
   }
 
@@ -207,9 +278,9 @@ export class CompanyCredentialService {
 
   async checkCredentialStatus(
     companyId: number,
-    requesterUserId: number,
+    _requesterUserId: number,
     requesterRole: UserRole,
-  ): Promise<{ hasCredentials: boolean }> {
+  ): Promise<{ hasCredentials: boolean; emails: string[] }> {
     if (requesterRole !== "ADMIN" && requesterRole !== "OPERATION") {
       throw new AppError(
         "Firma giriş bilgilerini görüntüleme yetkiniz bulunmuyor.",
@@ -229,40 +300,36 @@ export class CompanyCredentialService {
       });
     }
 
-    if (
-      requesterRole === "OPERATION" &&
-      company.consultantUserId !== requesterUserId
-    ) {
-      throw new AppError(
-        "Bu firma için giriş bilgisi görüntüleme yetkiniz bulunmuyor.",
-        {
-          statusCode: HTTP_STATUS.FORBIDDEN,
-          code: "FORBIDDEN",
-        },
-      );
-    }
-
     const hasCredentials = await this.userRepository.companyHasUser(companyId);
 
-    return { hasCredentials };
+    // Ekranda mail adresi seçtirmek için firmanın iletişim adresleri.
+    const emails = await this.getContactEmails(companyId);
+
+    return { hasCredentials, emails };
   }
 
   private async resetPasswordAndEmail(
     userId: number,
     username: string,
-    email: string,
+    email: string | null,
   ): Promise<{
-    user: Awaited<ReturnType<UserRepository["updateCompanyCredentials"]>>;
+    user: { id: number; username: string | null };
     plainPassword: string;
   }> {
     const plainPassword = createStrongPassword();
     const passwordHash = await hashPassword(plainPassword);
 
-    const user = await this.userRepository.updateCompanyCredentials(userId, {
-      username,
-      email,
-      passwordHash,
-      mustChangePassword: false,
+    // E-posta boş olabildiği için (başka hesapta kayıtlıysa) doğrudan
+    // güncelliyoruz.
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        username,
+        email,
+        passwordHash,
+        mustChangePassword: false,
+      },
+      select: { id: true, username: true },
     });
 
     return { user, plainPassword };

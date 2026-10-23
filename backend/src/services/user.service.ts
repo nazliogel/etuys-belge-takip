@@ -25,17 +25,21 @@ export class UserService {
   async createUser(
     payload: CreateUserInput,
     requesterRole: UserRole,
-    requesterUserId: number,
+    // Artık kullanılmıyor (uzman her firmaya kullanıcı açabiliyor);
+    // controller'daki çağrı bozulmasın diye parametre duruyor.
+    _requesterUserId: number,
   ) {
     if (requesterRole !== "ADMIN" && requesterRole !== "OPERATION") {
-      throw new AppError("You do not have permission to create users.", {
+      throw new AppError("Kullanıcı oluşturma yetkiniz bulunmuyor.", {
         statusCode: HTTP_STATUS.FORBIDDEN,
         code: "FORBIDDEN",
       });
     }
 
+    // Uzmanlar (OPERATION) her firmaya firma kullanıcısı açabilir, ama
+    // yönetici ya da uzman hesabı açamaz.
     if (requesterRole === "OPERATION" && payload.role !== "COMPANY") {
-      throw new AppError("Operation users can only create company users.", {
+      throw new AppError("Uzmanlar yalnızca firma kullanıcısı oluşturabilir.", {
         statusCode: HTTP_STATUS.FORBIDDEN,
         code: "FORBIDDEN",
       });
@@ -63,14 +67,14 @@ export class UserService {
     }
 
     if (payload.role === "COMPANY" && !payload.companyId) {
-      throw new AppError("Company users must be assigned to a company.", {
+      throw new AppError("Firma kullanıcısı için firma seçilmelidir.", {
         statusCode: HTTP_STATUS.BAD_REQUEST,
         code: "COMPANY_REQUIRED",
       });
     }
 
     if (payload.role === "ADMIN" && payload.companyId) {
-      throw new AppError("Admin users cannot be assigned to a company.", {
+      throw new AppError("Yönetici kullanıcılar bir firmaya bağlanamaz.", {
         statusCode: HTTP_STATUS.BAD_REQUEST,
         code: "ADMIN_COMPANY_NOT_ALLOWED",
       });
@@ -87,23 +91,10 @@ export class UserService {
       const company = await this.companyRepository.findById(payload.companyId!);
 
       if (!company) {
-        throw new AppError("Company not found.", {
+        throw new AppError("Firma bulunamadı.", {
           statusCode: HTTP_STATUS.NOT_FOUND,
           code: "COMPANY_NOT_FOUND",
         });
-      }
-
-      if (
-        requesterRole === "OPERATION" &&
-        company.consultantUserId !== requesterUserId
-      ) {
-        throw new AppError(
-          "You do not have permission to create a user for this company.",
-          {
-            statusCode: HTTP_STATUS.FORBIDDEN,
-            code: "FORBIDDEN",
-          },
-        );
       }
 
       companyId = company.id;
