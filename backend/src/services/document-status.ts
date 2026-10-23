@@ -5,6 +5,7 @@ export type DisplayStatus =
   | "CANCELLED"
   | "INACTIVE"
   | "AUTHORIZATION_EXPIRED"
+  | "CLOSURE_APPLIED"
   | "CLOSURE_ELIGIBLE"
   | "EXTENSION_ELIGIBLE"
   | "EXPIRED"
@@ -29,6 +30,8 @@ export type DocumentStatusInput = {
   documentEndDate: Date | null;
   extensionDate: Date | null;
   authorizationEndDate: Date | null;
+  /** Belge için reddedilmemiş bir kapatma başvurusu var mı */
+  hasClosureApplication?: boolean;
 };
 
 export type DocumentStatusResult = {
@@ -96,9 +99,9 @@ export function computeDocumentStatus(
 
   const extensionApplicationStartDate =
     endDate !== null &&
-    extensionDate !== null &&
-    !isExtended &&
-    !isExtensionRightExpired
+      extensionDate !== null &&
+      !isExtended &&
+      !isExtensionRightExpired
       ? addMonths(endDate, -EXTENSION_APPLICATION_MONTHS)
       : null;
 
@@ -127,11 +130,13 @@ export function computeDocumentStatus(
     return result("AUTHORIZATION_EXPIRED");
   }
 
-  // 3) Kapatma: uzatılmış ve uzatılan süre geçmiş
-  if (isExtended && extensionDate! < today) return result("CLOSURE_ELIGIBLE");
-
-  // 3b) Uzatılmamış ama 1,5 yıllık uzatım hakkı geçmiş → kapatma
-  if (isExtensionRightExpired) return result("CLOSURE_ELIGIBLE");
+  // 3) Kapatma dönemi: uzatılan süre geçmiş ya da 1,5 yıllık uzatım hakkı bitmiş.
+  //    Reddedilmemiş bir kapatma başvurusu varsa "Kap.Mür. Yapılanlar" olur.
+  if ((isExtended && extensionDate! < today) || isExtensionRightExpired) {
+    return result(
+      input.hasClosureApplication ? "CLOSURE_APPLIED" : "CLOSURE_ELIGIBLE",
+    );
+  }
 
   // 4) Süre uzatma: uzatılmamış ve müracaat dönemi başlamış
   if (extensionApplicationStartDate && today >= extensionApplicationStartDate) {

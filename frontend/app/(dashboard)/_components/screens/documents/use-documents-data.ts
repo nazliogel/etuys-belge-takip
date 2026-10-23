@@ -28,6 +28,7 @@ export type UseDocumentsDataParams = {
   variant: "admin" | "company";
   currentPage: number;
   status: DocumentStatus | undefined;
+  isClosureAppliedView: boolean;
   debouncedSearch: string;
   isExtensionEligibleView: boolean;
   isClosureEligibleView: boolean;
@@ -42,13 +43,14 @@ export function useDocumentsData({
   debouncedSearch,
   isExtensionEligibleView,
   isClosureEligibleView,
+  isClosureAppliedView,
   isAuthorizationRequiredView,
 }: UseDocumentsDataParams) {
   const [documents, setDocuments] = useState<ApiDocument[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-
+  const [closureAppliedCount, setClosureAppliedCount] = useState(0);
   const [summary, setSummary] = useState({
     total: 0,
     active: 0,
@@ -151,6 +153,7 @@ export function useDocumentsData({
         setClosedDocumentCount(0);
         setExtensionEligibleCount(0);
         setClosureEligibleCount(0);
+        setClosureAppliedCount(0);
         setTotalPages(1);
         setIsLoading(false);
         return;
@@ -218,6 +221,7 @@ export function useDocumentsData({
           setCompanyClosureEligibleIds(closureIds);
           setExtensionEligibleCount(extensionIds.size);
           setClosureEligibleCount(closureIds.size);
+          setClosureAppliedCount(countWithStatus("CLOSURE_APPLIED"));
 
           setSummary({
             total: mappedDocuments.length,
@@ -286,6 +290,7 @@ export function useDocumentsData({
           setSummary(nextSummary);
           setExtensionEligibleCount(nextSummary.extensionEligible ?? 0);
           setClosureEligibleCount(nextSummary.closureEligible ?? 0);
+          setClosureAppliedCount(nextSummary.closureApplied ?? 0);
           setClosedDocumentCount(closedResponse.data.totalCount);
           setAuthorizationRequiredCount(authorizationResponse.data.totalCount);
           setAuthorizationRequiredCompanies(authorizationResponse.data.items);
@@ -298,10 +303,16 @@ export function useDocumentsData({
           return;
         }
 
-        if (isExtensionEligibleView || isClosureEligibleView) {
+        if (
+          isExtensionEligibleView ||
+          isClosureEligibleView ||
+          isClosureAppliedView
+        ) {
           const endpoint = isExtensionEligibleView
             ? `/documents/extension-eligible?onlyAssigned=${onlyAssigned}`
-            : `/documents/closure-eligible?onlyAssigned=${onlyAssigned}`;
+            : isClosureAppliedView
+              ? `/documents/closure-applied?onlyAssigned=${onlyAssigned}`
+              : `/documents/closure-eligible?onlyAssigned=${onlyAssigned}`;
 
           const [listResponse, counts] = await Promise.all([
             apiFetch<ExtensionEligibleResponse>(endpoint),
@@ -326,14 +337,22 @@ export function useDocumentsData({
           ]);
 
           applyCounts(counts);
+          const uniqueClosedDocuments = Array.from(
+            new Map(
+              allClosedDocuments.map((document) => [document.id, document]),
+            ).values(),
+          );
+
           setDocuments(
-            allClosedDocuments.map((document) => ({
+            uniqueClosedDocuments.map((document) => ({
               ...document,
               isActive: false,
               status: "INACTIVE" as DocumentStatus,
               documentStatus: document.status,
             })),
           );
+
+          setTotalPages(1);
           return;
         }
 
@@ -418,6 +437,7 @@ export function useDocumentsData({
     debouncedSearch,
     isExtensionEligibleView,
     isClosureEligibleView,
+    isClosureAppliedView,
     isAuthorizationRequiredView,
     variant,
     authorizationAllowsFetch,
@@ -433,6 +453,7 @@ export function useDocumentsData({
     closedDocumentCount,
     extensionEligibleCount,
     closureEligibleCount,
+    closureAppliedCount,
     authorizationRequiredCount,
     authorizationRequiredCompanies,
     companyExtensionEligibleIds,

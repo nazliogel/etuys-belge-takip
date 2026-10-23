@@ -85,6 +85,7 @@ type DocumentListResponse = ItemsResponse<ApiDocument> & {
       expiring: number;
       expired: number;
       inactive: number;
+      closureApplied: number;
     };
   };
 };
@@ -98,6 +99,7 @@ type DashboardData = {
   authorizationRequiredCount: number;
   closureEligibleCount: number;
   closedCancelledCount: number;
+  closureAppliedCount: number;
   extensionEligibleCount: number;
   activeDocumentItems: ApiDocument[];
   closureEligibleItems: ApiDocument[];
@@ -125,6 +127,7 @@ const EMPTY_DASHBOARD: DashboardData = {
   authorizationRequiredCount: 0,
   closureEligibleCount: 0,
   closedCancelledCount: 0,
+  closureAppliedCount: 0,
   extensionEligibleCount: 0,
   activeDocumentItems: [],
   closureEligibleItems: [],
@@ -135,10 +138,10 @@ const EMPTY_DASHBOARD: DashboardData = {
 // Cache şekli değiştiği için sürüm v6'ya yükseltildi (eski v5 verisi okunmaz).
 function getDashboardCacheKey(user: SessionUser): string {
   if (!user) {
-    return "dashboard-overview-cache-v7-guest";
+    return "dashboard-overview-cache-v8-guest";
   }
 
-  return `dashboard-overview-cache-v7-${user.role}-${user.id}`;
+  return `dashboard-overview-cache-v8-${user.role}-${user.id}`;
 }
 
 function readDashboardCache(key: string): DashboardData | null {
@@ -229,6 +232,7 @@ async function fetchDashboardData(user: SessionUser): Promise<DashboardData> {
     authorizationRequiredCount: authorizationRequiredResponse.data.totalCount,
     closureEligibleCount: closureEligibleResponse.data.totalCount,
     closedCancelledCount: closedDocumentResponse.data.totalCount,
+    closureAppliedCount: summary.closureApplied,
     extensionEligibleCount: extensionEligibleResponse.data.totalCount,
     activeDocumentItems: activeDocumentResponse.data.items,
     closureEligibleItems: closureEligibleResponse.data.items,
@@ -511,6 +515,13 @@ export function DashboardScreen() {
       href: "/documents?view=closure-eligible",
     },
     {
+      title: "Kap.Mür. Yapıldı",
+      value: displayCount(data?.closureAppliedCount),
+      description: "Kapatma başvurusu yapılmış belgeler",
+      icon: FileCheck2,
+      href: "/documents?view=closure-applied",
+    },
+    {
       title: "Süre Uzatma",
       value: displayCount(data?.extensionEligibleCount),
       description: "Süre uzatma başvurusu yapılabilecek belgeler",
@@ -563,6 +574,13 @@ export function DashboardScreen() {
       href: "/documents?view=closure-eligible",
     },
     {
+      title: "Kap.Mür. Yapıldı",
+      value: displayCount(data?.closureAppliedCount),
+      description: "Kapatma başvurusu yapılmış belgeler",
+      icon: FileCheck2,
+      href: "/documents?view=closure-applied",
+    },
+    {
       title: "Süre Uzatma Müracatı",
       value: displayCount(data?.extensionEligibleCount),
       description: "Süre uzatma başvurusu yapılabilecek belge",
@@ -593,7 +611,10 @@ export function DashboardScreen() {
       </header>
 
       {/* İSTATİSTİK KARTLARI */}
-      <section className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-6">
+      <section
+        className={`grid grid-flow-col auto-cols-[160px] gap-2 overflow-x-auto pb-1 lg:grid-flow-row lg:auto-cols-auto lg:overflow-visible ${isCompany ? "lg:grid-cols-6" : "lg:grid-cols-7"
+          }`}
+      >
         {summaryItems.map((item) => {
           const Icon = item.icon;
 
@@ -621,7 +642,7 @@ export function DashboardScreen() {
               </div>
 
               <div className="mt-2">
-                <p className="whitespace-nowrap text-[10px] font-bold uppercase tracking-normal text-slate-500">
+                <p className="text-[10px] font-bold uppercase leading-tight tracking-normal text-slate-500">
                   {item.title}
                 </p>
                 <p className="mt-0.5 text-xl font-extrabold tracking-tight text-slate-900">

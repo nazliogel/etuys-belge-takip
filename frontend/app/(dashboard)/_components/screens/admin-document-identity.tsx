@@ -33,6 +33,7 @@ type ApiDocumentDetail = {
     | "INACTIVE"
     | "AUTHORIZATION_EXPIRED"
     | "CLOSURE_ELIGIBLE"
+    | "CLOSURE_APPLIED"
     | "EXTENSION_ELIGIBLE"
     | "EXPIRED"
     | "EXPIRING"
@@ -54,10 +55,12 @@ type DocumentDetailResponse = {
 // Durum etiketi ortak fonksiyondan (documents/lib.ts) gelir; burada sadece
 // rengin bu ekrandaki karşılığı var.
 const STATUS_BADGE_CLASSES: Record<StatusTone, string> = {
-  red: "bg-red-50 text-red-700 border border-red-200",
-  blue: "bg-blue-50 text-blue-700 border border-blue-200",
-  amber: "bg-amber-50 text-amber-700 border border-amber-200",
-  green: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  red: "border border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300",
+  blue: "border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300",
+  amber: "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300",
+  green: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300",
+  violet: "border border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300",
+  orange: "border border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-300",
 };
 
 export function AdminDocumentIdentity({
