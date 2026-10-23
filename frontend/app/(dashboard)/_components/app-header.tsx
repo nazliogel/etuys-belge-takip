@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, Mail, Menu, Phone, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, LogOut, Mail, Menu, Phone, X } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 import { apiFetch } from "@/lib/api";
+import { logoutUser } from "@/lib/mock-auth";
 import type { UserRole } from "../_lib/permissions";
+import { clearSelectedDocument } from "../_lib/selected-document";
 import { AppSidebar } from "./app-sidebar";
 import { CompanyThemeToggle } from "@/components/layout/company-theme-toggle";
 
@@ -48,8 +50,25 @@ export function AppHeader({
   consultantEmail,
 }: AppHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Sağ üstteki tek tıkla çıkış düğmesi
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    try {
+      await logoutUser();
+    } finally {
+      clearSelectedDocument();
+      router.replace("/login");
+    }
+  };
 
   const roleLabel =
     role === "ADMIN"
@@ -300,7 +319,7 @@ export function AppHeader({
               birebir aynı boyut, aynı sağ kenar. Chip'in görsel kutu-border-bg'si
               sm+ üzerinde açılır. Böylece mobilde kayma yaşanmaz.
             */}
-          <div className="flex items-center gap-2 rounded-xl border border-transparent bg-transparent px-0 py-0 transition sm:gap-3 sm:border-blue-700/80 sm:bg-blue-700/50 sm:px-3.5 sm:py-1.5 sm:hover:bg-blue-700/70 dark:sm:border-slate-700/80 dark:sm:bg-slate-800/50 dark:sm:hover:bg-slate-800/70">
+          <div className="flex items-center gap-2 rounded-xl border border-transparent bg-transparent px-0 py-0 sm:gap-3 sm:border-blue-700/80 sm:bg-blue-700/50 sm:px-3.5 sm:py-1.5 dark:sm:border-slate-700/80 dark:sm:bg-slate-800/50">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold leading-tight text-white dark:text-slate-100">
                 {userName}
@@ -315,6 +334,18 @@ export function AppHeader({
               {userName.charAt(0).toUpperCase()}
             </div>
           </div>
+
+          {/* ÇIKIŞ — tek tıkla oturumu kapatır */}
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            disabled={loggingOut}
+            title="Oturumu Kapat"
+            aria-label="Oturumu Kapat"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-700/80 bg-blue-700/50 text-white transition hover:border-red-500 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-100 dark:hover:border-red-500 dark:hover:bg-red-600"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </header>
 

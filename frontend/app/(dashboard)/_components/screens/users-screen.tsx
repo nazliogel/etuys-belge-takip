@@ -1125,7 +1125,7 @@ export function UsersScreen() {
               <div className="flex items-start justify-between gap-3">
                 <p className="flex items-center gap-2 text-sm font-bold text-emerald-800">
                   <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  Mail taslağı hazırlandı.Mailinizi kontrol ediniz.
+                  Mail taslağı hazırlandı . Mailinizi kontrol edip firmaya iletiniz.
                 </p>
 
                 <button
