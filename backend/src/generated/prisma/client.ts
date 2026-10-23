@@ -147,6 +147,11 @@ export type DocumentDomesticMachine = Prisma.DocumentDomesticMachineModel
  */
 export type DocumentImportedMachine = Prisma.DocumentImportedMachineModel
 /**
+ * Model DocumentImportedRealization
+ * 
+ */
+export type DocumentImportedRealization = Prisma.DocumentImportedRealizationModel
+/**
  * Model DocumentSpecialCondition
  * 
  */

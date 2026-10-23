@@ -418,6 +418,7 @@ export const ModelName = {
   DocumentFinancialInfo: 'DocumentFinancialInfo',
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
+  DocumentImportedRealization: 'DocumentImportedRealization',
   DocumentSpecialCondition: 'DocumentSpecialCondition',
   IncentiveDocumentCondition: 'IncentiveDocumentCondition',
   DocumentReminder: 'DocumentReminder',
@@ -444,7 +445,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentImportedRealization" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2002,6 +2003,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DocumentImportedRealization: {
+      payload: Prisma.$DocumentImportedRealizationPayload<ExtArgs>
+      fields: Prisma.DocumentImportedRealizationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentImportedRealizationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentImportedRealizationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentImportedRealizationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentImportedRealizationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentImportedRealizationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentImportedRealizationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentImportedRealizationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentImportedRealizationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentImportedRealizationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>
+        }
+        update: {
+          args: Prisma.DocumentImportedRealizationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentImportedRealizationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentImportedRealizationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentImportedRealizationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentImportedRealizationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentImportedRealizationPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentImportedRealizationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentImportedRealization>
+        }
+        groupBy: {
+          args: Prisma.DocumentImportedRealizationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentImportedRealizationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentImportedRealizationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentImportedRealizationCountAggregateOutputType> | number
+        }
+      }
+    }
     DocumentSpecialCondition: {
       payload: Prisma.$DocumentSpecialConditionPayload<ExtArgs>
       fields: Prisma.DocumentSpecialConditionFieldRefs
@@ -3343,6 +3418,24 @@ export const DocumentImportedMachineScalarFieldEnum = {
 export type DocumentImportedMachineScalarFieldEnum = (typeof DocumentImportedMachineScalarFieldEnum)[keyof typeof DocumentImportedMachineScalarFieldEnum]
 
 
+export const DocumentImportedRealizationScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  machineId: 'machineId',
+  externalRowId: 'externalRowId',
+  sequenceNumber: 'sequenceNumber',
+  itemName: 'itemName',
+  unit: 'unit',
+  customsRealizedQuantity: 'customsRealizedQuantity',
+  externalMachineId: 'externalMachineId',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentImportedRealizationScalarFieldEnum = (typeof DocumentImportedRealizationScalarFieldEnum)[keyof typeof DocumentImportedRealizationScalarFieldEnum]
+
+
 export const DocumentSpecialConditionScalarFieldEnum = {
   id: 'id',
   detailId: 'detailId',
@@ -4121,6 +4214,7 @@ export type GlobalOmitConfig = {
   documentFinancialInfo?: Prisma.DocumentFinancialInfoOmit
   documentDomesticMachine?: Prisma.DocumentDomesticMachineOmit
   documentImportedMachine?: Prisma.DocumentImportedMachineOmit
+  documentImportedRealization?: Prisma.DocumentImportedRealizationOmit
   documentSpecialCondition?: Prisma.DocumentSpecialConditionOmit
   incentiveDocumentCondition?: Prisma.IncentiveDocumentConditionOmit
   documentReminder?: Prisma.DocumentReminderOmit

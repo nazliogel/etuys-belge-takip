@@ -757,6 +757,7 @@ export type DocumentImportedMachineWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"DocumentImportedMachine"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentImportedMachine"> | Date | string
   detail?: Prisma.XOR<Prisma.DocumentDetailScalarRelationFilter, Prisma.DocumentDetailWhereInput>
+  realizations?: Prisma.DocumentImportedRealizationListRelationFilter
 }
 
 export type DocumentImportedMachineOrderByWithRelationInput = {
@@ -816,6 +817,7 @@ export type DocumentImportedMachineOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   detail?: Prisma.DocumentDetailOrderByWithRelationInput
+  realizations?: Prisma.DocumentImportedRealizationOrderByRelationAggregateInput
 }
 
 export type DocumentImportedMachineWhereUniqueInput = Prisma.AtLeast<{
@@ -878,6 +880,7 @@ export type DocumentImportedMachineWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"DocumentImportedMachine"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentImportedMachine"> | Date | string
   detail?: Prisma.XOR<Prisma.DocumentDetailScalarRelationFilter, Prisma.DocumentDetailWhereInput>
+  realizations?: Prisma.DocumentImportedRealizationListRelationFilter
 }, "id">
 
 export type DocumentImportedMachineOrderByWithAggregationInput = {
@@ -1059,6 +1062,7 @@ export type DocumentImportedMachineCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   detail: Prisma.DocumentDetailCreateNestedOneWithoutImportedMachinesInput
+  realizations?: Prisma.DocumentImportedRealizationCreateNestedManyWithoutMachineInput
 }
 
 export type DocumentImportedMachineUncheckedCreateInput = {
@@ -1117,6 +1121,7 @@ export type DocumentImportedMachineUncheckedCreateInput = {
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  realizations?: Prisma.DocumentImportedRealizationUncheckedCreateNestedManyWithoutMachineInput
 }
 
 export type DocumentImportedMachineUpdateInput = {
@@ -1174,6 +1179,7 @@ export type DocumentImportedMachineUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   detail?: Prisma.DocumentDetailUpdateOneRequiredWithoutImportedMachinesNestedInput
+  realizations?: Prisma.DocumentImportedRealizationUpdateManyWithoutMachineNestedInput
 }
 
 export type DocumentImportedMachineUncheckedUpdateInput = {
@@ -1232,6 +1238,7 @@ export type DocumentImportedMachineUncheckedUpdateInput = {
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  realizations?: Prisma.DocumentImportedRealizationUncheckedUpdateManyWithoutMachineNestedInput
 }
 
 export type DocumentImportedMachineCreateManyInput = {
@@ -1668,6 +1675,11 @@ export type DocumentImportedMachineSumOrderByAggregateInput = {
   financialLeasingPermittedQuantity?: Prisma.SortOrder
 }
 
+export type DocumentImportedMachineNullableScalarRelationFilter = {
+  is?: Prisma.DocumentImportedMachineWhereInput | null
+  isNot?: Prisma.DocumentImportedMachineWhereInput | null
+}
+
 export type DocumentImportedMachineCreateNestedManyWithoutDetailInput = {
   create?: Prisma.XOR<Prisma.DocumentImportedMachineCreateWithoutDetailInput, Prisma.DocumentImportedMachineUncheckedCreateWithoutDetailInput> | Prisma.DocumentImportedMachineCreateWithoutDetailInput[] | Prisma.DocumentImportedMachineUncheckedCreateWithoutDetailInput[]
   connectOrCreate?: Prisma.DocumentImportedMachineCreateOrConnectWithoutDetailInput | Prisma.DocumentImportedMachineCreateOrConnectWithoutDetailInput[]
@@ -1708,6 +1720,22 @@ export type DocumentImportedMachineUncheckedUpdateManyWithoutDetailNestedInput =
   update?: Prisma.DocumentImportedMachineUpdateWithWhereUniqueWithoutDetailInput | Prisma.DocumentImportedMachineUpdateWithWhereUniqueWithoutDetailInput[]
   updateMany?: Prisma.DocumentImportedMachineUpdateManyWithWhereWithoutDetailInput | Prisma.DocumentImportedMachineUpdateManyWithWhereWithoutDetailInput[]
   deleteMany?: Prisma.DocumentImportedMachineScalarWhereInput | Prisma.DocumentImportedMachineScalarWhereInput[]
+}
+
+export type DocumentImportedMachineCreateNestedOneWithoutRealizationsInput = {
+  create?: Prisma.XOR<Prisma.DocumentImportedMachineCreateWithoutRealizationsInput, Prisma.DocumentImportedMachineUncheckedCreateWithoutRealizationsInput>
+  connectOrCreate?: Prisma.DocumentImportedMachineCreateOrConnectWithoutRealizationsInput
+  connect?: Prisma.DocumentImportedMachineWhereUniqueInput
+}
+
+export type DocumentImportedMachineUpdateOneWithoutRealizationsNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentImportedMachineCreateWithoutRealizationsInput, Prisma.DocumentImportedMachineUncheckedCreateWithoutRealizationsInput>
+  connectOrCreate?: Prisma.DocumentImportedMachineCreateOrConnectWithoutRealizationsInput
+  upsert?: Prisma.DocumentImportedMachineUpsertWithoutRealizationsInput
+  disconnect?: Prisma.DocumentImportedMachineWhereInput | boolean
+  delete?: Prisma.DocumentImportedMachineWhereInput | boolean
+  connect?: Prisma.DocumentImportedMachineWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentImportedMachineUpdateToOneWithWhereWithoutRealizationsInput, Prisma.DocumentImportedMachineUpdateWithoutRealizationsInput>, Prisma.DocumentImportedMachineUncheckedUpdateWithoutRealizationsInput>
 }
 
 export type DocumentImportedMachineCreateWithoutDetailInput = {
@@ -1764,6 +1792,7 @@ export type DocumentImportedMachineCreateWithoutDetailInput = {
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  realizations?: Prisma.DocumentImportedRealizationCreateNestedManyWithoutMachineInput
 }
 
 export type DocumentImportedMachineUncheckedCreateWithoutDetailInput = {
@@ -1821,6 +1850,7 @@ export type DocumentImportedMachineUncheckedCreateWithoutDetailInput = {
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  realizations?: Prisma.DocumentImportedRealizationUncheckedCreateNestedManyWithoutMachineInput
 }
 
 export type DocumentImportedMachineCreateOrConnectWithoutDetailInput = {
@@ -1908,6 +1938,252 @@ export type DocumentImportedMachineScalarWhereInput = {
   rawData?: Prisma.JsonNullableFilter<"DocumentImportedMachine">
   createdAt?: Prisma.DateTimeFilter<"DocumentImportedMachine"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentImportedMachine"> | Date | string
+}
+
+export type DocumentImportedMachineCreateWithoutRealizationsInput = {
+  externalMachineId?: number | null
+  sequenceNumber?: number | null
+  name?: string | null
+  quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  unit?: string | null
+  machineryEquipmentType?: string | null
+  gtipCode?: string | null
+  gtipDescription?: string | null
+  vatExemption?: string | null
+  vatExemptionDescription?: string | null
+  customsTaxExemption?: string | null
+  customsTaxExemptionDescription?: string | null
+  usedMachine?: string | null
+  isVehicle?: string | null
+  isCkd?: string | null
+  totalFobUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalFobTl?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCifTl?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  originCurrencyFob?: string | null
+  originCurrencyFobAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferDocumentNumber?: string | null
+  transferIncomingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferIncomingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingCompanyName?: string | null
+  rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  detail: Prisma.DocumentDetailCreateNestedOneWithoutImportedMachinesInput
+}
+
+export type DocumentImportedMachineUncheckedCreateWithoutRealizationsInput = {
+  id?: number
+  detailId: number
+  externalMachineId?: number | null
+  sequenceNumber?: number | null
+  name?: string | null
+  quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  unit?: string | null
+  machineryEquipmentType?: string | null
+  gtipCode?: string | null
+  gtipDescription?: string | null
+  vatExemption?: string | null
+  vatExemptionDescription?: string | null
+  customsTaxExemption?: string | null
+  customsTaxExemptionDescription?: string | null
+  usedMachine?: string | null
+  isVehicle?: string | null
+  isCkd?: string | null
+  totalFobUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalFobTl?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCifTl?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  originCurrencyFob?: string | null
+  originCurrencyFobAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferDocumentNumber?: string | null
+  transferIncomingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferIncomingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingCompanyName?: string | null
+  rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type DocumentImportedMachineCreateOrConnectWithoutRealizationsInput = {
+  where: Prisma.DocumentImportedMachineWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentImportedMachineCreateWithoutRealizationsInput, Prisma.DocumentImportedMachineUncheckedCreateWithoutRealizationsInput>
+}
+
+export type DocumentImportedMachineUpsertWithoutRealizationsInput = {
+  update: Prisma.XOR<Prisma.DocumentImportedMachineUpdateWithoutRealizationsInput, Prisma.DocumentImportedMachineUncheckedUpdateWithoutRealizationsInput>
+  create: Prisma.XOR<Prisma.DocumentImportedMachineCreateWithoutRealizationsInput, Prisma.DocumentImportedMachineUncheckedCreateWithoutRealizationsInput>
+  where?: Prisma.DocumentImportedMachineWhereInput
+}
+
+export type DocumentImportedMachineUpdateToOneWithWhereWithoutRealizationsInput = {
+  where?: Prisma.DocumentImportedMachineWhereInput
+  data: Prisma.XOR<Prisma.DocumentImportedMachineUpdateWithoutRealizationsInput, Prisma.DocumentImportedMachineUncheckedUpdateWithoutRealizationsInput>
+}
+
+export type DocumentImportedMachineUpdateWithoutRealizationsInput = {
+  externalMachineId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sequenceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  machineryEquipmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gtipCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gtipDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatExemption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatExemptionDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsTaxExemption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsTaxExemptionDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usedMachine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVehicle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCkd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalFobUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalFobTl?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCifTl?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  originCurrencyFob?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  originCurrencyFobAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferDocumentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  transferIncomingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferIncomingAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingCompanyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  detail?: Prisma.DocumentDetailUpdateOneRequiredWithoutImportedMachinesNestedInput
+}
+
+export type DocumentImportedMachineUncheckedUpdateWithoutRealizationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  detailId?: Prisma.IntFieldUpdateOperationsInput | number
+  externalMachineId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sequenceNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  machineryEquipmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gtipCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gtipDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatExemption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatExemptionDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsTaxExemption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsTaxExemptionDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usedMachine?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVehicle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCkd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalFobUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalFobTl?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  totalCifTl?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  originCurrencyFob?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  originCurrencyFobAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  customsPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferDocumentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  transferIncomingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  transferIncomingAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  saleOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  salePermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  leasingPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportOutgoingQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  exportPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  invoiceRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingRealizedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingPermittedQuantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  financialLeasingCompanyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DocumentImportedMachineCreateManyDetailInput = {
@@ -2021,6 +2297,7 @@ export type DocumentImportedMachineUpdateWithoutDetailInput = {
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  realizations?: Prisma.DocumentImportedRealizationUpdateManyWithoutMachineNestedInput
 }
 
 export type DocumentImportedMachineUncheckedUpdateWithoutDetailInput = {
@@ -2078,6 +2355,7 @@ export type DocumentImportedMachineUncheckedUpdateWithoutDetailInput = {
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  realizations?: Prisma.DocumentImportedRealizationUncheckedUpdateManyWithoutMachineNestedInput
 }
 
 export type DocumentImportedMachineUncheckedUpdateManyWithoutDetailInput = {
@@ -2138,6 +2416,35 @@ export type DocumentImportedMachineUncheckedUpdateManyWithoutDetailInput = {
 }
 
 
+/**
+ * Count Type DocumentImportedMachineCountOutputType
+ */
+
+export type DocumentImportedMachineCountOutputType = {
+  realizations: number
+}
+
+export type DocumentImportedMachineCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  realizations?: boolean | DocumentImportedMachineCountOutputTypeCountRealizationsArgs
+}
+
+/**
+ * DocumentImportedMachineCountOutputType without action
+ */
+export type DocumentImportedMachineCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentImportedMachineCountOutputType
+   */
+  select?: Prisma.DocumentImportedMachineCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * DocumentImportedMachineCountOutputType without action
+ */
+export type DocumentImportedMachineCountOutputTypeCountRealizationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DocumentImportedRealizationWhereInput
+}
+
 
 export type DocumentImportedMachineSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2196,6 +2503,8 @@ export type DocumentImportedMachineSelect<ExtArgs extends runtime.Types.Extensio
   createdAt?: boolean
   updatedAt?: boolean
   detail?: boolean | Prisma.DocumentDetailDefaultArgs<ExtArgs>
+  realizations?: boolean | Prisma.DocumentImportedMachine$realizationsArgs<ExtArgs>
+  _count?: boolean | Prisma.DocumentImportedMachineCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["documentImportedMachine"]>
 
 export type DocumentImportedMachineSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2377,6 +2686,8 @@ export type DocumentImportedMachineSelectScalar = {
 export type DocumentImportedMachineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "detailId" | "externalMachineId" | "sequenceNumber" | "name" | "quantity" | "unit" | "machineryEquipmentType" | "gtipCode" | "gtipDescription" | "vatExemption" | "vatExemptionDescription" | "customsTaxExemption" | "customsTaxExemptionDescription" | "usedMachine" | "isVehicle" | "isCkd" | "totalFobUsd" | "totalFobTl" | "totalCifTl" | "originCurrencyFob" | "originCurrencyFobAmount" | "customsRealizedValue" | "customsRealizedQuantity" | "customsPermittedValue" | "customsPermittedQuantity" | "transferRealizedValue" | "transferRealizedQuantity" | "transferOutgoingValue" | "transferOutgoingQuantity" | "transferDocumentNumber" | "transferIncomingQuantity" | "transferIncomingAmount" | "saleOutgoingValue" | "saleOutgoingQuantity" | "salePermittedValue" | "salePermittedQuantity" | "leasingOutgoingValue" | "leasingOutgoingQuantity" | "leasingPermittedValue" | "leasingPermittedQuantity" | "exportOutgoingValue" | "exportOutgoingQuantity" | "exportPermittedValue" | "exportPermittedQuantity" | "invoiceRealizedValue" | "invoiceRealizedQuantity" | "financialLeasingRealizedValue" | "financialLeasingRealizedQuantity" | "financialLeasingPermittedValue" | "financialLeasingPermittedQuantity" | "financialLeasingCompanyName" | "rawData" | "createdAt" | "updatedAt", ExtArgs["result"]["documentImportedMachine"]>
 export type DocumentImportedMachineInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   detail?: boolean | Prisma.DocumentDetailDefaultArgs<ExtArgs>
+  realizations?: boolean | Prisma.DocumentImportedMachine$realizationsArgs<ExtArgs>
+  _count?: boolean | Prisma.DocumentImportedMachineCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DocumentImportedMachineIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   detail?: boolean | Prisma.DocumentDetailDefaultArgs<ExtArgs>
@@ -2389,6 +2700,7 @@ export type $DocumentImportedMachinePayload<ExtArgs extends runtime.Types.Extens
   name: "DocumentImportedMachine"
   objects: {
     detail: Prisma.$DocumentDetailPayload<ExtArgs>
+    realizations: Prisma.$DocumentImportedRealizationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2841,6 +3153,7 @@ readonly fields: DocumentImportedMachineFieldRefs;
 export interface Prisma__DocumentImportedMachineClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   detail<T extends Prisma.DocumentDetailDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentDetailDefaultArgs<ExtArgs>>): Prisma.Prisma__DocumentDetailClient<runtime.Types.Result.GetResult<Prisma.$DocumentDetailPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  realizations<T extends Prisma.DocumentImportedMachine$realizationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentImportedMachine$realizationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentImportedRealizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3323,6 +3636,30 @@ export type DocumentImportedMachineDeleteManyArgs<ExtArgs extends runtime.Types.
    * Limit how many DocumentImportedMachines to delete.
    */
   limit?: number
+}
+
+/**
+ * DocumentImportedMachine.realizations
+ */
+export type DocumentImportedMachine$realizationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentImportedRealization
+   */
+  select?: Prisma.DocumentImportedRealizationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentImportedRealization
+   */
+  omit?: Prisma.DocumentImportedRealizationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentImportedRealizationInclude<ExtArgs> | null
+  where?: Prisma.DocumentImportedRealizationWhereInput
+  orderBy?: Prisma.DocumentImportedRealizationOrderByWithRelationInput | Prisma.DocumentImportedRealizationOrderByWithRelationInput[]
+  cursor?: Prisma.DocumentImportedRealizationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DocumentImportedRealizationScalarFieldEnum | Prisma.DocumentImportedRealizationScalarFieldEnum[]
 }
 
 /**

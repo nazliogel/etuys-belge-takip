@@ -1,7 +1,17 @@
 "use client";
 
-import { FileText, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  FileText,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Receipt,
+  X,
+} from "lucide-react";
+
+import { Fragment, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { apiFetch } from "@/lib/api";
@@ -10,8 +20,18 @@ import {
   type SelectedDocumentStatus,
 } from "@/app/(dashboard)/_lib/selected-document";
 
+type ImportedRealization = {
+  externalRowId: string;
+  sequenceNumber: number | null;
+  itemName: string | null;
+  unit: string | null;
+  customsRealizedQuantity: string | null;
+  rawData: unknown;
+};
+
 type ImportedMachine = {
   id: number;
+  realizations?: ImportedRealization[];
 
   externalMachineId: number | null;
   sequenceNumber: number | null;
@@ -125,9 +145,10 @@ function formatQuantity(
 
   if (!Number.isFinite(num)) return String(value);
 
-  return new Intl.NumberFormat("tr-TR", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 3,
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 10,
+    useGrouping: false,
   }).format(num);
 }
 
@@ -160,6 +181,8 @@ export function ImportedMachinesScreen() {
     useState<SelectedDocumentStatus>("OPEN");
 
   const [error, setError] = useState<string | null>(null);
+
+  const [expandedMachineId, setExpandedMachineId] = useState<number | null>(null);
 
   useEffect(() => {
     const documentIdFromUrl = searchParams.get("documentId");
@@ -327,7 +350,16 @@ export function ImportedMachinesScreen() {
                   Adı / Özelliği
                 </th>
 
-                <th className={`${HEAD_BASE} text-right`}>Miktar</th>
+                <th className={`${HEAD_BASE} text-right`}>
+                  Öngörülen Miktar
+                </th>
+                <th className={`${HEAD_BASE} text-right`}>
+                  Gümrük Gerçekleşen Miktar
+                </th>
+
+                <th className={`${HEAD_BASE} text-center`}>
+                  Detay
+                </th>
 
                 <th className={HEAD_BASE}>Birim</th>
 
@@ -360,7 +392,7 @@ export function ImportedMachinesScreen() {
             <tbody>
               {!selectedDocumentId ? (
                 <tr>
-                  <td colSpan={15} className="px-5 py-14 text-center">
+                  <td colSpan={17} className="px-5 py-14 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Görüntülenecek belge seçilmedi
                     </p>
@@ -372,7 +404,7 @@ export function ImportedMachinesScreen() {
                 </tr>
               ) : loadingMachines ? (
                 <tr>
-                  <td colSpan={15} className="px-5 py-14">
+                  <td colSpan={17} className="px-5 py-14">
                     <div className="flex items-center justify-center gap-2.5">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
 
@@ -384,7 +416,7 @@ export function ImportedMachinesScreen() {
                 </tr>
               ) : machines.length === 0 ? (
                 <tr>
-                  <td colSpan={15} className="px-5 py-14 text-center">
+                  <td colSpan={17} className="px-5 py-14 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Kayıt bulunamadı
                     </p>
@@ -397,177 +429,339 @@ export function ImportedMachinesScreen() {
               ) : (
                 machines.map((machine, index) => {
                   // Sticky sütunların opak arka planı: zebra + hover ile eş güdümlü.
-                  const stickyBg =
-                    index % 2 === 1
+                  const isExpanded = expandedMachineId === machine.id;
+
+                  const stickyBg = isExpanded
+                    ? "bg-[#eef1f8] dark:bg-[#1a2238]"
+                    : index % 2 === 1
                       ? "bg-slate-50 dark:bg-muted/60"
                       : "bg-white dark:bg-card";
                   const stickyHover =
                     "group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40";
 
                   return (
-                    <tr
-                      key={machine.id}
-                      className={`group transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${
-                        index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                      }`}
-                    >
-                      {/* Sıra */}
-                      <td
-                        className={`md:sticky md:left-0 md:z-10 w-[80px] min-w-[80px] border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-muted-foreground ${stickyBg} ${stickyHover}`}
+                    <Fragment key={machine.id}>
+                      <tr
+                        className={`group transition-colors ${isExpanded
+                          ? "bg-[#eef1f8] dark:bg-[#1a2238]"
+                          : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"}`
+                          }`}
                       >
-                        {machine.sequenceNumber ?? (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                        {/* Sıra */}
+                        <td
+                          className={`md:sticky md:left-0 md:z-10 w-[80px] min-w-[80px] border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums ${isExpanded ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]" : "text-muted-foreground"} ${stickyBg} ${isExpanded ? "" : stickyHover}`}
+                        >
+                          {machine.sequenceNumber ?? (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* Makine ID */}
-                      <td
-                        className={`md:sticky md:left-[80px] md:z-10 w-[130px] min-w-[130px] border-b border-r border-border px-4 py-2.5 ${stickyBg} ${stickyHover}`}
-                      >
-                        {machine.externalMachineId ? (
-                          <span className="inline-flex rounded border border-border bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground/80">
-                            {machine.externalMachineId}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                        {/* Makine ID */}
+                        <td
+                          className={`md:sticky md:left-[80px] md:z-10 w-[130px] min-w-[130px] border-b border-r border-border px-4 py-2.5 ${stickyBg} ${isExpanded ? "" : stickyHover}`}
+                        >
+                          {machine.externalMachineId ? (
+                            <span className="inline-flex rounded border border-border bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground/80">
+                              {machine.externalMachineId}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* Ad */}
-                      <td
-                        className={`md:sticky md:left-[210px] md:z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-border px-4 py-2.5 text-sm font-semibold text-foreground md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${stickyBg} ${stickyHover}`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
+                        {/* Ad */}
+                        <td
+                          className={`md:sticky md:left-[210px] md:z-10 w-[260px] min-w-[260px] max-w-[260px] border-b border-r border-border px-4 py-2.5 text-sm font-semibold text-foreground md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)] ${stickyBg} ${isExpanded ? "" : stickyHover}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
 
-                          <span className="whitespace-normal">
-                            {machine.name ?? (
-                              <span className="text-muted-foreground/50">
-                                —
+                            <span className="whitespace-normal">
+                              {machine.name ?? (
+                                <span className="text-muted-foreground/50">
+                                  —
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Öngörülen Miktar */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-foreground">
+                          {formatQuantity(machine.quantity) ?? (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
+
+                        {/* Gümrük Gerçekleşen Miktar */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm tabular-nums">
+                          {(() => {
+                            const quantities = [
+                              ...new Set(
+                                (machine.realizations ?? [])
+                                  .map((row) => row.customsRealizedQuantity)
+                                  .filter((value): value is string => value !== null && value !== "")
+                                  .map((value) => formatQuantity(value))
+                                  .filter((value): value is string => value !== null),
+                              ),
+                            ];
+
+                            if (quantities.length === 0) {
+                              return <span className="text-muted-foreground/50">—</span>;
+                            }
+
+                            return (
+                              <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                {quantities.join(" / ")}
                               </span>
-                            )}
-                          </span>
-                        </div>
-                      </td>
+                            );
+                          })()}
+                        </td>
 
-                      {/* Miktar */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-right font-mono text-sm tabular-nums text-foreground/80">
-                        {formatQuantity(machine.quantity) ?? (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                        {/* Gerçekleşme Detayı */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                          {machine.realizations?.length ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedMachineId(
+                                  expandedMachineId === machine.id ? null : machine.id
+                                )
+                              }
+                              aria-expanded={expandedMachineId === machine.id}
+                              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border py-1 pl-1 pr-2.5 text-xs font-semibold transition-all ${isExpanded
+                                ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
+                                : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
+                                }`}
+                            >
+                              <span
+                                className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 font-mono text-[11px] tabular-nums ${isExpanded
+                                  ? "bg-white/20 text-white"
+                                  : "bg-[#1e2a5e] text-white dark:bg-blue-500"
+                                  }`}
+                              >
+                                {machine.realizations.length}
+                              </span>
+                              kayıt
 
-                      {/* Birim */}
-                      <td className="border-b border-r border-border px-4 py-2.5">
-                        {machine.unit ? (
-                          <span className="inline-flex rounded bg-muted px-2 py-0.5 text-xs font-medium text-foreground/80">
-                            {machine.unit}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                              {expandedMachineId === machine.id ? (
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* GTİP Kodu */}
-                      <td className="border-b border-r border-border px-4 py-2.5">
-                        {machine.gtipCode ? (
-                          <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-2 py-0.5 font-mono text-xs font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
-                            {machine.gtipCode}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                        {/* Birim */}
+                        <td className="border-b border-r border-border px-4 py-2.5">
+                          {machine.unit ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex rounded bg-muted px-2 py-0.5 text-xs font-medium text-foreground/80">
+                                {machine.unit}
+                              </span>
 
-                      {/* GTİP Açıklama */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-sm text-muted-foreground">
-                        {machine.gtipDescription ?? (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                              {machine.unit.trim().toUpperCase() === "SET" &&
+                                !machine.unit.trim().toUpperCase().startsWith("C") && (
+                                  <span
+                                    tabIndex={0}
+                                    role="note"
+                                    title="Detaylı bilgi için yatırım teşvik uzmanınızla görüşünüz."
+                                    aria-label="Detaylı bilgi için yatırım teşvik uzmanınızla görüşünüz."
+                                    className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-amber-300 bg-amber-50 text-xs font-bold text-amber-700"
+                                  >
+                                    ?
+                                  </span>
+                                )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* Kullanılmış */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-center">
-                        <FlagBadge
-                          value={machine.usedMachine}
-                          positiveTone="amber"
-                        />
-                      </td>
-
-                      {/* Araç */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-center">
-                        <FlagBadge
-                          value={machine.isVehicle}
-                          positiveTone="slate"
-                        />
-                      </td>
-
-                      {/* CKD */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-center">
-                        <FlagBadge value={machine.isCkd} positiveTone="slate" />
-                      </td>
-
-                      {/* FOB USD */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-right">
-                        {formatNumber(machine.totalFobUsd) ? (
-                          <span className="font-mono text-sm font-bold tabular-nums text-[#1e2a5e] dark:text-blue-300">
-                            {formatNumber(machine.totalFobUsd)}
-
-                            <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              USD
+                        {/* GTİP Kodu */}
+                        <td className="border-b border-r border-border px-4 py-2.5">
+                          {machine.gtipCode ? (
+                            <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-2 py-0.5 font-mono text-xs font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
+                              {machine.gtipCode}
                             </span>
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* FOB TL */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-right">
-                        {formatNumber(machine.totalFobTl) ? (
-                          <span className="font-mono text-sm tabular-nums text-foreground/80">
-                            {formatNumber(machine.totalFobTl)}
+                        {/* GTİP Açıklama */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-sm text-muted-foreground">
+                          {machine.gtipDescription ?? (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                            <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                              TL
+                        {/* Kullanılmış */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                          <FlagBadge
+                            value={machine.usedMachine}
+                            positiveTone="amber"
+                          />
+                        </td>
+
+                        {/* Araç */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                          <FlagBadge
+                            value={machine.isVehicle}
+                            positiveTone="slate"
+                          />
+                        </td>
+
+                        {/* CKD */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-center">
+                          <FlagBadge value={machine.isCkd} positiveTone="slate" />
+                        </td>
+
+                        {/* FOB USD */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-right">
+                          {formatNumber(machine.totalFobUsd) ? (
+                            <span className="font-mono text-sm font-bold tabular-nums text-[#1e2a5e] dark:text-blue-300">
+                              {formatNumber(machine.totalFobUsd)}
+
+                              <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                USD
+                              </span>
                             </span>
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* Menşei Döviz Tutarı */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-right">
-                        {formatNumber(machine.originCurrencyFobAmount) ? (
-                          <span className="font-mono text-sm tabular-nums text-foreground/80">
-                            {formatNumber(machine.originCurrencyFobAmount)}
+                        {/* FOB TL */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-right">
+                          {formatNumber(machine.totalFobTl) ? (
+                            <span className="font-mono text-sm tabular-nums text-foreground/80">
+                              {formatNumber(machine.totalFobTl)}
 
-                            {machine.originCurrencyFob && (
                               <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                                {machine.originCurrencyFob}
+                                TL
                               </span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
 
-                      {/* KDV İstisnası */}
-                      <td className="border-b border-r border-border px-4 py-2.5 text-sm text-muted-foreground">
-                        {machine.vatExemptionDescription ?? (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </td>
+                        {/* Menşei Döviz Tutarı */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-right">
+                          {formatNumber(machine.originCurrencyFobAmount) ? (
+                            <span className="font-mono text-sm tabular-nums text-foreground/80">
+                              {formatNumber(machine.originCurrencyFobAmount)}
 
-                      {/* Gümrük Vergisi İstisnası */}
-                      <td className="border-b border-border px-4 py-2.5 text-sm text-muted-foreground">
-                        {machine.customsTaxExemptionDescription ?? (
-                          <span className="text-muted-foreground/50">—</span>
+                              {machine.originCurrencyFob && (
+                                <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                                  {machine.originCurrencyFob}
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
+
+                        {/* KDV İstisnası */}
+                        <td className="border-b border-r border-border px-4 py-2.5 text-sm text-muted-foreground">
+                          {machine.vatExemptionDescription ?? (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
+
+                        {/* Gümrük Vergisi İstisnası */}
+                        <td className="border-b border-border px-4 py-2.5 text-sm text-muted-foreground">
+                          {machine.customsTaxExemptionDescription ?? (
+                            <span className="text-muted-foreground/50">—</span>
+                          )}
+                        </td>
+                      </tr>
+
+                      {expandedMachineId === machine.id &&
+                        (machine.realizations?.length ?? 0) > 0 && (
+                          <tr>
+                            <td
+                              colSpan={17}
+                              className="border-b border-border bg-[#eef1f8]/60 p-0 dark:bg-[#1a2238]/50"
+                            >
+                              {/* Yatay kaydırmada panel ekranda sabit kalsın */}
+                              <div className="md:sticky md:left-0 w-full max-w-[880px] px-4 py-4 md:px-6">
+                                <div className="overflow-hidden rounded-lg border border-[#1e2a5e]/15 bg-card shadow-[0_4px_16px_-6px_rgba(30,42,94,0.18)] dark:border-blue-400/20 dark:shadow-none">
+                                  {/* Başlık */}
+                                  <div className="flex items-center justify-between gap-3 border-b border-border bg-gradient-to-r from-[#1e2a5e]/[0.06] to-transparent px-4 py-3 dark:from-blue-400/10">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#1e2a5e] text-white dark:bg-blue-500">
+                                        <Receipt className="h-4 w-4" strokeWidth={2} />
+                                      </span>
+                                      <div className="min-w-0">
+                                        <h3 className="text-[13px] font-semibold uppercase tracking-wider text-foreground">
+                                          Gümrük Gerçekleşme Detayları
+                                        </h3>
+                                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                          <span className="font-mono font-semibold text-foreground/70">
+                                            Sıra {machine.sequenceNumber ?? "—"}
+                                          </span>
+                                          <span className="mx-1.5 text-muted-foreground/50">·</span>
+                                          {machine.name ?? "—"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedMachineId(null)}
+                                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                    >
+                                      <X className="h-3.5 w-3.5" />
+                                      Kapat
+                                    </button>
+                                  </div>
+
+                                  {/* Kayıtlar */}
+                                  <div className="max-h-[320px] overflow-auto">
+                                    <table className="w-full min-w-[480px] border-separate border-spacing-0 text-sm">
+                                      <thead>
+                                        <tr>
+                                          <th className="sticky top-0 z-10 w-[72px] border-b border-border bg-slate-50 px-4 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:bg-muted dark:text-blue-300">Kayıt</th>
+                                          <th className="sticky top-0 z-10 border-b border-border bg-slate-50 px-4 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:bg-muted dark:text-blue-300">Beyanname Numarası</th>
+                                          <th className="sticky top-0 z-10 border-b border-border bg-slate-50 px-4 py-2 text-right text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:bg-muted dark:text-blue-300">Gümrük Gerçekleşen Miktar</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {machine.realizations?.map((record, recordIndex) => (
+                                          <tr
+                                            key={record.externalRowId}
+                                            className={`transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${recordIndex % 2 === 1 ? "bg-muted/30" : ""}`}
+                                          >
+                                            <td className="border-b border-border px-4 py-2.5">
+                                              <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-muted px-1.5 font-mono text-[11px] font-semibold tabular-nums text-muted-foreground">
+                                                {recordIndex + 1}
+                                              </span>
+                                            </td>
+                                            <td className="border-b border-border px-4 py-2.5">
+                                              <span className="inline-flex rounded border border-border bg-muted/60 px-2 py-0.5 font-mono text-xs font-medium tracking-wide text-foreground/90">
+                                                {record.externalRowId.split(":").slice(1).join(":") || record.externalRowId}
+                                              </span>
+                                            </td>
+                                            <td className="border-b border-border px-4 py-2.5 text-right font-mono font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
+                                              {formatQuantity(record.customsRealizedQuantity) ?? "—"}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                    </tr>
+                    </Fragment>
                   );
                 })
               )}
@@ -614,13 +808,12 @@ function FlagBadge({
       className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ring-1 ring-inset ${toneStyles}`}
     >
       <span
-        className={`h-1 w-1 rounded-full ${
-          positiveTone === "emerald"
-            ? "bg-emerald-500"
-            : positiveTone === "amber"
-              ? "bg-amber-500"
-              : "bg-slate-500 dark:bg-slate-400"
-        }`}
+        className={`h-1 w-1 rounded-full ${positiveTone === "emerald"
+          ? "bg-emerald-500"
+          : positiveTone === "amber"
+            ? "bg-amber-500"
+            : "bg-slate-500 dark:bg-slate-400"
+          }`}
       />
 
       {value}

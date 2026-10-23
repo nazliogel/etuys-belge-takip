@@ -35,7 +35,8 @@ type ExcelImportType =
   | "COMPANY_IDENTITY"
   | "COMPANY_REQUEST"
   | "DOCUMENT_DETAIL"
-  | "DOCUMENT_REALIZATION";
+  | "DOCUMENT_REALIZATION"
+  | "IMPORTED_REALIZATION"
 
 type ImportBatchType =
   | "OPEN"
@@ -167,6 +168,7 @@ export function ExcelImportScreen() {
     newRowCount: number;
     changedRowCount: number;
     unchangedRowCount: number;
+    duplicateRowCount?: number;
     errors: {
       rowNumber: number;
       externalDocumentId: number | null;
@@ -217,11 +219,19 @@ export function ExcelImportScreen() {
     if (!file) return;
 
     const extension = file.name.split(".").pop()?.toLowerCase();
-    const isValidExtension = extension === "xlsx" || extension === "xls";
+    const isImportedRealization = importType === "IMPORTED_REALIZATION";
+
+    const isValidExtension = isImportedRealization
+      ? extension === "xlsx"
+      : extension === "xlsx" || extension === "xls";
 
     if (!isValidExtension) {
       setSelectedFile(null);
-      setFileError("Yalnızca .xlsx veya .xls uzantılı dosyalar yüklenebilir.");
+      setFileError(
+        isImportedRealization
+          ? "İthal Gerçekleşme için yalnızca .xlsx dosyası yüklenebilir."
+          : "Yalnızca .xlsx veya .xls uzantılı dosyalar yüklenebilir.",
+      );
       return;
     }
 
@@ -342,6 +352,41 @@ export function ExcelImportScreen() {
         }
 
         setRealizationResult(response.data);
+      } else if (importType === "IMPORTED_REALIZATION") {
+        setRealizationResult(null);
+
+        const response = await apiFetch<{
+          success: boolean;
+          message: string;
+          data: {
+            totalRowCount: number;
+            newRowCount: number;
+            changedRowCount: number;
+            unchangedRowCount: number;
+            invalidRowCount: number;
+            errors: {
+              rowNumber: number;
+              externalDocumentId: number | null;
+              message: string;
+            }[];
+          };
+        }>("/imports/imported-realizations", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.success) {
+          throw new Error(
+            response.message || "İthal gerçekleşme aktarımı başarısız.",
+          );
+        }
+
+        setRealizationResult({
+          ...response.data,
+          validRowCount:
+            response.data.totalRowCount -
+            response.data.invalidRowCount,
+        });
       } else {
         const backendImportType =
           importType === "COMPANY_REQUEST"
@@ -421,30 +466,27 @@ export function ExcelImportScreen() {
               setImportType("OPEN_DOCUMENTS");
               clearSelectedFile();
             }}
-            className={`group rounded-2xl border p-4 text-left transition-all ${
-              importType === "OPEN_DOCUMENTS"
-                ? "border-emerald-300 bg-emerald-50 shadow-sm"
-                : "border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/40"
-            }`}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "OPEN_DOCUMENTS"
+              ? "border-emerald-300 bg-emerald-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/40"
+              }`}
           >
             <div className="flex items-start gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  importType === "OPEN_DOCUMENTS"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-700"
-                }`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "OPEN_DOCUMENTS"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-slate-100 text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-700"
+                  }`}
               >
                 <FileSpreadsheet size={20} />
               </div>
 
               <div>
                 <p
-                  className={`text-sm font-bold ${
-                    importType === "OPEN_DOCUMENTS"
-                      ? "text-emerald-800"
-                      : "text-slate-800"
-                  }`}
+                  className={`text-sm font-bold ${importType === "OPEN_DOCUMENTS"
+                    ? "text-emerald-800"
+                    : "text-slate-800"
+                    }`}
                 >
                   Açık Belgeler
                 </p>
@@ -463,30 +505,27 @@ export function ExcelImportScreen() {
               setImportType("CLOSED_DOCUMENTS");
               clearSelectedFile();
             }}
-            className={`group rounded-2xl border p-4 text-left transition-all ${
-              importType === "CLOSED_DOCUMENTS"
-                ? "border-rose-300 bg-rose-50 shadow-sm"
-                : "border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50/40"
-            }`}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "CLOSED_DOCUMENTS"
+              ? "border-rose-300 bg-rose-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50/40"
+              }`}
           >
             <div className="flex items-start gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  importType === "CLOSED_DOCUMENTS"
-                    ? "bg-rose-100 text-rose-700"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-rose-100 group-hover:text-rose-700"
-                }`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "CLOSED_DOCUMENTS"
+                  ? "bg-rose-100 text-rose-700"
+                  : "bg-slate-100 text-slate-500 group-hover:bg-rose-100 group-hover:text-rose-700"
+                  }`}
               >
                 <X size={20} />
               </div>
 
               <div>
                 <p
-                  className={`text-sm font-bold ${
-                    importType === "CLOSED_DOCUMENTS"
-                      ? "text-rose-800"
-                      : "text-slate-800"
-                  }`}
+                  className={`text-sm font-bold ${importType === "CLOSED_DOCUMENTS"
+                    ? "text-rose-800"
+                    : "text-slate-800"
+                    }`}
                 >
                   Kapalı / İptal Belgeler
                 </p>
@@ -504,30 +543,27 @@ export function ExcelImportScreen() {
               setImportType("COMPANY_IDENTITY");
               clearSelectedFile();
             }}
-            className={`group rounded-2xl border p-4 text-left transition-all ${
-              importType === "COMPANY_IDENTITY"
-                ? "border-sky-300 bg-sky-50 shadow-sm"
-                : "border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/40"
-            }`}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "COMPANY_IDENTITY"
+              ? "border-sky-300 bg-sky-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/40"
+              }`}
           >
             <div className="flex items-start gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  importType === "COMPANY_IDENTITY"
-                    ? "bg-sky-100 text-sky-700"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-sky-100 group-hover:text-sky-700"
-                }`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "COMPANY_IDENTITY"
+                  ? "bg-sky-100 text-sky-700"
+                  : "bg-slate-100 text-slate-500 group-hover:bg-sky-100 group-hover:text-sky-700"
+                  }`}
               >
                 <Inbox size={20} />
               </div>
 
               <div>
                 <p
-                  className={`text-sm font-bold ${
-                    importType === "COMPANY_IDENTITY"
-                      ? "text-sky-800"
-                      : "text-slate-800"
-                  }`}
+                  className={`text-sm font-bold ${importType === "COMPANY_IDENTITY"
+                    ? "text-sky-800"
+                    : "text-slate-800"
+                    }`}
                 >
                   Firma Künye Bilgileri
                 </p>
@@ -545,30 +581,27 @@ export function ExcelImportScreen() {
               setImportType("COMPANY_REQUEST");
               clearSelectedFile();
             }}
-            className={`group rounded-2xl border p-4 text-left transition-all ${
-              importType === "COMPANY_REQUEST"
-                ? "border-violet-300 bg-violet-50 shadow-sm"
-                : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/40"
-            }`}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "COMPANY_REQUEST"
+              ? "border-violet-300 bg-violet-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/40"
+              }`}
           >
             <div className="flex items-start gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  importType === "COMPANY_REQUEST"
-                    ? "bg-violet-100 text-violet-700"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-violet-100 group-hover:text-violet-700"
-                }`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "COMPANY_REQUEST"
+                  ? "bg-violet-100 text-violet-700"
+                  : "bg-slate-100 text-slate-500 group-hover:bg-violet-100 group-hover:text-violet-700"
+                  }`}
               >
                 <ListChecks size={20} />
               </div>
 
               <div>
                 <p
-                  className={`text-sm font-bold ${
-                    importType === "COMPANY_REQUEST"
-                      ? "text-violet-800"
-                      : "text-slate-800"
-                  }`}
+                  className={`text-sm font-bold ${importType === "COMPANY_REQUEST"
+                    ? "text-violet-800"
+                    : "text-slate-800"
+                    }`}
                 >
                   Gönderilmiş Talepler
                 </p>
@@ -588,30 +621,27 @@ export function ExcelImportScreen() {
               setImportType("DOCUMENT_DETAIL");
               clearSelectedFile();
             }}
-            className={`group rounded-2xl border p-4 text-left transition-all ${
-              importType === "DOCUMENT_DETAIL"
-                ? "border-amber-300 bg-amber-50 shadow-sm"
-                : "border-slate-200 bg-white hover:border-amber-200 hover:bg-amber-50/40"
-            }`}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "DOCUMENT_DETAIL"
+              ? "border-amber-300 bg-amber-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-amber-200 hover:bg-amber-50/40"
+              }`}
           >
             <div className="flex items-start gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  importType === "DOCUMENT_DETAIL"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-slate-100 text-slate-500 group-hover:bg-amber-100 group-hover:text-amber-700"
-                }`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "DOCUMENT_DETAIL"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-slate-100 text-slate-500 group-hover:bg-amber-100 group-hover:text-amber-700"
+                  }`}
               >
                 <FileSpreadsheet size={20} />
               </div>
 
               <div>
                 <p
-                  className={`text-sm font-bold ${
-                    importType === "DOCUMENT_DETAIL"
-                      ? "text-amber-800"
-                      : "text-slate-800"
-                  }`}
+                  className={`text-sm font-bold ${importType === "DOCUMENT_DETAIL"
+                    ? "text-amber-800"
+                    : "text-slate-800"
+                    }`}
                 >
                   Belge Detayları
                 </p>
@@ -631,19 +661,17 @@ export function ExcelImportScreen() {
               setImportType("DOCUMENT_REALIZATION");
               clearSelectedFile();
             }}
-            className={`group rounded-2xl border p-4 text-left transition-all ${
-              importType === "DOCUMENT_REALIZATION"
-                ? "border-teal-300 bg-teal-50 shadow-sm"
-                : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/40"
-            }`}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "DOCUMENT_REALIZATION"
+              ? "border-teal-300 bg-teal-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/40"
+              }`}
           >
             <div className="flex items-start gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  importType === "DOCUMENT_REALIZATION"
-                    ? "bg-teal-100 text-teal-700"
-                    : "bg-slate-100 text-slate-500"
-                }`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "DOCUMENT_REALIZATION"
+                  ? "bg-teal-100 text-teal-700"
+                  : "bg-slate-100 text-slate-500"
+                  }`}
               >
                 <BarChart3 size={20} />
               </div>
@@ -660,6 +688,40 @@ export function ExcelImportScreen() {
               </div>
             </div>
           </button>
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => {
+              setImportType("IMPORTED_REALIZATION");
+              clearSelectedFile();
+            }}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "IMPORTED_REALIZATION"
+              ? "border-indigo-300 bg-indigo-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/40"
+              }`}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importType === "IMPORTED_REALIZATION"
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "bg-slate-100 text-slate-500"
+                  }`}
+              >
+                <FileSpreadsheet size={20} />
+              </div>
+
+              <div>
+                <p className="text-sm font-bold text-slate-800">
+                  İthal Gerçekleşme
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  İthal makine ve teçhizatlara ait gümrük gerçekleşme
+                  bilgilerini Excel üzerinden sisteme aktarır.
+                </p>
+              </div>
+            </div>
+          </button>
         </div>
 
         {/* DRAG & DROP AREA */}
@@ -669,20 +731,19 @@ export function ExcelImportScreen() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => !selectedFile && fileInputRef.current?.click()}
-          className={`relative flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 ${
-            isDragging
-              ? "border-red-500 bg-red-50/50 scale-[1.005]"
-              : fileError
-                ? "border-rose-300 bg-rose-50/30 hover:bg-rose-50/50"
-                : selectedFile
-                  ? "border-red-200 bg-slate-50/30 cursor-default"
-                  : "border-slate-200 bg-slate-50/50 hover:border-red-300 hover:bg-red-50/10"
-          }`}
+          className={`relative flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 ${isDragging
+            ? "border-red-500 bg-red-50/50 scale-[1.005]"
+            : fileError
+              ? "border-rose-300 bg-rose-50/30 hover:bg-rose-50/50"
+              : selectedFile
+                ? "border-red-200 bg-slate-50/30 cursor-default"
+                : "border-slate-200 bg-slate-50/50 hover:border-red-300 hover:bg-red-50/10"
+            }`}
         >
           <input
             ref={fileInputRef}
             type="file"
-            accept=".xlsx,.xls"
+            accept={importType === "IMPORTED_REALIZATION" ? ".xlsx" : ".xlsx,.xls"}
             onChange={handleFileChange}
             className="hidden"
           />
@@ -690,11 +751,10 @@ export function ExcelImportScreen() {
           {!selectedFile ? (
             <div className="flex flex-col items-center pointer-events-none">
               <div
-                className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-200 ${
-                  fileError
-                    ? "bg-rose-100 text-rose-600"
-                    : "bg-red-50 text-red-600 shadow-xs"
-                }`}
+                className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-200 ${fileError
+                  ? "bg-rose-100 text-rose-600"
+                  : "bg-red-50 text-red-600 shadow-xs"
+                  }`}
               >
                 <FileUp size={28} />
               </div>
@@ -782,62 +842,72 @@ export function ExcelImportScreen() {
           )}
         </div>
 
-        {importType === "DOCUMENT_REALIZATION" && realizationResult && (
-          <div
-            role="status"
-            className={`mt-4 rounded-xl border p-4 ${
-              realizationResult.invalidRowCount > 0
+        {
+          (importType === "DOCUMENT_REALIZATION" ||
+            importType === "IMPORTED_REALIZATION") &&
+          realizationResult && (
+            <div
+              role="status"
+              className={`mt-4 rounded-xl border p-4 ${realizationResult.invalidRowCount > 0
                 ? "border-amber-200 bg-amber-50"
                 : "border-emerald-200 bg-emerald-50"
-            }`}
-          >
-            <p className="text-sm font-bold text-slate-900">
-              {realizationResult.validRowCount === 0
-                ? "Hiçbir kayıt aktarılamadı"
-                : realizationResult.invalidRowCount > 0
-                  ? "Aktarım tamamlandı; hatalı satırları kontrol edin"
-                  : "Gerçekleşme bilgileri aktarıldı"}
-            </p>
+                }`}
+            >
+              <p className="text-sm font-bold text-slate-900">
+                {realizationResult.validRowCount === 0
+                  ? "Hiçbir kayıt aktarılamadı"
+                  : realizationResult.invalidRowCount > 0
+                    ? "Aktarım tamamlandı; hatalı satırları kontrol edin"
+                    : "Gerçekleşme bilgileri aktarıldı"}
+              </p>
 
-            <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-700">
-              <span>Toplam: {realizationResult.totalRowCount}</span>
-              <span>Yeni: {realizationResult.newRowCount}</span>
-              <span>Güncellenen: {realizationResult.changedRowCount}</span>
-              <span>Değişmeyen: {realizationResult.unchangedRowCount}</span>
-              <span>Hatalı: {realizationResult.invalidRowCount}</span>
+              <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-700">
+                <span>Toplam: {realizationResult.totalRowCount}</span>
+                <span>Yeni: {realizationResult.newRowCount}</span>
+                <span>Güncellenen: {realizationResult.changedRowCount}</span>
+                <span>Değişmeyen: {realizationResult.unchangedRowCount}</span>
+                {importType === "IMPORTED_REALIZATION" && (
+                  <span>
+                    Mükerrer / Atlanan: {realizationResult.duplicateRowCount ?? 0}
+                  </span>
+                )}
+                <span>Hatalı: {realizationResult.invalidRowCount}</span>
+              </div>
+
+              {realizationResult.errors.length > 0 && (
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-xs font-semibold text-amber-900">
+                    Hatalı satırları göster
+                  </summary>
+
+                  <ul className="mt-2 max-h-60 space-y-2 overflow-auto text-xs text-slate-700">
+                    {realizationResult.errors.map((error) => (
+                      <li key={error.rowNumber}>
+                        <strong>Satır {error.rowNumber}</strong>
+                        {" · "}Belge: {error.externalDocumentId ?? "—"}
+                        {" · "}
+                        {error.message}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
-
-            {realizationResult.errors.length > 0 && (
-              <details className="mt-3">
-                <summary className="cursor-pointer text-xs font-semibold text-amber-900">
-                  Hatalı satırları göster
-                </summary>
-
-                <ul className="mt-2 max-h-60 space-y-2 overflow-auto text-xs text-slate-700">
-                  {realizationResult.errors.map((error) => (
-                    <li key={error.rowNumber}>
-                      <strong>Satır {error.rowNumber}</strong>
-                      {" · "}Belge: {error.externalDocumentId ?? "—"}
-                      {" · "}
-                      {error.message}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </div>
-        )}
+          )
+        }
 
         {/* HATA MESAJI */}
-        {fileError && (
-          <div
-            role="alert"
-            className="mt-4 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs font-medium text-rose-700"
-          >
-            <AlertCircle size={18} className="shrink-0 text-rose-600" />
-            <p>{fileError}</p>
-          </div>
-        )}
+        {
+          fileError && (
+            <div
+              role="alert"
+              className="mt-4 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs font-medium text-rose-700"
+            >
+              <AlertCircle size={18} className="shrink-0 text-rose-600" />
+              <p>{fileError}</p>
+            </div>
+          )
+        }
 
         {/* AKSİYON BUTONLARI */}
         <div className="mt-5 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
@@ -859,30 +929,34 @@ export function ExcelImportScreen() {
           >
             <Upload size={15} />
             {isUploading
-              ? importType === "DOCUMENT_REALIZATION"
-                ? "Gerçekleşmeler Aktarılıyor..."
-                : importType === "COMPANY_IDENTITY"
-                  ? "Künye Bilgileri Aktarılıyor..."
-                  : importType === "COMPANY_REQUEST"
-                    ? "Talepler Aktarılıyor..."
-                    : importType === "DOCUMENT_DETAIL"
-                      ? "Belge Detayları Aktarılıyor..."
-                      : "Karşılaştırılıyor..."
-              : importType === "DOCUMENT_REALIZATION"
-                ? "Gerçekleşme Excel’ini Yükle"
-                : importType === "COMPANY_IDENTITY"
-                  ? "Künye Bilgilerini Yükle"
-                  : importType === "COMPANY_REQUEST"
-                    ? "Gönderilmiş Talepleri Yükle"
-                    : importType === "DOCUMENT_DETAIL"
-                      ? "Belge Detaylarını Yükle"
-                      : "Yükle ve Karşılaştır"}
+              ? importType === "IMPORTED_REALIZATION"
+                ? "İthal Gerçekleşmeler Aktarılıyor..."
+                : importType === "DOCUMENT_REALIZATION"
+                  ? "Gerçekleşmeler Aktarılıyor..."
+                  : importType === "COMPANY_IDENTITY"
+                    ? "Künye Bilgileri Aktarılıyor..."
+                    : importType === "COMPANY_REQUEST"
+                      ? "Talepler Aktarılıyor..."
+                      : importType === "DOCUMENT_DETAIL"
+                        ? "Belge Detayları Aktarılıyor..."
+                        : "Karşılaştırılıyor..."
+              : importType === "IMPORTED_REALIZATION"
+                ? "İthal Gerçekleşme Excel’ini Yükle"
+                : importType === "DOCUMENT_REALIZATION"
+                  ? "Gerçekleşme Excel’ini Yükle"
+                  : importType === "COMPANY_IDENTITY"
+                    ? "Künye Bilgilerini Yükle"
+                    : importType === "COMPANY_REQUEST"
+                      ? "Gönderilmiş Talepleri Yükle"
+                      : importType === "DOCUMENT_DETAIL"
+                        ? "Belge Detaylarını Yükle"
+                        : "Yükle ve Karşılaştır"}
           </button>
         </div>
-      </section>
+      </section >
 
       {/* KARŞILAŞTIRMA GEÇMİŞİ TABLOSU */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+      < section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs" >
         <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-base font-bold text-slate-900">
@@ -894,238 +968,240 @@ export function ExcelImportScreen() {
           </div>
         </div>
 
-        {recentImports.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-              <Inbox size={24} />
+        {
+          recentImports.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                <Inbox size={24} />
+              </div>
+              <p className="text-sm font-bold text-slate-800">
+                Henüz karşılaştırma yapılmadı
+              </p>
+              <p className="max-w-xs text-xs text-slate-500">
+                Yukarıdaki alanı kullanarak ilk Excel dosyanızı yükleyebilirsiniz.
+              </p>
             </div>
-            <p className="text-sm font-bold text-slate-800">
-              Henüz karşılaştırma yapılmadı
-            </p>
-            <p className="max-w-xs text-xs text-slate-500">
-              Yukarıdaki alanı kullanarak ilk Excel dosyanızı yükleyebilirsiniz.
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* DESKTOP TABLO */}
-            <div className="hidden overflow-x-auto md:block">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    <th className="px-6 py-3.5">Dosya</th>
-                    <th className="px-3 py-3.5 text-center">Toplam</th>
-                    <th className="px-3 py-3.5 text-center">Yeni</th>
-                    <th className="px-3 py-3.5 text-center">Değişen</th>
-                    <th className="px-3 py-3.5 text-center">Değişmeyen</th>
-                    <th className="px-3 py-3.5 text-center">Hatalı</th>
-                    <th className="px-4 py-3.5">Durum</th>
-                    <th className="px-6 py-3.5 text-right">İşlemler</th>
-                  </tr>
-                </thead>
+          ) : (
+            <>
+              {/* DESKTOP TABLO */}
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      <th className="px-6 py-3.5">Dosya</th>
+                      <th className="px-3 py-3.5 text-center">Toplam</th>
+                      <th className="px-3 py-3.5 text-center">Yeni</th>
+                      <th className="px-3 py-3.5 text-center">Değişen</th>
+                      <th className="px-3 py-3.5 text-center">Değişmeyen</th>
+                      <th className="px-3 py-3.5 text-center">Hatalı</th>
+                      <th className="px-4 py-3.5">Durum</th>
+                      <th className="px-6 py-3.5 text-right">İşlemler</th>
+                    </tr>
+                  </thead>
 
-                <tbody className="divide-y divide-slate-100 text-xs">
-                  {recentImports.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="group transition-colors hover:bg-slate-50/80"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-                            <FileSpreadsheet size={20} />
-                          </div>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {recentImports.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="group transition-colors hover:bg-slate-50/80"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+                              <FileSpreadsheet size={20} />
+                            </div>
 
-                          <div className="min-w-0">
-                            <p className="max-w-xs truncate font-bold text-slate-800">
-                              {item.fileName}
-                            </p>
+                            <div className="min-w-0">
+                              <p className="max-w-xs truncate font-bold text-slate-800">
+                                {item.fileName}
+                              </p>
 
-                            <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                              {item.importType === "COMPANY_IDENTITY"
-                                ? "Firma Künye Bilgileri"
-                                : item.importType === "COMPANY_REQUEST"
-                                  ? "Gönderilmiş Talepler"
-                                  : item.importType === "DOCUMENT_DETAIL"
-                                    ? "Belge Detayları"
-                                    : item.importType === "CLOSED"
-                                      ? "Kapalı / İptal Belgeler"
-                                      : "Açık Belgeler"}
-                            </span>
+                              <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                {item.importType === "COMPANY_IDENTITY"
+                                  ? "Firma Künye Bilgileri"
+                                  : item.importType === "COMPANY_REQUEST"
+                                    ? "Gönderilmiş Talepler"
+                                    : item.importType === "DOCUMENT_DETAIL"
+                                      ? "Belge Detayları"
+                                      : item.importType === "CLOSED"
+                                        ? "Kapalı / İptal Belgeler"
+                                        : "Açık Belgeler"}
+                              </span>
 
-                            <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-400">
-                              <Clock3 size={12} />
-                              {item.date}
+                              <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                                <Clock3 size={12} />
+                                {item.date}
+                              </div>
                             </div>
                           </div>
+                        </td>
+
+                        <td className="px-3 py-4 text-center font-semibold text-slate-700">
+                          {item.totalRows}
+                        </td>
+
+                        <td className="px-3 py-4 text-center">
+                          <span className="inline-flex rounded-md bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700">
+                            +{item.newRows}
+                          </span>
+                        </td>
+
+                        <td className="px-3 py-4 text-center">
+                          <span className="inline-flex rounded-md bg-amber-50 px-2 py-0.5 font-bold text-amber-700">
+                            {item.changedRows}
+                          </span>
+                        </td>
+
+                        <td className="px-3 py-4 text-center font-medium text-slate-500">
+                          {item.unchangedRows}
+                        </td>
+
+                        <td className="px-3 py-4 text-center">
+                          {item.invalidRows > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleViewInvalidRows(item.id)}
+                              disabled={invalidRowsLoading}
+                              className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
+                            >
+                              <AlertCircle size={12} />
+                              {item.invalidRows}
+                            </button>
+                          ) : (
+                            <span className="font-medium text-slate-400">0</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-4">
+                          {getStatusBadge(item.status)}
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleViewExcel(item.id)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900"
+                            >
+                              <Eye size={13} />
+                              Excel
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleViewReport(item.id)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-100"
+                            >
+                              <BarChart3 size={13} />
+                              Rapor
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBİL LİSTE */}
+              <div className="divide-y divide-slate-100 md:hidden">
+                {recentImports.map((item) => (
+                  <article key={item.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          <FileSpreadsheet size={20} />
                         </div>
-                      </td>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-slate-800">
+                            {item.fileName}
+                          </p>
 
-                      <td className="px-3 py-4 text-center font-semibold text-slate-700">
-                        {item.totalRows}
-                      </td>
+                          <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                            {item.importType === "COMPANY_IDENTITY"
+                              ? "Firma Künye Bilgileri"
+                              : item.importType === "COMPANY_REQUEST"
+                                ? "Gönderilmiş Talepler"
+                                : item.importType === "DOCUMENT_DETAIL"
+                                  ? "Belge Detayları"
+                                  : item.importType === "CLOSED"
+                                    ? "Kapalı / İptal Belgeler"
+                                    : "Açık Belgeler"}
+                          </span>
 
-                      <td className="px-3 py-4 text-center">
-                        <span className="inline-flex rounded-md bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700">
+                          <p className="mt-1 text-[11px] text-slate-400">
+                            {item.date}
+                          </p>
+                        </div>
+                      </div>
+                      {getStatusBadge(item.status)}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                      <div className="rounded-xl bg-slate-50 p-2">
+                        <p className="text-[10px] text-slate-400">Toplam</p>
+                        <p className="font-bold text-slate-700">
+                          {item.totalRows}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-emerald-50/60 p-2">
+                        <p className="text-[10px] text-emerald-600">Yeni</p>
+                        <p className="font-bold text-emerald-700">
                           +{item.newRows}
-                        </span>
-                      </td>
-
-                      <td className="px-3 py-4 text-center">
-                        <span className="inline-flex rounded-md bg-amber-50 px-2 py-0.5 font-bold text-amber-700">
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-amber-50/60 p-2">
+                        <p className="text-[10px] text-amber-600">Değişen</p>
+                        <p className="font-bold text-amber-700">
                           {item.changedRows}
-                        </span>
-                      </td>
-
-                      <td className="px-3 py-4 text-center font-medium text-slate-500">
-                        {item.unchangedRows}
-                      </td>
-
-                      <td className="px-3 py-4 text-center">
-                        {item.invalidRows > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewInvalidRows(item.id)}
-                            disabled={invalidRowsLoading}
-                            className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
-                          >
-                            <AlertCircle size={12} />
-                            {item.invalidRows}
-                          </button>
-                        ) : (
-                          <span className="font-medium text-slate-400">0</span>
-                        )}
-                      </td>
-
-                      <td className="px-4 py-4">
-                        {getStatusBadge(item.status)}
-                      </td>
-
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleViewExcel(item.id)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900"
-                          >
-                            <Eye size={13} />
-                            Excel
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleViewReport(item.id)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-100"
-                          >
-                            <BarChart3 size={13} />
-                            Rapor
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* MOBİL LİSTE */}
-            <div className="divide-y divide-slate-100 md:hidden">
-              {recentImports.map((item) => (
-                <article key={item.id} className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-                        <FileSpreadsheet size={20} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-slate-800">
-                          {item.fileName}
-                        </p>
-
-                        <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                          {item.importType === "COMPANY_IDENTITY"
-                            ? "Firma Künye Bilgileri"
-                            : item.importType === "COMPANY_REQUEST"
-                              ? "Gönderilmiş Talepler"
-                              : item.importType === "DOCUMENT_DETAIL"
-                                ? "Belge Detayları"
-                                : item.importType === "CLOSED"
-                                  ? "Kapalı / İptal Belgeler"
-                                  : "Açık Belgeler"}
-                        </span>
-
-                        <p className="mt-1 text-[11px] text-slate-400">
-                          {item.date}
                         </p>
                       </div>
+                      <button
+                        type="button"
+                        disabled={item.invalidRows === 0 || invalidRowsLoading}
+                        onClick={() => handleViewInvalidRows(item.id)}
+                        className="rounded-xl bg-rose-50/60 p-2 disabled:cursor-default"
+                      >
+                        <p className="text-[10px] text-rose-600">Hatalı</p>
+                        <p className="font-bold text-rose-700">
+                          {item.invalidRows}
+                        </p>
+                      </button>
                     </div>
-                    {getStatusBadge(item.status)}
-                  </div>
 
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                    <div className="rounded-xl bg-slate-50 p-2">
-                      <p className="text-[10px] text-slate-400">Toplam</p>
-                      <p className="font-bold text-slate-700">
-                        {item.totalRows}
-                      </p>
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleViewExcel(item.id)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+                      >
+                        <Eye size={14} /> Görüntüle
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleViewReport(item.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs"
+                      >
+                        <BarChart3 size={14} /> Raporu Aç
+                      </button>
                     </div>
-                    <div className="rounded-xl bg-emerald-50/60 p-2">
-                      <p className="text-[10px] text-emerald-600">Yeni</p>
-                      <p className="font-bold text-emerald-700">
-                        +{item.newRows}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-amber-50/60 p-2">
-                      <p className="text-[10px] text-amber-600">Değişen</p>
-                      <p className="font-bold text-amber-700">
-                        {item.changedRows}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      disabled={item.invalidRows === 0 || invalidRowsLoading}
-                      onClick={() => handleViewInvalidRows(item.id)}
-                      className="rounded-xl bg-rose-50/60 p-2 disabled:cursor-default"
-                    >
-                      <p className="text-[10px] text-rose-600">Hatalı</p>
-                      <p className="font-bold text-rose-700">
-                        {item.invalidRows}
-                      </p>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleViewExcel(item.id)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
-                    >
-                      <Eye size={14} /> Görüntüle
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleViewReport(item.id)}
-                      className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs"
-                    >
-                      <BarChart3 size={14} /> Raporu Aç
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </>
-        )}
-      </section>
+                  </article>
+                ))}
+              </div>
+            </>
+          )
+        }
+      </section >
 
       {/* FOOTER BİLGİ NOTU */}
-      <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
+      < div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/50 p-4" >
         <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-sky-600" />
         <p className="text-xs leading-5 text-sky-900 font-medium">
           <strong>Güvenli Aktarım Protokolü:</strong> Yüklenen Excel dosyası
           önce analiz edilir ve mevcut kayıtlarla karşılaştırılır. Geçerli
           değişiklikler otomatik olarak veritabanına uygulanır.
         </p>
-      </div>
+      </div >
       {invalidRowsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
@@ -1201,7 +1277,8 @@ export function ExcelImportScreen() {
             </div>
           </div>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
