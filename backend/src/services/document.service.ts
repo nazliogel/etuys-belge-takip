@@ -3,6 +3,7 @@ import type { UserRole } from "../generated/prisma/client.js";
 import type { DocumentRepository } from "../repositories/document.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
 import type { CompanyRequestRepository } from "../repositories/company-request.repository.js";
+import { ImportedRealizationRepository } from "../repositories/imported-realization.repository.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
 import { createClosureApplicationLookup } from "./closure-application.js";
 import {
@@ -47,6 +48,8 @@ type CompanySource = {
   consultant: string | null;
   authorization: { authorizationEndDate: Date | null } | null;
 };
+
+const importedRealizationRepository = new ImportedRealizationRepository();
 
 const FAR_FUTURE: DateOnly = "9999-12-31";
 
@@ -768,6 +771,12 @@ export class DocumentService {
     const document = await this.getAccessibleDocument(id, userId, role);
     const importedMachines = document.detail?.importedMachines ?? [];
 
+    const realizationsByMachine =
+      await importedRealizationRepository.findGroupedByMachine(
+        document.detail?.id,
+        importedMachines,
+      );
+
     return {
       documentId: document.id,
       externalDocumentId: document.externalDocumentId,
@@ -863,6 +872,8 @@ export class DocumentService {
           machine.financialLeasingPermittedQuantity?.toString() ?? null,
 
         financialLeasingCompanyName: machine.financialLeasingCompanyName,
+
+        realizations: realizationsByMachine.get(machine.id) ?? [],
       })),
     };
   }
