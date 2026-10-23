@@ -319,6 +319,10 @@ model IncentiveDocument {
   documentEndDate    DateTime?          @db.Date
   extensionDate      DateTime?          @db.Date
   supportClass       String?
+    city               String?
+  district           String?
+  address            String?
+  osbName            String?
   status             DocumentStatus     @default(OPEN)
   isActive           Boolean            @default(true)
 
@@ -345,6 +349,10 @@ model ClosedIncentiveDocument {
 
   extensionDate DateTime?      @db.Date
   supportClass  String?
+    city          String?
+  district      String?
+  address       String?
+  osbName       String?
   status        DocumentStatus
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -404,6 +412,10 @@ model ImportRow {
   supportClass         String?
   documentStatus       DocumentStatus?
   processStatus        String?
+    city                 String?
+  district             String?
+  address              String?
+  osbName              String?
   companyId            Int?
   documentId           Int?
   rawData              Json?

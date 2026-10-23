@@ -465,6 +465,12 @@ export class DocumentService {
       status: row.legacyStatus,
       displayStatus: row.displayStatus,
       effectiveEndDate: row.effectiveEndDate,
+
+      // Belgenin künye bilgisi (yatırım yeri); firma kimliğinden bağımsızdır.
+      city: document.city ?? null,
+      district: document.district ?? null,
+      address: document.address ?? null,
+      osbName: document.osbName ?? null,
       company: {
         ...toCompanyDto(document.company),
         processStatus: document.company.processStatus,

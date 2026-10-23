@@ -28,29 +28,29 @@ type ApiDocumentDetail = {
 
   // Backend'in hesapladığı durum (liste ekranıyla aynı kaynak)
   displayStatus?:
-  | "CLOSED"
-  | "CANCELLED"
-  | "INACTIVE"
-  | "AUTHORIZATION_EXPIRED"
-  | "CLOSURE_ELIGIBLE"
-  | "CLOSURE_APPLIED"
-  | "EXTENSION_ELIGIBLE"
-  | "EXPIRED"
-  | "EXPIRING"
-  | "ACTIVE";
+    | "CLOSED"
+    | "CANCELLED"
+    | "INACTIVE"
+    | "AUTHORIZATION_EXPIRED"
+    | "CLOSURE_ELIGIBLE"
+    | "CLOSURE_APPLIED"
+    | "EXTENSION_ELIGIBLE"
+    | "EXPIRED"
+    | "EXPIRING"
+    | "ACTIVE";
 
   company: {
     name: string;
     taxNumber: string;
     processStatus: string | null;
     authorizationEndDate: string | null;
-
-    // Konum bilgileri. Backend henüz göndermiyor; gelene kadar "-" görünür.
-    city?: string | null;
-    district?: string | null;
-    address?: string | null;
-    osbName?: string | null;
   };
+
+  // Belgenin künye bilgisi (yatırım yeri); firma bilgisinden bağımsızdır.
+  city?: string | null;
+  district?: string | null;
+  address?: string | null;
+  osbName?: string | null;
 };
 
 // Boş ya da eksik değerler için "-" gösterir.
@@ -230,16 +230,16 @@ export function AdminDocumentIdentity({
 
               <OperationRow
                 label1="İl"
-                value1={displayValue(document.company.city)}
+                value1={displayValue(document.city)}
                 label2="İlçe"
-                value2={displayValue(document.company.district)}
+                value2={displayValue(document.district)}
               />
 
               <OperationRow
                 label1="Adres"
-                value1={displayValue(document.company.address)}
+                value1={displayValue(document.address)}
                 label2="OSB Adı"
-                value2={displayValue(document.company.osbName)}
+                value2={displayValue(document.osbName)}
               />
             </tbody>
           </table>

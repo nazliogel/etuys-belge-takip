@@ -57,13 +57,13 @@ type ApiDocumentDetail = {
     taxNumber: string;
     processStatus: string | null;
     authorizationEndDate: string | null;
-
-    // Konum bilgileri. Backend henüz göndermiyor; gelene kadar "-" görünür.
-    city?: string | null;
-    district?: string | null;
-    address?: string | null;
-    osbName?: string | null;
   };
+
+  // Belgenin künye bilgisi (yatırım yeri); firma bilgisinden bağımsızdır.
+  city?: string | null;
+  district?: string | null;
+  address?: string | null;
+  osbName?: string | null;
 };
 
 // Boş ya da eksik değerler için "-" gösterir.
@@ -584,22 +584,22 @@ export function DocumentDetailScreen({
 
                   <FormRow
                     label="İl"
-                    value={displayValue(document.company.city)}
+                    value={displayValue(document.city)}
                   />
 
                   <FormRow
                     label="İlçe"
-                    value={displayValue(document.company.district)}
+                    value={displayValue(document.district)}
                   />
 
                   <FormRow
                     label="Adres"
-                    value={displayValue(document.company.address)}
+                    value={displayValue(document.address)}
                   />
 
                   <FormRow
                     label="OSB Adı"
-                    value={displayValue(document.company.osbName)}
+                    value={displayValue(document.osbName)}
                   />
 
 

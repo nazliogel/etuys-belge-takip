@@ -64,6 +64,10 @@ export type ImportRowMinAggregateOutputType = {
   supportClass: string | null
   documentStatus: $Enums.DocumentStatus | null
   processStatus: string | null
+  city: string | null
+  district: string | null
+  address: string | null
+  osbName: string | null
   companyId: number | null
   documentId: number | null
   errorMessage: string | null
@@ -88,6 +92,10 @@ export type ImportRowMaxAggregateOutputType = {
   supportClass: string | null
   documentStatus: $Enums.DocumentStatus | null
   processStatus: string | null
+  city: string | null
+  district: string | null
+  address: string | null
+  osbName: string | null
   companyId: number | null
   documentId: number | null
   errorMessage: string | null
@@ -112,6 +120,10 @@ export type ImportRowCountAggregateOutputType = {
   supportClass: number
   documentStatus: number
   processStatus: number
+  city: number
+  district: number
+  address: number
+  osbName: number
   companyId: number
   documentId: number
   rawData: number
@@ -159,6 +171,10 @@ export type ImportRowMinAggregateInputType = {
   supportClass?: true
   documentStatus?: true
   processStatus?: true
+  city?: true
+  district?: true
+  address?: true
+  osbName?: true
   companyId?: true
   documentId?: true
   errorMessage?: true
@@ -183,6 +199,10 @@ export type ImportRowMaxAggregateInputType = {
   supportClass?: true
   documentStatus?: true
   processStatus?: true
+  city?: true
+  district?: true
+  address?: true
+  osbName?: true
   companyId?: true
   documentId?: true
   errorMessage?: true
@@ -207,6 +227,10 @@ export type ImportRowCountAggregateInputType = {
   supportClass?: true
   documentStatus?: true
   processStatus?: true
+  city?: true
+  district?: true
+  address?: true
+  osbName?: true
   companyId?: true
   documentId?: true
   rawData?: true
@@ -319,6 +343,10 @@ export type ImportRowGroupByOutputType = {
   supportClass: string | null
   documentStatus: $Enums.DocumentStatus | null
   processStatus: string | null
+  city: string | null
+  district: string | null
+  address: string | null
+  osbName: string | null
   companyId: number | null
   documentId: number | null
   rawData: runtime.JsonValue | null
@@ -367,6 +395,10 @@ export type ImportRowWhereInput = {
   supportClass?: Prisma.StringNullableFilter<"ImportRow"> | string | null
   documentStatus?: Prisma.EnumDocumentStatusNullableFilter<"ImportRow"> | $Enums.DocumentStatus | null
   processStatus?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  city?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  district?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  address?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  osbName?: Prisma.StringNullableFilter<"ImportRow"> | string | null
   companyId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   documentId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   rawData?: Prisma.JsonNullableFilter<"ImportRow">
@@ -396,6 +428,10 @@ export type ImportRowOrderByWithRelationInput = {
   supportClass?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   processStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  osbName?: Prisma.SortOrderInput | Prisma.SortOrder
   companyId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentId?: Prisma.SortOrderInput | Prisma.SortOrder
   rawData?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -429,6 +465,10 @@ export type ImportRowWhereUniqueInput = Prisma.AtLeast<{
   supportClass?: Prisma.StringNullableFilter<"ImportRow"> | string | null
   documentStatus?: Prisma.EnumDocumentStatusNullableFilter<"ImportRow"> | $Enums.DocumentStatus | null
   processStatus?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  city?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  district?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  address?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  osbName?: Prisma.StringNullableFilter<"ImportRow"> | string | null
   companyId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   documentId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   rawData?: Prisma.JsonNullableFilter<"ImportRow">
@@ -458,6 +498,10 @@ export type ImportRowOrderByWithAggregationInput = {
   supportClass?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   processStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  osbName?: Prisma.SortOrderInput | Prisma.SortOrder
   companyId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentId?: Prisma.SortOrderInput | Prisma.SortOrder
   rawData?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -491,6 +535,10 @@ export type ImportRowScalarWhereWithAggregatesInput = {
   supportClass?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
   documentStatus?: Prisma.EnumDocumentStatusNullableWithAggregatesFilter<"ImportRow"> | $Enums.DocumentStatus | null
   processStatus?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
+  district?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
+  address?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
+  osbName?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
   companyId?: Prisma.IntNullableWithAggregatesFilter<"ImportRow"> | number | null
   documentId?: Prisma.IntNullableWithAggregatesFilter<"ImportRow"> | number | null
   rawData?: Prisma.JsonNullableWithAggregatesFilter<"ImportRow">
@@ -514,6 +562,10 @@ export type ImportRowCreateInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
@@ -541,6 +593,10 @@ export type ImportRowUncheckedCreateInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -565,6 +621,10 @@ export type ImportRowUpdateInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -592,6 +652,10 @@ export type ImportRowUncheckedUpdateInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -618,6 +682,10 @@ export type ImportRowCreateManyInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -641,6 +709,10 @@ export type ImportRowUpdateManyMutationInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -664,6 +736,10 @@ export type ImportRowUncheckedUpdateManyInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -705,6 +781,10 @@ export type ImportRowCountOrderByAggregateInput = {
   supportClass?: Prisma.SortOrder
   documentStatus?: Prisma.SortOrder
   processStatus?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  osbName?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
   rawData?: Prisma.SortOrder
@@ -740,6 +820,10 @@ export type ImportRowMaxOrderByAggregateInput = {
   supportClass?: Prisma.SortOrder
   documentStatus?: Prisma.SortOrder
   processStatus?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  osbName?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
@@ -764,6 +848,10 @@ export type ImportRowMinOrderByAggregateInput = {
   supportClass?: Prisma.SortOrder
   documentStatus?: Prisma.SortOrder
   processStatus?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  district?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  osbName?: Prisma.SortOrder
   companyId?: Prisma.SortOrder
   documentId?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
@@ -951,6 +1039,10 @@ export type ImportRowCreateWithoutCompanyInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
@@ -977,6 +1069,10 @@ export type ImportRowUncheckedCreateWithoutCompanyInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
@@ -1031,6 +1127,10 @@ export type ImportRowScalarWhereInput = {
   supportClass?: Prisma.StringNullableFilter<"ImportRow"> | string | null
   documentStatus?: Prisma.EnumDocumentStatusNullableFilter<"ImportRow"> | $Enums.DocumentStatus | null
   processStatus?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  city?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  district?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  address?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  osbName?: Prisma.StringNullableFilter<"ImportRow"> | string | null
   companyId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   documentId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   rawData?: Prisma.JsonNullableFilter<"ImportRow">
@@ -1054,6 +1154,10 @@ export type ImportRowCreateWithoutDocumentInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
@@ -1080,6 +1184,10 @@ export type ImportRowUncheckedCreateWithoutDocumentInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
@@ -1129,6 +1237,10 @@ export type ImportRowCreateWithoutImportBatchInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
@@ -1154,6 +1266,10 @@ export type ImportRowUncheckedCreateWithoutImportBatchInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1204,6 +1320,10 @@ export type ImportRowCreateWithoutChangesInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
   createdAt?: Date | string
@@ -1230,6 +1350,10 @@ export type ImportRowUncheckedCreateWithoutChangesInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1269,6 +1393,10 @@ export type ImportRowUpdateWithoutChangesInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1295,6 +1423,10 @@ export type ImportRowUncheckedUpdateWithoutChangesInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1320,6 +1452,10 @@ export type ImportRowCreateManyCompanyInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
@@ -1342,6 +1478,10 @@ export type ImportRowUpdateWithoutCompanyInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1368,6 +1508,10 @@ export type ImportRowUncheckedUpdateWithoutCompanyInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1393,6 +1537,10 @@ export type ImportRowUncheckedUpdateManyWithoutCompanyInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1417,6 +1565,10 @@ export type ImportRowCreateManyDocumentInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: string | null
@@ -1439,6 +1591,10 @@ export type ImportRowUpdateWithoutDocumentInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1465,6 +1621,10 @@ export type ImportRowUncheckedUpdateWithoutDocumentInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1490,6 +1650,10 @@ export type ImportRowUncheckedUpdateManyWithoutDocumentInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1513,6 +1677,10 @@ export type ImportRowCreateManyImportBatchInput = {
   supportClass?: string | null
   documentStatus?: $Enums.DocumentStatus | null
   processStatus?: string | null
+  city?: string | null
+  district?: string | null
+  address?: string | null
+  osbName?: string | null
   companyId?: number | null
   documentId?: number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1536,6 +1704,10 @@ export type ImportRowUpdateWithoutImportBatchInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1561,6 +1733,10 @@ export type ImportRowUncheckedUpdateWithoutImportBatchInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1586,6 +1762,10 @@ export type ImportRowUncheckedUpdateManyWithoutImportBatchInput = {
   supportClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentStatus?: Prisma.NullableEnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus | null
   processStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osbName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   companyId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   rawData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1642,6 +1822,10 @@ export type ImportRowSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   supportClass?: boolean
   documentStatus?: boolean
   processStatus?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   companyId?: boolean
   documentId?: boolean
   rawData?: boolean
@@ -1672,6 +1856,10 @@ export type ImportRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   supportClass?: boolean
   documentStatus?: boolean
   processStatus?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   companyId?: boolean
   documentId?: boolean
   rawData?: boolean
@@ -1700,6 +1888,10 @@ export type ImportRowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   supportClass?: boolean
   documentStatus?: boolean
   processStatus?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   companyId?: boolean
   documentId?: boolean
   rawData?: boolean
@@ -1728,6 +1920,10 @@ export type ImportRowSelectScalar = {
   supportClass?: boolean
   documentStatus?: boolean
   processStatus?: boolean
+  city?: boolean
+  district?: boolean
+  address?: boolean
+  osbName?: boolean
   companyId?: boolean
   documentId?: boolean
   rawData?: boolean
@@ -1735,7 +1931,7 @@ export type ImportRowSelectScalar = {
   createdAt?: boolean
 }
 
-export type ImportRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "sheetName" | "rowNumber" | "status" | "externalCompanyId" | "companyName" | "taxNumber" | "authorizationEndDate" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "documentStatus" | "processStatus" | "companyId" | "documentId" | "rawData" | "errorMessage" | "createdAt", ExtArgs["result"]["importRow"]>
+export type ImportRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "sheetName" | "rowNumber" | "status" | "externalCompanyId" | "companyName" | "taxNumber" | "authorizationEndDate" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "documentStatus" | "processStatus" | "city" | "district" | "address" | "osbName" | "companyId" | "documentId" | "rawData" | "errorMessage" | "createdAt", ExtArgs["result"]["importRow"]>
 export type ImportRowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   company?: boolean | Prisma.ImportRow$companyArgs<ExtArgs>
@@ -1780,6 +1976,10 @@ export type $ImportRowPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     supportClass: string | null
     documentStatus: $Enums.DocumentStatus | null
     processStatus: string | null
+    city: string | null
+    district: string | null
+    address: string | null
+    osbName: string | null
     companyId: number | null
     documentId: number | null
     rawData: runtime.JsonValue | null
@@ -2229,6 +2429,10 @@ export interface ImportRowFieldRefs {
   readonly supportClass: Prisma.FieldRef<"ImportRow", 'String'>
   readonly documentStatus: Prisma.FieldRef<"ImportRow", 'DocumentStatus'>
   readonly processStatus: Prisma.FieldRef<"ImportRow", 'String'>
+  readonly city: Prisma.FieldRef<"ImportRow", 'String'>
+  readonly district: Prisma.FieldRef<"ImportRow", 'String'>
+  readonly address: Prisma.FieldRef<"ImportRow", 'String'>
+  readonly osbName: Prisma.FieldRef<"ImportRow", 'String'>
   readonly companyId: Prisma.FieldRef<"ImportRow", 'Int'>
   readonly documentId: Prisma.FieldRef<"ImportRow", 'Int'>
   readonly rawData: Prisma.FieldRef<"ImportRow", 'Json'>
