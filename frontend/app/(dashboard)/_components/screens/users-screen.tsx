@@ -50,12 +50,27 @@ type CompanyCredentialDraft = {
   userId: number;
   username: string;
   email: string;
+  recipients?: string[];
   password: string;
   emailDraft: {
     to: string;
+    cc?: string[];
     subject: string;
     body: string;
   };
+  // E-posta başka bir hesapta kayıtlıysa firma hesabı e-postasız oluşturulur.
+  emailNotSavedToAccount?: boolean;
+};
+
+type CredentialSummary = {
+  to: string;
+  cc: string[];
+  username: string;
+  // Hesaba yazılı giriş e-postası (yoksa null: sadece kullanıcı adıyla giriş)
+  loginEmail: string | null;
+  // Giriş e-postası seçilen adreslerden biri değilse (hesapta zaten kayıtlı
+  // olan adres korunduysa) true.
+  loginEmailKept: boolean;
 };
 
 type FormState = {
@@ -107,13 +122,25 @@ export function UsersScreen() {
 
   const [credentialLoading, setCredentialLoading] = useState(false);
   const [credentialError, setCredentialError] = useState<string | null>(null);
+  // Mail taslağı hazırlandıktan sonra gösterilen özet.
+  const [credentialInfo, setCredentialInfo] = useState<CredentialSummary | null>(
+    null,
+  );
 
   // Bir firma için giriş bilgileri/mail taslağı zaten oluşturulduysa
   // burada tutuyoruz; tekrar oluşturmadan önce kullanıcıya soruyoruz.
   const [credentialCreatedCompanyId, setCredentialCreatedCompanyId] = useState<
     number | null
   >(null);
-  const [pendingRecreateConfirm, setPendingRecreateConfirm] = useState(false);
+  // Oluşturmadan önce sorulan onay (tek adres varsa ya da daha önce
+  // oluşturulduysa).
+  const [pendingConfirm, setPendingConfirm] = useState(false);
+
+  // Firmanın iletişim kişilerindeki e-posta adresleri ve mail taslağı için
+  // seçilenler.
+  const [contactEmails, setContactEmails] = useState<string[]>([]);
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [contactEmailsLoading, setContactEmailsLoading] = useState(false);
 
   useEffect(() => {
     const query = companySearch.trim();
@@ -179,12 +206,25 @@ export function UsersScreen() {
     }
   }, [status.type]);
 
+  // "Mail taslağı hazırlandı" notu bir süre sonra kendiliğinden kaybolur.
+  useEffect(() => {
+    if (!credentialInfo) return;
+
+    const timer = window.setTimeout(() => {
+      setCredentialInfo(null);
+    }, 15000);
+
+    return () => window.clearTimeout(timer);
+  }, [credentialInfo]);
+
   // Firma seçildiğinde daha önce credential oluşturulup oluşturulmadığını
   // backend'ten sor. Sayfa yenilense bile "zaten var" bilgisi geri gelsin.
   useEffect(() => {
     if (!selectedCompany) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCredentialCreatedCompanyId(null);
+      setContactEmails([]);
+      setSelectedEmails([]);
       return;
     }
 
@@ -192,9 +232,12 @@ export function UsersScreen() {
 
     (async () => {
       try {
-        const response = await apiFetch<{ hasCredentials: boolean }>(
-          `/companies/${selectedCompany.id}/credentials/status`,
-        );
+        setContactEmailsLoading(true);
+
+        const response = await apiFetch<{
+          hasCredentials: boolean;
+          emails?: string[];
+        }>(`/companies/${selectedCompany.id}/credentials/status`);
 
         if (cancelled) return;
 
@@ -203,10 +246,21 @@ export function UsersScreen() {
         } else {
           setCredentialCreatedCompanyId(null);
         }
+
+        // Varsayılan olarak bütün adresler seçili gelir.
+        const emails = response.emails ?? [];
+        setContactEmails(emails);
+        setSelectedEmails(emails);
       } catch {
-        // Sessizce yut; buton yine de çalışır, sadece "yeniden oluştur" onayı gelmez.
+        // Sessizce yut; adres listesi boş kalır.
         if (!cancelled) {
           setCredentialCreatedCompanyId(null);
+          setContactEmails([]);
+          setSelectedEmails([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setContactEmailsLoading(false);
         }
       }
     })();
@@ -244,7 +298,8 @@ export function UsersScreen() {
     setStatus({ type: "idle" });
 
     setCredentialError(null);
-    setPendingRecreateConfirm(false);
+    setCredentialInfo(null);
+    setPendingConfirm(false);
 
     if (selectedCompany) {
       setSelectedCompany(null);
@@ -282,7 +337,8 @@ export function UsersScreen() {
     setStatus({ type: "idle" });
 
     setCredentialError(null);
-    setPendingRecreateConfirm(false);
+    setCredentialInfo(null);
+    setPendingConfirm(false);
     // Farklı bir firmaya geçildiyse "zaten oluşturuldu" bilgisini sıfırla.
     setCredentialCreatedCompanyId((previous) =>
       previous === company.id ? previous : null,
@@ -308,8 +364,11 @@ export function UsersScreen() {
     setStatus({ type: "idle" });
 
     setCredentialError(null);
+    setCredentialInfo(null);
     setCredentialCreatedCompanyId(null);
-    setPendingRecreateConfirm(false);
+    setPendingConfirm(false);
+    setContactEmails([]);
+    setSelectedEmails([]);
   }
 
   function validateForm(): FormErrors {
@@ -388,17 +447,46 @@ export function UsersScreen() {
   // Butona tıklanınca çağrılır: firma için daha önce giriş bilgisi/mail
   // taslağı oluşturulmuşsa direkt tekrar oluşturmak yerine önce onay ister.
   function handleCredentialButtonClick() {
+    // Önceki işlemin notu yeni onay kutusuyla üst üste görünmesin.
+    setCredentialInfo(null);
+
     if (!selectedCompany) {
       setCredentialError("Önce bir firma seçmelisiniz.");
       return;
     }
 
-    if (credentialCreatedCompanyId === selectedCompany.id) {
-      setPendingRecreateConfirm(true);
+    if (contactEmails.length === 0) {
+      setCredentialError(
+        "Firmanın kayıtlı e-posta adresi yok. Lütfen önce firmanın iletişim bilgilerini güncelleyin.",
+      );
+      return;
+    }
+
+    if (selectedEmails.length === 0) {
+      setCredentialError("Lütfen mailin gönderileceği en az bir adres seçin.");
+      return;
+    }
+
+    // Tek adres varsa ya da daha önce oluşturulduysa önce onay iste.
+    if (
+      contactEmails.length === 1 ||
+      credentialCreatedCompanyId === selectedCompany.id
+    ) {
+      setPendingConfirm(true);
       return;
     }
 
     void createCredentialDraft();
+  }
+
+  function toggleEmail(address: string) {
+    setCredentialError(null);
+    setPendingConfirm(false);
+    setSelectedEmails((previous) =>
+      previous.includes(address)
+        ? previous.filter((item) => item !== address)
+        : [...previous, address],
+    );
   }
 
   async function createCredentialDraft() {
@@ -410,21 +498,40 @@ export function UsersScreen() {
     try {
       setCredentialLoading(true);
       setCredentialError(null);
-      setPendingRecreateConfirm(false);
+      setCredentialInfo(null);
+      setPendingConfirm(false);
 
       const draft = await apiFetch<CompanyCredentialDraft>(
         `/companies/${selectedCompany.id}/credentials/email-draft`,
         {
           method: "POST",
+          body: JSON.stringify({ recipients: selectedEmails }),
         },
       );
 
+      // İlk adres "Kime", diğerleri "Bilgi (CC)". Birden çok CC, Outlook'un
+      // ayıracı olan noktalı virgülle ayrılır.
+      const ccList = draft.emailDraft.cc ?? [];
       const mailtoUrl =
         `mailto:${draft.emailDraft.to}` +
         `?subject=${encodeURIComponent(draft.emailDraft.subject)}` +
+        (ccList.length > 0
+          ? `&cc=${encodeURIComponent(ccList.join(";"))}`
+          : "") +
         `&body=${encodeURIComponent(draft.emailDraft.body)}`;
 
       setCredentialCreatedCompanyId(selectedCompany.id);
+
+      const loginEmail = draft.emailNotSavedToAccount ? null : draft.email;
+
+      setCredentialInfo({
+        to: draft.emailDraft.to,
+        cc: ccList,
+        username: draft.username,
+        loginEmail,
+        loginEmailKept:
+          loginEmail !== null && !selectedEmails.includes(loginEmail),
+      });
 
       window.location.href = mailtoUrl;
     } catch (error) {
@@ -850,7 +957,7 @@ export function UsersScreen() {
                 oluşturur.
               </p>
 
-              {credentialAlreadyCreated && !pendingRecreateConfirm && (
+              {credentialAlreadyCreated && !pendingConfirm && (
                 <p className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                   Bu firma için giriş bilgileri oluşturuldu.
@@ -861,7 +968,12 @@ export function UsersScreen() {
             <button
               type="button"
               onClick={handleCredentialButtonClick}
-              disabled={!selectedCompany || credentialLoading}
+              disabled={
+                !selectedCompany ||
+                credentialLoading ||
+                contactEmailsLoading ||
+                selectedEmails.length === 0
+              }
               className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto ${
                 credentialAlreadyCreated
                   ? "bg-amber-600 hover:bg-amber-700"
@@ -884,21 +996,106 @@ export function UsersScreen() {
             </button>
           </div>
 
-          {pendingRecreateConfirm && (
+          {/* MAİL ADRESİ SEÇİMİ */}
+          {selectedCompany && (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-xs font-bold text-slate-800">
+                  Mail gönderilecek adres
+                  {contactEmails.length > 1 ? "ler" : ""}
+                </p>
+
+                {contactEmails.length > 1 && (
+                  <span className="text-[11px] font-medium text-slate-500">
+                    {selectedEmails.length} / {contactEmails.length} seçili
+                  </span>
+                )}
+              </div>
+
+              {contactEmailsLoading ? (
+                <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-500">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Firmanın e-posta adresleri yükleniyor...
+                </p>
+              ) : contactEmails.length === 0 ? (
+                <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs font-medium text-amber-800">
+                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Firmanın kayıtlı e-posta adresi yok. Firma detayına girip
+                    iletişim bilgisi ekleyin.
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {contactEmails.map((address) => {
+                      const isSelected = selectedEmails.includes(address);
+                      const isOnlyOne = contactEmails.length === 1;
+
+                      return (
+                        <button
+                          key={address}
+                          type="button"
+                          onClick={() => !isOnlyOne && toggleEmail(address)}
+                          aria-pressed={isSelected}
+                          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                            isSelected
+                              ? "border-blue-300 bg-blue-50 font-semibold text-blue-900"
+                              : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                          } ${isOnlyOne ? "cursor-default" : ""}`}
+                        >
+                          <span
+                            className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                              isSelected
+                                ? "border-blue-700 bg-blue-700 text-white"
+                                : "border-slate-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <CheckCircle2 className="h-3 w-3" />}
+                          </span>
+                          {address}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="mt-2.5 text-[11px] text-slate-500">
+                    {contactEmails.length > 1
+                      ? "Göndermek istemediğiniz adresin seçimini kaldırın. Adres eksikse firma detayından iletişim bilgisi ekleyin."
+                      : "Adres eksikse firma detayından iletişim bilgisi ekleyin."}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
+          {pendingConfirm && (
             <div className="mt-4 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3.5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-2">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-                <p className="text-sm font-medium text-amber-800">
-                  Bu firma için giriş bilgileri daha önce oluşturuldu. Yeni bir
-                  şifre ve mail taslağı oluşturmak istediğinize emin misiniz?
-                  Önceki şifre geçersiz hale gelecektir.
-                </p>
+                <div className="space-y-1 text-sm font-medium text-amber-800">
+                  <p>
+                    Giriş bilgileri{" "}
+                    <strong>{selectedEmails.join(", ")}</strong>{" "}
+                    {selectedEmails.length === 1 ? "adresine" : "adreslerine"}{" "}
+                    gönderilecek.
+                  </p>
+
+                  {credentialAlreadyCreated && (
+                    <p>
+                      Bu firma için giriş bilgileri daha önce oluşturuldu. Yeni
+                      şifre oluşturulunca önceki şifre geçersiz hale gelecektir.
+                    </p>
+                  )}
+
+                  <p>Onaylıyor musunuz?</p>
+                </div>
               </div>
 
               <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => setPendingRecreateConfirm(false)}
+                  onClick={() => setPendingConfirm(false)}
                   className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   Vazgeç
@@ -915,9 +1112,77 @@ export function UsersScreen() {
                   ) : (
                     <KeyRound className="h-3.5 w-3.5" />
                   )}
-                  Evet, yeniden oluştur
+                  {credentialAlreadyCreated
+                    ? "Evet, yeniden oluştur"
+                    : "Evet, oluştur"}
                 </button>
               </div>
+            </div>
+          )}
+
+          {credentialInfo && (
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="flex items-center gap-2 text-sm font-bold text-emerald-800">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  Mail taslağı hazırlandı.Mailinizi kontrol ediniz.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setCredentialInfo(null)}
+                  aria-label="Bildirimi kapat"
+                  className="rounded-md p-1 text-emerald-700 transition hover:bg-emerald-100"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <dl className="mt-3 grid gap-x-4 gap-y-1.5 pl-6 text-xs sm:grid-cols-[110px_1fr]">
+                <dt className="font-semibold text-emerald-900/70">Kime</dt>
+                <dd className="font-medium text-slate-800">
+                  {credentialInfo.to}
+                </dd>
+
+                {credentialInfo.cc.length > 0 && (
+                  <>
+                    <dt className="font-semibold text-emerald-900/70">
+                      Bilgi (CC)
+                    </dt>
+                    <dd className="font-medium text-slate-800">
+                      {credentialInfo.cc.join("; ")}
+                    </dd>
+                  </>
+                )}
+
+                <dt className="font-semibold text-emerald-900/70">
+                  Kullanıcı adı
+                </dt>
+                <dd className="font-medium text-slate-800">
+                  {credentialInfo.username}
+                </dd>
+
+                <dt className="font-semibold text-emerald-900/70">
+                  Giriş e-postası
+                </dt>
+                <dd className="font-medium text-slate-800">
+                  {credentialInfo.loginEmail ? (
+                    <>
+                      {credentialInfo.loginEmail}
+                      {credentialInfo.loginEmailKept && (
+                        <span className="ml-1 font-normal text-slate-500">
+                          (hesapta zaten kayıtlı olduğu için korundu)
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="font-normal text-slate-600">
+                      Yok. Seçilen adresler başka hesaplarda kayıtlı; firma
+                      kullanıcı adıyla giriş yapacak.
+                    </span>
+                  )}
+                </dd>
+              </dl>
             </div>
           )}
 
