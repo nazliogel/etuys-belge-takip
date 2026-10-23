@@ -1,7 +1,9 @@
+import fs from "node:fs/promises";
 import { Router } from "express";
 
 import { importUpload } from "../config/upload.js";
 import { authenticate } from "../middlewares/auth.js";
+import { ImportedRealizationImportService } from "../services/imported-realization-import.service.js";
 import { validate } from "../middlewares/validate.js";
 import {
   compareController,
@@ -15,6 +17,8 @@ import {
 } from "../schemas/import.schema.js";
 
 export const importRouter = Router();
+const importedRealizationImportService =
+  new ImportedRealizationImportService();
 
 importRouter.use(authenticate);
 
@@ -38,6 +42,50 @@ importRouter.post(
   importController.upload,
 );
 
+importRouter.post(
+  "/imported-realizations",
+  importUpload.single("file"),
+  async (req, res, next) => {
+    const file = req.file;
+    const filePath = file?.path;
+
+    if (!filePath) {
+      res.status(400).json({
+        success: false,
+        message: "Excel dosyası yüklenmedi.",
+      });
+      return;
+    }
+
+    try {
+      if (!file?.originalname.toLowerCase().endsWith(".xlsx")) {
+        res.status(400).json({
+          success: false,
+          message: "Yalnızca .xlsx dosyaları desteklenir.",
+        });
+        return;
+      }
+
+      const result = await importedRealizationImportService.import(
+        filePath,
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "İthal Gerçekleşme Excel aktarımı tamamlandı.",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    } finally {
+      try {
+        await fs.unlink(filePath);
+      } catch (error) {
+        console.error("Geçici Excel dosyası silinemedi:", error);
+      }
+    }
+  },
+);
 importRouter.post(
   "/:id/process",
   validate(importBatchIdSchema),
