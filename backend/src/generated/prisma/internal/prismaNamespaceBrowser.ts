@@ -72,6 +72,7 @@ export const ModelName = {
   DocumentFinancialInfo: 'DocumentFinancialInfo',
   DocumentDomesticMachine: 'DocumentDomesticMachine',
   DocumentImportedMachine: 'DocumentImportedMachine',
+  DocumentImportedRealization: 'DocumentImportedRealization',
   DocumentSpecialCondition: 'DocumentSpecialCondition',
   IncentiveDocumentCondition: 'IncentiveDocumentCondition',
   DocumentReminder: 'DocumentReminder',
@@ -575,6 +576,24 @@ export const DocumentImportedMachineScalarFieldEnum = {
 } as const
 
 export type DocumentImportedMachineScalarFieldEnum = (typeof DocumentImportedMachineScalarFieldEnum)[keyof typeof DocumentImportedMachineScalarFieldEnum]
+
+
+export const DocumentImportedRealizationScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  machineId: 'machineId',
+  externalRowId: 'externalRowId',
+  sequenceNumber: 'sequenceNumber',
+  itemName: 'itemName',
+  unit: 'unit',
+  customsRealizedQuantity: 'customsRealizedQuantity',
+  externalMachineId: 'externalMachineId',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentImportedRealizationScalarFieldEnum = (typeof DocumentImportedRealizationScalarFieldEnum)[keyof typeof DocumentImportedRealizationScalarFieldEnum]
 
 
 export const DocumentSpecialConditionScalarFieldEnum = {

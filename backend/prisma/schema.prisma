@@ -526,6 +526,7 @@ model DocumentDetail {
   realizationInfo   DocumentRealizationInfo?
   domesticMachines  DocumentDomesticMachine[]
   importedMachines  DocumentImportedMachine[]
+  importedRealizations DocumentImportedRealization[]
   specialConditions DocumentSpecialCondition[]
 
   createdAt DateTime @default(now())
@@ -812,7 +813,8 @@ model DocumentImportedMachine {
 
   rawData Json?
 
-  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+  detail       DocumentDetail                @relation(fields: [detailId], references: [id], onDelete: Cascade)
+  realizations DocumentImportedRealization[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -821,6 +823,35 @@ model DocumentImportedMachine {
   @@index([externalMachineId])
 }
 
+
+model DocumentImportedRealization {
+  id Int @id @default(autoincrement())
+
+  detailId  Int
+  machineId Int?
+
+  externalRowId String
+
+  sequenceNumber          Int?
+  itemName                String?
+  unit                    String?
+  customsRealizedQuantity Decimal?
+
+  externalMachineId Int?
+
+  rawData Json?
+
+  detail  DocumentDetail           @relation(fields: [detailId], references: [id], onDelete: Cascade)
+  machine DocumentImportedMachine? @relation(fields: [machineId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([detailId, externalRowId])
+  @@index([detailId])
+  @@index([machineId])
+  @@index([externalMachineId])
+}
 model DocumentSpecialCondition {
   id       Int @id @default(autoincrement())
   detailId Int
