@@ -13,6 +13,7 @@ import {
   Hash,
   Landmark,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
@@ -436,15 +437,17 @@ export function DocumentDetailScreen({
         </section>
       )}
 
-      {/* Bilgi kartları — mobilde 2 sütun, tablette 2, xl'de 4 */}
+      {/* Bilgi kartları — mobilde 2 sütun, tablette 3, xl'de 6 */}
       <div>
-        <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
           <InfoCard
+            tone="blue"
             label="Belge Numarası"
             value={document.documentNumber ?? "-"}
             icon={<Hash size={16} className="sm:h-[19px] sm:w-[19px]" />}
           />
           <InfoCard
+            tone="emerald"
             label="Belge Başlangıç"
             value={formatDate(document.documentStartDate)}
             icon={
@@ -452,11 +455,13 @@ export function DocumentDetailScreen({
             }
           />
           <InfoCard
+            tone="rose"
             label="Belge Bitiş"
             value={formatDate(document.documentEndDate)}
             icon={<Clock3 size={16} className="sm:h-[19px] sm:w-[19px]" />}
           />
           <InfoCard
+            tone="amber"
             label="Süre Uzatım"
             value={formatDate(document.extensionDate)}
             icon={
@@ -464,9 +469,18 @@ export function DocumentDetailScreen({
             }
           />
           <InfoCard
+            tone="violet"
             label="Destekleme Sınıfı"
             value={document.supportClass ?? "-"}
             icon={<Landmark size={16} className="sm:h-[19px] sm:w-[19px]" />}
+          />
+          <InfoCard
+            tone="cyan"
+            label="Yetki Bitiş"
+            value={formatDate(document.company.authorizationEndDate)}
+            icon={
+              <ShieldCheck size={16} className="sm:h-[19px] sm:w-[19px]" />
+            }
           />
         </section>
 
@@ -628,19 +642,82 @@ export function DocumentDetailScreen({
    ALT BİLEŞENLER
    ============================================ */
 
+type InfoCardTone =
+  | "blue"
+  | "emerald"
+  | "rose"
+  | "amber"
+  | "violet"
+  | "cyan";
+
+// Her kartın rengi: hafif zemin, üst şerit, ikon kutusu ve etiket rengi.
+// Tailwind sınıfları tam yazılmalı (birleştirilmiş metin çalışmaz).
+const INFO_CARD_TONES: Record<
+  InfoCardTone,
+  { card: string; bar: string; icon: string; label: string }
+> = {
+  blue: {
+    card: "bg-blue-50/70 ring-blue-200/70 dark:bg-blue-500/10 dark:ring-blue-500/25",
+    bar: "bg-blue-500",
+    icon: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+    label: "text-blue-700/80 dark:text-blue-300/80",
+  },
+  emerald: {
+    card: "bg-emerald-50/70 ring-emerald-200/70 dark:bg-emerald-500/10 dark:ring-emerald-500/25",
+    bar: "bg-emerald-500",
+    icon: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+    label: "text-emerald-700/80 dark:text-emerald-300/80",
+  },
+  rose: {
+    card: "bg-rose-50/70 ring-rose-200/70 dark:bg-rose-500/10 dark:ring-rose-500/25",
+    bar: "bg-rose-500",
+    icon: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300",
+    label: "text-rose-700/80 dark:text-rose-300/80",
+  },
+  amber: {
+    card: "bg-amber-50/70 ring-amber-200/70 dark:bg-amber-500/10 dark:ring-amber-500/25",
+    bar: "bg-amber-500",
+    icon: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+    label: "text-amber-700/80 dark:text-amber-300/80",
+  },
+  violet: {
+    card: "bg-violet-50/70 ring-violet-200/70 dark:bg-violet-500/10 dark:ring-violet-500/25",
+    bar: "bg-violet-500",
+    icon: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
+    label: "text-violet-700/80 dark:text-violet-300/80",
+  },
+  cyan: {
+    card: "bg-cyan-50/70 ring-cyan-200/70 dark:bg-cyan-500/10 dark:ring-cyan-500/25",
+    bar: "bg-cyan-500",
+    icon: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-300",
+    label: "text-cyan-700/80 dark:text-cyan-300/80",
+  },
+};
+
 interface InfoCardProps {
   label: string;
   value: string;
   icon: ReactNode;
+  tone: InfoCardTone;
 }
 
-function InfoCard({ label, value, icon }: InfoCardProps) {
+function InfoCard({ label, value, icon, tone }: InfoCardProps) {
+  const colors = INFO_CARD_TONES[tone];
+
   return (
-    <article className="rounded-xl bg-card p-3 shadow-sm ring-1 ring-border sm:rounded-2xl sm:p-5">
-      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground sm:mb-4 sm:h-10 sm:w-10 sm:rounded-xl">
+    <article
+      className={`relative overflow-hidden rounded-xl p-3 shadow-sm ring-1 sm:rounded-2xl sm:p-5 ${colors.card}`}
+    >
+      <span
+        aria-hidden="true"
+        className={`absolute inset-x-0 top-0 h-1 ${colors.bar}`}
+      />
+      <div
+        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg sm:mb-4 sm:h-10 sm:w-10 sm:rounded-xl ${colors.icon}`}
+      >
         {icon}
       </div>
-      <p className="text-[10px] font-medium text-muted-foreground sm:text-xs">
+      <p className={`text-[10px] font-semibold sm:text-xs ${colors.label}`}>
         {label}
       </p>
       <p className="mt-1 break-words text-sm font-semibold text-foreground sm:mt-1.5 sm:text-lg">
