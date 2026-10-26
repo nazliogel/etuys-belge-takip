@@ -40,8 +40,8 @@ export function WhatsAppFloatButton({
   }
 
   const message = displayedName
-    ? `Merhaba ${displayedName}, Teşvik360 paneli üzerinden yazıyorum.`
-    : "Merhaba, Teşvik360 paneli üzerinden yazıyorum.";
+    ? `Merhaba ${displayedName}, Teşvik Akkaş paneli üzerinden yazıyorum.`
+    : "Merhaba, Teşvik Akkaş paneli üzerinden yazıyorum.";
 
   const whatsAppUrl = createWhatsAppUrl(displayedPhone, message);
 
