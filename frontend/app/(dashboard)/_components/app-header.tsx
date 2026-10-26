@@ -313,13 +313,13 @@ export function AppHeader({
           </Link>
 
           {/*
-              KULLANICI CHIP'İ
-              ================
-              Mobilde SADECE avatar dairesi görünür (h-9 w-9) — bant butonlarıyla
-              birebir aynı boyut, aynı sağ kenar. Chip'in görsel kutu-border-bg'si
-              sm+ üzerinde açılır. Böylece mobilde kayma yaşanmaz.
+              KULLANICI CHIP'İ + ÇIKIŞ
+              ========================
+              Mobilde: avatar ve çıkış butonu yan yana, ikisi de h-9 w-9 (bant
+              butonlarıyla aynı hiza). sm+ ekranda kart kutusu açılır, isim/rol
+              görünür, çıkış butonu ince bir ayraçla kartın içinde durur.
             */}
-          <div className="flex items-center gap-2 rounded-xl border border-transparent bg-transparent px-0 py-0 sm:gap-3 sm:border-blue-700/80 sm:bg-blue-700/50 sm:px-3.5 sm:py-1.5 dark:sm:border-slate-700/80 dark:sm:bg-slate-800/50">
+          <div className="flex items-center gap-2 rounded-xl border border-transparent bg-transparent px-0 py-0 sm:gap-3 sm:border-blue-700/80 sm:bg-blue-700/50 sm:py-1.5 sm:pl-3.5 sm:pr-1.5 dark:sm:border-slate-700/80 dark:sm:bg-slate-800/50">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold leading-tight text-white dark:text-slate-100">
                 {userName}
@@ -333,19 +333,25 @@ export function AppHeader({
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-600 text-xs font-bold text-white shadow-sm shadow-red-600/20 sm:h-7 sm:w-7 sm:text-[11px]">
               {userName.charAt(0).toUpperCase()}
             </div>
-          </div>
 
-          {/* ÇIKIŞ — tek tıkla oturumu kapatır */}
-          <button
-            type="button"
-            onClick={() => void handleLogout()}
-            disabled={loggingOut}
-            title="Oturumu Kapat"
-            aria-label="Oturumu Kapat"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-700/80 bg-blue-700/50 text-white transition hover:border-red-500 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-100 dark:hover:border-red-500 dark:hover:bg-red-600"
-          >
-            <LogOut size={18} />
-          </button>
+            {/* Ayraç — sadece sm+ */}
+            <span
+              aria-hidden="true"
+              className="hidden h-7 w-px bg-blue-500/50 sm:block dark:bg-slate-600/60"
+            />
+
+            {/* ÇIKIŞ — tek tıkla oturumu kapatır */}
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              disabled={loggingOut}
+              title="Oturumu Kapat"
+              aria-label="Oturumu Kapat"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-700/80 bg-blue-700/50 text-white transition hover:border-red-500 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60 sm:h-8 sm:w-8 sm:rounded-lg sm:border-transparent sm:bg-transparent dark:border-slate-700/80 dark:bg-slate-800/50 dark:text-slate-100 dark:hover:border-red-500 dark:hover:bg-red-600 dark:sm:border-transparent dark:sm:bg-transparent"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
         </div>
       </header>
 
