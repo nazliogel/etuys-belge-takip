@@ -4,7 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Headphones } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Headphones,
+  Loader2,
+} from "lucide-react";
 import { getAccessToken } from "@/lib/mock-auth";
 import { apiFetch } from "@/lib/api";
 
@@ -16,6 +22,8 @@ import {
 } from "../_lib/selected-document";
 
 import { hasPermission, type UserRole } from "../_lib/permissions";
+import { fetchDocumentPdfData } from "@/lib/document-pdf/data";
+import { generateDocumentPdf } from "@/lib/document-pdf/generate-document-pdf";
 
 type SidebarDocument = {
   id: number;
@@ -57,6 +65,8 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [documentWarning, setDocumentWarning] = useState(false);
+  const [isDownloadingDetails, setIsDownloadingDetails] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
   const [collapsed, setCollapsed] = useState(false);
 
   const [supportUnreadCount, setSupportUnreadCount] = useState(0);
@@ -357,6 +367,43 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
     );
   };
 
+  const handleDownloadDocumentDetails = async () => {
+    if (role !== "COMPANY" || isDownloadingDetails) return;
+
+    const selected = documents.find(
+      (item) => String(item.id) === selectedDocumentId,
+    );
+
+    if (!selected) {
+      showDocumentWarning();
+      return;
+    }
+
+    setIsDownloadingDetails(true);
+    setDownloadError("");
+
+    try {
+      const isClosed =
+        selected.status === "CLOSED" ||
+        selected.status === "CANCELLED";
+
+      const pdfData = await fetchDocumentPdfData(
+        String(selected.id),
+        isClosed,
+      );
+
+      await generateDocumentPdf(pdfData);
+    } catch (error) {
+      console.error("Belge detay PDF oluşturulamadı:", error);
+
+      setDownloadError(
+        "Belge detayları indirilemedi. Lütfen tekrar deneyin.",
+      );
+    } finally {
+      setIsDownloadingDetails(false);
+    }
+  };
+
   const handleDocumentChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
@@ -390,11 +437,11 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
     variant === "mobile"
       ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200"
       : `sticky top-0 hidden h-screen ${
-          // Genişlik içeriğe göre: en uzun menü adı tek satıra sığacak kadar,
-          // fazlası değil. Açıklama yazıları genişliği büyütmesin diye
-          // aşağıda "w-0 min-w-full" ile sarılıyor.
-          isCollapsed ? "w-20" : "w-max"
-        } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200 lg:flex`;
+      // Genişlik içeriğe göre: en uzun menü adı tek satıra sığacak kadar,
+      // fazlası değil. Açıklama yazıları genişliği büyütmesin diye
+      // aşağıda "w-0 min-w-full" ile sarılıyor.
+      isCollapsed ? "w-20" : "w-max min-w-60"
+      } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200 lg:flex`;
 
   return (
     <aside className={asideClassName}>
@@ -412,14 +459,12 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
 
       {/* LOGO - Beyaz kart içinde, kenarları yuvarlak (menüye yer kalsın diye kompakt) */}
       <div
-        className={`mx-1.5 mt-3 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-200 dark:bg-slate-100 ${
-          isCollapsed ? "px-1.5 py-1.5" : "px-3 py-2"
-        }`}
+        className={`mx-2 mt-3 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-200 dark:bg-slate-100 ${isCollapsed ? "px-1.5 py-1.5" : "px-3 py-1.5"
+          }`}
       >
         <div
-          className={`relative shrink-0 transition-all duration-200 ${
-            isCollapsed ? "h-9 w-9" : "h-14 w-40"
-          }`}
+          className={`relative shrink-0 transition-all duration-200 ${isCollapsed ? "h-9 w-9" : "h-12 w-36"
+            }`}
         >
           <Image
             src="/logos/2.png"
@@ -433,7 +478,7 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
       </div>
 
       {/* NAVİGASYON */}
-      <nav className="mt-1 flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden px-1.5 py-2 [scrollbar-color:rgba(147,197,253,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-300/40 hover:[&::-webkit-scrollbar-thumb]:bg-blue-200/60 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/40 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500/60">
+      <nav className="mt-2 flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-2 py-1 [@media(max-height:820px)]:space-y-0.5 [scrollbar-color:rgba(147,197,253,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-300/40 hover:[&::-webkit-scrollbar-thumb]:bg-blue-200/60 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/40 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500/60">
         {visibleItems.map((item) => {
           const Icon = item.icon;
 
@@ -455,22 +500,16 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
           return (
             <div key={`${item.label}-${item.href}`}>
               {showDocumentSection && !isCollapsed && (
-                <div className="mb-1 mt-2 border-t border-blue-700/70 pt-2 dark:border-slate-700/70">
-                  <div className="px-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200 dark:text-slate-400">
-                      Belge Detayları
-                    </p>
-
-                    <p className="mt-0.5 w-0 min-w-full text-[10px] leading-4 text-blue-200/80 dark:text-slate-400/80">
-                      Detaylarını görüntülemek için belge seçin.
-                    </p>
-                  </div>
+                <div className="mb-2 mt-3 rounded-xl bg-white/[0.06] p-2 ring-1 ring-inset ring-white/10 dark:bg-slate-800/40 dark:ring-slate-700/60">
+                  <p className="px-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-200 dark:text-slate-400">
+                    Belge Detayları
+                  </p>
 
                   <select
                     value={selectedDocumentId}
                     onChange={handleDocumentChange}
                     disabled={documentsLoading || documents.length === 0}
-                    className="mt-1.5 w-0 min-w-full rounded-lg border border-blue-700 bg-blue-900/60 px-3 py-1.5 text-xs font-semibold text-white outline-none transition focus:border-white/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800/70 dark:focus:border-slate-500"
+                    className="mt-1.5 w-0 min-w-full rounded-lg border border-blue-700/80 bg-blue-950/40 px-2.5 py-1.5 text-xs font-semibold text-white outline-none transition focus:border-white/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800/70 dark:focus:border-slate-500"
                   >
                     <option value="">
                       {documentsLoading
@@ -498,8 +537,42 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                     ))}
                   </select>
 
+                  {/* Seçili belgenin tüm detaylarını tek PDF olarak indir */}
+                  {role === "COMPANY" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => void handleDownloadDocumentDetails()}
+                        disabled={!selectedDocumentId || isDownloadingDetails}
+                        title={
+                          selectedDocumentId
+                            ? "Seçili belgenin detaylarını PDF olarak indir"
+                            : "Önce bir belge seçiniz"
+                        }
+                        className="mt-1 flex w-0 min-w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-blue-100 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-700/60"
+                      >
+                        {isDownloadingDetails ? (
+                          <Loader2 size={14} className="shrink-0 animate-spin" />
+                        ) : (
+                          <Download size={14} className="shrink-0" />
+                        )}
+                        <span className="truncate">
+                          {isDownloadingDetails
+                            ? "PDF hazırlanıyor..."
+                            : "PDF Olarak İndir"}
+                        </span>
+                      </button>
+
+                      {downloadError && (
+                        <p className="mt-1 w-0 min-w-full text-[10px] leading-4 text-red-200">
+                          {downloadError}
+                        </p>
+                      )}
+                    </>
+                  )}
+
                   {documentWarning && (
-                    <div className="mt-2 w-0 min-w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                    <div className="mt-1.5 w-0 min-w-full rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                       Önce belge seçimi yapınız.
                     </div>
                   )}
@@ -507,7 +580,7 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
               )}
 
               {showDocumentSection && isCollapsed && (
-                <div className="mb-1 mt-2 border-t border-blue-700/70 pt-2 dark:border-slate-700/70" />
+                <div className="mx-1 mb-2 mt-3 border-t border-blue-700/70 dark:border-slate-700/70" />
               )}
 
               {isDocumentDetailItem && !selectedDocumentId ? (
@@ -515,9 +588,8 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                   type="button"
                   onClick={showDocumentWarning}
                   title="Önce bir belge seçiniz"
-                  className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30 dark:text-slate-500 dark:hover:bg-slate-800/60 ${
-                    isCollapsed ? "justify-center" : ""
-                  }`}
+                  className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-[7px] [@media(max-height:820px)]:py-1.5 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30 dark:text-slate-500 dark:hover:bg-slate-800/60 ${isCollapsed ? "justify-center" : ""
+                    }`}
                 >
                   <Icon
                     size={18}
@@ -534,21 +606,18 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                   href={item.href}
                   onClick={(event) => handleNavigation(event, item.href)}
                   title={isCollapsed ? item.label : undefined}
-                  className={`group relative flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-all duration-150 ${
-                    isCollapsed ? "justify-center" : ""
-                  } ${
-                    active
+                  className={`group relative flex items-center gap-2.5 rounded-xl px-2.5 py-[7px] [@media(max-height:820px)]:py-1.5 text-sm transition-all duration-150 ${isCollapsed ? "justify-center" : ""
+                    } ${active
                       ? "bg-gradient-to-r from-red-600 to-red-500 font-semibold text-white shadow-md shadow-red-600/30"
                       : "font-medium text-blue-100 hover:bg-blue-700/60 hover:text-white dark:text-slate-200 dark:hover:bg-slate-800/60 dark:hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Icon
                     size={18}
-                    className={`shrink-0 ${
-                      active
-                        ? "text-white"
-                        : "text-blue-200 transition group-hover:text-white dark:text-slate-400 dark:group-hover:text-white"
-                    } ${shouldAnimateNotifications ? "animate-ring-shake" : ""}`}
+                    className={`shrink-0 ${active
+                      ? "text-white"
+                      : "text-blue-200 transition group-hover:text-white dark:text-slate-400 dark:group-hover:text-white"
+                      } ${shouldAnimateNotifications ? "animate-ring-shake" : ""}`}
                   />
 
                   {!isCollapsed && (
@@ -562,11 +631,10 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                       {hasUnreadNotifications && (
                         <span
                           aria-label={`${unreadNotificationCount} okunmamış bildirim`}
-                          className={`flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                            active
-                              ? "bg-white text-red-600"
-                              : "bg-red-500 text-white"
-                          } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
+                          className={`flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active
+                            ? "bg-white text-red-600"
+                            : "bg-red-500 text-white"
+                            } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
                         >
                           {unreadNotificationCount > 99
                             ? "99+"
@@ -583,11 +651,10 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                   {isCollapsed && hasUnreadNotifications && (
                     <span
                       aria-label={`${unreadNotificationCount} okunmamış bildirim`}
-                      className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full px-1 py-0.5 text-[9px] font-bold ${
-                        active
-                          ? "bg-white text-red-600"
-                          : "bg-red-500 text-white"
-                      } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
+                      className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full px-1 py-0.5 text-[9px] font-bold ${active
+                        ? "bg-white text-red-600"
+                        : "bg-red-500 text-white"
+                        } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
                     >
                       {unreadNotificationCount > 9
                         ? "9+"
@@ -599,11 +666,12 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
             </div>
           );
         })}
+
       </nav>
 
       {/* DESTEK TALEPLERİ - SABİT ALT MENÜ */}
       {(role === "COMPANY" || role === "OPERATION" || role === "ADMIN") && (
-        <div className="shrink-0 border-t border-blue-700/60 px-1.5 py-2 dark:border-slate-700/60">
+        <div className="shrink-0 border-t border-blue-700/60 px-2 py-2 dark:border-slate-700/60">
           {(() => {
             const canSeeBadge = role === "ADMIN" || role === "OPERATION";
             const hasUnread = canSeeBadge && supportUnreadCount > 0;
@@ -619,20 +687,18 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                       : "Destek Talepleri"
                     : undefined
                 }
-                className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm font-semibold transition-all duration-150 ${
-                  isCollapsed ? "justify-center" : ""
-                } ${
+                className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm font-semibold transition-all duration-150 ${isCollapsed ? "justify-center" : ""
+                  } ${
                   // Destek Talepleri sarı: menünün geri kalanından ayrışsın.
                   isSupportRequestsActive
                     ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-500/30"
                     : "bg-amber-300/90 text-amber-950 hover:bg-amber-300 dark:bg-amber-400/80 dark:text-amber-950 dark:hover:bg-amber-400"
-                }`}
+                  }`}
               >
                 <Headphones
                   size={19}
-                  className={`shrink-0 text-amber-900 ${
-                    shouldAnimate ? "animate-ring-shake" : ""
-                  }`}
+                  className={`shrink-0 text-amber-900 ${shouldAnimate ? "animate-ring-shake" : ""
+                    }`}
                 />
 
                 {!isCollapsed && (
@@ -645,9 +711,8 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                   <div className="ml-auto flex items-center gap-2">
                     {hasUnread && (
                       <span
-                        className={`flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white ${
-                          shouldAnimate ? "animate-badge-bounce" : ""
-                        }`}
+                        className={`flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white ${shouldAnimate ? "animate-badge-bounce" : ""
+                          }`}
                       >
                         {supportUnreadCount > 99 ? "99+" : supportUnreadCount}
                       </span>
@@ -661,9 +726,8 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
 
                 {isCollapsed && hasUnread && (
                   <span
-                    className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 py-0.5 text-[9px] font-bold text-white ${
-                      shouldAnimate ? "animate-badge-bounce" : ""
-                    }`}
+                    className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 py-0.5 text-[9px] font-bold text-white ${shouldAnimate ? "animate-badge-bounce" : ""
+                      }`}
                   >
                     {supportUnreadCount > 9 ? "9+" : supportUnreadCount}
                   </span>
