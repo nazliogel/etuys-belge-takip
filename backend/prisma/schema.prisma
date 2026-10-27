@@ -27,6 +27,7 @@ enum ImportType {
   COMPANY_IDENTITY
   DOCUMENT_DETAIL
   COMPANY_REQUEST
+  IMPORTED_REALIZATION
 }
 
 enum ImportRowStatus {

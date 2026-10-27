@@ -96,22 +96,50 @@ export class ImportedRealizationRepository {
     }
 
     async findDocument(externalDocumentId: number) {
-        return prisma.incentiveDocument.findUnique({
-            where: { externalDocumentId },
-            select: {
-                id: true,
-                company: {
-                    select: {
-                        externalCompanyId: true,
-                    },
-                },
-                detail: {
-                    select: {
-                        id: true,
-                    },
+        const select = {
+            id: true,
+            company: {
+                select: {
+                    externalCompanyId: true,
                 },
             },
+            detail: {
+                select: {
+                    id: true,
+                },
+            },
+        } as const;
+
+        const document = await prisma.incentiveDocument.findUnique({
+            where: { externalDocumentId },
+            select,
         });
+
+        if (document?.detail) {
+            return document;
+        }
+
+        const closedDocument =
+            await prisma.closedIncentiveDocument.findUnique({
+                where: { externalDocumentId },
+                select,
+            });
+
+        // İki kaydın firması farklıysa mevcut firma kontrolünü koru.
+        if (
+            document &&
+            closedDocument &&
+            document.company.externalCompanyId !==
+            closedDocument.company.externalCompanyId
+        ) {
+            return document;
+        }
+
+        if (closedDocument?.detail) {
+            return closedDocument;
+        }
+
+        return document ?? closedDocument;
     }
 
     async findImportedMachines(

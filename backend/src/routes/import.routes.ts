@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import { Router } from "express";
-
+import { prisma } from "../config/env.js";
 import { importUpload } from "../config/upload.js";
 import { authenticate } from "../middlewares/auth.js";
 import { ImportedRealizationImportService } from "../services/imported-realization-import.service.js";
@@ -47,9 +47,8 @@ importRouter.post(
   importUpload.single("file"),
   async (req, res, next) => {
     const file = req.file;
-    const filePath = file?.path;
 
-    if (!filePath) {
+    if (!file) {
       res.status(400).json({
         success: false,
         message: "Excel dosyası yüklenmedi.",
@@ -57,8 +56,18 @@ importRouter.post(
       return;
     }
 
+    let batchId: number | undefined;
+
     try {
-      if (!file?.originalname.toLowerCase().endsWith(".xlsx")) {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          message: "Oturum bulunamadı.",
+        });
+        return;
+      }
+
+      if (!file.originalname.toLowerCase().endsWith(".xlsx")) {
         res.status(400).json({
           success: false,
           message: "Yalnızca .xlsx dosyaları desteklenir.",
@@ -66,22 +75,88 @@ importRouter.post(
         return;
       }
 
+      const batch = await prisma.importBatch.create({
+        data: {
+          fileName: file.originalname,
+          uploadedById: req.user.id,
+          importType: "IMPORTED_REALIZATION",
+          isFullSnapshot: false,
+          status: "PROCESSING",
+        },
+      });
+
+      batchId = batch.id;
+
       const result = await importedRealizationImportService.import(
-        filePath,
+        file.path,
       );
+
+      await prisma.$transaction(async (tx) => {
+        if (result.errors.length > 0) {
+          await tx.importRow.createMany({
+            data: result.errors.map((error) => ({
+              importBatchId: batch.id,
+              sheetName: "MAIN",
+              rowNumber: error.rowNumber,
+              status: "INVALID" as const,
+              externalCompanyId: error.externalCompanyId,
+              externalDocumentId: error.externalDocumentId,
+              errorMessage: error.message,
+            })),
+          });
+        }
+
+        await tx.importBatch.update({
+          where: { id: batch.id },
+          data: {
+            status: "COMPLETED",
+            completedAt: new Date(),
+            totalRowCount: result.totalRowCount,
+            validRowCount:
+              result.totalRowCount - result.invalidRowCount,
+            invalidRowCount: result.invalidRowCount,
+            newRowCount: result.newRowCount,
+            changedRowCount: result.changedRowCount,
+            unchangedRowCount: result.unchangedRowCount,
+          },
+        });
+      });
 
       res.status(200).json({
         success: true,
         message: "İthal Gerçekleşme Excel aktarımı tamamlandı.",
-        data: result,
+        data: {
+          ...result,
+          importBatchId: batch.id,
+        },
       });
     } catch (error) {
+      if (batchId !== undefined) {
+        try {
+          await prisma.importBatch.update({
+            where: { id: batchId },
+            data: {
+              status: "FAILED",
+              completedAt: new Date(),
+            },
+          });
+        } catch (historyError) {
+          console.error(
+            "Aktarım geçmişinin hata durumu kaydedilemedi:",
+            historyError,
+          );
+        }
+      }
+
       next(error);
     } finally {
       try {
-        await fs.unlink(filePath);
+        await fs.unlink(file.path);
       } catch (error) {
-        console.error("Geçici Excel dosyası silinemedi:", error);
+        console.error(
+          "Geçici Excel dosyası silinemedi:",
+          error,
+        );
       }
     }
   },
