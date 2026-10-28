@@ -7,7 +7,13 @@ const server = app.listen(env.port, () => {
   console.log(`🚀 E-TUYS Backend running on http://localhost:${env.port}`);
 
   reminderSchedulerService.start();
-  companyNotificationSchedulerService.start();
+
+  // Firma bildirim zamanlayıcısı bağımsız kontrol edilir.
+  if (process.env.COMPANY_NOTIFICATION_SCHEDULER_ENABLED !== "false") {
+    companyNotificationSchedulerService.start();
+  } else {
+    console.log("Firma bildirim scheduler'ı devre dışı.");
+  }
 });
 
 async function shutdown(signal: string) {
