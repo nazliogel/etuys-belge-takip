@@ -359,7 +359,7 @@ export function DocumentDetailScreen({
       <span className={`h-2 w-2 shrink-0 rounded-full ${status.dot}`} />
       <div className="min-w-0">
         <p className="text-xs font-semibold sm:text-sm">{status.label}</p>
-        <p className="mt-0.5 truncate text-[11px] opacity-80 sm:text-xs">
+        <p className="mt-0.5 truncate text-xs font-medium opacity-90 sm:text-[15px]">
           {status.description}
         </p>
       </div>
@@ -373,7 +373,7 @@ export function DocumentDetailScreen({
       onClick={handleDownloadPdf}
       disabled={isGeneratingPdf}
       data-pdf-ignore="true"
-      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-blue-700 to-blue-800 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-blue-800/25 transition hover:from-blue-800 hover:to-blue-900 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm"
     >
       {isGeneratingPdf ? (
         <>
@@ -391,95 +391,75 @@ export function DocumentDetailScreen({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {!inline ? (
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-            <Link
-              href="/documents"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground sm:text-sm"
-            >
-              <ArrowLeft size={16} className="sm:h-[17px] sm:w-[17px]" />
-              Belgelerime dön
-            </Link>
-
-            {DownloadPdfButton}
-          </div>
-
-          <div className="mt-4 flex flex-col justify-between gap-3 sm:mt-5 sm:gap-5 lg:flex-row lg:items-start">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
-                Belge detayı
-              </p>
-              <h1 className="mt-1 break-words text-lg font-semibold tracking-tight text-foreground sm:text-2xl">
-                {document.documentNumber ?? "-"} Numaralı Belge
-              </h1>
-              <p className="mt-1.5 text-xs text-muted-foreground sm:mt-2 sm:text-sm">
-                Belgenizin tarih ve güncel durum bilgilerini görüntüleyin.
-              </p>
-            </div>
-            {StatusChip}
-          </div>
-        </section>
-      ) : (
-        <section className="flex flex-col justify-between gap-3 sm:gap-4 lg:flex-row lg:items-start">
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
-              Belge detayı
-            </p>
-            <h2 className="mt-1 break-words text-base font-semibold tracking-tight text-foreground sm:text-xl">
+      {/* Üst kısım: açık ve kapalı belgelerde birebir aynı düzen.
+          PDF butonu durum kutusunun yanında durur. */}
+      <section className="flex flex-col justify-between gap-3 sm:gap-5 lg:flex-row lg:items-start">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
+            Belge detayı
+          </p>
+          {inline ? (
+            <h2 className="mt-1 break-words text-lg font-semibold tracking-tight text-foreground sm:text-2xl">
               {document.documentNumber ?? "-"} Numaralı Belge
             </h2>
-          </div>
-          <div className="flex flex-col items-stretch gap-2 sm:gap-3 lg:items-end">
-            {StatusChip}
-            {DownloadPdfButton}
-          </div>
-        </section>
-      )}
+          ) : (
+            <h1 className="mt-1 break-words text-lg font-semibold tracking-tight text-foreground sm:text-2xl">
+              {document.documentNumber ?? "-"} Numaralı Belge
+            </h1>
+          )}
+          <p className="mt-1.5 text-xs text-muted-foreground sm:mt-2 sm:text-sm">
+            Belgenizin tarih ve güncel durum bilgilerini görüntüleyin.
+          </p>
+        </div>
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
+          {StatusChip}
+          {DownloadPdfButton}
+        </div>
+      </section>
 
       {/* Bilgi kartları — mobilde 2 sütun, tablette 3, xl'de 6 */}
       <div>
         <section className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
           <InfoCard
-            tone="blue"
+            shade={0}
             label="Belge Numarası"
             value={document.documentNumber ?? "-"}
-            icon={<Hash size={16} className="sm:h-[19px] sm:w-[19px]" />}
+            icon={<Hash size={16} className="sm:h-[18px] sm:w-[18px]" />}
           />
           <InfoCard
-            tone="emerald"
+            shade={1}
             label="Belge Başlangıç"
             value={formatDate(document.documentStartDate)}
             icon={
-              <CalendarDays size={16} className="sm:h-[19px] sm:w-[19px]" />
+              <CalendarDays size={16} className="sm:h-[18px] sm:w-[18px]" />
             }
           />
           <InfoCard
-            tone="rose"
+            shade={2}
             label="Belge Bitiş"
             value={formatDate(document.documentEndDate)}
-            icon={<Clock3 size={16} className="sm:h-[19px] sm:w-[19px]" />}
+            icon={<Clock3 size={16} className="sm:h-[18px] sm:w-[18px]" />}
           />
           <InfoCard
-            tone="amber"
+            shade={3}
             label="Süre Uzatım"
             value={formatDate(document.extensionDate)}
             icon={
-              <CalendarClock size={16} className="sm:h-[19px] sm:w-[19px]" />
+              <CalendarClock size={16} className="sm:h-[18px] sm:w-[18px]" />
             }
           />
           <InfoCard
-            tone="violet"
+            shade={4}
             label="Destekleme Sınıfı"
             value={document.supportClass ?? "-"}
-            icon={<Landmark size={16} className="sm:h-[19px] sm:w-[19px]" />}
+            icon={<Landmark size={16} className="sm:h-[18px] sm:w-[18px]" />}
           />
           <InfoCard
-            tone="cyan"
+            shade={5}
             label="Yetki Bitiş"
             value={formatDate(document.company.authorizationEndDate)}
             icon={
-              <ShieldCheck size={16} className="sm:h-[19px] sm:w-[19px]" />
+              <ShieldCheck size={16} className="sm:h-[18px] sm:w-[18px]" />
             }
           />
         </section>
@@ -642,87 +622,54 @@ export function DocumentDetailScreen({
    ALT BİLEŞENLER
    ============================================ */
 
-type InfoCardTone =
-  | "blue"
-  | "emerald"
-  | "rose"
-  | "amber"
-  | "violet"
-  | "cyan";
-
-// Her kartın rengi: hafif zemin, üst şerit, ikon kutusu ve etiket rengi.
+// Kartlar soldan sağa koyu laciverttten açık maviye doğru gider (panelin mavi teması).
 // Tailwind sınıfları tam yazılmalı (birleştirilmiş metin çalışmaz).
-const INFO_CARD_TONES: Record<
-  InfoCardTone,
-  { card: string; bar: string; icon: string; label: string }
-> = {
-  blue: {
-    card: "bg-blue-50/70 ring-blue-200/70 dark:bg-blue-500/10 dark:ring-blue-500/25",
-    bar: "bg-blue-500",
-    icon: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
-    label: "text-blue-700/80 dark:text-blue-300/80",
-  },
-  emerald: {
-    card: "bg-emerald-50/70 ring-emerald-200/70 dark:bg-emerald-500/10 dark:ring-emerald-500/25",
-    bar: "bg-emerald-500",
-    icon: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
-    label: "text-emerald-700/80 dark:text-emerald-300/80",
-  },
-  rose: {
-    card: "bg-rose-50/70 ring-rose-200/70 dark:bg-rose-500/10 dark:ring-rose-500/25",
-    bar: "bg-rose-500",
-    icon: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300",
-    label: "text-rose-700/80 dark:text-rose-300/80",
-  },
-  amber: {
-    card: "bg-amber-50/70 ring-amber-200/70 dark:bg-amber-500/10 dark:ring-amber-500/25",
-    bar: "bg-amber-500",
-    icon: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
-    label: "text-amber-700/80 dark:text-amber-300/80",
-  },
-  violet: {
-    card: "bg-violet-50/70 ring-violet-200/70 dark:bg-violet-500/10 dark:ring-violet-500/25",
-    bar: "bg-violet-500",
-    icon: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
-    label: "text-violet-700/80 dark:text-violet-300/80",
-  },
-  cyan: {
-    card: "bg-cyan-50/70 ring-cyan-200/70 dark:bg-cyan-500/10 dark:ring-cyan-500/25",
-    bar: "bg-cyan-500",
-    icon: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-300",
-    label: "text-cyan-700/80 dark:text-cyan-300/80",
-  },
-};
+const INFO_CARD_SHADES = [
+  "from-blue-700 to-blue-800 shadow-blue-800/25",
+  "from-blue-600 to-blue-700 shadow-blue-700/25",
+  "from-blue-500 to-blue-600 shadow-blue-600/25",
+  "from-blue-500 to-sky-600 shadow-sky-700/25",
+  "from-sky-500 to-sky-600 shadow-sky-600/25",
+  "from-sky-400 to-sky-500 shadow-sky-500/25",
+] as const;
 
 interface InfoCardProps {
   label: string;
   value: string;
   icon: ReactNode;
-  tone: InfoCardTone;
+  // 0 = en koyu, 5 = en açık
+  shade: number;
 }
 
-function InfoCard({ label, value, icon, tone }: InfoCardProps) {
-  const colors = INFO_CARD_TONES[tone];
+function InfoCard({ label, value, icon, shade }: InfoCardProps) {
+  const shadeClass =
+    INFO_CARD_SHADES[Math.min(Math.max(shade, 0), INFO_CARD_SHADES.length - 1)];
 
   return (
     <article
-      className={`relative overflow-hidden rounded-xl p-3 shadow-sm ring-1 sm:rounded-2xl sm:p-5 ${colors.card}`}
+      className={`group relative overflow-hidden rounded-xl bg-gradient-to-br p-3 text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:rounded-2xl sm:p-4 ${shadeClass}`}
     >
+      {/* Dekoratif yarı saydam daireler */}
       <span
         aria-hidden="true"
-        className={`absolute inset-x-0 top-0 h-1 ${colors.bar}`}
+        className="pointer-events-none absolute -right-5 -top-5 h-16 w-16 rounded-full bg-white/10 transition-transform duration-300 group-hover:scale-125 sm:h-20 sm:w-20"
       />
-      <div
-        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg sm:mb-4 sm:h-10 sm:w-10 sm:rounded-xl ${colors.icon}`}
-      >
-        {icon}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-6 -left-4 h-12 w-12 rounded-full bg-white/5 sm:h-16 sm:w-16"
+      />
+
+      <div className="relative">
+        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-white ring-1 ring-white/20 sm:mb-3 sm:h-9 sm:w-9">
+          {icon}
+        </div>
+        <p className="text-xs font-semibold text-white/90 sm:text-[15px]">
+          {label}
+        </p>
+        <p className="mt-1 break-words text-sm font-bold leading-snug text-white sm:text-xl">
+          {value}
+        </p>
       </div>
-      <p className={`text-[10px] font-semibold sm:text-xs ${colors.label}`}>
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm font-semibold text-foreground sm:mt-1.5 sm:text-lg">
-        {value}
-      </p>
     </article>
   );
 }

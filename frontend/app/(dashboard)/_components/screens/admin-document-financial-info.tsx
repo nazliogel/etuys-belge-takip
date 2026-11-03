@@ -386,14 +386,14 @@ export function AdminDocumentFinancialInfo({
   /* --------------------------------- RENDER -------------------------------- */
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* ÜST BİLGİ */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="text-[12px] font-semibold text-foreground">
             Finansal Bilgi Cetveli
           </h2>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className="mt-0.5 text-[10px] text-muted-foreground">
             Öngörülen ve gerçekleşen yatırım tutarlarının kalem bazında
             karşılaştırması
           </p>
@@ -403,11 +403,11 @@ export function AdminDocumentFinancialInfo({
           <RealizationBadge hasRealization={hasRealization} />
 
           {financialInfo?.externalFinancialInfoId && (
-            <span className="rounded border border-border bg-muted px-2.5 py-1">
+            <span className="rounded border border-border bg-muted px-2 py-0.5">
               <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Kayıt ID
               </span>
-              <span className="ml-2 font-mono text-[11px] font-semibold text-foreground/80">
+              <span className="ml-1.5 font-mono text-[10px] font-semibold text-foreground/80">
                 {financialInfo.externalFinancialInfoId}
               </span>
             </span>
@@ -432,7 +432,7 @@ export function AdminDocumentFinancialInfo({
 
       {/* FİNANSMAN + İTHAL MAKİNE */}
       {financialInfo && (
-        <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-3 lg:grid-cols-2">
           <InfoCard title="Finansman" rows={financingRows} />
           <InfoCard title="İthal Makine ($)" rows={importedMachineRows} />
         </div>
@@ -447,12 +447,12 @@ export function AdminDocumentFinancialInfo({
 
 function RealizationBadge({ hasRealization }: { hasRealization: boolean }) {
   return hasRealization ? (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+    <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
       Gerçekleşme yüklü
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
       <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
       Gerçekleşme yok
     </span>
@@ -522,29 +522,29 @@ function SummaryStat({
   const formatted = formatAmount(value);
 
   return (
-    <div className="relative border-b border-border px-5 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+    <div className="relative border-b border-border px-4 py-2.5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
       <span
-        className={`absolute left-0 top-4 h-8 w-[3px] rounded-r ${accent}`}
+        className={`absolute left-0 top-2.5 h-6 w-[3px] rounded-r ${accent}`}
       />
 
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
 
       {formatted ? (
         <p
-          className={`mt-1.5 font-mono text-[22px] font-semibold leading-none tabular-nums tracking-tight ${tone === "warning"
-              ? "text-amber-700 dark:text-amber-300"
-              : "text-foreground"
+          className={`mt-1 font-mono text-[16px] font-semibold leading-none tabular-nums tracking-tight ${tone === "warning"
+            ? "text-amber-700 dark:text-amber-300"
+            : "text-foreground"
             }`}
         >
           {formatted}
-          <span className="ml-1.5 font-sans text-[11px] font-medium text-muted-foreground">
+          <span className="ml-1 font-sans text-[10px] font-medium text-muted-foreground">
             TL
           </span>
         </p>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground/60">{emptyText}</p>
+        <p className="mt-1 text-[12px] text-muted-foreground/60">{emptyText}</p>
       )}
     </div>
   );
@@ -555,7 +555,7 @@ function SummaryStat({
 /* -------------------------------------------------------------------------- */
 
 const TABLE_GRID =
-  "grid grid-cols-[minmax(180px,1fr)_160px_160px_160px] items-center";
+  "grid grid-cols-[minmax(160px,1fr)_130px_130px_140px] items-center";
 
 function ComparisonTable({
   items,
@@ -582,12 +582,12 @@ function ComparisonTable({
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:shadow-none">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">
+          <h3 className="text-[12px] font-semibold text-foreground">
             Yatırım Kalemleri
           </h3>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className="mt-0.5 text-[10px] text-muted-foreground">
             Detay için satıra tıklayın
           </p>
         </div>
@@ -597,21 +597,21 @@ function ComparisonTable({
           onClick={() =>
             setOpenKeys(allOpen ? new Set() : new Set(items.map((i) => i.key)))
           }
-          className="rounded-md border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           {allOpen ? "Tümünü kapat" : "Tümünü aç"}
         </button>
       </div>
 
       <div className="overflow-x-auto">
-        <div className="min-w-[680px]">
+        <div className="min-w-[580px]">
           <div
-            className={`${TABLE_GRID} border-b border-border bg-muted text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300`}
+            className={`${TABLE_GRID} border-b border-border bg-muted text-[9px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300`}
           >
-            <div className="px-4 py-2">Kalem</div>
-            <div className="px-4 py-2 text-right">Öngörülen</div>
-            <div className="px-4 py-2 text-right">Gerçekleşen</div>
-            <div className="px-4 py-2 text-right">Kalan</div>
+            <div className="px-3 py-1.5">Kalem</div>
+            <div className="px-3 py-1.5 text-right">Öngörülen</div>
+            <div className="px-3 py-1.5 text-right">Gerçekleşen</div>
+            <div className="px-3 py-1.5 text-right">Kalan</div>
           </div>
 
           {items.map((item) => (
@@ -627,7 +627,7 @@ function ComparisonTable({
           <div
             className={`${TABLE_GRID} border-t-2 border-foreground/15 bg-amber-50/60 dark:bg-amber-500/10`}
           >
-            <div className="px-4 py-3 text-[12px] font-bold uppercase tracking-wide text-foreground">
+            <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-foreground">
               Toplam Sabit Yatırım
             </div>
             <AmountCell value={plannedTotal} strong />
@@ -666,12 +666,12 @@ function ComparisonRow({
         className={`${TABLE_GRID} w-full text-left transition-colors hover:bg-muted/60 ${open ? "bg-muted/40" : ""
           }`}
       >
-        <div className="flex items-center gap-2 px-4 py-3">
+        <div className="flex items-center gap-1.5 px-3 py-2">
           <ChevronRight
-            className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""
+            className={`h-3 w-3 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""
               }`}
           />
-          <span className="text-[12px] font-semibold text-foreground">
+          <span className="text-[11px] font-semibold text-foreground">
             {item.title}
           </span>
         </div>
@@ -715,20 +715,20 @@ function DetailList({
   const mutedRows = rows.filter((row) => row.muted);
 
   return (
-    <div className="bg-background/60 px-4 py-3 pl-10 dark:bg-background/40">
-      <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+    <div className="bg-background/60 px-3 py-2 pl-8 dark:bg-background/40">
+      <p className="mb-1.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
         {title}
       </p>
 
       {rows.length === 0 ? (
         <p className="text-[11px] text-muted-foreground/70">{emptyText}</p>
       ) : (
-        <dl className="space-y-1">
+        <dl className="space-y-0.5">
           {mainRows.map((row) => (
             <DetailLine key={row.label} label={row.label} value={row.value} />
           ))}
 
-          <div className="mt-1.5 border-t border-dashed border-border pt-1.5">
+          <div className="mt-1 border-t border-dashed border-border pt-1">
             <DetailLine label="Toplam" value={total} strong />
             {mutedRows.map((row) => (
               <DetailLine
@@ -761,21 +761,21 @@ function DetailLine({
   return (
     <div className="flex items-baseline justify-between gap-4">
       <dt
-        className={`text-[11px] ${strong
-            ? "font-semibold text-foreground"
-            : muted
-              ? "italic text-muted-foreground/70"
-              : "text-muted-foreground"
+        className={`text-[10px] ${strong
+          ? "font-semibold text-foreground"
+          : muted
+            ? "italic text-muted-foreground/70"
+            : "text-muted-foreground"
           }`}
       >
         {label}
       </dt>
       <dd
-        className={`font-mono text-[11px] tabular-nums ${strong
-            ? "font-semibold text-foreground"
-            : muted
-              ? "text-muted-foreground/70"
-              : "text-foreground/80"
+        className={`font-mono text-[10px] tabular-nums ${strong
+          ? "font-semibold text-foreground"
+          : muted
+            ? "text-muted-foreground/70"
+            : "text-foreground/80"
           }`}
       >
         {formatted ?? <span className="text-muted-foreground/50">—</span>}
@@ -794,12 +794,12 @@ function AmountCell({
   const formatted = formatAmount(value);
 
   return (
-    <div className="px-4 py-3 text-right">
+    <div className="px-3 py-2 text-right">
       {formatted ? (
         <span
           className={`font-mono tabular-nums ${strong
-              ? "text-[13px] font-bold text-foreground"
-              : "text-[12px] font-medium text-foreground/85"
+            ? "text-[12px] font-bold text-foreground"
+            : "text-[11px] font-medium text-foreground/85"
             }`}
         >
           {formatted}
@@ -822,7 +822,7 @@ function DiffCell({
 }) {
   if (planned === null || realized === null) {
     return (
-      <div className="px-4 py-3 text-right">
+      <div className="px-3 py-2 text-right">
         <span className="text-xs text-muted-foreground/50">—</span>
       </div>
     );
@@ -832,9 +832,9 @@ function DiffCell({
   const isOver = diff < 0;
 
   return (
-    <div className="px-4 py-3 text-right">
+    <div className="px-3 py-2 text-right">
       <span
-        className={`font-mono tabular-nums ${strong ? "text-[13px] font-bold" : "text-[12px] font-medium"
+        className={`font-mono tabular-nums ${strong ? "text-[12px] font-bold" : "text-[11px] font-medium"
           } ${isOver
             ? "text-amber-700 dark:text-amber-300"
             : diff === 0
@@ -846,7 +846,7 @@ function DiffCell({
         {formatAmount(Math.abs(diff))}
       </span>
       {isOver && (
-        <span className="ml-1.5 rounded bg-amber-100 px-1 py-px text-[9px] font-semibold uppercase text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
+        <span className="ml-1 rounded bg-amber-100 px-1 py-px text-[8px] font-semibold uppercase text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
           Aşım
         </span>
       )}
@@ -861,8 +861,8 @@ function DiffCell({
 function InfoCard({ title, rows }: { title: string; rows: InfoRow[] }) {
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:shadow-none">
-      <div className="border-b border-border bg-muted px-4 py-2">
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
+      <div className="border-b border-border bg-muted px-3 py-1.5">
+        <h3 className="text-[9px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
           {title}
         </h3>
       </div>
@@ -874,14 +874,14 @@ function InfoCard({ title, rows }: { title: string; rows: InfoRow[] }) {
           return (
             <div
               key={row.label}
-              className={`flex min-h-[38px] items-center justify-between gap-4 border-b border-border px-4 py-2 last:border-b-0 ${row.isTotal ? "bg-amber-50/50 dark:bg-amber-500/10" : ""
+              className={`flex min-h-[30px] items-center justify-between gap-3 border-b border-border px-3 py-1 last:border-b-0 ${row.isTotal ? "bg-amber-50/50 dark:bg-amber-500/10" : ""
                 }`}
             >
               <span
                 className={
                   row.isTotal
-                    ? "text-[11px] font-bold text-foreground"
-                    : "text-[11px] font-medium text-muted-foreground"
+                    ? "text-[10px] font-bold text-foreground"
+                    : "text-[10px] font-medium text-muted-foreground"
                 }
               >
                 {row.label}
@@ -890,12 +890,12 @@ function InfoCard({ title, rows }: { title: string; rows: InfoRow[] }) {
               {formatted ? (
                 <span
                   className={`font-mono tabular-nums ${row.isTotal
-                      ? "text-[12px] font-bold text-foreground"
-                      : "text-[11px] font-semibold text-foreground/80"
+                    ? "text-[12px] font-bold text-foreground"
+                    : "text-[10px] font-semibold text-foreground/80"
                     }`}
                 >
                   {formatted}
-                  <span className="ml-1.5 font-sans text-[9px] font-medium uppercase text-muted-foreground">
+                  <span className="ml-1 font-sans text-[8px] font-medium uppercase text-muted-foreground">
                     {row.suffix}
                   </span>
                 </span>
