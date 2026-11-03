@@ -282,9 +282,7 @@ Yetkilendirme evrakları ekte yer almaktadır. Evrakların aşağıdaki şekilde
 
 3- Kullanıcı Yetkilendirme Formu: Firma kaşesi ve imzası yeterlidir.
 
-4- Vekâletname: Noter onaylı olması gerekmektedir.
-
-5- İmza sirküleri
+4- İmza sirküleri
 
 Evraklarınız hazırlandıktan sonra KEP adresiniz üzerinden Bakanlığın KEP adresine gönderim yapılırken bilgisayarınıza uzaktan bağlanarak destek olacağım.
 
@@ -326,10 +324,6 @@ Saygılarımla,
       <li>
         <strong>Kullanıcı Yetkilendirme Formu:</strong>
         Firma kaşesi ve imzası yeterlidir.
-      </li>
-      <li>
-        <strong>Vekâletname:</strong>
-        Noter onaylı olması gerekmektedir.
       </li>
       <li>
         <strong>İmza sirküleri</strong>
@@ -381,10 +375,7 @@ Saygılarımla,
           "E-TUYS-Kullanici_Yetkilendirme_Formu - Kopya.xlsx",
         ),
       },
-      {
-        filename: "2026 TEŞVİK VEKALETNAMESİ.DOC",
-        path: path.join(attachmentDirectory, "2026 TEŞVİK VEKALETNAMESİ.DOC"),
-      },
+  
     ],
   };
 }

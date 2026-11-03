@@ -57,7 +57,7 @@ const SIGNATURE = "AKKAŞ GROUP - SALİH ŞAHİN";
 
 /**
  * Süre uzatma hatırlatması.
- * Kapso: document_extension_reminder_v2 · {{1}} durum ifadesi, {{2}} süre sonu.
+ * Kapso: document_extension_reminder_v3 · {{1}} durum ifadesi, {{2}} süre sonu.
  */
 export function createExtensionWhatsAppTemplate(
   params: ReminderTemplateParams,
@@ -69,30 +69,28 @@ export function createExtensionWhatsAppTemplate(
   );
 
   return {
-    templateName: "document_extension_reminder_v2",
+    templateName: "document_extension_reminder_v3",
     languageCode: "tr",
-
-    // DİKKAT: Bu şablonda {{1}}'den sonra nokta yok; nokta parametreye eklenir.
-    // Şablon ileride "{{1}}." olarak düzeltilirse buradaki nokta kaldırılmalı.
-    parameters: [`${expiryText}.`, targetDate],
+    parameters: [`${expiryText}.`, targetDate, params.companyName],
 
     previewText: [
       "Sn. Yetkili Merhaba,",
       `Yatırım Teşvik Belgenizin 3 yıllık süresi ${expiryText}.`,
       `📅 Süre Sonu: ${targetDate}`,
       "Bu aşamada acil olarak süre uzatım ya da kapatma işlemlerinin " +
-        "yapılması gerekmektedir. İşlemlerin yasal süre içinde yapılmaması " +
-        "durumunda idari para cezası uygulanmaktadır.",
+      "yapılması gerekmektedir. İşlemlerin yasal süre içinde yapılmaması " +
+      "durumunda idari para cezası uygulanmaktadır.",
       ALREADY_DONE_TEXT,
       CONTACT_TEXT,
       SIGNATURE,
+      `Bu mesaj ${params.companyName} firması için iletilmiştir.`,
     ].join("\n"),
   };
 }
 
 /**
  * Kapatma hatırlatması.
- * Kapso: document_closure_reminder_v2 · {{1}} durum ifadesi, {{2}} bitiş tarihi.
+ * Kapso: document_closure_reminder_v3 · {{1}} durum ifadesi, {{2}} bitiş tarihi.
  */
 export function createClosureWhatsAppTemplate(
   params: ReminderTemplateParams,
@@ -104,21 +102,22 @@ export function createClosureWhatsAppTemplate(
   );
 
   return {
-    templateName: "document_closure_reminder_v2",
+    templateName: "document_closure_reminder_v3",
     languageCode: "tr",
+    parameters: [expiryText, targetDate, params.companyName],
 
-    parameters: [expiryText, targetDate],
 
     previewText: [
       "Sn. Yetkili Merhaba,",
       `Yatırım Teşvik Belgenizin süresi ${expiryText}.`,
       `📅 Bitiş Tarihi: ${targetDate}`,
       "Süre bitimini takip eden 3 ay içerisinde belgenizin kapanış " +
-        "işlemlerinin yapılması gerekmektedir. Yasal süre içinde " +
-        "yapılmadığı takdirde idari para cezası uygulanmaktadır.",
+      "işlemlerinin yapılması gerekmektedir. Yasal süre içinde " +
+      "yapılmadığı takdirde idari para cezası uygulanmaktadır.",
       ALREADY_DONE_TEXT,
       CONTACT_TEXT,
       SIGNATURE,
+      `Bu mesaj ${params.companyName} firması için iletilmiştir.`,
     ].join("\n"),
   };
 }
@@ -126,7 +125,7 @@ export function createClosureWhatsAppTemplate(
 /**
  * Yetkilendirme hatırlatması. Yetki süresi dolmadan önce de (6 ay kala) ve
  * dolduktan sonra da aynı şablon kullanılır; durum ifadesini kod belirler.
- * Kapso: company_authorization_reminder_v2 · {{1}} durum ifadesi.
+ * Kapso: company_authorization_reminder_v3 · {{1}} durum ifadesi.
  */
 export function createAuthorizationWhatsAppTemplate(
   params: AuthorizationTemplateParams,
@@ -137,21 +136,21 @@ export function createAuthorizationWhatsAppTemplate(
   );
 
   return {
-    templateName: "company_authorization_reminder_v2",
+    templateName: "company_authorization_reminder_v3",
     languageCode: "tr",
-
-    parameters: [expiryText],
+    parameters: [expiryText, params.companyName],
 
     previewText: [
       "Sn. Yetkili Merhaba,",
       `Yatırım Teşvik Belgesi otomasyon ekranlarındaki yetki süremiz ${expiryText}.`,
       "Süre uzatma, kapatma ve genel süreçlerinizin aksamaması adına " +
-        "ekran yetkilendirmemizin yenilenmesi gerekmektedir. " +
-        "Sürelerin geçmesinden kaynaklı oluşabilecek her türlü idari para " +
-        "cezalarından firmamız sorumlu değildir.",
+      "ekran yetkilendirmemizin yenilenmesi gerekmektedir. " +
+      "Sürelerin geçmesinden kaynaklı oluşabilecek her türlü idari para " +
+      "cezalarından firmamız sorumlu değildir.",
       ALREADY_DONE_TEXT,
       CONTACT_TEXT,
       SIGNATURE,
+      `Bu mesaj ${params.companyName} firması için iletilmiştir.`,
     ].join("\n"),
   };
 }
