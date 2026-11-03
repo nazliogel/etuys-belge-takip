@@ -48,7 +48,7 @@ export const navigationItems = [
     permission: "company-documents:view",
   },
   {
-    label: "Teşvik Belgesi Şartları",
+    label: "Dikkat Edilecek Hususlar",
     href: "/incentive-document-conditions",
     icon: FileText,
     permission: "incentive-document-conditions:view",
