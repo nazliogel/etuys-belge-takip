@@ -472,28 +472,52 @@ export async function buildDocumentPdf(data: DocumentPdfData): Promise<jsPDF> {
     ], y);
 
     y = section(pdf, "5", "YERLİ MAKİNE VE TEÇHİZAT LİSTESİ", y);
-    const domestic = data.domesticMachines.map((m) => ({
-        ...m,
-        unit: shortUnit(m.unit),
-        vat: flag(m.vatExemption),
-        quantity: decimal(m.quantity),
-        unitPriceTl: decimal(m.unitPriceTl, true),
-        totalTl: decimal(m.totalTl, true),
-        invoiceRealizedQuantity: decimal(m.invoiceRealizedQuantity),
-        invoiceRealizedValue: decimal(m.invoiceRealizedValue, true),
-    }));
+    const domestic = data.domesticMachines.map((m) => {
+        const realizations = Array.isArray(m.realizations)
+            ? (m.realizations as PdfRecord[])
+            : [];
+
+        return {
+            ...m,
+            unit: shortUnit(m.unit),
+            vat: flag(m.vatExemption),
+            quantity: decimal(m.quantity),
+            unitPriceTl: decimal(m.unitPriceTl, true),
+            totalTl: decimal(m.totalTl, true),
+            invoiceRealizedQuantity: decimal(m.invoiceRealizedQuantity),
+            invoiceRealizedValue: decimal(m.invoiceRealizedValue, true),
+
+            sellerName: realizations.length
+                ? realizations.map((r) => value(r.sellerName)).join("\n")
+                : "-",
+
+            invoiceNumber: realizations.length
+                ? realizations.map((r) => value(r.invoiceNumber)).join("\n")
+                : "-",
+
+            invoiceAmount: realizations.length
+                ? realizations
+                    .map((r) => decimal(r.invoiceValue, true))
+                    .join("\n")
+                : "-",
+        };
+    });
     y = table(pdf, [
-        { key: "sequenceNumber", label: "Sıra No", width: 13, align: "center" },
-        { key: "externalMachineId", label: "Makine ID", width: 20, align: "center" },
-        { key: "gtipCode", label: "GTİP No", width: 24, align: "center" },
-        { key: "name", label: "Adı ve Özelliği", width: 64 },
-        { key: "vat", label: "KDV İstisnası", width: 17, align: "center" },
-        { key: "quantity", label: "Miktarı", width: 16, align: "right" },
-        { key: "unit", label: "Birim", width: 17, align: "center" },
-        { key: "unitPriceTl", label: "Birim Fiyatı (TL) (KDV Hariç)", width: 30, align: "right" },
-        { key: "invoiceRealizedQuantity", label: "Fatura Gerç. Miktar", width: 20, align: "right" },
-        { key: "invoiceRealizedValue", label: "Fatura Gerç. Değer", width: 23, align: "right" },
-        { key: "totalTl", label: "Toplam Tutarı (TL) (KDV Hariç)", width: 25, align: "right" },
+        { key: "sequenceNumber", label: "Sıra No", width: 12, align: "center" },
+        { key: "externalMachineId", label: "Makine ID", width: 18, align: "center" },
+        { key: "gtipCode", label: "GTİP No", width: 20, align: "center" },
+        { key: "name", label: "Adı ve Özelliği", width: 43 },
+        { key: "vat", label: "KDV İstisnası", width: 15, align: "center" },
+        { key: "quantity", label: "Miktarı", width: 13, align: "right" },
+        { key: "unit", label: "Birim", width: 12, align: "center" },
+        { key: "unitPriceTl", label: "Birim Fiyatı (TL)", width: 23, align: "right" },
+
+        { key: "sellerName", label: "Satıcı", width: 30 },
+        { key: "invoiceNumber", label: "Fatura No.", width: 20 },
+        { key: "invoiceAmount", label: "Fatura Tutarı", width: 20, align: "right" },
+
+        { key: "invoiceRealizedQuantity", label: "Fatura Gerç. Miktar", width: 15, align: "right" },
+        { key: "totalTl", label: "Toplam Tutar (TL)", width: 11, align: "right" },
     ], domestic, y);
 
     y = section(pdf, "6", "İTHAL MAKİNE VE TEÇHİZAT LİSTESİ", y);

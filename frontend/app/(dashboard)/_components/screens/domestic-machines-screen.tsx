@@ -197,7 +197,7 @@ const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
   },
   {
     key: "invoiceAmount",
-    label: "Fatura T.",
+    label: "Fatura Tutarı",
     className: FIT,
   },
   {
@@ -208,11 +208,6 @@ const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
   {
     key: "invoiceQty",
     label: <>Fatura Gerç.<br />Miktar</>,
-    className: FIT,
-  },
-  {
-    key: "invoiceValue",
-    label: <>Fatura Gerç.<br />Değer</>,
     className: FIT,
   },
   {
@@ -736,14 +731,7 @@ export function DomesticMachinesScreen() {
                         {formatQuantity(machine.invoiceRealizedQuantity) ??
                           "0"}
                       </td>
-
-                      {/* Fatura Gerçekleşen Değer */}
-                      <td
-                        className={`${CELL_BASE} whitespace-nowrap text-right font-mono tabular-nums text-foreground/80`}
-                      >
-                        {formatNumber(machine.invoiceRealizedValue) ?? "0"}
-                      </td>
-
+                      
                       {/* GTİP Açıklama */}
                       <td
                         className={`${CELL_BASE} w-[220px] min-w-[220px] max-w-[220px] text-muted-foreground`}
