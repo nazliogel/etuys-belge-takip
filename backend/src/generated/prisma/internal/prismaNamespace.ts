@@ -429,7 +429,8 @@ export const ModelName = {
   CompanyNotification: 'CompanyNotification',
   CompanyNotificationRead: 'CompanyNotificationRead',
   PushDevice: 'PushDevice',
-  DocumentRealizationInfo: 'DocumentRealizationInfo'
+  DocumentRealizationInfo: 'DocumentRealizationInfo',
+  DocumentDomesticRealization: 'DocumentDomesticRealization'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -445,7 +446,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentImportedRealization" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentImportedRealization" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo" | "documentDomesticRealization"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2891,6 +2892,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DocumentDomesticRealization: {
+      payload: Prisma.$DocumentDomesticRealizationPayload<ExtArgs>
+      fields: Prisma.DocumentDomesticRealizationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentDomesticRealizationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentDomesticRealizationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentDomesticRealizationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentDomesticRealizationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentDomesticRealizationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentDomesticRealizationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentDomesticRealizationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentDomesticRealizationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentDomesticRealizationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>
+        }
+        update: {
+          args: Prisma.DocumentDomesticRealizationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentDomesticRealizationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentDomesticRealizationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentDomesticRealizationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentDomesticRealizationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDomesticRealizationPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentDomesticRealizationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentDomesticRealization>
+        }
+        groupBy: {
+          args: Prisma.DocumentDomesticRealizationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentDomesticRealizationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentDomesticRealizationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentDomesticRealizationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3632,6 +3707,31 @@ export const DocumentRealizationInfoScalarFieldEnum = {
 export type DocumentRealizationInfoScalarFieldEnum = (typeof DocumentRealizationInfoScalarFieldEnum)[keyof typeof DocumentRealizationInfoScalarFieldEnum]
 
 
+export const DocumentDomesticRealizationScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  machineId: 'machineId',
+  externalInvoiceLineId: 'externalInvoiceLineId',
+  externalInvoiceId: 'externalInvoiceId',
+  externalMachineId: 'externalMachineId',
+  sequenceNumber: 'sequenceNumber',
+  itemName: 'itemName',
+  invoiceNumber: 'invoiceNumber',
+  sellerName: 'sellerName',
+  sellerTaxNumber: 'sellerTaxNumber',
+  invoiceDate: 'invoiceDate',
+  invoiceValue: 'invoiceValue',
+  realizedQuantity: 'realizedQuantity',
+  invoiceType: 'invoiceType',
+  recordStatus: 'recordStatus',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentDomesticRealizationScalarFieldEnum = (typeof DocumentDomesticRealizationScalarFieldEnum)[keyof typeof DocumentDomesticRealizationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4226,6 +4326,7 @@ export type GlobalOmitConfig = {
   companyNotificationRead?: Prisma.CompanyNotificationReadOmit
   pushDevice?: Prisma.PushDeviceOmit
   documentRealizationInfo?: Prisma.DocumentRealizationInfoOmit
+  documentDomesticRealization?: Prisma.DocumentDomesticRealizationOmit
 }
 
 /* Types for Logging */

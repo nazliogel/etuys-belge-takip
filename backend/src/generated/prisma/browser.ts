@@ -182,3 +182,8 @@ export type PushDevice = Prisma.PushDeviceModel
  * 
  */
 export type DocumentRealizationInfo = Prisma.DocumentRealizationInfoModel
+/**
+ * Model DocumentDomesticRealization
+ * 
+ */
+export type DocumentDomesticRealization = Prisma.DocumentDomesticRealizationModel

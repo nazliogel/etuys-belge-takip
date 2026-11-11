@@ -1,3 +1,4 @@
+import { prisma } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
 import type { UserRole } from "../generated/prisma/client.js";
 import type { ClosedDocumentRepository } from "../repositories/closed-document.repository.js";
@@ -16,7 +17,7 @@ export class ClosedDocumentService {
   constructor(
     private readonly closedDocumentRepository: ClosedDocumentRepository,
     private readonly companyRepository: CompanyRepository,
-  ) {}
+  ) { }
 
   private async getAuthorizedCompany(userId: number) {
     const company = await this.companyRepository.findByUserId(userId);
@@ -297,127 +298,127 @@ export class ClosedDocumentService {
 
       realizationInfo: realizationInfo
         ? {
-            id: realizationInfo.id,
-            landRealization:
-              realizationInfo.landRealization?.toString() ?? null,
-            totalLandRealization:
-              realizationInfo.totalLandRealization?.toString() ?? null,
-            mainBuildingRealization:
-              realizationInfo.mainBuildingRealization?.toString() ?? null,
-            auxiliaryFacilitiesRealization:
-              realizationInfo.auxiliaryFacilitiesRealization?.toString() ??
-              null,
-            administrativeBuildingsRealization:
-              realizationInfo.administrativeBuildingsRealization?.toString() ??
-              null,
-            undergroundGalleriesRealization:
-              realizationInfo.undergroundGalleriesRealization?.toString() ??
-              null,
-            totalBuildingRealization:
-              realizationInfo.totalBuildingRealization?.toString() ?? null,
-            auxiliaryMachineryRealization:
-              realizationInfo.auxiliaryMachineryRealization?.toString() ?? null,
-            importCustomsRealization:
-              realizationInfo.importCustomsRealization?.toString() ?? null,
-            transportInsuranceRealization:
-              realizationInfo.transportInsuranceRealization?.toString() ?? null,
-            assemblyRealization:
-              realizationInfo.assemblyRealization?.toString() ?? null,
-            studyProjectRealization:
-              realizationInfo.studyProjectRealization?.toString() ?? null,
-            otherExpensesRealization:
-              realizationInfo.otherExpensesRealization?.toString() ?? null,
-            expenseDocumentRealization:
-              realizationInfo.expenseDocumentRealization?.toString() ?? null,
-            totalOtherInvestmentRealization:
-              realizationInfo.totalOtherInvestmentRealization?.toString() ??
-              null,
-            domesticRealization:
-              realizationInfo.domesticRealization?.toString() ?? null,
-            importedRealization:
-              realizationInfo.importedRealization?.toString() ?? null,
-            exchangeDifferenceRealization:
-              realizationInfo.exchangeDifferenceRealization?.toString() ?? null,
-            totalRealizedAmount:
-              realizationInfo.totalRealizedAmount?.toString() ?? null,
-            updatedTotalLandRealization:
-              realizationInfo.updatedTotalLandRealization?.toString() ?? null,
-            updatedTotalBuildingRealization:
-              realizationInfo.updatedTotalBuildingRealization?.toString() ??
-              null,
-            updatedTotalOtherInvestmentRealization:
-              realizationInfo.updatedTotalOtherInvestmentRealization?.toString() ??
-              null,
-          }
+          id: realizationInfo.id,
+          landRealization:
+            realizationInfo.landRealization?.toString() ?? null,
+          totalLandRealization:
+            realizationInfo.totalLandRealization?.toString() ?? null,
+          mainBuildingRealization:
+            realizationInfo.mainBuildingRealization?.toString() ?? null,
+          auxiliaryFacilitiesRealization:
+            realizationInfo.auxiliaryFacilitiesRealization?.toString() ??
+            null,
+          administrativeBuildingsRealization:
+            realizationInfo.administrativeBuildingsRealization?.toString() ??
+            null,
+          undergroundGalleriesRealization:
+            realizationInfo.undergroundGalleriesRealization?.toString() ??
+            null,
+          totalBuildingRealization:
+            realizationInfo.totalBuildingRealization?.toString() ?? null,
+          auxiliaryMachineryRealization:
+            realizationInfo.auxiliaryMachineryRealization?.toString() ?? null,
+          importCustomsRealization:
+            realizationInfo.importCustomsRealization?.toString() ?? null,
+          transportInsuranceRealization:
+            realizationInfo.transportInsuranceRealization?.toString() ?? null,
+          assemblyRealization:
+            realizationInfo.assemblyRealization?.toString() ?? null,
+          studyProjectRealization:
+            realizationInfo.studyProjectRealization?.toString() ?? null,
+          otherExpensesRealization:
+            realizationInfo.otherExpensesRealization?.toString() ?? null,
+          expenseDocumentRealization:
+            realizationInfo.expenseDocumentRealization?.toString() ?? null,
+          totalOtherInvestmentRealization:
+            realizationInfo.totalOtherInvestmentRealization?.toString() ??
+            null,
+          domesticRealization:
+            realizationInfo.domesticRealization?.toString() ?? null,
+          importedRealization:
+            realizationInfo.importedRealization?.toString() ?? null,
+          exchangeDifferenceRealization:
+            realizationInfo.exchangeDifferenceRealization?.toString() ?? null,
+          totalRealizedAmount:
+            realizationInfo.totalRealizedAmount?.toString() ?? null,
+          updatedTotalLandRealization:
+            realizationInfo.updatedTotalLandRealization?.toString() ?? null,
+          updatedTotalBuildingRealization:
+            realizationInfo.updatedTotalBuildingRealization?.toString() ??
+            null,
+          updatedTotalOtherInvestmentRealization:
+            realizationInfo.updatedTotalOtherInvestmentRealization?.toString() ??
+            null,
+        }
         : null,
 
       financialInfo: financialInfo
         ? {
-            id: financialInfo.id,
-            externalFinancialInfoId: financialInfo.externalFinancialInfoId,
+          id: financialInfo.id,
+          externalFinancialInfoId: financialInfo.externalFinancialInfoId,
 
-            totalInvestment: financialInfo.totalInvestment?.toString() ?? null,
-            totalFinancing: financialInfo.totalFinancing?.toString() ?? null,
-            equity: financialInfo.equity?.toString() ?? null,
-            equityRate: financialInfo.equityRate?.toString() ?? null,
-            foreignResources:
-              financialInfo.foreignResources?.toString() ?? null,
-            foreignResourcesRate:
-              financialInfo.foreignResourcesRate?.toString() ?? null,
+          totalInvestment: financialInfo.totalInvestment?.toString() ?? null,
+          totalFinancing: financialInfo.totalFinancing?.toString() ?? null,
+          equity: financialInfo.equity?.toString() ?? null,
+          equityRate: financialInfo.equityRate?.toString() ?? null,
+          foreignResources:
+            financialInfo.foreignResources?.toString() ?? null,
+          foreignResourcesRate:
+            financialInfo.foreignResourcesRate?.toString() ?? null,
 
-            tlLoan: financialInfo.tlLoan?.toString() ?? null,
-            foreignCurrencyLoan:
-              financialInfo.foreignCurrencyLoan?.toString() ?? null,
-            foreignCurrencyIndexedLoan:
-              financialInfo.foreignCurrencyIndexedLoan?.toString() ?? null,
-            domesticLoan: financialInfo.domesticLoan?.toString() ?? null,
-            foreignLoan: financialInfo.foreignLoan?.toString() ?? null,
-            otherLoans: financialInfo.otherLoans?.toString() ?? null,
-            financialLeasing:
-              financialInfo.financialLeasing?.toString() ?? null,
+          tlLoan: financialInfo.tlLoan?.toString() ?? null,
+          foreignCurrencyLoan:
+            financialInfo.foreignCurrencyLoan?.toString() ?? null,
+          foreignCurrencyIndexedLoan:
+            financialInfo.foreignCurrencyIndexedLoan?.toString() ?? null,
+          domesticLoan: financialInfo.domesticLoan?.toString() ?? null,
+          foreignLoan: financialInfo.foreignLoan?.toString() ?? null,
+          otherLoans: financialInfo.otherLoans?.toString() ?? null,
+          financialLeasing:
+            financialInfo.financialLeasing?.toString() ?? null,
 
-            domesticMachinery:
-              financialInfo.domesticMachinery?.toString() ?? null,
-            importedMachinery:
-              financialInfo.importedMachinery?.toString() ?? null,
-            totalMachineryExpenses:
-              financialInfo.totalMachineryExpenses?.toString() ?? null,
+          domesticMachinery:
+            financialInfo.domesticMachinery?.toString() ?? null,
+          importedMachinery:
+            financialInfo.importedMachinery?.toString() ?? null,
+          totalMachineryExpenses:
+            financialInfo.totalMachineryExpenses?.toString() ?? null,
 
-            newMachinery: financialInfo.newMachinery?.toString() ?? null,
-            usedMachinery: financialInfo.usedMachinery?.toString() ?? null,
-            importedMachineryUsd:
-              financialInfo.importedMachineryUsd?.toString() ?? null,
+          newMachinery: financialInfo.newMachinery?.toString() ?? null,
+          usedMachinery: financialInfo.usedMachinery?.toString() ?? null,
+          importedMachineryUsd:
+            financialInfo.importedMachineryUsd?.toString() ?? null,
 
-            totalBuildingConstructionExpenses:
-              financialInfo.totalBuildingConstructionExpenses?.toString() ??
-              null,
-            mainBuilding: financialInfo.mainBuilding?.toString() ?? null,
-            auxiliaryEnterpriseEquipment:
-              financialInfo.auxiliaryEnterpriseEquipment?.toString() ?? null,
-            auxiliaryFacilities:
-              financialInfo.auxiliaryFacilities?.toString() ?? null,
+          totalBuildingConstructionExpenses:
+            financialInfo.totalBuildingConstructionExpenses?.toString() ??
+            null,
+          mainBuilding: financialInfo.mainBuilding?.toString() ?? null,
+          auxiliaryEnterpriseEquipment:
+            financialInfo.auxiliaryEnterpriseEquipment?.toString() ?? null,
+          auxiliaryFacilities:
+            financialInfo.auxiliaryFacilities?.toString() ?? null,
 
-            otherInvestmentExpenses:
-              financialInfo.otherInvestmentExpenses?.toString() ?? null,
-            landCost: financialInfo.landCost?.toString() ?? null,
-            landArrangement: financialInfo.landArrangement?.toString() ?? null,
-            importCustoms: financialInfo.importCustoms?.toString() ?? null,
-            transportInsurance:
-              financialInfo.transportInsurance?.toString() ?? null,
-            assembly: financialInfo.assembly?.toString() ?? null,
-            studyProject: financialInfo.studyProject?.toString() ?? null,
-            otherExpenses: financialInfo.otherExpenses?.toString() ?? null,
-            generalExpenses: financialInfo.generalExpenses?.toString() ?? null,
+          otherInvestmentExpenses:
+            financialInfo.otherInvestmentExpenses?.toString() ?? null,
+          landCost: financialInfo.landCost?.toString() ?? null,
+          landArrangement: financialInfo.landArrangement?.toString() ?? null,
+          importCustoms: financialInfo.importCustoms?.toString() ?? null,
+          transportInsurance:
+            financialInfo.transportInsurance?.toString() ?? null,
+          assembly: financialInfo.assembly?.toString() ?? null,
+          studyProject: financialInfo.studyProject?.toString() ?? null,
+          otherExpenses: financialInfo.otherExpenses?.toString() ?? null,
+          generalExpenses: financialInfo.generalExpenses?.toString() ?? null,
 
-            fixedInvestmentUsd:
-              financialInfo.fixedInvestmentUsd?.toString() ?? null,
-            fixedInvestmentCpi:
-              financialInfo.fixedInvestmentCpi?.toString() ?? null,
-            fixedInvestmentUsdFirstCopy:
-              financialInfo.fixedInvestmentUsdFirstCopy?.toString() ?? null,
-            fixedInvestmentCpiFirstCopy:
-              financialInfo.fixedInvestmentCpiFirstCopy?.toString() ?? null,
-          }
+          fixedInvestmentUsd:
+            financialInfo.fixedInvestmentUsd?.toString() ?? null,
+          fixedInvestmentCpi:
+            financialInfo.fixedInvestmentCpi?.toString() ?? null,
+          fixedInvestmentUsdFirstCopy:
+            financialInfo.fixedInvestmentUsdFirstCopy?.toString() ?? null,
+          fixedInvestmentCpiFirstCopy:
+            financialInfo.fixedInvestmentCpiFirstCopy?.toString() ?? null,
+        }
         : null,
     };
   }
@@ -451,15 +452,83 @@ export class ClosedDocumentService {
 
     const domesticMachines = document.detail?.domesticMachines ?? [];
 
+    // Yerli fatura gerçekleşmeleri açık belge detayına bağlı tutuluyor.
+    // Kapalı belgenin E-TUYS Belge ID'siyle karşılık gelen açık belgeyi bul.
+    const openDocument = await prisma.incentiveDocument.findFirst({
+      where: {
+        externalDocumentId: document.externalDocumentId,
+        companyId: document.companyId,
+      },
+      select: {
+        detail: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    const domesticRealizations = openDocument?.detail?.id
+      ? await prisma.documentDomesticRealization.findMany({
+        where: {
+          detailId: openDocument.detail.id,
+        },
+        orderBy: {
+          externalInvoiceLineId: "asc",
+        },
+        select: {
+          externalMachineId: true,
+          externalInvoiceLineId: true,
+          sellerName: true,
+          invoiceNumber: true,
+          invoiceValue: true,
+        },
+      })
+      : [];
+
+    const realizationsByMachine = new Map<
+      number,
+      {
+        externalInvoiceLineId: number;
+        sellerName: string | null;
+        invoiceNumber: string | null;
+        invoiceValue: string | null;
+      }[]
+    >();
+
+    for (const realization of domesticRealizations) {
+      // Açık ve kapalı belgelerin yerel makine ID'leri farklı olabilir.
+      // Bu yüzden E-TUYS Yerli Makine ID ile eşleştiriyoruz.
+      const machine = domesticMachines.find(
+        (item) =>
+          realization.externalMachineId !== null &&
+          item.externalMachineId === realization.externalMachineId,
+      );
+
+      if (!machine) continue;
+
+      const items = realizationsByMachine.get(machine.id) ?? [];
+
+      items.push({
+        externalInvoiceLineId: realization.externalInvoiceLineId,
+        sellerName: realization.sellerName,
+        invoiceNumber: realization.invoiceNumber,
+        invoiceValue: realization.invoiceValue?.toString() ?? null,
+      });
+
+      realizationsByMachine.set(machine.id, items);
+    }
+
     return {
       documentId: document.id,
       externalDocumentId: document.externalDocumentId,
       documentNumber: document.documentNumber,
-
       items: domesticMachines.map((machine) => ({
         id: machine.id,
         externalMachineId: machine.externalMachineId,
         sequenceNumber: machine.sequenceNumber,
+
+        realizations: realizationsByMachine.get(machine.id) ?? [],
 
         name: machine.name,
         quantity: machine.quantity?.toString() ?? null,

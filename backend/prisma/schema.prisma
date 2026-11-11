@@ -28,6 +28,7 @@ enum ImportType {
   DOCUMENT_DETAIL
   COMPANY_REQUEST
   IMPORTED_REALIZATION
+  DOMESTIC_REALIZATION
 }
 
 enum ImportRowStatus {
@@ -320,7 +321,7 @@ model IncentiveDocument {
   documentEndDate    DateTime?          @db.Date
   extensionDate      DateTime?          @db.Date
   supportClass       String?
-    city               String?
+  city               String?
   district           String?
   address            String?
   osbName            String?
@@ -350,7 +351,7 @@ model ClosedIncentiveDocument {
 
   extensionDate DateTime?      @db.Date
   supportClass  String?
-    city          String?
+  city          String?
   district      String?
   address       String?
   osbName       String?
@@ -413,7 +414,7 @@ model ImportRow {
   supportClass         String?
   documentStatus       DocumentStatus?
   processStatus        String?
-    city                 String?
+  city                 String?
   district             String?
   address              String?
   osbName              String?
@@ -533,14 +534,15 @@ model DocumentDetail {
   document       IncentiveDocument?       @relation(fields: [documentId], references: [id], onDelete: Cascade)
   closedDocument ClosedIncentiveDocument? @relation(fields: [closedDocumentId], references: [id], onDelete: Cascade)
 
-  products          DocumentProduct[]
-  supports          DocumentSupport[]
-  financialInfo     DocumentFinancialInfo?
-  realizationInfo   DocumentRealizationInfo?
-  domesticMachines  DocumentDomesticMachine[]
-  importedMachines  DocumentImportedMachine[]
+  products             DocumentProduct[]
+  supports             DocumentSupport[]
+  financialInfo        DocumentFinancialInfo?
+  realizationInfo      DocumentRealizationInfo?
+  domesticMachines     DocumentDomesticMachine[]
+  domesticRealizations DocumentDomesticRealization[]
+  importedMachines     DocumentImportedMachine[]
   importedRealizations DocumentImportedRealization[]
-  specialConditions DocumentSpecialCondition[]
+  specialConditions    DocumentSpecialCondition[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -733,7 +735,8 @@ model DocumentDomesticMachine {
 
   rawData Json?
 
-  detail DocumentDetail @relation(fields: [detailId], references: [id], onDelete: Cascade)
+  detail       DocumentDetail                @relation(fields: [detailId], references: [id], onDelete: Cascade)
+  realizations DocumentDomesticRealization[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -836,7 +839,6 @@ model DocumentImportedMachine {
   @@index([externalMachineId])
 }
 
-
 model DocumentImportedRealization {
   id Int @id @default(autoincrement())
 
@@ -865,6 +867,7 @@ model DocumentImportedRealization {
   @@index([machineId])
   @@index([externalMachineId])
 }
+
 model DocumentSpecialCondition {
   id       Int @id @default(autoincrement())
   detailId Int
@@ -882,12 +885,12 @@ model DocumentSpecialCondition {
 }
 
 model IncentiveDocumentCondition {
-  id          Int                                @id @default(autoincrement())
+  id          Int                              @id @default(autoincrement())
   title       String
-  description String                             @db.Text
-  sortOrder   Int                                @default(0)
-  status      IncentiveDocumentConditionStatus   @default(DRAFT)
-  isActive    Boolean                            @default(true)
+  description String                           @db.Text
+  sortOrder   Int                              @default(0)
+  status      IncentiveDocumentConditionStatus @default(DRAFT)
+  isActive    Boolean                          @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1118,4 +1121,48 @@ model DocumentRealizationInfo {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model DocumentDomesticRealization {
+  id Int @id @default(autoincrement())
+
+  detailId  Int
+  machineId Int?
+
+  // E-TUYS kimlik bilgileri
+  externalInvoiceLineId Int
+  externalInvoiceId     Int?
+  externalMachineId     Int?
+
+  // Yerli liste bilgileri
+  sequenceNumber Int?
+  itemName       String?
+
+  // Fatura bilgileri
+  invoiceNumber    String?
+  sellerName       String?
+  sellerTaxNumber  String?
+  invoiceDate      DateTime? @db.Date
+  invoiceValue     Decimal?  @db.Decimal(18, 2)
+  realizedQuantity Decimal?  @db.Decimal(18, 3)
+
+  // Fatura türü ve kayıt durumu
+  invoiceType  String?
+  recordStatus String?
+
+  // E-TUYS ham verisi
+  rawData Json?
+
+  // İlişkiler
+  detail  DocumentDetail           @relation(fields: [detailId], references: [id], onDelete: Cascade)
+  machine DocumentDomesticMachine? @relation(fields: [machineId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([detailId, externalInvoiceLineId])
+  @@index([detailId])
+  @@index([machineId])
+  @@index([externalMachineId])
+  @@index([externalInvoiceId])
 }

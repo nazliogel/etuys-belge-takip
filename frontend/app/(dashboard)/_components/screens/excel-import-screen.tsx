@@ -37,6 +37,7 @@ type ExcelImportType =
   | "DOCUMENT_DETAIL"
   | "DOCUMENT_REALIZATION"
   | "IMPORTED_REALIZATION"
+  | "DOMESTIC_REALIZATION";
 
 type ImportBatchType =
   | "OPEN"
@@ -44,7 +45,8 @@ type ImportBatchType =
   | "COMPANY_IDENTITY"
   | "COMPANY_REQUEST"
   | "DOCUMENT_DETAIL"
-  | "IMPORTED_REALIZATION";
+  | "IMPORTED_REALIZATION"
+  | "DOMESTIC_REALIZATION";
 
 type ImportRecord = {
   id: number;
@@ -220,17 +222,19 @@ export function ExcelImportScreen() {
     if (!file) return;
 
     const extension = file.name.split(".").pop()?.toLowerCase();
-    const isImportedRealization = importType === "IMPORTED_REALIZATION";
+    const isRealizationExcel =
+      importType === "IMPORTED_REALIZATION" ||
+      importType === "DOMESTIC_REALIZATION";
 
-    const isValidExtension = isImportedRealization
+    const isValidExtension = isRealizationExcel
       ? extension === "xlsx"
       : extension === "xlsx" || extension === "xls";
 
     if (!isValidExtension) {
       setSelectedFile(null);
       setFileError(
-        isImportedRealization
-          ? "İthal Gerçekleşme için yalnızca .xlsx dosyası yüklenebilir."
+        isRealizationExcel
+          ? "Yerli ve ithal gerçekleşmeler için yalnızca .xlsx dosyası yüklenebilir."
           : "Yalnızca .xlsx veya .xls uzantılı dosyalar yüklenebilir.",
       );
       return;
@@ -353,6 +357,29 @@ export function ExcelImportScreen() {
         }
 
         setRealizationResult(response.data);
+      } else if (importType === "DOMESTIC_REALIZATION") {
+        setRealizationResult(null);
+
+        const response = await apiFetch<{
+          success: boolean;
+          message: string;
+          data: NonNullable<typeof realizationResult>;
+        }>("/imports/domestic-realizations", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.success) {
+          throw new Error(
+            response.message || "Yerli gerçekleşme aktarımı başarısız.",
+          );
+        }
+
+        setRealizationResult({
+          ...response.data,
+          validRowCount:
+            response.data.totalRowCount - response.data.invalidRowCount,
+        });
       } else if (importType === "IMPORTED_REALIZATION") {
         setRealizationResult(null);
 
@@ -723,6 +750,34 @@ export function ExcelImportScreen() {
               </div>
             </div>
           </button>
+
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => {
+              setImportType("DOMESTIC_REALIZATION");
+              clearSelectedFile();
+            }}
+            className={`group rounded-2xl border p-4 text-left transition-all ${importType === "DOMESTIC_REALIZATION"
+              ? "border-cyan-300 bg-cyan-50 shadow-sm"
+              : "border-slate-200 bg-white hover:border-cyan-200 hover:bg-cyan-50/40"
+              }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                <FileSpreadsheet size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">
+                  Yerli Gerçekleşme
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Yerli makinelere ait fatura numarası, satıcı unvanı ve
+                  fatura değerini Excel üzerinden aktarır.
+                </p>
+              </div>
+            </div>
+          </button>
         </div>
 
         {/* DRAG & DROP AREA */}
@@ -744,7 +799,12 @@ export function ExcelImportScreen() {
           <input
             ref={fileInputRef}
             type="file"
-            accept={importType === "IMPORTED_REALIZATION" ? ".xlsx" : ".xlsx,.xls"}
+            accept={
+              importType === "IMPORTED_REALIZATION" ||
+                importType === "DOMESTIC_REALIZATION"
+                ? ".xlsx"
+                : ".xlsx,.xls"
+            }
             onChange={handleFileChange}
             className="hidden"
           />
@@ -845,7 +905,8 @@ export function ExcelImportScreen() {
 
         {
           (importType === "DOCUMENT_REALIZATION" ||
-            importType === "IMPORTED_REALIZATION") &&
+            importType === "IMPORTED_REALIZATION" ||
+            importType === "DOMESTIC_REALIZATION") &&
           realizationResult && (
             <div
               role="status"
@@ -930,28 +991,32 @@ export function ExcelImportScreen() {
           >
             <Upload size={15} />
             {isUploading
-              ? importType === "IMPORTED_REALIZATION"
-                ? "İthal Gerçekleşmeler Aktarılıyor..."
-                : importType === "DOCUMENT_REALIZATION"
-                  ? "Gerçekleşmeler Aktarılıyor..."
-                  : importType === "COMPANY_IDENTITY"
-                    ? "Künye Bilgileri Aktarılıyor..."
-                    : importType === "COMPANY_REQUEST"
-                      ? "Talepler Aktarılıyor..."
-                      : importType === "DOCUMENT_DETAIL"
-                        ? "Belge Detayları Aktarılıyor..."
-                        : "Karşılaştırılıyor..."
-              : importType === "IMPORTED_REALIZATION"
-                ? "İthal Gerçekleşme Excel’ini Yükle"
-                : importType === "DOCUMENT_REALIZATION"
-                  ? "Gerçekleşme Excel’ini Yükle"
-                  : importType === "COMPANY_IDENTITY"
-                    ? "Künye Bilgilerini Yükle"
-                    : importType === "COMPANY_REQUEST"
-                      ? "Gönderilmiş Talepleri Yükle"
-                      : importType === "DOCUMENT_DETAIL"
-                        ? "Belge Detaylarını Yükle"
-                        : "Yükle ve Karşılaştır"}
+              ? importType === "DOMESTIC_REALIZATION"
+                ? "Yerli Gerçekleşmeler Aktarılıyor..."
+                : importType === "IMPORTED_REALIZATION"
+                  ? "İthal Gerçekleşmeler Aktarılıyor..."
+                  : importType === "DOCUMENT_REALIZATION"
+                    ? "Gerçekleşmeler Aktarılıyor..."
+                    : importType === "COMPANY_IDENTITY"
+                      ? "Künye Bilgileri Aktarılıyor..."
+                      : importType === "COMPANY_REQUEST"
+                        ? "Talepler Aktarılıyor..."
+                        : importType === "DOCUMENT_DETAIL"
+                          ? "Belge Detayları Aktarılıyor..."
+                          : "Karşılaştırılıyor..."
+              : importType === "DOMESTIC_REALIZATION"
+                ? "Yerli Gerçekleşme Excel’ini Yükle"
+                : importType === "IMPORTED_REALIZATION"
+                  ? "İthal Gerçekleşme Excel’ini Yükle"
+                  : importType === "DOCUMENT_REALIZATION"
+                    ? "Gerçekleşme Excel’ini Yükle"
+                    : importType === "COMPANY_IDENTITY"
+                      ? "Künye Bilgilerini Yükle"
+                      : importType === "COMPANY_REQUEST"
+                        ? "Gönderilmiş Talepleri Yükle"
+                        : importType === "DOCUMENT_DETAIL"
+                          ? "Belge Detaylarını Yükle"
+                          : "Yükle ve Karşılaştır"}
           </button>
         </div>
       </section >
@@ -1018,17 +1083,19 @@ export function ExcelImportScreen() {
                               </p>
 
                               <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                {item.importType === "IMPORTED_REALIZATION"
-                                  ? "İthal Gerçekleşme"
-                                  : item.importType === "COMPANY_IDENTITY"
-                                    ? "Firma Künye Bilgileri"
-                                    : item.importType === "COMPANY_REQUEST"
-                                      ? "Gönderilmiş Talepler"
-                                      : item.importType === "DOCUMENT_DETAIL"
-                                        ? "Belge Detayları"
-                                        : item.importType === "CLOSED"
-                                          ? "Kapalı / İptal Belgeler"
-                                          : "Açık Belgeler"}
+                                {item.importType === "DOMESTIC_REALIZATION"
+                                  ? "Yerli Gerçekleşme"
+                                  : item.importType === "IMPORTED_REALIZATION"
+                                    ? "İthal Gerçekleşme"
+                                    : item.importType === "COMPANY_IDENTITY"
+                                      ? "Firma Künye Bilgileri"
+                                      : item.importType === "COMPANY_REQUEST"
+                                        ? "Gönderilmiş Talepler"
+                                        : item.importType === "DOCUMENT_DETAIL"
+                                          ? "Belge Detayları"
+                                          : item.importType === "CLOSED"
+                                            ? "Kapalı / İptal Belgeler"
+                                            : "Açık Belgeler"}
                               </span>
 
                               <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-400">
@@ -1121,17 +1188,19 @@ export function ExcelImportScreen() {
                           </p>
 
                           <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                            {item.importType === "IMPORTED_REALIZATION"
-                              ? "İthal Gerçekleşme"
-                              : item.importType === "COMPANY_IDENTITY"
-                                ? "Firma Künye Bilgileri"
-                                : item.importType === "COMPANY_REQUEST"
-                                  ? "Gönderilmiş Talepler"
-                                  : item.importType === "DOCUMENT_DETAIL"
-                                    ? "Belge Detayları"
-                                    : item.importType === "CLOSED"
-                                      ? "Kapalı / İptal Belgeler"
-                                      : "Açık Belgeler"}
+                            {item.importType === "DOMESTIC_REALIZATION"
+                              ? "Yerli Gerçekleşme"
+                              : item.importType === "IMPORTED_REALIZATION"
+                                ? "İthal Gerçekleşme"
+                                : item.importType === "COMPANY_IDENTITY"
+                                  ? "Firma Künye Bilgileri"
+                                  : item.importType === "COMPANY_REQUEST"
+                                    ? "Gönderilmiş Talepler"
+                                    : item.importType === "DOCUMENT_DETAIL"
+                                      ? "Belge Detayları"
+                                      : item.importType === "CLOSED"
+                                        ? "Kapalı / İptal Belgeler"
+                                        : "Açık Belgeler"}
                           </span>
 
                           <p className="mt-1 text-[11px] text-slate-400">

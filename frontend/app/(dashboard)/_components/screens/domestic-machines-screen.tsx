@@ -29,6 +29,12 @@ type DomesticMachine = {
 
   name: string | null;
   quantity: string | null;
+  realizations?: {
+    externalInvoiceLineId: number;
+    sellerName: string | null;
+    invoiceNumber: string | null;
+    invoiceValue: string | null;
+  }[];
   unitPriceTl: string | null;
   totalTl: string | null;
   unit: string | null;
@@ -177,6 +183,21 @@ const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
   {
     key: "unitPrice",
     label: <>Birim<br />Fiyat</>,
+    className: FIT,
+  },
+  {
+    key: "sellerName",
+    label: "Satıcı",
+    className: "w-[160px] min-w-[160px] max-w-[160px]",
+  },
+  {
+    key: "invoiceNumber",
+    label: "Fatura No.",
+    className: FIT,
+  },
+  {
+    key: "invoiceAmount",
+    label: "Fatura T.",
     className: FIT,
   },
   {
@@ -653,6 +674,45 @@ export function DomesticMachinesScreen() {
                         ) : (
                           EMPTY
                         )}
+                      </td>
+
+                      {/* Satıcı */}
+                      <td className={`${CELL_BASE} w-[160px] min-w-[160px] max-w-[160px] text-left`}>
+                        {machine.realizations?.length ? (
+                          <div className="space-y-1">
+                            {machine.realizations.map((invoice) => (
+                              <div key={invoice.externalInvoiceLineId} className="truncate">
+                                {invoice.sellerName || "—"}
+                              </div>
+                            ))}
+                          </div>
+                        ) : EMPTY}
+                      </td>
+
+                      {/* Fatura No. */}
+                      <td className={`${CELL_BASE} w-px whitespace-nowrap text-center`}>
+                        {machine.realizations?.length ? (
+                          <div className="space-y-1">
+                            {machine.realizations.map((invoice) => (
+                              <div key={invoice.externalInvoiceLineId}>
+                                {invoice.invoiceNumber || "—"}
+                              </div>
+                            ))}
+                          </div>
+                        ) : EMPTY}
+                      </td>
+
+                      {/* Fatura T. */}
+                      <td className={`${CELL_BASE} w-px whitespace-nowrap text-right`}>
+                        {machine.realizations?.length ? (
+                          <div className="space-y-1">
+                            {machine.realizations.map((invoice) => (
+                              <div key={invoice.externalInvoiceLineId}>
+                                {formatNumber(invoice.invoiceValue) ?? "—"}
+                              </div>
+                            ))}
+                          </div>
+                        ) : EMPTY}
                       </td>
 
                       {/* Tutar */}

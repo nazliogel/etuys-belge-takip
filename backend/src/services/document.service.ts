@@ -1,5 +1,6 @@
 import { AppError } from "../errors/app-error.js";
 import type { UserRole } from "../generated/prisma/client.js";
+import { prisma } from "../config/env.js";
 import type { DocumentRepository } from "../repositories/document.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
 import type { CompanyRequestRepository } from "../repositories/company-request.repository.js";
@@ -678,6 +679,58 @@ export class DocumentService {
 
     const domesticMachines = document.detail?.domesticMachines ?? [];
 
+    const domesticRealizations = document.detail?.id
+      ? await prisma.documentDomesticRealization.findMany({
+        where: {
+          detailId: document.detail.id,
+        },
+        orderBy: {
+          externalInvoiceLineId: "asc",
+        },
+        select: {
+          machineId: true,
+          externalMachineId: true,
+          externalInvoiceLineId: true,
+          sellerName: true,
+          invoiceNumber: true,
+          invoiceValue: true,
+        },
+      })
+      : [];
+
+    const realizationsByMachine = new Map<
+      number,
+      {
+        externalInvoiceLineId: number;
+        sellerName: string | null;
+        invoiceNumber: string | null;
+        invoiceValue: string | null;
+      }[]
+    >();
+
+    for (const realization of domesticRealizations) {
+      const machine = domesticMachines.find(
+        (item) =>
+          (realization.machineId !== null &&
+            item.id === realization.machineId) ||
+          (realization.externalMachineId !== null &&
+            item.externalMachineId === realization.externalMachineId),
+      );
+
+      if (!machine) continue;
+
+      const items = realizationsByMachine.get(machine.id) ?? [];
+
+      items.push({
+        externalInvoiceLineId: realization.externalInvoiceLineId,
+        sellerName: realization.sellerName,
+        invoiceNumber: realization.invoiceNumber,
+        invoiceValue: realization.invoiceValue?.toString() ?? null,
+      });
+
+      realizationsByMachine.set(machine.id, items);
+    }
+
     return {
       documentId: document.id,
       externalDocumentId: document.externalDocumentId,
@@ -688,6 +741,8 @@ export class DocumentService {
 
         externalMachineId: machine.externalMachineId,
         sequenceNumber: machine.sequenceNumber,
+
+        realizations: realizationsByMachine.get(machine.id) ?? [],
 
         name: machine.name,
         quantity: machine.quantity?.toString() ?? null,

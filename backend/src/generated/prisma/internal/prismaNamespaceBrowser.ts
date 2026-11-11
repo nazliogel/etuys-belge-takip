@@ -83,7 +83,8 @@ export const ModelName = {
   CompanyNotification: 'CompanyNotification',
   CompanyNotificationRead: 'CompanyNotificationRead',
   PushDevice: 'PushDevice',
-  DocumentRealizationInfo: 'DocumentRealizationInfo'
+  DocumentRealizationInfo: 'DocumentRealizationInfo',
+  DocumentDomesticRealization: 'DocumentDomesticRealization'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -802,6 +803,31 @@ export const DocumentRealizationInfoScalarFieldEnum = {
 } as const
 
 export type DocumentRealizationInfoScalarFieldEnum = (typeof DocumentRealizationInfoScalarFieldEnum)[keyof typeof DocumentRealizationInfoScalarFieldEnum]
+
+
+export const DocumentDomesticRealizationScalarFieldEnum = {
+  id: 'id',
+  detailId: 'detailId',
+  machineId: 'machineId',
+  externalInvoiceLineId: 'externalInvoiceLineId',
+  externalInvoiceId: 'externalInvoiceId',
+  externalMachineId: 'externalMachineId',
+  sequenceNumber: 'sequenceNumber',
+  itemName: 'itemName',
+  invoiceNumber: 'invoiceNumber',
+  sellerName: 'sellerName',
+  sellerTaxNumber: 'sellerTaxNumber',
+  invoiceDate: 'invoiceDate',
+  invoiceValue: 'invoiceValue',
+  realizedQuantity: 'realizedQuantity',
+  invoiceType: 'invoiceType',
+  recordStatus: 'recordStatus',
+  rawData: 'rawData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentDomesticRealizationScalarFieldEnum = (typeof DocumentDomesticRealizationScalarFieldEnum)[keyof typeof DocumentDomesticRealizationScalarFieldEnum]
 
 
 export const SortOrder = {
