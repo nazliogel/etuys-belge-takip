@@ -1,3 +1,4 @@
+
 import ExcelJS from "exceljs";
 
 export interface ParsedImportedRealizationRow {
@@ -11,9 +12,6 @@ export interface ParsedImportedRealizationRow {
     unit: string | null;
     customsRealizedQuantity: string | null;
     declarationNumber: string | null;
-    // E-TUYS'taki makine kaleminin kimliği (beyanname eklenmemiş hali).
-    // Ekranda gruplama bu alana göre yapılır.
-    sourceRowId: string | null;
     externalRowId: string | null;
     errorMessage: string | null;
 }
@@ -22,8 +20,6 @@ export interface ImportedRealizationParseResult {
     totalRowCount: number;
     validRowCount: number;
     invalidRowCount: number;
-    // Excel'de birebir tekrar ettiği için atlanan satır sayısı
-    duplicateRowCount: number;
     rows: ParsedImportedRealizationRow[];
 }
 
@@ -69,8 +65,6 @@ export class ImportedRealizationExcelParserService {
         }
 
         const rows: ParsedImportedRealizationRow[] = [];
-        const seenKeys = new Set<string>();
-        let duplicateRowCount = 0;
 
         for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
             const row = worksheet.getRow(rowNumber);
@@ -91,32 +85,15 @@ export class ImportedRealizationExcelParserService {
             const externalCompanyId = integer(value("Firma ID"));
             const externalDocumentId = integer(value("Belge ID"));
             const sequenceNumber = integer(value("Sıra No"));
-            const sourceRowIdText = value("Satır ID");
+            const sourceRowId = value("Satır ID");
             const declarationNumber = value("Beyanname Numarası");
             const quantity = value("Gümrük Gerç. Miktarı");
-
-            const isValidSourceRowId = /^\d+$/.test(sourceRowIdText);
-
-            // Aynı Satır ID farklı beyannamelerde bulunabilir.
-            const externalRowId =
-                isValidSourceRowId && declarationNumber
-                    ? `${sourceRowIdText}:${declarationNumber}`
-                    : null;
-
-            // Excel'de birebir tekrar eden satırları atla.
-            if (externalRowId) {
-                if (seenKeys.has(externalRowId)) {
-                    duplicateRowCount++;
-                    continue;
-                }
-                seenKeys.add(externalRowId);
-            }
 
             const errors: string[] = [];
 
             if (!externalCompanyId) errors.push("Firma ID geçersiz.");
             if (!externalDocumentId) errors.push("Belge ID geçersiz.");
-            if (!isValidSourceRowId) {
+            if (!/^\d+$/.test(sourceRowId)) {
                 errors.push("Satır ID geçersiz.");
             }
 
@@ -146,8 +123,13 @@ export class ImportedRealizationExcelParserService {
                     e.includes("miktarı")
                 ) ? null : normalizedQuantity,
                 declarationNumber: declarationNumber || null,
-                sourceRowId: isValidSourceRowId ? sourceRowIdText : null,
-                externalRowId,
+
+                // Aynı Satır ID farklı beyannamelerde bulunabilir.
+                externalRowId:
+                    /^\d+$/.test(sourceRowId) && declarationNumber
+                        ? `${sourceRowId}:${declarationNumber}`
+                        : null,
+
                 errorMessage: errors.length ? errors.join(" ") : null,
             });
         }
@@ -156,7 +138,6 @@ export class ImportedRealizationExcelParserService {
             totalRowCount: rows.length,
             validRowCount: rows.filter(row => !row.errorMessage).length,
             invalidRowCount: rows.filter(row => !!row.errorMessage).length,
-            duplicateRowCount,
             rows,
         };
     }

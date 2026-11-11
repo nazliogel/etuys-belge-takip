@@ -21,3 +21,8 @@ Thumbs.db
 
 uploads/
 backend/mail-adaylari-*.csv
+
+backend/secrets/
+
+FIREBASE_PUSH_ENABLED=true
+GOOGLE_APPLICATION_CREDENTIALS=./secrets/firebase-service-account.json

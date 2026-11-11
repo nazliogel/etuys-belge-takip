@@ -147,11 +147,11 @@ const HEAD_BASE =
 const CELL_BASE =
   "overflow-hidden text-ellipsis border-b border-r border-border px-2.5 py-1.5";
 
-// Sticky sütun varsayılan genişlikleri. Sıra ve Makine ID'nin left offset'leri
+// Sticky sütun varsayılan genişlikleri. Sıra ve GTİP No'nun left offset'leri
 // --col1-left / --col2-left CSS değişkenleriyle tabloya verilir, böylece
 // kullanıcı bu sütunları boyutlandırınca sabit sütunlar kaymaz.
 const DEFAULT_SEQ_WIDTH = 52;
-const DEFAULT_ID_WIDTH = 88;
+const DEFAULT_GTIP_WIDTH = 120;
 const MIN_COL_WIDTH = 40;
 
 const STICKY_SHADOW = "md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)]";
@@ -161,39 +161,39 @@ const FIT = "w-px whitespace-nowrap"; // sütun içeriği kadar daralır
 const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
   { key: "seq", label: "Sıra", className: "md:left-0 md:z-40 w-[52px] min-w-[52px]" },
   {
-    key: "machineId",
-    label: "Makine ID",
-    className: "md:left-[var(--col1-left)] md:z-40 w-[88px] min-w-[88px]",
+    key: "gtipCode",
+    label: "GTİP No",
+    className: "md:left-[var(--col1-left)] md:z-40 w-[120px] min-w-[120px]",
   },
   {
     key: "name",
     label: "Adı / Özelliği",
     className: `md:left-[var(--col2-left)] md:z-40 w-[220px] min-w-[220px] max-w-[220px] ${STICKY_SHADOW}`,
   },
-  { key: "qty", label: "Miktar", className: "w-px whitespace-nowrap" },
-  { key: "unit", label: "Birim", className: "w-px whitespace-nowrap" },
+  { key: "machineId", label: "Makine ID", className: FIT },
+  { key: "vat", label: <>KDV<br />İst.</>, className: FIT },
+  { key: "qty", label: "Miktar", className: FIT },
+  { key: "unit", label: "Birim", className: FIT },
   {
     key: "unitPrice",
     label: <>Birim<br />Fiyat</>,
-    className: "w-px whitespace-nowrap",
+    className: FIT,
   },
   {
     key: "total",
     label: <>Tutar<br />(KDV Hariç)</>,
-    className: "w-px whitespace-nowrap",
+    className: FIT,
   },
   {
     key: "invoiceQty",
     label: <>Fatura Gerç.<br />Miktar</>,
-    className: "w-px whitespace-nowrap",
+    className: FIT,
   },
   {
     key: "invoiceValue",
     label: <>Fatura Gerç.<br />Değer</>,
-    className: "w-px whitespace-nowrap",
+    className: FIT,
   },
-  { key: "vat", label: <>KDV<br />İst.</>, className: "w-px whitespace-nowrap" },
-  { key: "gtipCode", label: "GTİP No", className: FIT },
   {
     key: "gtipDesc",
     label: "GTİP Açıklama",
@@ -316,10 +316,10 @@ export function DomesticMachinesScreen() {
 
   // Sticky ilk 3 sütunun left offset'leri genişliklere göre hesaplanır.
   const seqWidth = colWidths?.[0] ?? DEFAULT_SEQ_WIDTH;
-  const idWidth = colWidths?.[1] ?? DEFAULT_ID_WIDTH;
+  const gtipWidth = colWidths?.[1] ?? DEFAULT_GTIP_WIDTH;
   const tableStyle = {
     "--col1-left": `${seqWidth}px`,
-    "--col2-left": `${seqWidth + idWidth}px`,
+    "--col2-left": `${seqWidth + gtipWidth}px`,
     width: colWidths ? colWidths.reduce((a, b) => a + b, 0) : undefined,
   } as CSSProperties;
 
@@ -564,13 +564,13 @@ export function DomesticMachinesScreen() {
                         {machine.sequenceNumber ?? EMPTY}
                       </td>
 
-                      {/* Makine ID */}
+                      {/* GTİP Kodu */}
                       <td
-                        className={`md:sticky md:left-[var(--col1-left)] md:z-10 w-[88px] min-w-[88px] ${CELL_BASE} ${stickyBg} ${stickyHover}`}
+                        className={`md:sticky md:left-[var(--col1-left)] md:z-10 w-[120px] min-w-[120px] ${CELL_BASE} whitespace-nowrap text-center ${stickyBg} ${stickyHover}`}
                       >
-                        {machine.externalMachineId ? (
-                          <span className="inline-flex rounded border border-border bg-muted px-1.5 py-px font-mono text-[11px] font-medium text-foreground/80">
-                            {machine.externalMachineId}
+                        {machine.gtipCode ? (
+                          <span className="inline-flex whitespace-nowrap rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-1.5 py-px font-mono text-[11px] font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
+                            {machine.gtipCode}
                           </span>
                         ) : (
                           EMPTY
@@ -592,6 +592,30 @@ export function DomesticMachinesScreen() {
                             EMPTY
                           )}
                         </div>
+                      </td>
+
+                      {/* Makine ID */}
+                      <td
+                        className={`${CELL_BASE} w-px whitespace-nowrap text-center`}
+                      >
+                        {machine.externalMachineId ? (
+                          <span className="inline-flex rounded border border-border bg-muted px-1.5 py-px font-mono text-[11px] font-medium text-foreground/80">
+                            {machine.externalMachineId}
+                          </span>
+                        ) : (
+                          EMPTY
+                        )}
+                      </td>
+
+                      {/* KDV İstisnası */}
+                      <td
+                        className={`${CELL_BASE} whitespace-nowrap text-center text-[11px] font-semibold text-foreground/80`}
+                      >
+                        {machine.vatExemption === "1"
+                          ? "EVET"
+                          : machine.vatExemption === "0"
+                            ? "HAYIR"
+                            : EMPTY}
                       </td>
 
                       {/* Miktar */}
@@ -658,28 +682,6 @@ export function DomesticMachinesScreen() {
                         className={`${CELL_BASE} whitespace-nowrap text-right font-mono tabular-nums text-foreground/80`}
                       >
                         {formatNumber(machine.invoiceRealizedValue) ?? "0"}
-                      </td>
-
-                      {/* KDV İstisnası */}
-                      <td
-                        className={`${CELL_BASE} whitespace-nowrap text-center text-[11px] font-semibold text-foreground/80`}
-                      >
-                        {machine.vatExemption === "1"
-                          ? "EVET"
-                          : machine.vatExemption === "0"
-                            ? "HAYIR"
-                            : EMPTY}
-                      </td>
-
-                      {/* GTİP Kodu */}
-                      <td className={`${CELL_BASE} w-px whitespace-nowrap text-center`}>
-                        {machine.gtipCode ? (
-                          <span className="inline-flex whitespace-nowrap rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-1.5 py-px font-mono text-[11px] font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
-                            {machine.gtipCode}
-                          </span>
-                        ) : (
-                          EMPTY
-                        )}
                       </td>
 
                       {/* GTİP Açıklama */}
