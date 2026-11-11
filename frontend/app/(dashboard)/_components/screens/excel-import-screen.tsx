@@ -43,7 +43,8 @@ type ImportBatchType =
   | "CLOSED"
   | "COMPANY_IDENTITY"
   | "COMPANY_REQUEST"
-  | "DOCUMENT_DETAIL";
+  | "DOCUMENT_DETAIL"
+  | "IMPORTED_REALIZATION";
 
 type ImportRecord = {
   id: number;
@@ -1017,15 +1018,17 @@ export function ExcelImportScreen() {
                               </p>
 
                               <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                {item.importType === "COMPANY_IDENTITY"
-                                  ? "Firma Künye Bilgileri"
-                                  : item.importType === "COMPANY_REQUEST"
-                                    ? "Gönderilmiş Talepler"
-                                    : item.importType === "DOCUMENT_DETAIL"
-                                      ? "Belge Detayları"
-                                      : item.importType === "CLOSED"
-                                        ? "Kapalı / İptal Belgeler"
-                                        : "Açık Belgeler"}
+                                {item.importType === "IMPORTED_REALIZATION"
+                                  ? "İthal Gerçekleşme"
+                                  : item.importType === "COMPANY_IDENTITY"
+                                    ? "Firma Künye Bilgileri"
+                                    : item.importType === "COMPANY_REQUEST"
+                                      ? "Gönderilmiş Talepler"
+                                      : item.importType === "DOCUMENT_DETAIL"
+                                        ? "Belge Detayları"
+                                        : item.importType === "CLOSED"
+                                          ? "Kapalı / İptal Belgeler"
+                                          : "Açık Belgeler"}
                               </span>
 
                               <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-400">
@@ -1118,15 +1121,17 @@ export function ExcelImportScreen() {
                           </p>
 
                           <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                            {item.importType === "COMPANY_IDENTITY"
-                              ? "Firma Künye Bilgileri"
-                              : item.importType === "COMPANY_REQUEST"
-                                ? "Gönderilmiş Talepler"
-                                : item.importType === "DOCUMENT_DETAIL"
-                                  ? "Belge Detayları"
-                                  : item.importType === "CLOSED"
-                                    ? "Kapalı / İptal Belgeler"
-                                    : "Açık Belgeler"}
+                            {item.importType === "IMPORTED_REALIZATION"
+                              ? "İthal Gerçekleşme"
+                              : item.importType === "COMPANY_IDENTITY"
+                                ? "Firma Künye Bilgileri"
+                                : item.importType === "COMPANY_REQUEST"
+                                  ? "Gönderilmiş Talepler"
+                                  : item.importType === "DOCUMENT_DETAIL"
+                                    ? "Belge Detayları"
+                                    : item.importType === "CLOSED"
+                                      ? "Kapalı / İptal Belgeler"
+                                      : "Açık Belgeler"}
                           </span>
 
                           <p className="mt-1 text-[11px] text-slate-400">

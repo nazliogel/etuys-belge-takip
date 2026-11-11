@@ -330,8 +330,13 @@ export class DocumentService {
       ...scope,
     });
 
+    // Kapatma başvurusu yapılmış belgeler bu listeye girmemeli
+    const hasClosureApplication = await this.loadClosureLookup(documents);
+
     const items = documents
-      .map((document) => evaluate(document, today))
+      .map((document) =>
+        evaluate(document, today, hasClosureApplication(document)),
+      )
       .filter((row) => row.displayStatus === "EXTENSION_ELIGIBLE")
       .map(({ document, extensionApplicationStartDate }) => ({
         id: document.id,

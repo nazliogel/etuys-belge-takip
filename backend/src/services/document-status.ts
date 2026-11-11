@@ -130,20 +130,24 @@ export function computeDocumentStatus(
     return result("AUTHORIZATION_EXPIRED");
   }
 
-  // 3) Kapatma dönemi: uzatılan süre geçmiş ya da 1,5 yıllık uzatım hakkı bitmiş.
-  //    Reddedilmemiş bir kapatma başvurusu varsa "Kap.Mür. Yapılanlar" olur.
-  if ((isExtended && extensionDate! < today) || isExtensionRightExpired) {
-    return result(
-      input.hasClosureApplication ? "CLOSURE_APPLIED" : "CLOSURE_ELIGIBLE",
-    );
+  // 3) Belgeye ait reddedilmemiş bir kapatma başvurusu varsa, tarihlerden
+  //    bağımsız olarak "Kap.Mür. Yapılanlar" olur (uzatma döneminde, bitişten
+  //    aylar önce ya da kapatma döneminde yapılmış olması fark etmez).
+  if (input.hasClosureApplication) {
+    return result("CLOSURE_APPLIED");
   }
 
-  // 4) Süre uzatma: uzatılmamış ve müracaat dönemi başlamış
+  // 4) Kapatma dönemi: uzatılan süre geçmiş ya da 1,5 yıllık uzatım hakkı bitmiş.
+  if ((isExtended && extensionDate! < today) || isExtensionRightExpired) {
+    return result("CLOSURE_ELIGIBLE");
+  }
+
+  // 5) Süre uzatma: uzatılmamış ve müracaat dönemi başlamış
   if (extensionApplicationStartDate && today >= extensionApplicationStartDate) {
     return result("EXTENSION_ELIGIBLE");
   }
 
-  // 5) Tarihe bağlı durumlar
+  // 6) Tarihe bağlı durumlar
   if (!effectiveEndDate) return result("ACTIVE");
   if (effectiveEndDate < today) return result("EXPIRED");
   if (effectiveEndDate <= addMonths(today, EXPIRING_WINDOW_MONTHS)) {
