@@ -1,6 +1,10 @@
 "use client";
-
-import { AlertCircle, Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Loader2,
+  Minus,
+} from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -9,43 +13,69 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
-
+import { createPortal } from "react-dom";
 import { apiFetch } from "@/lib/api";
-
-/* -------------------------------------------------------------------------- */
-/*                                   TİPLER                                   */
-/* -------------------------------------------------------------------------- */
-
 interface AdminDocumentDomesticMachinesProps {
   documentId: string;
   isClosed?: boolean;
 }
-
 type DomesticMachine = {
   id: number;
   externalMachineId: number | null;
   sequenceNumber: number | null;
-
   name: string | null;
   quantity: string | null;
+  realizations?: {
+    externalInvoiceLineId: number;
+    sellerName: string | null;
+    invoiceNumber: string | null;
+    invoiceDate: string | null;
+    invoiceValue: string | null;
+  }[];
   unitPriceTl: string | null;
   totalTl: string | null;
   unit: string | null;
-
   vatExemption: string | null;
-
+  transferRealizedValue: string | null;
+  transferRealizedQuantity: string | null;
+  transferOutgoingValue: string | null;
+  transferOutgoingQuantity: string | null;
+  leasingOutgoingValue: string | null;
+  leasingOutgoingQuantity: string | null;
+  leasingPermittedValue: string | null;
+  leasingPermittedQuantity: string | null;
   invoiceRealizedValue: string | null;
   invoiceRealizedQuantity: string | null;
-
+  customsRealizedValue: string | null;
+  customsRealizedQuantity: string | null;
+  customsPermittedValue: string | null;
+  customsPermittedQuantity: string | null;
+  exportOutgoingValue: string | null;
+  exportOutgoingQuantity: string | null;
+  exportPermittedValue: string | null;
+  exportPermittedQuantity: string | null;
+  financialLeasingRealizedValue: string | null;
+  financialLeasingRealizedQuantity: string | null;
+  financialLeasingPermittedValue: string | null;
+  financialLeasingPermittedQuantity: string | null;
+  saleOutgoingValue: string | null;
+  saleOutgoingQuantity: string | null;
+  salePermittedValue: string | null;
+  salePermittedQuantity: string | null;
+  saleRealizedQuantity: string | null;
+  saleRealizedValue: string | null;
   gtipCode: string | null;
   gtipDescription: string | null;
-
+  transferDocumentNumber: string | null;
+  transferIncomingQuantity: string | null;
+  transferIncomingAmount: string | null;
   barcode: string | null;
   sellerTaxNumber: string | null;
   sellerEmail: string | null;
+  financialLeasingCompany: string | null;
   machineryEquipmentType: string | null;
 };
-
+type Realization = NonNullable<DomesticMachine["realizations"]>[number];
 type DomesticMachinesResponse = {
   success: boolean;
   data: {
@@ -55,127 +85,130 @@ type DomesticMachinesResponse = {
     items: DomesticMachine[];
   };
 };
-
-/* -------------------------------------------------------------------------- */
-/*                                  YARDIMCI                                  */
-/* -------------------------------------------------------------------------- */
-
-function toNumber(value: string | number | null | undefined): number | null {
+// --- Biçimlendirme ---
+// Formatter'lar bir kez oluşturulur; her hücrede yeniden kurulmaz.
+const MONEY_FMT = new Intl.NumberFormat("tr-TR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const QTY_FMT = new Intl.NumberFormat("tr-TR", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 3,
+});
+function formatWith(
+  fmt: Intl.NumberFormat,
+  value: string | number | null | undefined,
+): string | null {
   if (value === null || value === undefined || value === "") return null;
   const num = Number(String(value).replace(",", ".").trim());
-  return Number.isFinite(num) ? num : null;
+  return Number.isFinite(num) ? fmt.format(num) : String(value);
 }
-
-function formatNumber(
-  value: string | number | null | undefined,
-): string | null {
-  if (value === null || value === undefined || value === "") return null;
-
-  const num = toNumber(value);
-  if (num === null) return String(value);
-
-  return new Intl.NumberFormat("tr-TR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(num);
+const formatNumber = (v: string | number | null | undefined) =>
+  formatWith(MONEY_FMT, v);
+const formatQuantity = (v: string | number | null | undefined) =>
+  formatWith(QTY_FMT, v);
+function formatDate(value: string | null) {
+  return value
+    ? new Date(value).toLocaleDateString("tr-TR", { timeZone: "UTC" })
+    : null;
 }
-
-function formatQuantity(
-  value: string | number | null | undefined,
-): string | null {
-  if (value === null || value === undefined || value === "") return null;
-
-  const num = toNumber(value);
-  if (num === null) return String(value);
-
-  return new Intl.NumberFormat("tr-TR", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 3,
-  }).format(num);
+// vatExemption DB'de serbest metin; "1"/"0" dışındaki yazımları da tanır.
+function flagLabel(value: string | null | undefined): "EVET" | "HAYIR" | undefined {
+  if (value === null || value === undefined) return undefined;
+  const v = value.trim().toLocaleLowerCase("tr-TR");
+  if (["1", "evet", "e", "yes", "true"].includes(v)) return "EVET";
+  if (["0", "hayır", "hayir", "h", "no", "false"].includes(v)) return "HAYIR";
+  return undefined;
 }
-
-function flagLabel(value: string | null | undefined): "EVET" | "HAYIR" | null {
-  if (value === null || value === undefined || value === "") return null;
-  const v = String(value).trim().toLowerCase();
-  if (["1", "evet", "yes", "true", "e"].includes(v)) return "EVET";
-  if (["0", "hayır", "hayir", "no", "false", "h"].includes(v)) return "HAYIR";
-  return null;
-}
-
-// "ADET(UNIT)" → "ADET"
+// "ADET(UNIT)" → "ADET" — parantez içindeki İngilizce karşılığı atar.
 function shortUnit(unit: string) {
-  return unit.replace(/\s*\(.*\)\s*$/, "").trim() || unit;
+  return unit.replace(/\s*\([^)]*\)\s*$/, "").trim() || unit;
 }
-
-/* -------------------------------------------------------------------------- */
-/*                               TABLO SABİTLERİ                              */
-/* -------------------------------------------------------------------------- */
-
+// --- Tablo stilleri ---
+// sticky top-0 + opak arka plan zorunlu, aksi halde scroll'da hücre içerikleri sızar.
 const HEAD_BASE =
-  "sticky top-0 z-20 bg-slate-100 dark:bg-muted border-b-2 border-[#1e2a5e]/15 dark:border-blue-400/20 border-r border-border overflow-hidden text-ellipsis px-1.5 py-1 align-middle text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-[#1e2a5e] dark:text-blue-300 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
-
+  "sticky top-0 z-20 bg-slate-100 dark:bg-muted border-b-2 border-[#1e2a5e]/15 dark:border-blue-400/20 border-r border-border overflow-hidden text-ellipsis px-2 py-1 align-middle text-center text-[10px] font-bold uppercase leading-tight text-[#1e2a5e] dark:text-blue-300";
+// Gövde hücreleri: tek satır, dar padding. Taşan içerik kırpılır,
+// tam metin hover kutusunda görünür.
 const CELL_BASE =
-  "overflow-hidden text-ellipsis border-b border-r border-border px-1.5 py-1";
-
+  "overflow-hidden text-ellipsis whitespace-nowrap border-b border-r border-border px-2 py-1 leading-tight";
 const DEFAULT_SEQ_WIDTH = 40;
-const DEFAULT_ID_WIDTH = 72;
+const DEFAULT_GTIP_WIDTH = 96;
 const MIN_COL_WIDTH = 40;
-
 const STICKY_SHADOW = "md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)]";
-const FIT = "w-px whitespace-nowrap";
-
-// Sıra, gövdedeki <td> sırasıyla aynı olmalı.
+const FIT = "w-px whitespace-nowrap"; // sütun içeriği kadar daralır
+// Soldaki ilk 3 sütunun yatay sabitlemesi — başlık ve gövde aynı class'ı kullanır.
+const STICKY_COL = {
+  seq: "md:sticky md:left-0",
+  gtip: "md:sticky md:left-[var(--col1-left)]",
+  name: `md:sticky md:left-[var(--col2-left)] ${STICKY_SHADOW}`,
+};
+// Başlık tanımları — sıra, gövdedeki <td> sırasıyla aynı olmalı.
+// Para birimi (TL) her hücrede tekrar etmek yerine başlıkta yazılır.
 const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
-  { key: "seq", label: "Sıra", className: "md:left-0 md:z-40 w-[40px] min-w-[40px]" },
+  { key: "seq", label: "#", className: `${STICKY_COL.seq} md:z-40 w-[40px] min-w-[40px]` },
   {
-    key: "machineId",
-    label: "Makine ID",
-    className: "md:left-[var(--col1-left)] md:z-40 w-[72px] min-w-[72px]",
+    key: "gtipCode",
+    label: "GTİP No",
+    className: `${STICKY_COL.gtip} md:z-40 w-[96px] min-w-[96px]`,
   },
   {
     key: "name",
     label: "Adı / Özelliği",
-    className: `md:left-[var(--col2-left)] md:z-40 w-[170px] min-w-[170px] max-w-[170px] ${STICKY_SHADOW}`,
+    className: `${STICKY_COL.name} md:z-40 w-[200px] min-w-[200px] max-w-[200px]`,
   },
-  { key: "qty", label: <>Öngörülen<br />Miktar</>, className: FIT },
+  { key: "machineId", label: <>Makine<br />ID</>, className: FIT },
+  { key: "vat", label: "KDV", className: FIT },
+  { key: "qty", label: "Miktar", className: FIT },
+  { key: "unitPrice", label: <>Birim Fiyat<br />(TL)</>, className: FIT },
+  {
+    key: "sellerName",
+    label: "Satıcı",
+    className: "w-[140px] min-w-[140px] max-w-[140px]",
+  },
+  { key: "invoiceNumber", label: <>Fatura<br />No</>, className: FIT },
+  { key: "invoiceDate", label: <>Fatura<br />Tarihi</>, className: FIT },
+  { key: "invoiceAmount", label: <>Fatura<br />Tutarı (TL)</>, className: FIT },
+  { key: "total", label: <>Tutar KDV<br />Hariç (TL)</>, className: FIT },
   { key: "invoiceQty", label: <>Fatura Gerç.<br />Miktar</>, className: FIT },
-  { key: "unit", label: "Birim", className: FIT },
-  { key: "unitPrice", label: <>Birim<br />Fiyat (TL)</>, className: FIT },
-  { key: "total", label: <>Toplam<br />Tutar (TL)</>, className: FIT },
-  { key: "invoiceValue", label: <>Fatura Gerç.<br />Değer (TL)</>, className: FIT },
-  { key: "vat", label: <>KDV<br />İstisnası</>, className: FIT },
-  { key: "gtipCode", label: "GTİP No", className: FIT },
   {
     key: "gtipDesc",
     label: "GTİP Açıklama",
-    className: "w-[170px] min-w-[170px] max-w-[170px]",
+    className: "w-[180px] min-w-[180px] max-w-[180px]",
   },
   { key: "machineType", label: <>Makine<br />Tipi</>, className: FIT },
-  { key: "sellerTax", label: "Satıcı VKN", className: FIT },
-  { key: "sellerEmail", label: "Satıcı E-Posta", className: FIT },
+  { key: "sellerVkn", label: <>Satıcı<br />VKN</>, className: FIT },
+  { key: "sellerEmail", label: <>Satıcı<br />E-Posta</>, className: FIT },
   { key: "barcode", label: "Barkod", className: `${FIT} border-r-0` },
 ];
-
-const COL_COUNT = COLUMNS.length;
-
 const EMPTY = <span className="text-muted-foreground/50">—</span>;
-
-/* -------------------------------------------------------------------------- */
-/*                                HOVER KUTUSU                                */
-/* -------------------------------------------------------------------------- */
-
+// Bir makinenin fatura satırlarını alt alta listeler (4 sütunda ortak).
+function realizationList(
+  machine: DomesticMachine,
+  render: (r: Realization) => ReactNode,
+) {
+  if (!machine.realizations?.length) return EMPTY;
+  return (
+    <div className="space-y-0.5">
+      {machine.realizations.map((r) => (
+        <div key={r.externalInvoiceLineId} className="truncate">
+          {render(r) || "—"}
+        </div>
+      ))}
+    </div>
+  );
+}
+// Hücre hover kutusu: tablonun tamamı için tek bir dinleyici kullanılır.
+// Kutu `fixed` konumlanır, böylece overflow-auto alanında kesilmez.
+// Hücrenin gösterilecek metni varsayılan olarak görünen metnidir;
+// farklı bir metin gerekiyorsa <td data-tip="..."> ile verilebilir.
 type CellTip = { text: string; top: number; left: number; above: boolean };
-
-function getCellTip(el: HTMLElement): CellTip | null {
-  if (el instanceof HTMLTableCellElement && el.colSpan > 1) return null;
-  if (el.closest("[data-no-tip]")) return null;
-
-  const text = (el.dataset.tip ?? el.innerText).replace(/\s+/g, " ").trim();
+function getCellTip(td: HTMLTableCellElement): CellTip | null {
+  if (td.colSpan > 1) return null; // boş/yükleniyor satırları
+  const text = (td.dataset.tip ?? td.innerText).replace(/\s+/g, " ").trim();
   if (!text || text === "—") return null;
-
-  const r = el.getBoundingClientRect();
+  const r = td.getBoundingClientRect();
   const above = window.innerHeight - r.bottom < 160;
-
   return {
     text,
     top: above ? r.top - 2 : r.bottom + 2,
@@ -183,54 +216,39 @@ function getCellTip(el: HTMLElement): CellTip | null {
     above,
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/*                                  BİLEŞEN                                   */
-/* -------------------------------------------------------------------------- */
-
-export function AdminDocumentDomesticMachines({
-  documentId,
-  isClosed = false,
-}: AdminDocumentDomesticMachinesProps) {
+export function AdminDocumentDomesticMachines({ documentId, isClosed = false }: AdminDocumentDomesticMachinesProps) {
   const [machines, setMachines] = useState<DomesticMachine[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  // --- Hover kutusu ---
+  const [loadingMachines, setLoadingMachines] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [cellTip, setCellTip] = useState<CellTip | null>(null);
-  const hoveredCellRef = useRef<HTMLElement | null>(null);
-
+  const hoveredCellRef = useRef<HTMLTableCellElement | null>(null);
   const clearCellTip = () => {
     hoveredCellRef.current = null;
     setCellTip(null);
   };
-
-  // --- Sütun boyutlandırma (yalnızca oturum boyunca) ---
+  // --- Sütun boyutlandırma ---
+  // Genişlikler yalnızca bu bileşenin state'inde tutulur (localStorage yok).
+  // null = otomatik düzen. İlk sürüklemede mevcut genişlikler ölçülüp
+  // sabitlenir ve tablo table-fixed'e geçer.
   const tableRef = useRef<HTMLTableElement>(null);
   const [colWidths, setColWidths] = useState<number[] | null>(null);
   const stopResizeRef = useRef<(() => void) | null>(null);
-
   useEffect(() => () => stopResizeRef.current?.(), []);
-
   const startResize = (index: number, e: ReactPointerEvent) => {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-
     const ths = tableRef.current?.querySelectorAll<HTMLTableCellElement>(
-      ":scope > thead > tr > th",
+      "thead th",
     );
     if (!ths) return;
-
     const base =
       colWidths ??
       Array.from(ths, (th) => Math.round(th.getBoundingClientRect().width));
     const startX = e.clientX;
     const startWidth = base[index];
-
     setColWidths(base);
     clearCellTip();
-
     const onMove = (ev: PointerEvent) => {
       const width = Math.max(
         MIN_COL_WIDTH,
@@ -242,7 +260,6 @@ export function AdminDocumentDomesticMachines({
         return next;
       });
     };
-
     const stop = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", stop);
@@ -250,61 +267,52 @@ export function AdminDocumentDomesticMachines({
       document.body.style.userSelect = "";
       stopResizeRef.current = null;
     };
-
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", stop);
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
     stopResizeRef.current = stop;
   };
-
+  // Sticky ilk 3 sütunun left offset'leri genişliklere göre hesaplanır.
   const seqWidth = colWidths?.[0] ?? DEFAULT_SEQ_WIDTH;
-  const idWidth = colWidths?.[1] ?? DEFAULT_ID_WIDTH;
+  const gtipWidth = colWidths?.[1] ?? DEFAULT_GTIP_WIDTH;
   const tableStyle = {
     "--col1-left": `${seqWidth}px`,
-    "--col2-left": `${seqWidth + idWidth}px`,
+    "--col2-left": `${seqWidth + gtipWidth}px`,
     width: colWidths ? colWidths.reduce((a, b) => a + b, 0) : undefined,
   } as CSSProperties;
-
-  // --- Veri ---
   useEffect(() => {
+    if (!documentId) {
+      setMachines([]);
+      setLoadingMachines(false);
+      return;
+    }
+    let cancelled = false;
     const loadMachines = async () => {
       try {
-        setIsLoading(true);
-        setLoadError(null);
-
+        setLoadingMachines(true);
+        setError(null);
         const endpoint = isClosed
           ? `/closed-documents/${documentId}/domestic-machines`
           : `/documents/${documentId}/domestic-machines`;
-
         const response = await apiFetch<DomesticMachinesResponse>(endpoint);
-
-        setMachines(response.data.items ?? []);
-      } catch (error) {
-        setMachines([]);
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "Yerli makine bilgileri alınamadı.",
-        );
+        if (!cancelled) setMachines(response.data.items ?? []);
+      } catch (err) {
+        if (!cancelled) {
+          setMachines([]);
+          setError(err instanceof Error ? err.message : "Yerli liste alınırken bir hata oluştu.");
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setLoadingMachines(false);
       }
     };
-
     void loadMachines();
+    return () => { cancelled = true; };
   }, [documentId, isClosed]);
-
-  const realizedCount = machines.filter(
-    (m) => (toNumber(m.invoiceRealizedQuantity) ?? 0) > 0,
-  ).length;
-
-  /* --------------------------------- RENDER -------------------------------- */
-
   return (
     <div className="space-y-4">
       {/* HATA */}
-      {loadError && (
+      {error && (
         <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/30 dark:bg-red-500/10">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500 dark:text-red-400" />
           <div className="flex-1">
@@ -312,43 +320,35 @@ export function AdminDocumentDomesticMachines({
               Hata
             </p>
             <p className="mt-0.5 text-sm text-red-700 dark:text-red-300">
-              {loadError}
+              {error}
             </p>
           </div>
         </div>
       )}
-
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:shadow-none">
-        {/* KART BAŞLIĞI */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-gradient-to-b from-slate-50 to-white px-3 py-2 dark:from-muted/40 dark:to-card">
+      {/* İÇERİK KARTI */}
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none">
+        {/* Kart Alt Başlığı */}
+        <div className="flex items-center justify-between border-b border-border bg-gradient-to-b from-slate-50 to-white px-6 py-4 dark:from-muted/40 dark:to-card">
           <div className="flex items-center gap-3">
-            <span className="h-6 w-1 rounded-full bg-[#1e2a5e] dark:bg-blue-400" />
+            <span className="h-8 w-1 rounded-full bg-[#1e2a5e] dark:bg-blue-400" />
             <div>
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
-                Yerli Makine ve Teçhizat Listesi
+              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-foreground">
+                Yerli Makine ve Teçhizat Kayıtları
               </h2>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">
-                Belgede tanımlı yerli makineler, tutarlar, fatura gerçekleşme ve
-                satıcı bilgileri.
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Belge kapsamında tanımlı yerli makineler, tutarlar ve KDV
+                bilgileri.
               </p>
             </div>
           </div>
-
-          {!isLoading && machines.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {realizedCount} Gerçekleşen
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground shadow-sm dark:shadow-none">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
-                {machines.length} Kayıt
-              </span>
-            </div>
+          {!loadingMachines && machines.length > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shadow-sm dark:shadow-none">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#c8102e]" />
+              {machines.length} Kayıt
+            </span>
           )}
         </div>
-
-        {/* TABLO */}
+        {/* Tablo */}
         <div className="max-h-[70vh] overflow-auto" onScroll={clearCellTip}>
           <table
             ref={tableRef}
@@ -363,12 +363,12 @@ export function AdminDocumentDomesticMachines({
                 ))}
               </colgroup>
             )}
-
             <thead>
               <tr>
                 {COLUMNS.map((col, i) => (
                   <th key={col.key} className={`${HEAD_BASE} ${col.className}`}>
                     {col.label}
+                    {/* Sürükleme tutamacı: sütunun sağ kenarı */}
                     <span
                       role="separator"
                       aria-orientation="vertical"
@@ -380,74 +380,46 @@ export function AdminDocumentDomesticMachines({
                 ))}
               </tr>
             </thead>
-
             <tbody
               onMouseOver={(e) => {
-                const target = e.target as HTMLElement;
-                const td = target.closest("td");
-                if (!td) return;
-
-                const own = target.closest<HTMLElement>("[data-tip]");
-                const anchor = own && td.contains(own) ? own : td;
-
-                if (anchor === hoveredCellRef.current) return;
-                hoveredCellRef.current = anchor;
-                setCellTip(getCellTip(anchor));
+                const td = (e.target as HTMLElement).closest("td");
+                if (!td || td === hoveredCellRef.current) return;
+                hoveredCellRef.current = td;
+                setCellTip(getCellTip(td));
               }}
               onMouseLeave={clearCellTip}
             >
-              {isLoading ? (
+              {loadingMachines ? (
                 <tr>
-                  <td colSpan={COL_COUNT} className="px-5 py-14">
-                    <div className="flex items-center justify-center gap-2.5">
+                  <td colSpan={COLUMNS.length} className="px-5 py-8">
+                    <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
                       <span className="text-sm text-muted-foreground">
-                        Yerli liste yükleniyor
+                        Yükleniyor
                       </span>
                     </div>
                   </td>
                 </tr>
               ) : machines.length === 0 ? (
                 <tr>
-                  <td colSpan={COL_COUNT} className="px-5 py-14 text-center">
+                  <td colSpan={COLUMNS.length} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Kayıt bulunamadı
                     </p>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Bu belgeye ait yerli makine kaydı mevcut değil.
                     </p>
                   </td>
                 </tr>
               ) : (
                 machines.map((machine, index) => {
-                  const stickyBg =
-                    index % 2 === 1
-                      ? "bg-slate-50 dark:bg-muted/60"
-                      : "bg-white dark:bg-card";
-                  const stickyHover =
-                    "group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40";
-
-                  const invoiceQty = toNumber(machine.invoiceRealizedQuantity);
-                  const hasInvoice = invoiceQty !== null && invoiceQty > 0;
-
-                  // Orijinal gösterim korunur: boşsa "0", değer ham sayı.
-                  const invoiceQuantityText =
-                    machine.invoiceRealizedQuantity === null ||
-                      machine.invoiceRealizedQuantity === undefined ||
-                      machine.invoiceRealizedQuantity === ""
-                      ? "0"
-                      : (formatQuantity(machine.invoiceRealizedQuantity) ?? "0");
-
-                  const invoiceValueText =
-                    machine.invoiceRealizedValue === null ||
-                      machine.invoiceRealizedValue === undefined ||
-                      machine.invoiceRealizedValue === ""
-                      ? "0"
-                      : String(Number(machine.invoiceRealizedValue));
-                  const hasInvoiceValue =
-                    (toNumber(machine.invoiceRealizedValue) ?? 0) > 0;
-                  const vat = flagLabel(machine.vatExemption);
-
+                  // Sticky sütunların opak arka planı: zebra + hover ile eş güdümlü.
+                  const stickyBg = `${index % 2 === 1
+                    ? "bg-slate-50 dark:bg-muted/60"
+                    : "bg-white dark:bg-card"
+                    } group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40`;
+                  const qty = formatQuantity(machine.quantity);
+                  const vatLabel = flagLabel(machine.vatExemption);
                   return (
                     <tr
                       key={machine.id}
@@ -456,118 +428,110 @@ export function AdminDocumentDomesticMachines({
                     >
                       {/* Sıra */}
                       <td
-                        className={`md:sticky md:left-0 md:z-10 w-[40px] min-w-[40px] ${CELL_BASE} text-right font-mono font-semibold tabular-nums text-muted-foreground ${stickyBg} ${stickyHover}`}
+                        className={`${STICKY_COL.seq} md:z-10 ${CELL_BASE} text-right font-mono font-semibold tabular-nums text-muted-foreground ${stickyBg}`}
                       >
                         {machine.sequenceNumber ?? EMPTY}
                       </td>
-
-                      {/* Makine ID */}
+                      {/* GTİP Kodu */}
                       <td
-                        className={`md:sticky md:left-[var(--col1-left)] md:z-10 w-[72px] min-w-[72px] ${CELL_BASE} ${stickyBg} ${stickyHover}`}
+                        className={`${STICKY_COL.gtip} md:z-10 ${CELL_BASE} text-center font-mono font-semibold text-[#1e2a5e] dark:text-blue-300 ${stickyBg}`}
                       >
-                        {machine.externalMachineId ? (
-                          <span className="inline-flex rounded border border-border bg-muted px-1 py-px font-mono text-[10px] font-medium text-foreground/80">
-                            {machine.externalMachineId}
-                          </span>
-                        ) : (
-                          EMPTY
-                        )}
+                        {machine.gtipCode ?? EMPTY}
                       </td>
-
                       {/* Ad */}
                       <td
-                        className={`md:sticky md:left-[var(--col2-left)] md:z-10 w-[170px] min-w-[170px] max-w-[170px] ${CELL_BASE} font-semibold leading-snug text-foreground ${STICKY_SHADOW} ${stickyBg} ${stickyHover}`}
+                        className={`${STICKY_COL.name} md:z-10 w-[200px] min-w-[200px] max-w-[200px] ${CELL_BASE} font-semibold text-foreground ${stickyBg}`}
                       >
-                        <div className="flex items-center gap-1.5">
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
-                          {machine.name ? (
-                            <div className="line-clamp-2 min-w-0 leading-tight">
-                              {machine.name}
-                            </div>
-                          ) : (
-                            EMPTY
-                          )}
-                        </div>
+                        {machine.name ? (
+                          <div className="truncate">{machine.name}</div>
+                        ) : (
+                          EMPTY
+                        )}
                       </td>
-
-                      {/* Öngörülen Miktar */}
+                      {/* Makine ID */}
                       <td
-                        className={`${CELL_BASE} whitespace-nowrap text-right font-mono font-semibold tabular-nums text-foreground`}
+                        className={`${CELL_BASE} text-center font-mono text-foreground/80`}
                       >
-                        {formatQuantity(machine.quantity) ?? EMPTY}
+                        {machine.externalMachineId ?? EMPTY}
                       </td>
-
+                      {/* KDV İstisnası */}
+                      <td data-tip={vatLabel} className={`${CELL_BASE} text-center`}>
+                        {vatLabel === "EVET" ? (
+                          <Check
+                            className="mx-auto h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
+                            strokeWidth={2.5}
+                          />
+                        ) : vatLabel === "HAYIR" ? (
+                          <Minus className="mx-auto h-3.5 w-3.5 text-muted-foreground" />
+                        ) : (
+                          EMPTY
+                        )}
+                      </td>
+                      {/* Miktar + Birim */}
+                      <td
+                        data-tip={
+                          qty
+                            ? [qty, machine.unit].filter(Boolean).join(" ")
+                            : undefined
+                        }
+                        className={`${CELL_BASE} text-right font-mono tabular-nums text-foreground/80`}
+                      >
+                        {qty ? (
+                          <>
+                            {qty}
+                            {machine.unit && (
+                              <span className="ml-1 font-sans text-[9px] font-medium uppercase text-muted-foreground">
+                                {shortUnit(machine.unit)}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          EMPTY
+                        )}
+                      </td>
+                      {/* Birim Fiyat */}
+                      <td
+                        className={`${CELL_BASE} text-right font-mono tabular-nums text-foreground/80`}
+                      >
+                        {formatNumber(machine.unitPriceTl) ?? EMPTY}
+                      </td>
+                      {/* Satıcı */}
+                      <td
+                        className={`${CELL_BASE} w-[140px] min-w-[140px] max-w-[140px] text-left`}
+                      >
+                        {realizationList(machine, (r) => r.sellerName)}
+                      </td>
+                      {/* Fatura No */}
+                      <td className={`${CELL_BASE} text-center`}>
+                        {realizationList(machine, (r) => r.invoiceNumber)}
+                      </td>
+                      {/* Fatura Tarihi */}
+                      <td className={`${CELL_BASE} text-center tabular-nums`}>
+                        {realizationList(machine, (r) => formatDate(r.invoiceDate))}
+                      </td>
+                      {/* Fatura Tutarı */}
+                      <td
+                        className={`${CELL_BASE} text-right font-mono tabular-nums`}
+                      >
+                        {realizationList(machine, (r) =>
+                          formatNumber(r.invoiceValue),
+                        )}
+                      </td>
+                      {/* Tutar (KDV Hariç) */}
+                      <td
+                        className={`${CELL_BASE} text-right font-mono font-bold tabular-nums text-[#1e2a5e] dark:text-blue-300`}
+                      >
+                        {formatNumber(machine.totalTl) ?? EMPTY}
+                      </td>
                       {/* Fatura Gerçekleşen Miktar */}
                       <td
-                        className={`${CELL_BASE} whitespace-nowrap text-right font-mono tabular-nums`}
+                        className={`${CELL_BASE} text-right font-mono tabular-nums text-foreground/80`}
                       >
-                        {hasInvoice ? (
-                          <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1 py-px font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
-                            <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                            {invoiceQuantityText}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            {invoiceQuantityText}
-                          </span>
-                        )}
+                        {formatQuantity(machine.invoiceRealizedQuantity) ?? "0"}
                       </td>
-
-                      {/* Birim */}
-                      <td
-                        data-tip={machine.unit ?? undefined}
-                        className={`${CELL_BASE} whitespace-nowrap`}
-                      >
-                        {machine.unit ? (
-                          <span className="inline-flex rounded bg-muted px-1 py-px text-[9px] font-medium uppercase text-foreground/80">
-                            {shortUnit(machine.unit)}
-                          </span>
-                        ) : (
-                          EMPTY
-                        )}
-                      </td>
-
-                      {/* Birim Fiyat */}
-                      <td className={`${CELL_BASE} whitespace-nowrap text-right`}>
-                        <Money value={machine.unitPriceTl} suffix="TL" />
-                      </td>
-
-                      {/* Toplam Tutar */}
-                      <td className={`${CELL_BASE} whitespace-nowrap text-right`}>
-                        <Money value={machine.totalTl} suffix="TL" emphasis />
-                      </td>
-
-                      {/* Fatura Gerçekleşen Değer */}
-                      <td className={`${CELL_BASE} whitespace-nowrap text-right`}>
-                        <span
-                          className={`font-mono tabular-nums ${hasInvoiceValue
-                              ? "font-semibold text-emerald-700 dark:text-emerald-300"
-                              : "text-muted-foreground"
-                            }`}
-                        >
-                          {invoiceValueText}
-                        </span>
-                      </td>
-
-                      {/* KDV İstisnası */}
-                      <td className={`${CELL_BASE} whitespace-nowrap text-center`}>
-                        <FlagBadge label={vat} />
-                      </td>
-
-                      {/* GTİP No */}
-                      <td className={`${CELL_BASE} whitespace-nowrap`}>
-                        {machine.gtipCode ? (
-                          <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-1 py-px font-mono text-[10px] font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
-                            {machine.gtipCode}
-                          </span>
-                        ) : (
-                          EMPTY
-                        )}
-                      </td>
-
                       {/* GTİP Açıklama */}
                       <td
-                        className={`${CELL_BASE} w-[170px] min-w-[170px] max-w-[170px] text-muted-foreground`}
+                        className={`${CELL_BASE} w-[180px] min-w-[180px] max-w-[180px] text-muted-foreground`}
                       >
                         {machine.gtipDescription ? (
                           <div className="truncate">{machine.gtipDescription}</div>
@@ -575,49 +539,42 @@ export function AdminDocumentDomesticMachines({
                           EMPTY
                         )}
                       </td>
-
                       {/* Makine Tipi */}
                       <td
-                        className={`${CELL_BASE} whitespace-nowrap text-muted-foreground`}
+                        className={`${CELL_BASE} text-center text-muted-foreground`}
                       >
                         {machine.machineryEquipmentType ? (
-                          <div className="max-w-[110px] truncate">
+                          <div className="mx-auto max-w-[120px] truncate">
                             {machine.machineryEquipmentType}
                           </div>
                         ) : (
                           EMPTY
                         )}
                       </td>
-
                       {/* Satıcı VKN */}
                       <td
-                        className={`${CELL_BASE} whitespace-nowrap font-mono text-[10px] text-foreground/80`}
+                        className={`${CELL_BASE} text-center font-mono text-foreground/80`}
                       >
                         {machine.sellerTaxNumber ?? EMPTY}
                       </td>
-
                       {/* Satıcı E-Posta */}
-                      <td
-                        className={`${CELL_BASE} whitespace-nowrap text-muted-foreground`}
-                      >
+                      <td className={`${CELL_BASE} text-center`}>
                         {machine.sellerEmail ? (
-                          <div className="max-w-[140px] truncate">
+                          <a
+                            href={`mailto:${machine.sellerEmail}`}
+                            className="mx-auto block max-w-[160px] truncate font-medium text-[#1e2a5e] underline-offset-2 hover:underline dark:text-blue-300"
+                          >
                             {machine.sellerEmail}
-                          </div>
+                          </a>
                         ) : (
                           EMPTY
                         )}
                       </td>
-
                       {/* Barkod */}
-                      <td className="w-px overflow-hidden text-ellipsis whitespace-nowrap border-b border-border px-1.5 py-1">
-                        {machine.barcode ? (
-                          <span className="inline-flex rounded border border-border bg-muted px-1 py-px font-mono text-[10px] text-foreground/80">
-                            {machine.barcode}
-                          </span>
-                        ) : (
-                          EMPTY
-                        )}
+                      <td
+                        className={`${CELL_BASE} border-r-0 text-center font-mono text-muted-foreground`}
+                      >
+                        {machine.barcode ?? EMPTY}
                       </td>
                     </tr>
                   );
@@ -627,73 +584,24 @@ export function AdminDocumentDomesticMachines({
           </table>
         </div>
       </section>
-
-      {/* HÜCRE HOVER KUTUSU */}
-      {cellTip && (
-        <div
-          role="tooltip"
-          style={{ top: cellTip.top, left: cellTip.left }}
-          className={`pointer-events-none fixed z-50 w-max max-w-[280px] rounded border border-border bg-popover px-2 py-1 text-[11px] leading-snug text-popover-foreground shadow-md ${cellTip.above ? "-translate-y-full" : ""
-            }`}
-        >
-          {cellTip.text}
-        </div>
-      )}
+      {/* HÜCRE HOVER KUTUSU
+          body'ye portal ile basılır: admin sayfasında bileşen transform/overflow
+          içeren bir kapsayıcının (tab, kart, panel) içinde. Orada `fixed`
+          ekrana değil kapsayıcıya göre konumlanır; kutu kapsayıcıyı taşırıp
+          scrollbar açtırınca düzen kayar, fare başka hücreye geçer, kutu
+          kapanır, scrollbar gider... ve ekran titrer. */}
+      {cellTip &&
+        createPortal(
+          <div
+            role="tooltip"
+            style={{ top: cellTip.top, left: cellTip.left }}
+            className={`pointer-events-none fixed z-50 w-max max-w-[280px] rounded border border-border bg-popover px-2 py-1 text-[11px] leading-snug text-popover-foreground shadow-md ${cellTip.above ? "-translate-y-full" : ""
+              }`}
+          >
+            {cellTip.text}
+          </div>,
+          document.body,
+        )}
     </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*                               KÜÇÜK BİLEŞENLER                             */
-/* -------------------------------------------------------------------------- */
-
-function Money({
-  value,
-  suffix,
-  emphasis = false,
-}: {
-  value: string | null;
-  suffix?: string | null;
-  emphasis?: boolean;
-}) {
-  const formatted = formatNumber(value);
-  if (!formatted) return EMPTY;
-
-  return (
-    <span
-      className={`font-mono tabular-nums ${emphasis
-          ? "font-bold text-[#1e2a5e] dark:text-blue-300"
-          : "text-foreground/80"
-        }`}
-    >
-      {formatted}
-      {suffix && (
-        <span
-          className={`ml-1 text-[9px] uppercase text-muted-foreground ${emphasis ? "font-semibold" : "font-medium"
-            }`}
-        >
-          {suffix}
-        </span>
-      )}
-    </span>
-  );
-}
-
-function FlagBadge({ label }: { label: "EVET" | "HAYIR" | null }) {
-  if (!label) return EMPTY;
-
-  if (label === "HAYIR") {
-    return (
-      <span className="inline-flex items-center rounded bg-muted px-1 py-px text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
-        HAYIR
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1 py-px text-[9px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
-      <span className="h-1 w-1 rounded-full bg-emerald-500" />
-      EVET
-    </span>
   );
 }
