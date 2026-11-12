@@ -119,38 +119,31 @@ type ImportedMachinesResponse = {
   };
 };
 
-function formatNumber(
+// --- Biçimlendirme ---
+// Formatter'lar bir kez oluşturulur; her hücrede yeniden kurulmaz.
+const MONEY_FMT = new Intl.NumberFormat("tr-TR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const QTY_FMT = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 10,
+  useGrouping: false,
+});
+
+function formatWith(
+  fmt: Intl.NumberFormat,
   value: string | number | null | undefined,
 ): string | null {
   if (value === null || value === undefined || value === "") return null;
-
-  const normalized = String(value).replace(",", ".").trim();
-  const num = Number(normalized);
-
-  if (!Number.isFinite(num)) return String(value);
-
-  return new Intl.NumberFormat("tr-TR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(num);
+  const num = Number(String(value).replace(",", ".").trim());
+  return Number.isFinite(num) ? fmt.format(num) : String(value);
 }
 
-function formatQuantity(
-  value: string | number | null | undefined,
-): string | null {
-  if (value === null || value === undefined || value === "") return null;
-
-  const normalized = String(value).replace(",", ".").trim();
-  const num = Number(normalized);
-
-  if (!Number.isFinite(num)) return String(value);
-
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 10,
-    useGrouping: false,
-  }).format(num);
-}
+const formatNumber = (v: string | number | null | undefined) =>
+  formatWith(MONEY_FMT, v);
+const formatQuantity = (v: string | number | null | undefined) =>
+  formatWith(QTY_FMT, v);
 
 function isPositiveFlag(value: string | null | undefined): boolean {
   if (!value) return false;
@@ -163,51 +156,52 @@ function shortUnit(unit: string) {
   return unit.replace(/\s*\(.*\)\s*$/, "").trim() || unit;
 }
 
-// Sabit başlık için ortak class'lar — her <th>'ye uygulanacak.
+// --- Tablo stilleri ---
 // sticky top-0 + opak arka plan zorunlu, aksi halde scroll'da hücre içerikleri sızar.
-// Kompakt yoğunluk: dar padding, küçük font, ortalı; uzun başlıklar <br /> ile 2 satır.
-// Soldaki ilk 3 sütunun yatay sabitlemesi (left-*) yalnızca md ve üstünde uygulanır.
 const HEAD_BASE =
-  "sticky top-0 z-20 bg-slate-100 dark:bg-muted border-b-2 border-[#1e2a5e]/15 dark:border-blue-400/20 border-r border-border overflow-hidden text-ellipsis px-2.5 py-1.5 align-middle text-center text-[10px] font-bold uppercase leading-tight tracking-wide text-[#1e2a5e] dark:text-blue-300 shadow-[inset_0_-1px_0_rgba(30,42,94,0.15)]";
+  "sticky top-0 z-20 bg-slate-100 dark:bg-muted border-b-2 border-[#1e2a5e]/15 dark:border-blue-400/20 border-r border-border overflow-hidden text-ellipsis px-2 py-1 align-middle text-center text-[10px] font-bold uppercase leading-tight text-[#1e2a5e] dark:text-blue-300";
 
-// Gövde hücreleri için ortak kompakt class'lar.
-// overflow-hidden: kullanıcı sütunu daralttığında içerik taşmaz, kırpılır
-// (tam metin hover kutusunda görünür).
+// Gövde hücreleri: tek satır, dar padding. Taşan içerik kırpılır,
+// tam metin hover kutusunda görünür.
 const CELL_BASE =
-  "overflow-hidden text-ellipsis border-b border-r border-border px-2.5 py-1.5";
+  "overflow-hidden text-ellipsis whitespace-nowrap border-b border-r border-border px-2 py-1 leading-tight";
 
-// Sticky sütun varsayılan genişlikleri. Sıra ve Makine ID'nin left offset'leri
-// --col1-left / --col2-left CSS değişkenleriyle tabloya verilir, böylece
-// kullanıcı bu sütunları boyutlandırınca sabit sütunlar kaymaz.
-const DEFAULT_SEQ_WIDTH = 52;
-const DEFAULT_ID_WIDTH = 88;
+const DEFAULT_SEQ_WIDTH = 40;
+const DEFAULT_ID_WIDTH = 72;
 const MIN_COL_WIDTH = 40;
 
 const STICKY_SHADOW = "md:shadow-[5px_0_8px_-6px_rgba(15,23,42,0.35)]";
 const FIT = "w-px whitespace-nowrap"; // sütun içeriği kadar daralır
 
+// Soldaki ilk 3 sütunun yatay sabitlemesi — başlık ve gövde aynı class'ı kullanır.
+const STICKY_COL = {
+  seq: "md:sticky md:left-0",
+  id: "md:sticky md:left-[var(--col1-left)]",
+  name: `md:sticky md:left-[var(--col2-left)] ${STICKY_SHADOW}`,
+};
+
 // Başlık tanımları — sıra, gövdedeki <td> sırasıyla aynı olmalı.
+// Para birimi (USD/TL) her hücrede tekrar etmek yerine başlıkta yazılır.
 const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
-  { key: "seq", label: "Sıra", className: "md:left-0 md:z-40 w-[52px] min-w-[52px]" },
+  { key: "seq", label: "#", className: `${STICKY_COL.seq} md:z-40 w-[40px] min-w-[40px]` },
   {
     key: "machineId",
-    label: "Makine ID",
-    className: "md:left-[var(--col1-left)] md:z-40 w-[88px] min-w-[88px]",
+    label: <>Makine<br />ID</>,
+    className: `${STICKY_COL.id} md:z-40 w-[72px] min-w-[72px]`,
   },
   {
     key: "name",
     label: "Adı / Özelliği",
-    className: `md:left-[var(--col2-left)] md:z-40 w-[220px] min-w-[220px] max-w-[220px] ${STICKY_SHADOW}`,
+    className: `${STICKY_COL.name} md:z-40 w-[200px] min-w-[200px] max-w-[200px]`,
   },
   { key: "qty", label: <>Öngörülen<br />Miktar</>, className: FIT },
   { key: "customsQty", label: <>Gümrük Gerç.<br />Miktar</>, className: FIT },
   { key: "detail", label: "Detay", className: FIT },
-  { key: "unit", label: "Birim", className: FIT },
   { key: "gtipCode", label: "GTİP No", className: FIT },
   {
     key: "gtipDesc",
     label: "GTİP Açıklama",
-    className: "w-[220px] min-w-[220px] max-w-[220px]",
+    className: "w-[180px] min-w-[180px] max-w-[180px]",
   },
   { key: "used", label: <>Kulla-<br />nılmış</>, className: FIT },
   { key: "vehicle", label: "Araç", className: FIT },
@@ -215,11 +209,7 @@ const COLUMNS: { key: string; label: ReactNode; className: string }[] = [
   { key: "fobUsd", label: <>FOB<br />(USD)</>, className: FIT },
   { key: "fobTl", label: <>FOB<br />(TL)</>, className: FIT },
   { key: "originAmount", label: <>Menşei<br />Döviz Tutarı</>, className: FIT },
-  {
-    key: "vat",
-    label: <>KDV<br />İstisnası</>,
-    className: FIT,
-  },
+  { key: "vat", label: <>KDV<br />İstisnası</>, className: FIT },
   {
     key: "customsTax",
     label: <>Gümrük V.<br />İstisnası</>,
@@ -289,10 +279,9 @@ export function ImportedMachinesScreen() {
   };
 
   // --- Sütun boyutlandırma ---
-  // Genişlikler yalnızca bu bileşenin state'inde tutulur (localStorage yok);
-  // sayfadan çıkıp tekrar girince ya da yenileyince varsayılan düzene döner.
-  // null = otomatik düzen (içeriğe göre). Kullanıcı ilk kez sürüklediğinde
-  // mevcut genişlikler ölçülüp sabitlenir ve tablo table-fixed'e geçer.
+  // Genişlikler yalnızca bu bileşenin state'inde tutulur (localStorage yok).
+  // null = otomatik düzen. İlk sürüklemede mevcut genişlikler ölçülüp
+  // sabitlenir ve tablo table-fixed'e geçer.
   const tableRef = useRef<HTMLTableElement>(null);
   const [colWidths, setColWidths] = useState<number[] | null>(null);
   const stopResizeRef = useRef<(() => void) | null>(null);
@@ -503,10 +492,9 @@ export function ImportedMachinesScreen() {
           <table
             ref={tableRef}
             style={tableStyle}
-            className={`border-separate border-spacing-0 text-xs ${colWidths ? "table-fixed" : "w-max min-w-full"
+            className={`border-separate border-spacing-0 text-[11px] ${colWidths ? "table-fixed" : "w-max min-w-full"
               }`}
           >
-            {/* Kullanıcı bir sütunu boyutlandırdığında sabit genişlikler buradan gelir */}
             {colWidths && (
               <colgroup>
                 {colWidths.map((w, i) => (
@@ -552,22 +540,20 @@ export function ImportedMachinesScreen() {
             >
               {!selectedDocumentId ? (
                 <tr>
-                  <td colSpan={COL_COUNT} className="px-5 py-14 text-center">
+                  <td colSpan={COL_COUNT} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Görüntülenecek belge seçilmedi
                     </p>
-
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Lütfen sol menüden bir belge numarası seçin.
                     </p>
                   </td>
                 </tr>
               ) : loadingMachines ? (
                 <tr>
-                  <td colSpan={COL_COUNT} className="px-5 py-14">
-                    <div className="flex items-center justify-center gap-2.5">
+                  <td colSpan={COL_COUNT} className="px-5 py-8">
+                    <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
-
                       <span className="text-sm text-muted-foreground">
                         Yükleniyor
                       </span>
@@ -576,12 +562,11 @@ export function ImportedMachinesScreen() {
                 </tr>
               ) : machines.length === 0 ? (
                 <tr>
-                  <td colSpan={COL_COUNT} className="px-5 py-14 text-center">
+                  <td colSpan={COL_COUNT} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Kayıt bulunamadı
                     </p>
-
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Bu belgeye ait ithal makine kaydı mevcut değil.
                     </p>
                   </td>
@@ -593,101 +578,105 @@ export function ImportedMachinesScreen() {
                   // Sticky sütunların opak arka planı: zebra + hover ile eş güdümlü.
                   const stickyBg = isExpanded
                     ? "bg-[#eef1f8] dark:bg-[#1a2238]"
-                    : index % 2 === 1
+                    : `${index % 2 === 1
                       ? "bg-slate-50 dark:bg-muted/60"
-                      : "bg-white dark:bg-card";
-                  const stickyHover = isExpanded
-                    ? ""
-                    : "group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40";
+                      : "bg-white dark:bg-card"
+                    } group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40`;
 
                   const customsQuantities = [
                     ...new Set(
                       (machine.realizations ?? [])
-                        .map((row) => row.customsRealizedQuantity)
-                        .filter(
-                          (value): value is string =>
-                            value !== null && value !== "",
-                        )
-                        .map((value) => formatQuantity(value))
+                        .map((row) => formatQuantity(row.customsRealizedQuantity))
                         .filter((value): value is string => value !== null),
                     ),
                   ];
+
+                  const qty = formatQuantity(machine.quantity);
+                  const unitShort = machine.unit ? shortUnit(machine.unit) : null;
+                  const isSet = unitShort?.toUpperCase() === "SET";
 
                   return (
                     <Fragment key={machine.id}>
                       <tr
                         className={`group transition-colors ${isExpanded
-                          ? "bg-[#eef1f8] dark:bg-[#1a2238]"
-                          : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                          }`
+                            ? "bg-[#eef1f8] dark:bg-[#1a2238]"
+                            : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
+                            }`
                           }`}
                       >
                         {/* Sıra */}
                         <td
-                          className={`md:sticky md:left-0 md:z-10 w-[52px] min-w-[52px] ${CELL_BASE} text-right font-mono font-semibold tabular-nums ${isExpanded
-                            ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
-                            : "text-muted-foreground"
-                            } ${stickyBg} ${stickyHover}`}
+                          className={`${STICKY_COL.seq} md:z-10 ${CELL_BASE} text-right font-mono font-semibold tabular-nums ${isExpanded
+                              ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
+                              : "text-muted-foreground"
+                            } ${stickyBg}`}
                         >
                           {machine.sequenceNumber ?? EMPTY}
                         </td>
 
                         {/* Makine ID */}
                         <td
-                          className={`md:sticky md:left-[var(--col1-left)] md:z-10 w-[88px] min-w-[88px] ${CELL_BASE} ${stickyBg} ${stickyHover}`}
+                          className={`${STICKY_COL.id} md:z-10 ${CELL_BASE} text-center font-mono text-foreground/80 ${stickyBg}`}
                         >
-                          {machine.externalMachineId ? (
-                            <span className="inline-flex rounded border border-border bg-muted px-1.5 py-px font-mono text-[11px] font-medium text-foreground/80">
-                              {machine.externalMachineId}
-                            </span>
-                          ) : (
-                            EMPTY
-                          )}
+                          {machine.externalMachineId ?? EMPTY}
                         </td>
 
                         {/* Ad */}
                         <td
-                          className={`md:sticky md:left-[var(--col2-left)] md:z-10 w-[220px] min-w-[220px] max-w-[220px] ${CELL_BASE} font-semibold leading-snug text-foreground ${STICKY_SHADOW} ${stickyBg} ${stickyHover}`}
+                          className={`${STICKY_COL.name} md:z-10 w-[200px] min-w-[200px] max-w-[200px] ${CELL_BASE} font-semibold text-foreground ${stickyBg}`}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
-
-                            {machine.name ? (
-                              <div className="line-clamp-2 min-w-0">
-                                {machine.name}
-                              </div>
-                            ) : (
-                              EMPTY
-                            )}
-                          </div>
+                          {machine.name ? (
+                            <div className="truncate">{machine.name}</div>
+                          ) : (
+                            EMPTY
+                          )}
                         </td>
 
-                        {/* Öngörülen Miktar */}
+                        {/* Öngörülen Miktar + Birim (SET ise "?" notu) */}
                         <td
-                          className={`${CELL_BASE} whitespace-nowrap text-right font-mono font-semibold tabular-nums text-foreground`}
+                          data-tip={
+                            qty
+                              ? [qty, machine.unit].filter(Boolean).join(" ")
+                              : undefined
+                          }
+                          className={`${CELL_BASE} text-right font-mono font-semibold tabular-nums text-foreground`}
                         >
-                          {formatQuantity(machine.quantity) ?? EMPTY}
+                          {qty ? (
+                            <span className="inline-flex items-center justify-end gap-1">
+                              {qty}
+                              {unitShort && (
+                                <span className="font-sans text-[9px] font-medium uppercase text-muted-foreground">
+                                  {unitShort}
+                                </span>
+                              )}
+                              {isSet && (
+                                <span
+                                  tabIndex={0}
+                                  role="note"
+                                  data-tip={SET_NOTE}
+                                  aria-label={SET_NOTE}
+                                  className="inline-flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-amber-300 bg-amber-50 font-sans text-[9px] font-bold text-amber-700 transition-colors hover:border-amber-400 hover:bg-amber-100 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+                                >
+                                  ?
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            EMPTY
+                          )}
                         </td>
 
                         {/* Gümrük Gerçekleşen Miktar */}
                         <td
-                          className={`${CELL_BASE} whitespace-nowrap text-right font-mono tabular-nums`}
+                          className={`${CELL_BASE} text-right font-mono font-semibold tabular-nums text-emerald-700 dark:text-emerald-300`}
                         >
-                          {customsQuantities.length === 0 ? (
-                            EMPTY
-                          ) : (
-                            <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-px font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
-                              <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                              {customsQuantities.join(" / ")}
-                            </span>
-                          )}
+                          {customsQuantities.length === 0
+                            ? EMPTY
+                            : customsQuantities.join(" / ")}
                         </td>
 
                         {/* Gerçekleşme Detayı — buton olduğu için hover kutusu yok */}
-                        <td
-                          data-no-tip
-                          className={`${CELL_BASE} whitespace-nowrap text-center`}
-                        >
+                        <td data-no-tip className={`${CELL_BASE} text-center`}>
                           {machine.realizations?.length ? (
                             <button
                               type="button"
@@ -697,15 +686,15 @@ export function ImportedMachinesScreen() {
                                 )
                               }
                               aria-expanded={isExpanded}
-                              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border py-0.5 pl-0.5 pr-2 text-[11px] font-semibold transition-all ${isExpanded
-                                ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
-                                : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
+                              className={`inline-flex items-center gap-1 rounded-full border py-px pl-px pr-1.5 text-[10px] font-semibold transition-all ${isExpanded
+                                  ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
+                                  : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
                                 }`}
                             >
                               <span
-                                className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-mono text-[10px] tabular-nums ${isExpanded
-                                  ? "bg-white/20 text-white"
-                                  : "bg-[#1e2a5e] text-white dark:bg-blue-500"
+                                className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 font-mono text-[9px] tabular-nums ${isExpanded
+                                    ? "bg-white/20 text-white"
+                                    : "bg-[#1e2a5e] text-white dark:bg-blue-500"
                                   }`}
                               >
                                 {machine.realizations.length}
@@ -722,54 +711,16 @@ export function ImportedMachinesScreen() {
                           )}
                         </td>
 
-                        {/* Birim */}
-                        <td
-                          data-tip={
-                            machine.unit
-                              ? shortUnit(machine.unit).toUpperCase() === "SET"
-                                ? SET_NOTE
-                                : machine.unit
-                              : undefined
-                          }
-                          className={`${CELL_BASE} whitespace-nowrap`}
-                        >
-                          {machine.unit ? (
-                            <div className="flex items-center gap-1">
-                              <span className="inline-flex rounded bg-muted px-1.5 py-px text-[10px] font-medium uppercase text-foreground/80">
-                                {shortUnit(machine.unit)}
-                              </span>
-
-                              {shortUnit(machine.unit).toUpperCase() === "SET" && (
-                                <span
-                                  tabIndex={0}
-                                  role="note"
-                                  data-tip={SET_NOTE}
-                                  aria-label={SET_NOTE}
-                                  className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-amber-300 bg-amber-50 text-[10px] font-bold text-amber-700 transition-colors hover:border-amber-400 hover:bg-amber-100 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
-                                >
-                                  ?
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            EMPTY
-                          )}
-                        </td>
-
                         {/* GTİP Kodu */}
-                        <td className={`${CELL_BASE} whitespace-nowrap`}>
-                          {machine.gtipCode ? (
-                            <span className="inline-flex rounded border border-[#1e2a5e]/20 bg-[#1e2a5e]/[0.05] px-1.5 py-px font-mono text-[11px] font-semibold text-[#1e2a5e] dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300">
-                              {machine.gtipCode}
-                            </span>
-                          ) : (
-                            EMPTY
-                          )}
+                        <td
+                          className={`${CELL_BASE} text-center font-mono font-semibold text-[#1e2a5e] dark:text-blue-300`}
+                        >
+                          {machine.gtipCode ?? EMPTY}
                         </td>
 
                         {/* GTİP Açıklama */}
                         <td
-                          className={`${CELL_BASE} w-[220px] min-w-[220px] max-w-[220px] text-muted-foreground`}
+                          className={`${CELL_BASE} w-[180px] min-w-[180px] max-w-[180px] text-muted-foreground`}
                         >
                           {machine.gtipDescription ? (
                             <div className="truncate">
@@ -781,7 +732,7 @@ export function ImportedMachinesScreen() {
                         </td>
 
                         {/* Kullanılmış */}
-                        <td className={`${CELL_BASE} whitespace-nowrap text-center`}>
+                        <td className={`${CELL_BASE} text-center`}>
                           <FlagBadge
                             value={machine.usedMachine}
                             positiveTone="amber"
@@ -789,7 +740,7 @@ export function ImportedMachinesScreen() {
                         </td>
 
                         {/* Araç */}
-                        <td className={`${CELL_BASE} whitespace-nowrap text-center`}>
+                        <td className={`${CELL_BASE} text-center`}>
                           <FlagBadge
                             value={machine.isVehicle}
                             positiveTone="slate"
@@ -797,49 +748,37 @@ export function ImportedMachinesScreen() {
                         </td>
 
                         {/* CKD */}
-                        <td className={`${CELL_BASE} whitespace-nowrap text-center`}>
+                        <td className={`${CELL_BASE} text-center`}>
                           <FlagBadge value={machine.isCkd} positiveTone="slate" />
                         </td>
 
                         {/* FOB USD */}
-                        <td className={`${CELL_BASE} whitespace-nowrap text-right`}>
-                          {formatNumber(machine.totalFobUsd) ? (
-                            <span className="font-mono font-bold tabular-nums text-[#1e2a5e] dark:text-blue-300">
-                              {formatNumber(machine.totalFobUsd)}
-                              <span className="ml-1 text-[9px] font-semibold uppercase text-muted-foreground">
-                                USD
-                              </span>
-                            </span>
-                          ) : (
-                            EMPTY
-                          )}
+                        <td
+                          className={`${CELL_BASE} text-right font-mono font-bold tabular-nums text-[#1e2a5e] dark:text-blue-300`}
+                        >
+                          {formatNumber(machine.totalFobUsd) ?? EMPTY}
                         </td>
 
                         {/* FOB TL */}
-                        <td className={`${CELL_BASE} whitespace-nowrap text-right`}>
-                          {formatNumber(machine.totalFobTl) ? (
-                            <span className="font-mono tabular-nums text-foreground/80">
-                              {formatNumber(machine.totalFobTl)}
-                              <span className="ml-1 text-[9px] font-medium uppercase text-muted-foreground">
-                                TL
-                              </span>
-                            </span>
-                          ) : (
-                            EMPTY
-                          )}
+                        <td
+                          className={`${CELL_BASE} text-right font-mono tabular-nums text-foreground/80`}
+                        >
+                          {formatNumber(machine.totalFobTl) ?? EMPTY}
                         </td>
 
-                        {/* Menşei Döviz Tutarı */}
-                        <td className={`${CELL_BASE} whitespace-nowrap text-right`}>
+                        {/* Menşei Döviz Tutarı — döviz cinsi değiştiği için hücrede kalır */}
+                        <td
+                          className={`${CELL_BASE} text-right font-mono tabular-nums text-foreground/80`}
+                        >
                           {formatNumber(machine.originCurrencyFobAmount) ? (
-                            <span className="font-mono tabular-nums text-foreground/80">
+                            <>
                               {formatNumber(machine.originCurrencyFobAmount)}
                               {machine.originCurrencyFob && (
-                                <span className="ml-1 text-[9px] font-medium uppercase text-muted-foreground">
+                                <span className="ml-1 font-sans text-[9px] font-medium uppercase text-muted-foreground">
                                   {machine.originCurrencyFob}
                                 </span>
                               )}
-                            </span>
+                            </>
                           ) : (
                             EMPTY
                           )}
@@ -847,7 +786,7 @@ export function ImportedMachinesScreen() {
 
                         {/* KDV İstisnası */}
                         <td
-                          className={`${CELL_BASE} w-px whitespace-nowrap text-center text-muted-foreground`}
+                          className={`${CELL_BASE} text-center text-muted-foreground`}
                         >
                           {machine.vatExemptionDescription ? (
                             <div className="mx-auto max-w-[140px] truncate">
@@ -859,7 +798,9 @@ export function ImportedMachinesScreen() {
                         </td>
 
                         {/* Gümrük Vergisi İstisnası */}
-                        <td className="w-px overflow-hidden text-ellipsis whitespace-nowrap border-b border-border px-2.5 py-1.5 text-center text-muted-foreground">
+                        <td
+                          className={`${CELL_BASE} border-r-0 text-center text-muted-foreground`}
+                        >
                           {machine.customsTaxExemptionDescription ? (
                             <div className="mx-auto max-w-[140px] truncate">
                               {machine.customsTaxExemptionDescription}
@@ -933,8 +874,8 @@ export function ImportedMachinesScreen() {
                                           <tr
                                             key={record.externalRowId}
                                             className={`transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${recordIndex % 2 === 1
-                                              ? "bg-muted/30"
-                                              : ""
+                                                ? "bg-muted/30"
+                                                : ""
                                               }`}
                                           >
                                             <td className="border-b border-border px-2.5 py-1 text-center">
@@ -1006,7 +947,7 @@ function FlagBadge({
 
   if (!isPositive) {
     return (
-      <span className="inline-flex items-center rounded bg-muted px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="inline-flex items-center rounded bg-muted px-1 text-[9px] font-medium uppercase text-muted-foreground">
         {value}
       </span>
     );
@@ -1021,18 +962,10 @@ function FlagBadge({
       "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-muted dark:text-foreground/80 dark:ring-border",
   }[positiveTone];
 
-  const dotStyle =
-    positiveTone === "emerald"
-      ? "bg-emerald-500"
-      : positiveTone === "amber"
-        ? "bg-amber-500"
-        : "bg-slate-500 dark:bg-slate-400";
-
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${toneStyles}`}
+      className={`inline-flex items-center rounded px-1 text-[9px] font-semibold uppercase ring-1 ring-inset ${toneStyles}`}
     >
-      <span className={`h-1 w-1 rounded-full ${dotStyle}`} />
       {value}
     </span>
   );

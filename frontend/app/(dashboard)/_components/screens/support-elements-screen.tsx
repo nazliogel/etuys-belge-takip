@@ -29,6 +29,8 @@ type SupportsResponse = {
   };
 };
 
+const EMPTY = <span className="text-muted-foreground/50">—</span>;
+
 export function SupportsScreen() {
   const searchParams = useSearchParams();
 
@@ -155,16 +157,16 @@ export function SupportsScreen() {
 
         {/* Tablo */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] table-fixed border-collapse text-sm">
+          <table className="w-full min-w-[760px] table-fixed border-collapse text-[13px]">
             <thead>
-              <tr className="border-b-2 border-[#1e2a5e]/15 bg-[#1e2a5e]/[0.04] dark:border-blue-400/20 dark:bg-blue-400/10">
-                <th className="w-1/3 px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
+              <tr className="border-b-2 border-[#1e2a5e]/15 bg-slate-100 text-left dark:border-blue-400/20 dark:bg-muted">
+                <th className="w-[280px] border-r border-border py-1.5 pl-10 pr-3 text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:text-blue-300">
                   Destek Türü
                 </th>
-                <th className="w-1/3 px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
+                <th className="w-[130px] border-r border-border px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:text-blue-300">
                   Destek Oranı
                 </th>
-                <th className="w-1/3 px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
+                <th className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:text-blue-300">
                   Açıklama
                 </th>
               </tr>
@@ -173,19 +175,19 @@ export function SupportsScreen() {
             <tbody className="divide-y divide-border">
               {!selectedDocumentId ? (
                 <tr>
-                  <td colSpan={3} className="px-5 py-14 text-center">
+                  <td colSpan={3} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Görüntülenecek belge seçilmedi
                     </p>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Lütfen sol menüden bir belge numarası seçin.
                     </p>
                   </td>
                 </tr>
               ) : supportsLoading ? (
                 <tr>
-                  <td colSpan={3} className="px-5 py-14">
-                    <div className="flex items-center justify-center gap-2.5">
+                  <td colSpan={3} className="px-5 py-8">
+                    <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
                       <span className="text-sm text-muted-foreground">
                         Yükleniyor
@@ -195,11 +197,11 @@ export function SupportsScreen() {
                 </tr>
               ) : supports.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-5 py-14 text-center">
+                  <td colSpan={3} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Kayıt bulunamadı
                     </p>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Bu belgeye ait destek unsuru mevcut değil.
                     </p>
                   </td>
@@ -208,31 +210,28 @@ export function SupportsScreen() {
                 supports.map((support, index) => (
                   <tr
                     key={support.id}
-                    className={`group transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${
-                      index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                    }`}
+                    className={`align-top transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
+                      }`}
                   >
-                    <td className="px-4 py-2.5 text-left text-sm font-semibold text-foreground">
-                      <div className="inline-flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
-                        {support.supportType ?? (
-                          <span className="text-muted-foreground/50">—</span>
-                        )}
-                      </div>
+                    {/* Destek Türü */}
+                    <td className="border-r border-border py-1.5 pl-10 pr-3 font-semibold leading-snug text-foreground">
+                      {support.supportType || EMPTY}
                     </td>
-                    <td className="px-4 py-2.5 text-left">
+
+                    {/* Destek Oranı */}
+                    <td className="border-r border-border px-3 py-1.5 text-center">
                       {support.supportRate ? (
-                        <span className="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-0.5 font-mono text-sm font-bold tabular-nums text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
+                        <span className="inline-flex items-center rounded bg-emerald-50 px-1.5 font-mono text-xs font-bold tabular-nums text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
                           {support.supportRate}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground/50">—</span>
+                        EMPTY
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-left text-sm leading-relaxed text-muted-foreground">
-                      {support.supportDescription ?? (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
+
+                    {/* Açıklama */}
+                    <td className="px-3 py-1.5 leading-normal text-muted-foreground">
+                      {support.supportDescription || EMPTY}
                     </td>
                   </tr>
                 ))

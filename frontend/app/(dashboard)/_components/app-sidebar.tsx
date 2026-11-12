@@ -8,6 +8,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileSpreadsheet,
+  FileText,
   Headphones,
   Loader2,
 } from "lucide-react";
@@ -24,6 +26,7 @@ import {
 import { hasPermission, type UserRole } from "../_lib/permissions";
 import { fetchDocumentPdfData } from "@/lib/document-pdf/data";
 import { generateDocumentPdf } from "@/lib/document-pdf/generate-document-pdf";
+import { generateDocumentExcel } from "@/lib/document-pdf/excel";
 
 type SidebarDocument = {
   id: number;
@@ -65,7 +68,9 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [documentWarning, setDocumentWarning] = useState(false);
-  const [isDownloadingDetails, setIsDownloadingDetails] = useState(false);
+  const [downloadingType, setDownloadingType] = useState<
+    "pdf" | "excel" | null
+  >(null);
   const [downloadError, setDownloadError] = useState("");
   const [collapsed, setCollapsed] = useState(false);
 
@@ -367,8 +372,10 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
     );
   };
 
-  const handleDownloadDocumentDetails = async () => {
-    if (role !== "COMPANY" || isDownloadingDetails) return;
+  // PDF ve Excel indirme — hangisinin hazırlandığını ayrı tutuyoruz ki
+  // sadece basılan butonda spinner dönsün.
+  const handleDownload = async (type: "pdf" | "excel") => {
+    if (role !== "COMPANY" || downloadingType) return;
 
     const selected = documents.find(
       (item) => String(item.id) === selectedDocumentId,
@@ -379,7 +386,7 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
       return;
     }
 
-    setIsDownloadingDetails(true);
+    setDownloadingType(type);
     setDownloadError("");
 
     try {
@@ -387,20 +394,29 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
         selected.status === "CLOSED" ||
         selected.status === "CANCELLED";
 
-      const pdfData = await fetchDocumentPdfData(
+      const data = await fetchDocumentPdfData(
         String(selected.id),
         isClosed,
       );
 
-      await generateDocumentPdf(pdfData);
+      if (type === "pdf") {
+        await generateDocumentPdf(data);
+      } else {
+        await generateDocumentExcel(data);
+      }
     } catch (error) {
-      console.error("Belge detay PDF oluşturulamadı:", error);
+      console.error(
+        `Belge detay ${type === "pdf" ? "PDF" : "Excel"} oluşturulamadı:`,
+        error,
+      );
 
       setDownloadError(
-        "Belge detayları indirilemedi. Lütfen tekrar deneyin.",
+        type === "pdf"
+          ? "Belge detayları indirilemedi. Lütfen tekrar deneyin."
+          : "Excel dosyası indirilemedi. Lütfen tekrar deneyin.",
       );
     } finally {
-      setIsDownloadingDetails(false);
+      setDownloadingType(null);
     }
   };
 
@@ -537,38 +553,66 @@ export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
                     ))}
                   </select>
 
-                  {/* Seçili belgenin tüm detaylarını tek PDF olarak indir */}
+                  {/* Seçili belgenin detaylarını PDF / Excel olarak indir */}
                   {role === "COMPANY" && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => void handleDownloadDocumentDetails()}
-                        disabled={!selectedDocumentId || isDownloadingDetails}
-                        title={
-                          selectedDocumentId
-                            ? "Seçili belgenin detaylarını PDF olarak indir"
-                            : "Önce bir belge seçiniz"
-                        }
-                        className="mt-1 flex w-0 min-w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-blue-100 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-700/60"
-                      >
-                        {isDownloadingDetails ? (
-                          <Loader2 size={14} className="shrink-0 animate-spin" />
-                        ) : (
-                          <Download size={14} className="shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {isDownloadingDetails
-                            ? "PDF hazırlanıyor..."
-                            : "PDF Olarak İndir"}
-                        </span>
-                      </button>
+                    <div className="mt-2 w-0 min-w-full">
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => void handleDownload("pdf")}
+                          disabled={!selectedDocumentId || downloadingType !== null}
+                          title={
+                            selectedDocumentId
+                              ? "Seçili belgenin detaylarını PDF olarak indir"
+                              : "Önce bir belge seçiniz"
+                          }
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-red-300/25 bg-red-500/15 px-2 py-1.5 text-xs font-semibold text-red-50 transition hover:border-red-300/50 hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-red-300/25 disabled:hover:bg-red-500/15 dark:border-red-400/20 dark:bg-red-500/10 dark:hover:bg-red-500/20"
+                        >
+                          {downloadingType === "pdf" ? (
+                            <Loader2 size={14} className="shrink-0 animate-spin" />
+                          ) : (
+                            <FileText size={14} className="shrink-0 text-red-300" />
+                          )}
+                          <span>PDF</span>
+                          <Download
+                            size={12}
+                            className="shrink-0 text-red-200/80"
+                          />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void handleDownload("excel")}
+                          disabled={!selectedDocumentId || downloadingType !== null}
+                          title={
+                            selectedDocumentId
+                              ? "Seçili belgenin detaylarını Excel olarak indir"
+                              : "Önce bir belge seçiniz"
+                          }
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-300/25 bg-emerald-500/15 px-2 py-1.5 text-xs font-semibold text-emerald-50 transition hover:border-emerald-300/50 hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-emerald-300/25 disabled:hover:bg-emerald-500/15 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
+                        >
+                          {downloadingType === "excel" ? (
+                            <Loader2 size={14} className="shrink-0 animate-spin" />
+                          ) : (
+                            <FileSpreadsheet
+                              size={14}
+                              className="shrink-0 text-emerald-300"
+                            />
+                          )}
+                          <span>Excel</span>
+                          <Download
+                            size={12}
+                            className="shrink-0 text-emerald-200/80"
+                          />
+                        </button>
+                      </div>
 
                       {downloadError && (
-                        <p className="mt-1 w-0 min-w-full text-[10px] leading-4 text-red-200">
+                        <p className="mt-1 text-[10px] leading-4 text-red-200">
                           {downloadError}
                         </p>
                       )}
-                    </>
+                    </div>
                   )}
 
                   {documentWarning && (

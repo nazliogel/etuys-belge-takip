@@ -481,6 +481,7 @@ export class ClosedDocumentService {
           externalInvoiceLineId: true,
           sellerName: true,
           invoiceNumber: true,
+          invoiceDate: true,
           invoiceValue: true,
         },
       })
@@ -492,6 +493,7 @@ export class ClosedDocumentService {
         externalInvoiceLineId: number;
         sellerName: string | null;
         invoiceNumber: string | null;
+        invoiceDate: string | null;
         invoiceValue: string | null;
       }[]
     >();
@@ -513,6 +515,7 @@ export class ClosedDocumentService {
         externalInvoiceLineId: realization.externalInvoiceLineId,
         sellerName: realization.sellerName,
         invoiceNumber: realization.invoiceNumber,
+        invoiceDate: realization.invoiceDate?.toISOString() ?? null,
         invoiceValue: realization.invoiceValue?.toString() ?? null,
       });
 

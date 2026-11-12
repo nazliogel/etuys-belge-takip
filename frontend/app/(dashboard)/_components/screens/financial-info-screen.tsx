@@ -448,7 +448,7 @@ export function FinancialInfoScreen() {
           description="Lütfen sol menüden bir belge numarası seçin."
         />
       ) : financialInfoLoading ? (
-        <div className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card py-12 shadow-sm dark:shadow-none">
+        <div className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card py-8 shadow-sm dark:shadow-none">
           <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
           <span className="text-sm text-muted-foreground">Yükleniyor</span>
         </div>
@@ -476,7 +476,7 @@ export function FinancialInfoScreen() {
 
           {/* FİNANSMAN + İTHAL MAKİNE */}
           {financialInfo && (
-            <div className="grid items-start gap-4 lg:grid-cols-2">
+            <div className="grid items-start gap-3 lg:grid-cols-2">
               <InfoCard title="Finansman" rows={financingRows} />
               <InfoCard title="İthal Makine ($)" rows={importedMachineRows} />
             </div>
@@ -547,22 +547,21 @@ function SummaryStat({
   const formatted = formatAmount(value);
 
   return (
-    <div className="relative border-b border-border px-5 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+    <div className="relative border-b border-border px-4 py-2.5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
       <span
-        className={`absolute left-0 top-4 h-8 w-[3px] rounded-r ${accent}`}
+        className={`absolute left-0 top-2.5 h-6 w-[3px] rounded-r ${accent}`}
       />
 
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
 
       {formatted ? (
         <p
-          className={`mt-1.5 font-mono text-[22px] font-semibold leading-none tabular-nums tracking-tight ${
-            tone === "warning"
+          className={`mt-1 font-mono text-lg font-semibold leading-none tabular-nums tracking-tight ${tone === "warning"
               ? "text-amber-700 dark:text-amber-300"
               : "text-foreground"
-          }`}
+            }`}
         >
           {formatted}
           <span className="ml-1.5 font-sans text-[11px] font-medium text-muted-foreground">
@@ -570,7 +569,7 @@ function SummaryStat({
           </span>
         </p>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground/60">{emptyText}</p>
+        <p className="mt-1 text-xs text-muted-foreground/60">{emptyText}</p>
       )}
     </div>
   );
@@ -581,7 +580,7 @@ function SummaryStat({
 /* -------------------------------------------------------------------------- */
 
 const TABLE_GRID =
-  "grid grid-cols-[minmax(180px,1fr)_160px_160px_160px] items-center";
+  "grid grid-cols-[minmax(180px,1fr)_140px_140px_150px] items-center";
 
 function ComparisonTable({
   items,
@@ -609,7 +608,7 @@ function ComparisonTable({
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:shadow-none">
       {/* BAŞLIK */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">
             Yatırım Kalemleri
@@ -631,15 +630,15 @@ function ComparisonTable({
       </div>
 
       <div className="overflow-x-auto">
-        <div className="min-w-[680px]">
+        <div className="min-w-[620px]">
           {/* SÜTUN BAŞLIKLARI */}
           <div
             className={`${TABLE_GRID} border-b border-border bg-muted text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300`}
           >
-            <div className="px-4 py-2">Kalem</div>
-            <div className="px-4 py-2 text-right">Öngörülen</div>
-            <div className="px-4 py-2 text-right">Gerçekleşen</div>
-            <div className="px-4 py-2 text-right">Kalan</div>
+            <div className="px-3 py-1.5">Kalem</div>
+            <div className="px-3 py-1.5 text-right">Öngörülen</div>
+            <div className="px-3 py-1.5 text-right">Gerçekleşen</div>
+            <div className="px-3 py-1.5 text-right">Kalan</div>
           </div>
 
           {/* SATIRLAR */}
@@ -657,7 +656,7 @@ function ComparisonTable({
           <div
             className={`${TABLE_GRID} border-t-2 border-foreground/15 bg-amber-50/60 dark:bg-amber-500/10`}
           >
-            <div className="px-4 py-3 text-[12px] font-bold uppercase tracking-wide text-foreground">
+            <div className="px-3 py-2 text-[12px] font-bold uppercase tracking-wide text-foreground">
               Toplam Sabit Yatırım
             </div>
             <AmountCell value={plannedTotal} strong />
@@ -693,15 +692,13 @@ function ComparisonRow({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className={`${TABLE_GRID} w-full text-left transition-colors hover:bg-muted/60 ${
-          open ? "bg-muted/40" : ""
-        }`}
+        className={`${TABLE_GRID} w-full text-left transition-colors hover:bg-muted/60 ${open ? "bg-muted/40" : ""
+          }`}
       >
-        <div className="flex items-center gap-2 px-4 py-3">
+        <div className="flex items-center gap-1.5 px-3 py-1.5">
           <ChevronRight
-            className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${
-              open ? "rotate-90" : ""
-            }`}
+            className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""
+              }`}
           />
           <span className="text-[12px] font-semibold text-foreground">
             {item.title}
@@ -747,20 +744,20 @@ function DetailList({
   const mutedRows = rows.filter((row) => row.muted);
 
   return (
-    <div className="bg-background/60 px-4 py-3 pl-10 dark:bg-background/40">
-      <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+    <div className="bg-background/60 px-3 py-2 pl-8 dark:bg-background/40">
+      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {title}
       </p>
 
       {rows.length === 0 ? (
         <p className="text-[11px] text-muted-foreground/70">{emptyText}</p>
       ) : (
-        <dl className="space-y-1">
+        <dl className="space-y-0.5">
           {mainRows.map((row) => (
             <DetailLine key={row.label} label={row.label} value={row.value} />
           ))}
 
-          <div className="mt-1.5 border-t border-dashed border-border pt-1.5">
+          <div className="mt-1 border-t border-dashed border-border pt-1">
             <DetailLine label="Toplam" value={total} strong />
             {mutedRows.map((row) => (
               <DetailLine
@@ -793,24 +790,22 @@ function DetailLine({
   return (
     <div className="flex items-baseline justify-between gap-4">
       <dt
-        className={`text-[11px] ${
-          strong
+        className={`text-[11px] ${strong
             ? "font-semibold text-foreground"
             : muted
               ? "italic text-muted-foreground/70"
               : "text-muted-foreground"
-        }`}
+          }`}
       >
         {label}
       </dt>
       <dd
-        className={`font-mono text-[11px] tabular-nums ${
-          strong
+        className={`font-mono text-[11px] tabular-nums ${strong
             ? "font-semibold text-foreground"
             : muted
               ? "text-muted-foreground/70"
               : "text-foreground/80"
-        }`}
+          }`}
       >
         {formatted ?? <span className="text-muted-foreground/50">—</span>}
       </dd>
@@ -828,14 +823,13 @@ function AmountCell({
   const formatted = formatAmount(value);
 
   return (
-    <div className="px-4 py-3 text-right">
+    <div className="px-3 py-1.5 text-right">
       {formatted ? (
         <span
-          className={`font-mono tabular-nums ${
-            strong
+          className={`font-mono tabular-nums ${strong
               ? "text-[13px] font-bold text-foreground"
               : "text-[12px] font-medium text-foreground/85"
-          }`}
+            }`}
         >
           {formatted}
         </span>
@@ -857,7 +851,7 @@ function DiffCell({
 }) {
   if (planned === null || realized === null) {
     return (
-      <div className="px-4 py-3 text-right">
+      <div className="px-3 py-1.5 text-right">
         <span className="text-xs text-muted-foreground/50">—</span>
       </div>
     );
@@ -867,17 +861,15 @@ function DiffCell({
   const isOver = diff < 0;
 
   return (
-    <div className="px-4 py-3 text-right">
+    <div className="px-3 py-1.5 text-right">
       <span
-        className={`font-mono tabular-nums ${
-          strong ? "text-[13px] font-bold" : "text-[12px] font-medium"
-        } ${
-          isOver
+        className={`font-mono tabular-nums ${strong ? "text-[13px] font-bold" : "text-[12px] font-medium"
+          } ${isOver
             ? "text-amber-700 dark:text-amber-300"
             : diff === 0
               ? "text-emerald-700 dark:text-emerald-400"
               : "text-muted-foreground"
-        }`}
+          }`}
       >
         {isOver && "+"}
         {formatAmount(Math.abs(diff))}
@@ -898,7 +890,7 @@ function DiffCell({
 function InfoCard({ title, rows }: { title: string; rows: InfoRow[] }) {
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:shadow-none">
-      <div className="border-b border-border bg-muted px-4 py-2">
+      <div className="border-b border-border bg-muted px-3 py-1.5">
         <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
           {title}
         </h3>
@@ -911,9 +903,8 @@ function InfoCard({ title, rows }: { title: string; rows: InfoRow[] }) {
           return (
             <div
               key={row.label}
-              className={`flex min-h-[38px] items-center justify-between gap-4 border-b border-border px-4 py-2 last:border-b-0 ${
-                row.isTotal ? "bg-amber-50/50 dark:bg-amber-500/10" : ""
-              }`}
+              className={`flex min-h-[30px] items-center justify-between gap-4 border-b border-border px-3 py-1 last:border-b-0 ${row.isTotal ? "bg-amber-50/50 dark:bg-amber-500/10" : ""
+                }`}
             >
               <span
                 className={
@@ -927,11 +918,10 @@ function InfoCard({ title, rows }: { title: string; rows: InfoRow[] }) {
 
               {formatted ? (
                 <span
-                  className={`font-mono tabular-nums ${
-                    row.isTotal
+                  className={`font-mono tabular-nums ${row.isTotal
                       ? "text-[12px] font-bold text-foreground"
                       : "text-[11px] font-semibold text-foreground/80"
-                  }`}
+                    }`}
                 >
                   {formatted}
                   <span className="ml-1.5 font-sans text-[9px] font-medium uppercase text-muted-foreground">
@@ -961,7 +951,7 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-6 py-12 text-center shadow-sm dark:shadow-none">
+    <div className="rounded-lg border border-border bg-card px-6 py-8 text-center shadow-sm dark:shadow-none">
       <p className="text-sm font-medium text-foreground/80">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground">{description}</p>
     </div>

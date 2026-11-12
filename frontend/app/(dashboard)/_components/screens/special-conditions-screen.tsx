@@ -26,13 +26,7 @@ type SpecialConditionsResponse = {
   };
 };
 
-function displayValue(value: string | number | null | undefined) {
-  if (value === null || value === undefined || value === "") {
-    return "-";
-  }
-
-  return String(value);
-}
+const EMPTY = <span className="text-muted-foreground/50">—</span>;
 
 export function SpecialConditionsScreen() {
   const searchParams = useSearchParams();
@@ -185,13 +179,13 @@ export function SpecialConditionsScreen() {
 
         {/* Tablo */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-sm">
+          <table className="w-full min-w-[760px] border-collapse text-[13px]">
             <thead>
-              <tr className="border-b-2 border-[#1e2a5e]/15 bg-[#1e2a5e]/[0.04] text-left dark:border-blue-400/20 dark:bg-blue-400/10">
-                <th className="w-[280px] px-6 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
+              <tr className="border-b-2 border-[#1e2a5e]/15 bg-slate-100 text-left dark:border-blue-400/20 dark:bg-muted">
+                <th className="w-[260px] border-r border-border py-1.5 pl-10 pr-3 text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:text-blue-300">
                   Özel Şart
                 </th>
-                <th className="px-6 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#1e2a5e] dark:text-blue-300">
+                <th className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:text-blue-300">
                   Açıklama
                 </th>
               </tr>
@@ -200,19 +194,19 @@ export function SpecialConditionsScreen() {
             <tbody className="divide-y divide-border">
               {!selectedDocumentId ? (
                 <tr>
-                  <td colSpan={2} className="px-5 py-14 text-center">
+                  <td colSpan={2} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Görüntülenecek belge seçilmedi
                     </p>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Lütfen sol menüden bir belge numarası seçin.
                     </p>
                   </td>
                 </tr>
               ) : loadingConditions ? (
                 <tr>
-                  <td colSpan={2} className="px-5 py-14">
-                    <div className="flex items-center justify-center gap-2.5">
+                  <td colSpan={2} className="px-5 py-8">
+                    <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-[#1e2a5e] dark:text-blue-300" />
                       <span className="text-sm text-muted-foreground">
                         Yükleniyor
@@ -222,11 +216,11 @@ export function SpecialConditionsScreen() {
                 </tr>
               ) : conditions.length === 0 ? (
                 <tr>
-                  <td colSpan={2} className="px-5 py-14 text-center">
+                  <td colSpan={2} className="px-5 py-8 text-center">
                     <p className="text-sm font-medium text-foreground/80">
                       Kayıt bulunamadı
                     </p>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Bu belgeye ait özel şart mevcut değil.
                     </p>
                   </td>
@@ -235,33 +229,17 @@ export function SpecialConditionsScreen() {
                 conditions.map((condition, index) => (
                   <tr
                     key={condition.id}
-                    className={`group align-top transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${
-                      index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                    }`}
+                    className={`align-top transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
+                      }`}
                   >
                     {/* Özel Şart */}
-                    <td className="px-6 py-3 align-top">
-                      <div className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />
-                        <span className="text-sm font-semibold leading-snug text-foreground">
-                          {displayValue(condition.conditionName) === "-" ? (
-                            <span className="text-muted-foreground/50">—</span>
-                          ) : (
-                            condition.conditionName
-                          )}
-                        </span>
-                      </div>
+                    <td className="border-r border-border py-2 pl-10 pr-3 font-semibold leading-snug text-foreground">
+                      {condition.conditionName || EMPTY}
                     </td>
 
                     {/* Açıklama */}
-                    <td className="px-6 py-4 align-top">
-                      {displayValue(condition.description) === "-" ? (
-                        <span className="text-muted-foreground/50">—</span>
-                      ) : (
-                        <p className="text-sm leading-relaxed text-muted-foreground">
-                          {condition.description}
-                        </p>
-                      )}
+                    <td className="px-3 py-2 leading-normal text-muted-foreground">
+                      {condition.description || EMPTY}
                     </td>
                   </tr>
                 ))

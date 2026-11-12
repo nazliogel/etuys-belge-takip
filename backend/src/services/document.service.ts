@@ -693,6 +693,7 @@ export class DocumentService {
           externalInvoiceLineId: true,
           sellerName: true,
           invoiceNumber: true,
+          invoiceDate: true,
           invoiceValue: true,
         },
       })
@@ -704,6 +705,7 @@ export class DocumentService {
         externalInvoiceLineId: number;
         sellerName: string | null;
         invoiceNumber: string | null;
+        invoiceDate: string | null;
         invoiceValue: string | null;
       }[]
     >();
@@ -720,11 +722,11 @@ export class DocumentService {
       if (!machine) continue;
 
       const items = realizationsByMachine.get(machine.id) ?? [];
-
       items.push({
         externalInvoiceLineId: realization.externalInvoiceLineId,
         sellerName: realization.sellerName,
         invoiceNumber: realization.invoiceNumber,
+        invoiceDate: realization.invoiceDate?.toISOString() ?? null,
         invoiceValue: realization.invoiceValue?.toString() ?? null,
       });
 

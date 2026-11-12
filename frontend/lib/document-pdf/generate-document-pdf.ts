@@ -495,6 +495,18 @@ export async function buildDocumentPdf(data: DocumentPdfData): Promise<jsPDF> {
                 ? realizations.map((r) => value(r.invoiceNumber)).join("\n")
                 : "-",
 
+            invoiceDate: realizations.length
+                ? realizations
+                    .map((r) =>
+                        r.invoiceDate
+                            ? new Date(String(r.invoiceDate)).toLocaleDateString("tr-TR", {
+                                timeZone: "UTC",
+                            })
+                            : "-"
+                    )
+                    .join("\n")
+                : "-",
+
             invoiceAmount: realizations.length
                 ? realizations
                     .map((r) => decimal(r.invoiceValue, true))
@@ -503,21 +515,20 @@ export async function buildDocumentPdf(data: DocumentPdfData): Promise<jsPDF> {
         };
     });
     y = table(pdf, [
-        { key: "sequenceNumber", label: "Sıra No", width: 12, align: "center" },
-        { key: "externalMachineId", label: "Makine ID", width: 18, align: "center" },
-        { key: "gtipCode", label: "GTİP No", width: 20, align: "center" },
-        { key: "name", label: "Adı ve Özelliği", width: 43 },
-        { key: "vat", label: "KDV İstisnası", width: 15, align: "center" },
-        { key: "quantity", label: "Miktarı", width: 13, align: "right" },
-        { key: "unit", label: "Birim", width: 12, align: "center" },
-        { key: "unitPriceTl", label: "Birim Fiyatı (TL)", width: 23, align: "right" },
-
-        { key: "sellerName", label: "Satıcı", width: 30 },
-        { key: "invoiceNumber", label: "Fatura No.", width: 20 },
+        { key: "sequenceNumber", label: "Sıra No", width: 11, align: "center" },
+        { key: "externalMachineId", label: "Makine ID", width: 16, align: "center" },
+        { key: "gtipCode", label: "GTİP No", width: 18, align: "center" },
+        { key: "name", label: "Adı ve Özelliği", width: 39 },
+        { key: "vat", label: "KDV İstisnası", width: 14, align: "center" },
+        { key: "quantity", label: "Miktarı", width: 12, align: "right" },
+        { key: "unit", label: "Birim", width: 11, align: "center" },
+        { key: "unitPriceTl", label: "Birim Fiyatı (TL)", width: 21, align: "right" },
+        { key: "sellerName", label: "Satıcı", width: 29 },
+        { key: "invoiceNumber", label: "Fatura No.", width: 19 },
+        { key: "invoiceDate", label: "Fatura Tarihi", width: 19, align: "center" },
         { key: "invoiceAmount", label: "Fatura Tutarı", width: 20, align: "right" },
-
-        { key: "invoiceRealizedQuantity", label: "Fatura Gerç. Miktar", width: 15, align: "right" },
-        { key: "totalTl", label: "Toplam Tutar (TL)", width: 11, align: "right" },
+        { key: "invoiceRealizedQuantity", label: "Fatura Gerç. Miktar", width: 17, align: "right" },
+        { key: "totalTl", label: "Toplam Tutar (TL)", width: 13, align: "right" },
     ], domestic, y);
 
     y = section(pdf, "6", "İTHAL MAKİNE VE TEÇHİZAT LİSTESİ", y);

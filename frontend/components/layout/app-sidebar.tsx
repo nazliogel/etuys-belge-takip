@@ -1,150 +1,778 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-  Bell,
-  Building2,
-  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   FileSpreadsheet,
   FileText,
-  History,
-  LayoutDashboard,
-  LogOut,
-  Settings,
-  Users,
+  Headphones,
+  Loader2,
 } from "lucide-react";
+import { getAccessToken } from "@/lib/mock-auth";
+import { apiFetch } from "@/lib/api";
 
-import { cn } from "@/lib/utils";
-import { getSessionUser } from "@/lib/mock-auth";
+import { navigationItems } from "../_lib/navigation";
+import {
+  clearSelectedDocument,
+  getSelectedDocument,
+  setSelectedDocument,
+} from "../_lib/selected-document";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Firmalar",
-    href: "/companies",
-    icon: Building2,
-  },
-  {
-    title: "Belgeler",
-    href: "/documents",
-    icon: FileText,
-  },
-  {
-    title: "Excel İçe Aktarma",
-    href: "/imports",
-    icon: FileSpreadsheet,
-  },
-  {
-    title: "Kullanıcılar",
-    href: "/users",
-    icon: Users,
-  },
-  {
-    title: "Bildirimler",
-    href: "/notifications",
-    icon: Bell,
-    badge: 12,
-  },
-  {
-    title: "Raporlar",
-    href: "/reports",
-    icon: History,
-  },
-  {
-    title: "Takvim",
-    href: "/calendar",
-    icon: CalendarDays,
-  },
-];
+import { hasPermission, type UserRole } from "../_lib/permissions";
+import { fetchDocumentPdfData } from "@/lib/document-pdf/data";
+import { generateDocumentPdf } from "@/lib/document-pdf/generate-document-pdf";
+import { generateDocumentExcel } from "@/lib/document-pdf/excel";
 
-export function AppSidebar() {
+type SidebarDocument = {
+  id: number;
+  externalDocumentId: number;
+  documentNumber: string | null;
+  status?: "OPEN" | "CLOSED" | "CANCELLED";
+};
+
+type DocumentsResponse = {
+  success: boolean;
+  data: {
+    items: SidebarDocument[];
+  };
+};
+
+type UnreadSupportRequestCountResponse = {
+  success: boolean;
+  data: {
+    count: number;
+  };
+};
+
+interface AppSidebarProps {
+  role: UserRole;
+  userName?: string;
+  variant?: "desktop" | "mobile";
+}
+
+const SIDEBAR_COLLAPSE_KEY = "sidebar-collapsed";
+
+// userName prop'u eski çağrılar bozulmasın diye duruyor; çıkış artık
+// üstteki kullanıcı menüsünde.
+export function AppSidebar({ role, variant = "desktop" }: AppSidebarProps) {
   const pathname = usePathname();
-  const user = getSessionUser();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const visibleMenuItems = menuItems.filter((item) => {
-    if (user?.role === "OPERATION" && item.href === "/imports") {
-      return false;
+  const [documents, setDocuments] = useState<SidebarDocument[]>([]);
+  const [selectedDocumentId, setSelectedDocumentId] = useState("");
+  const [documentsLoading, setDocumentsLoading] = useState(true);
+  const [documentWarning, setDocumentWarning] = useState(false);
+  const [downloadingType, setDownloadingType] = useState<
+    "pdf" | "excel" | null
+  >(null);
+  const [downloadError, setDownloadError] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
+
+  const [supportUnreadCount, setSupportUnreadCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+
+  // Mobil drawer'da daralt/genişlet mantığı devre dışı — drawer'ın kendi genişliği var,
+  // içeride ayrıca daraltmak anlamsız. Sadece desktop varyantta `collapsed` görsel olarak
+  // uygulanır. Böylece localStorage'daki tercih desktop'ta yaşarken drawer temiz kalır.
+  const isCollapsed = variant === "desktop" && collapsed;
+
+  const visibleItems = navigationItems.filter((item) =>
+    hasPermission(role, item.permission),
+  );
+
+  const documentContextPaths = new Set([
+    "/documents/investment-type",
+    "/documents/product-information",
+    "/documents/supports",
+    "/documents/financial",
+    "/documents/domestic-machines",
+    "/documents/imported-machines",
+    "/documents/special-conditions",
+  ]);
+
+  // Daraltma tercihini yükle
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (stored === "true") setCollapsed(true);
+    } catch {
+      // localStorage erişilemiyorsa sessizce geç
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSE_KEY, String(next));
+      } catch {
+        // yoksay
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const loadDocuments = async () => {
+      // Token yoksa (logout sonrası, ilk yükleme öncesi, login sayfasında)
+      // API'yi hiç çağırma. Aynı guard destek talebi sayacında da var.
+      const token = getAccessToken();
+      if (!token) {
+        setDocuments([]);
+        setSelectedDocumentId("");
+        setDocumentsLoading(false);
+        return;
+      }
+
+      try {
+        setDocumentsLoading(true);
+
+        const [openResponse, closedResponse] = await Promise.all([
+          apiFetch<DocumentsResponse>("/documents?limit=100"),
+          apiFetch<DocumentsResponse>("/closed-documents?limit=100"),
+        ]);
+
+        const openItems = openResponse.data.items ?? [];
+        const closedItems = closedResponse.data.items ?? [];
+
+        const mergedItems = [...openItems, ...closedItems];
+
+        const uniqueItems = Array.from(
+          new Map(
+            mergedItems.map((item) => [item.externalDocumentId, item]),
+          ).values(),
+        );
+
+        const items = uniqueItems;
+
+        setDocuments(items);
+
+        const documentIdFromUrl = searchParams.get("documentId");
+        const storedDocument = getSelectedDocument();
+
+        const currentDocumentId = documentIdFromUrl ?? storedDocument?.id ?? "";
+
+        const selectedDocumentExists = items.some(
+          (item) => String(item.id) === currentDocumentId,
+        );
+
+        if (currentDocumentId && selectedDocumentExists) {
+          setSelectedDocumentId(currentDocumentId);
+          return;
+        }
+
+        if (currentDocumentId && !selectedDocumentExists) {
+          clearSelectedDocument();
+          setSelectedDocumentId("");
+        }
+
+        if (items.length === 1) {
+          const document = items[0];
+
+          setSelectedDocumentId(String(document.id));
+
+          setSelectedDocument(
+            String(document.id),
+            document.documentNumber,
+            document.status ?? "OPEN",
+          );
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Belgeler yüklenemedi.";
+
+        // "Authentication token is required" hatasını da sessizce yut —
+        // logout ile eşzamanlı bir effect fire ise console'u kirletmesin.
+        if (
+          message.includes("yetki süresi dolmuştur") ||
+          message.includes("Authentication token is required")
+        ) {
+          setDocuments([]);
+          setSelectedDocumentId("");
+          setDocumentWarning(false);
+          clearSelectedDocument();
+          return;
+        }
+
+        console.error("Sidebar belgeleri yüklenemedi:", error);
+      } finally {
+        setDocumentsLoading(false);
+      }
+    };
+
+    void loadDocuments();
+  }, [searchParams]);
+
+  // Destek talebi okunmamış bildirim sayısı
+  useEffect(() => {
+    if (role !== "ADMIN" && role !== "OPERATION") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSupportUnreadCount(0);
+      return;
     }
 
-    return true;
-  });
+    let active = true;
+
+    const loadUnreadCount = async () => {
+      const token = getAccessToken();
+
+      if (!token) {
+        if (active) {
+          setSupportUnreadCount(0);
+        }
+
+        return;
+      }
+
+      try {
+        const response = await apiFetch<UnreadSupportRequestCountResponse>(
+          "/support-requests/unread-count",
+        );
+
+        if (active) {
+          setSupportUnreadCount(response.data?.count ?? 0);
+        }
+      } catch (error) {
+        console.error("Okunmamış destek talebi sayısı alınamadı:", error);
+      }
+    };
+
+    // Sidebar ilk açıldığında sayıyı getir
+    void loadUnreadCount();
+
+    // Destek talebi okundu / okunmadı olduğunda anında yenile
+    const handleUnreadChanged = () => {
+      void loadUnreadCount();
+    };
+
+    window.addEventListener(
+      "support-request-unread-changed",
+      handleUnreadChanged,
+    );
+
+    // Kullanıcı sekmeye geri döndüğünde tekrar kontrol et
+    window.addEventListener("focus", handleUnreadChanged);
+
+    // Yeni talep geldiyse 15 saniyede bir kontrol et
+    const intervalId = window.setInterval(() => {
+      void loadUnreadCount();
+    }, 15000);
+
+    return () => {
+      active = false;
+
+      window.removeEventListener(
+        "support-request-unread-changed",
+        handleUnreadChanged,
+      );
+
+      window.removeEventListener("focus", handleUnreadChanged);
+
+      window.clearInterval(intervalId);
+    };
+  }, [role]);
+
+  // Okunmamış bildirim sayısı — headerdaki zille aynı API ve güncelleme olayı
+  useEffect(() => {
+    const endpoint =
+      role === "COMPANY"
+        ? "/company-notifications?limit=1"
+        : "/notifications?limit=1";
+
+    let active = true;
+    let loading = false;
+
+    const loadUnreadCount = async () => {
+      if (loading) return;
+
+      if (!getAccessToken()) {
+        if (active) setUnreadNotificationCount(0);
+        return;
+      }
+
+      loading = true;
+
+      try {
+        const response = await apiFetch<{
+          success: boolean;
+          data: { unreadCount: number };
+        }>(endpoint);
+
+        if (active) {
+          setUnreadNotificationCount(
+            Math.max(0, response.data.unreadCount ?? 0),
+          );
+        }
+      } catch {
+        if (active) setUnreadNotificationCount(0);
+      } finally {
+        loading = false;
+      }
+    };
+
+    const handleNotificationsUpdated = () => {
+      void loadUnreadCount();
+    };
+
+    void loadUnreadCount();
+
+    window.addEventListener(
+      "notifications-updated",
+      handleNotificationsUpdated,
+    );
+    window.addEventListener("focus", handleNotificationsUpdated);
+
+    const intervalId = window.setInterval(handleNotificationsUpdated, 60_000);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener(
+        "notifications-updated",
+        handleNotificationsUpdated,
+      );
+      window.removeEventListener("focus", handleNotificationsUpdated);
+    };
+  }, [role]);
+
+  const showDocumentWarning = () => {
+    setDocumentWarning(true);
+
+    window.setTimeout(() => {
+      setDocumentWarning(false);
+    }, 2500);
+  };
+
+  const handleNavigation = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    if (!documentContextPaths.has(href)) {
+      return;
+    }
+
+    const selectedDocument = getSelectedDocument();
+
+    if (!selectedDocument) {
+      event.preventDefault();
+      return;
+    }
+
+    event.preventDefault();
+
+    router.push(
+      `${href}?documentId=${encodeURIComponent(selectedDocument.id)}`,
+    );
+  };
+
+  // PDF ve Excel indirme — hangisinin hazırlandığını ayrı tutuyoruz ki
+  // sadece basılan butonda spinner dönsün.
+  const handleDownload = async (type: "pdf" | "excel") => {
+    if (role !== "COMPANY" || downloadingType) return;
+
+    const selected = documents.find(
+      (item) => String(item.id) === selectedDocumentId,
+    );
+
+    if (!selected) {
+      showDocumentWarning();
+      return;
+    }
+
+    setDownloadingType(type);
+    setDownloadError("");
+
+    try {
+      const isClosed =
+        selected.status === "CLOSED" ||
+        selected.status === "CANCELLED";
+
+      const data = await fetchDocumentPdfData(
+        String(selected.id),
+        isClosed,
+      );
+
+      if (type === "pdf") {
+        await generateDocumentPdf(data);
+      } else {
+        await generateDocumentExcel(data);
+      }
+    } catch (error) {
+      console.error(
+        `Belge detay ${type === "pdf" ? "PDF" : "Excel"} oluşturulamadı:`,
+        error,
+      );
+
+      setDownloadError(
+        type === "pdf"
+          ? "Belge detayları indirilemedi. Lütfen tekrar deneyin."
+          : "Excel dosyası indirilemedi. Lütfen tekrar deneyin.",
+      );
+    } finally {
+      setDownloadingType(null);
+    }
+  };
+
+  const handleDocumentChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const documentId = event.target.value;
+
+    const document = documents.find((item) => String(item.id) === documentId);
+
+    if (!document) return;
+
+    setSelectedDocumentId(documentId);
+    setDocumentWarning(false);
+
+    setSelectedDocument(
+      documentId,
+      document.documentNumber,
+      document.status ?? "OPEN",
+    );
+
+    if (documentContextPaths.has(pathname)) {
+      router.replace(
+        `${pathname}?documentId=${encodeURIComponent(documentId)}`,
+      );
+    }
+  };
+
+  const isSupportRequestsActive =
+    pathname === "/support-requests" ||
+    pathname.startsWith("/support-requests/");
+
+  const asideClassName =
+    variant === "mobile"
+      ? "flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200"
+      : `sticky top-0 hidden h-screen ${
+      // Genişlik içeriğe göre: en uzun menü adı tek satıra sığacak kadar,
+      // fazlası değil. Açıklama yazıları genişliği büyütmesin diye
+      // aşağıda "w-0 min-w-full" ile sarılıyor.
+      isCollapsed ? "w-20" : "w-max min-w-60"
+      } shrink-0 flex-col overflow-visible border-r border-blue-900 bg-gradient-to-b from-blue-800 to-blue-900 text-blue-100 transition-all duration-200 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200 lg:flex`;
 
   return (
-    <aside className="hidden min-h-screen w-[230px] shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-      <div className="flex h-[76px] items-center border-b border-slate-100 px-5">
-        <Image
-          src="/logos/etuys-logo.png"
-          alt="E-TUYS Logo"
-          width={190}
-          height={60}
-          priority
-          className="h-[55px] w-[190px] object-contain object-left"
-        />
-      </div>
-
-      <nav className="flex-1 space-y-1.5 px-3 py-5">
-        {visibleMenuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex h-10 items-center justify-between rounded-lg px-3 text-sm font-medium transition-all",
-                isActive
-                  ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-              )}
-            >
-              <span className="flex items-center gap-3">
-                <Icon className="h-[17px] w-[17px]" />
-                {item.title}
-              </span>
-
-              {item.badge ? (
-                <span
-                  className={cn(
-                    "flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                    isActive
-                      ? "bg-white text-blue-600"
-                      : "bg-red-500 text-white",
-                  )}
-                >
-                  {item.badge}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="space-y-1.5 border-t border-slate-100 p-3">
-        <Link
-          href="/settings"
-          className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-        >
-          <Settings className="h-[17px] w-[17px]" />
-          Ayarlar
-        </Link>
-
+    <aside className={asideClassName}>
+      {/* DARALTMA BUTONU - sadece desktop varyantta (mobil drawer'da anlamsız) */}
+      {variant === "desktop" && (
         <button
           type="button"
-          className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600"
+          onClick={toggleCollapsed}
+          title={isCollapsed ? "Menüyü genişlet" : "Menüyü daralt"}
+          className="absolute -right-3 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-blue-900 bg-white text-blue-900 shadow-md transition hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
-          <LogOut className="h-[17px] w-[17px]" />
-          Çıkış
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
+      )}
+
+      {/* LOGO - Beyaz kart içinde, kenarları yuvarlak (menüye yer kalsın diye kompakt) */}
+      <div
+        className={`mx-2 mt-3 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-200 dark:bg-slate-100 ${isCollapsed ? "px-1.5 py-1.5" : "px-3 py-1.5"
+          }`}
+      >
+        <div
+          className={`relative shrink-0 transition-all duration-200 ${isCollapsed ? "h-9 w-9" : "h-12 w-36"
+            }`}
+        >
+          <Image
+            src="/logos/2.png"
+            alt="Teşvik Akkaş logo"
+            fill
+            sizes={isCollapsed ? "36px" : "160px"}
+            className="object-contain"
+            priority
+          />
+        </div>
       </div>
+
+      {/* NAVİGASYON */}
+      <nav className="mt-2 flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-2 py-1 [@media(max-height:820px)]:space-y-0.5 [scrollbar-color:rgba(147,197,253,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-300/40 hover:[&::-webkit-scrollbar-thumb]:bg-blue-200/60 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600/40 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500/60">
+        {visibleItems.map((item) => {
+          const Icon = item.icon;
+
+          const active =
+            item.href === "/documents"
+              ? pathname === "/documents" || /^\/documents\/\d+$/.test(pathname)
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+          const isDocumentDetailItem = documentContextPaths.has(item.href);
+
+          const hasUnreadNotifications =
+            item.href === "/notifications" && unreadNotificationCount > 0;
+
+          const shouldAnimateNotifications = hasUnreadNotifications && !active;
+
+          const showDocumentSection =
+            item.href === "/documents/investment-type";
+
+          return (
+            <div key={`${item.label}-${item.href}`}>
+              {showDocumentSection && !isCollapsed && (
+                <div className="mb-2 mt-3 rounded-xl bg-white/[0.06] p-2 ring-1 ring-inset ring-white/10 dark:bg-slate-800/40 dark:ring-slate-700/60">
+                  <p className="px-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-200 dark:text-slate-400">
+                    Belge Detayları
+                  </p>
+
+                  <select
+                    value={selectedDocumentId}
+                    onChange={handleDocumentChange}
+                    disabled={documentsLoading || documents.length === 0}
+                    className="mt-1.5 w-0 min-w-full rounded-lg border border-blue-700/80 bg-blue-950/40 px-2.5 py-1.5 text-xs font-semibold text-white outline-none transition focus:border-white/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800/70 dark:focus:border-slate-500"
+                  >
+                    <option value="">
+                      {documentsLoading
+                        ? "Belgeler yükleniyor..."
+                        : documents.length === 0
+                          ? "Belge bulunamadı"
+                          : "Belge seçiniz"}
+                    </option>
+
+                    {documents.map((document) => (
+                      <option
+                        key={document.id}
+                        value={String(document.id)}
+                        className="text-slate-900"
+                      >
+                        {document.documentNumber ??
+                          `Belge ${document.externalDocumentId}`}
+
+                        {document.status === "CLOSED"
+                          ? " - Kapalı"
+                          : document.status === "CANCELLED"
+                            ? " - İptal"
+                            : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Seçili belgenin detaylarını PDF / Excel olarak indir */}
+                  {role === "COMPANY" && (
+                    <div className="mt-2 w-0 min-w-full">
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => void handleDownload("pdf")}
+                          disabled={!selectedDocumentId || downloadingType !== null}
+                          title={
+                            selectedDocumentId
+                              ? "Seçili belgenin detaylarını PDF olarak indir"
+                              : "Önce bir belge seçiniz"
+                          }
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-red-300/25 bg-red-500/15 px-2 py-1.5 text-xs font-semibold text-red-50 transition hover:border-red-300/50 hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-red-300/25 disabled:hover:bg-red-500/15 dark:border-red-400/20 dark:bg-red-500/10 dark:hover:bg-red-500/20"
+                        >
+                          {downloadingType === "pdf" ? (
+                            <Loader2 size={14} className="shrink-0 animate-spin" />
+                          ) : (
+                            <FileText size={14} className="shrink-0 text-red-300" />
+                          )}
+                          <span>PDF</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void handleDownload("excel")}
+                          disabled={!selectedDocumentId || downloadingType !== null}
+                          title={
+                            selectedDocumentId
+                              ? "Seçili belgenin detaylarını Excel olarak indir"
+                              : "Önce bir belge seçiniz"
+                          }
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-300/25 bg-emerald-500/15 px-2 py-1.5 text-xs font-semibold text-emerald-50 transition hover:border-emerald-300/50 hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-emerald-300/25 disabled:hover:bg-emerald-500/15 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
+                        >
+                          {downloadingType === "excel" ? (
+                            <Loader2 size={14} className="shrink-0 animate-spin" />
+                          ) : (
+                            <FileSpreadsheet
+                              size={14}
+                              className="shrink-0 text-emerald-300"
+                            />
+                          )}
+                          <span>Excel</span>
+                        </button>
+                      </div>
+
+                      {downloadError && (
+                        <p className="mt-1 text-[10px] leading-4 text-red-200">
+                          {downloadError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {documentWarning && (
+                    <div className="mt-1.5 w-0 min-w-full rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                      Önce belge seçimi yapınız.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {showDocumentSection && isCollapsed && (
+                <div className="mx-1 mb-2 mt-3 border-t border-blue-700/70 dark:border-slate-700/70" />
+              )}
+
+              {isDocumentDetailItem && !selectedDocumentId ? (
+                <button
+                  type="button"
+                  onClick={showDocumentWarning}
+                  title="Önce bir belge seçiniz"
+                  className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-[7px] [@media(max-height:820px)]:py-1.5 text-sm font-medium text-blue-300/50 transition hover:bg-blue-800/30 dark:text-slate-500 dark:hover:bg-slate-800/60 ${isCollapsed ? "justify-center" : ""
+                    }`}
+                >
+                  <Icon
+                    size={18}
+                    className="shrink-0 text-blue-300/40 dark:text-slate-500"
+                  />
+                  {!isCollapsed && (
+                    <span className="truncate whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <Link
+                  href={item.href}
+                  onClick={(event) => handleNavigation(event, item.href)}
+                  title={isCollapsed ? item.label : undefined}
+                  className={`group relative flex items-center gap-2.5 rounded-xl px-2.5 py-[7px] [@media(max-height:820px)]:py-1.5 text-sm transition-all duration-150 ${isCollapsed ? "justify-center" : ""
+                    } ${active
+                      ? "bg-gradient-to-r from-red-600 to-red-500 font-semibold text-white shadow-md shadow-red-600/30"
+                      : "font-medium text-blue-100 hover:bg-blue-700/60 hover:text-white dark:text-slate-200 dark:hover:bg-slate-800/60 dark:hover:text-white"
+                    }`}
+                >
+                  <Icon
+                    size={18}
+                    className={`shrink-0 ${active
+                      ? "text-white"
+                      : "text-blue-200 transition group-hover:text-white dark:text-slate-400 dark:group-hover:text-white"
+                      } ${shouldAnimateNotifications ? "animate-ring-shake" : ""}`}
+                  />
+
+                  {!isCollapsed && (
+                    <span className="min-w-0 truncate whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  )}
+
+                  {!isCollapsed && (
+                    <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                      {hasUnreadNotifications && (
+                        <span
+                          aria-label={`${unreadNotificationCount} okunmamış bildirim`}
+                          className={`flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active
+                            ? "bg-white text-red-600"
+                            : "bg-red-500 text-white"
+                            } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
+                        >
+                          {unreadNotificationCount > 99
+                            ? "99+"
+                            : unreadNotificationCount}
+                        </span>
+                      )}
+
+                      {active && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                      )}
+                    </div>
+                  )}
+
+                  {isCollapsed && hasUnreadNotifications && (
+                    <span
+                      aria-label={`${unreadNotificationCount} okunmamış bildirim`}
+                      className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full px-1 py-0.5 text-[9px] font-bold ${active
+                        ? "bg-white text-red-600"
+                        : "bg-red-500 text-white"
+                        } ${shouldAnimateNotifications ? "animate-badge-bounce" : ""}`}
+                    >
+                      {unreadNotificationCount > 9
+                        ? "9+"
+                        : unreadNotificationCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+            </div>
+          );
+        })}
+
+      </nav>
+
+      {/* DESTEK TALEPLERİ - SABİT ALT MENÜ */}
+      {(role === "COMPANY" || role === "OPERATION" || role === "ADMIN") && (
+        <div className="shrink-0 border-t border-blue-700/60 px-2 py-2 dark:border-slate-700/60">
+          {(() => {
+            const canSeeBadge = role === "ADMIN" || role === "OPERATION";
+            const hasUnread = canSeeBadge && supportUnreadCount > 0;
+            const shouldAnimate = hasUnread && !isSupportRequestsActive;
+
+            return (
+              <Link
+                href="/support-requests"
+                title={
+                  isCollapsed
+                    ? role === "COMPANY"
+                      ? "Destek Talebi"
+                      : "Destek Talepleri"
+                    : undefined
+                }
+                className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm font-semibold transition-all duration-150 ${isCollapsed ? "justify-center" : ""
+                  } ${
+                  // Destek Talepleri sarı: menünün geri kalanından ayrışsın.
+                  isSupportRequestsActive
+                    ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 shadow-md shadow-amber-500/30"
+                    : "bg-amber-300/90 text-amber-950 hover:bg-amber-300 dark:bg-amber-400/80 dark:text-amber-950 dark:hover:bg-amber-400"
+                  }`}
+              >
+                <Headphones
+                  size={19}
+                  className={`shrink-0 text-amber-900 ${shouldAnimate ? "animate-ring-shake" : ""
+                    }`}
+                />
+
+                {!isCollapsed && (
+                  <span className="truncate whitespace-nowrap">
+                    {role === "COMPANY" ? "Destek Talebi" : "Destek Talepleri"}
+                  </span>
+                )}
+
+                {!isCollapsed && (
+                  <div className="ml-auto flex items-center gap-2">
+                    {hasUnread && (
+                      <span
+                        className={`flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white ${shouldAnimate ? "animate-badge-bounce" : ""
+                          }`}
+                      >
+                        {supportUnreadCount > 99 ? "99+" : supportUnreadCount}
+                      </span>
+                    )}
+
+                    {isSupportRequestsActive && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-900 shadow-sm" />
+                    )}
+                  </div>
+                )}
+
+                {isCollapsed && hasUnread && (
+                  <span
+                    className={`absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 py-0.5 text-[9px] font-bold text-white ${shouldAnimate ? "animate-badge-bounce" : ""
+                      }`}
+                  >
+                    {supportUnreadCount > 9 ? "9+" : supportUnreadCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })()}
+        </div>
+      )}
+
     </aside>
   );
 }
