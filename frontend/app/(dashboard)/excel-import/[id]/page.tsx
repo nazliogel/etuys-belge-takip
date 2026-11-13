@@ -121,8 +121,20 @@ function formatDateTime(value: string | null) {
   });
 }
 
+// Beyanname yüklemesi alan adını "declarationDate|<beyanname no>" biçiminde kaydeder.
+function splitDeclarationField(fieldName: string) {
+  const [field, declarationNumber] = fieldName.split("|");
+  return { field, declarationNumber: declarationNumber ?? null };
+}
+
 function formatChangeValue(fieldName: string, value: string | null) {
   if (!value) return "-";
+  if (splitDeclarationField(fieldName).field === "declarationAmount") {
+    const amount = Number(value);
+    return Number.isFinite(amount)
+      ? amount.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : value;
+  }
   if (fieldName.toLowerCase().includes("date")) return formatDate(value);
   return value;
 }
@@ -135,6 +147,11 @@ function getChangeLabel(change: ImportChange) {
     return "Yeni Kayıt";
   }
   if (change.fieldName === "__missing_in_snapshot__") return "Yeni Listede Yok";
+  const { field, declarationNumber } = splitDeclarationField(change.fieldName);
+  if (field === "declarationDate" || field === "declarationAmount") {
+    const label = field === "declarationDate" ? "Beyanname Tarihi" : "Beyanname Tutarı";
+    return declarationNumber ? `${label} · ${declarationNumber}` : label;
+  }
   return fieldLabels[change.fieldName] ?? change.fieldName;
 }
 

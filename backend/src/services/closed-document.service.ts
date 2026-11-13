@@ -3,7 +3,10 @@ import { AppError } from "../errors/app-error.js";
 import type { UserRole } from "../generated/prisma/client.js";
 import type { ClosedDocumentRepository } from "../repositories/closed-document.repository.js";
 import type { CompanyRepository } from "../repositories/company.repository.js";
+import { ImportedRealizationRepository } from "../repositories/imported-realization.repository.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
+
+const importedRealizationRepository = new ImportedRealizationRepository();
 
 type ClosedDocumentListQuery = {
   page: number;
@@ -588,6 +591,12 @@ export class ClosedDocumentService {
 
     const importedMachines = document.detail?.importedMachines ?? [];
 
+    const realizationsByMachine =
+      await importedRealizationRepository.findGroupedByMachine(
+        document.detail?.id,
+        importedMachines,
+      );
+
     return {
       documentId: document.id,
       externalDocumentId: document.externalDocumentId,
@@ -607,7 +616,9 @@ export class ClosedDocumentService {
         gtipDescription: machine.gtipDescription,
 
         vatExemption: machine.vatExemption,
+        vatExemptionDescription: machine.vatExemptionDescription,
         customsTaxExemption: machine.customsTaxExemption,
+        customsTaxExemptionDescription: machine.customsTaxExemptionDescription,
 
         usedMachine: machine.usedMachine,
         isVehicle: machine.isVehicle,
@@ -620,6 +631,67 @@ export class ClosedDocumentService {
         originCurrencyFob: machine.originCurrencyFob,
         originCurrencyFobAmount:
           machine.originCurrencyFobAmount?.toString() ?? null,
+
+        customsRealizedValue: machine.customsRealizedValue?.toString() ?? null,
+        customsRealizedQuantity:
+          machine.customsRealizedQuantity?.toString() ?? null,
+        customsPermittedValue:
+          machine.customsPermittedValue?.toString() ?? null,
+        customsPermittedQuantity:
+          machine.customsPermittedQuantity?.toString() ?? null,
+
+        transferRealizedValue:
+          machine.transferRealizedValue?.toString() ?? null,
+        transferRealizedQuantity:
+          machine.transferRealizedQuantity?.toString() ?? null,
+        transferOutgoingValue:
+          machine.transferOutgoingValue?.toString() ?? null,
+        transferOutgoingQuantity:
+          machine.transferOutgoingQuantity?.toString() ?? null,
+
+        transferDocumentNumber: machine.transferDocumentNumber,
+        transferIncomingQuantity:
+          machine.transferIncomingQuantity?.toString() ?? null,
+        transferIncomingAmount:
+          machine.transferIncomingAmount?.toString() ?? null,
+
+        saleOutgoingValue: machine.saleOutgoingValue?.toString() ?? null,
+        saleOutgoingQuantity: machine.saleOutgoingQuantity?.toString() ?? null,
+        salePermittedValue: machine.salePermittedValue?.toString() ?? null,
+        salePermittedQuantity:
+          machine.salePermittedQuantity?.toString() ?? null,
+
+        leasingOutgoingValue: machine.leasingOutgoingValue?.toString() ?? null,
+        leasingOutgoingQuantity:
+          machine.leasingOutgoingQuantity?.toString() ?? null,
+        leasingPermittedValue:
+          machine.leasingPermittedValue?.toString() ?? null,
+        leasingPermittedQuantity:
+          machine.leasingPermittedQuantity?.toString() ?? null,
+
+        exportOutgoingValue: machine.exportOutgoingValue?.toString() ?? null,
+        exportOutgoingQuantity:
+          machine.exportOutgoingQuantity?.toString() ?? null,
+        exportPermittedValue: machine.exportPermittedValue?.toString() ?? null,
+        exportPermittedQuantity:
+          machine.exportPermittedQuantity?.toString() ?? null,
+
+        invoiceRealizedValue: machine.invoiceRealizedValue?.toString() ?? null,
+        invoiceRealizedQuantity:
+          machine.invoiceRealizedQuantity?.toString() ?? null,
+
+        financialLeasingRealizedValue:
+          machine.financialLeasingRealizedValue?.toString() ?? null,
+        financialLeasingRealizedQuantity:
+          machine.financialLeasingRealizedQuantity?.toString() ?? null,
+        financialLeasingPermittedValue:
+          machine.financialLeasingPermittedValue?.toString() ?? null,
+        financialLeasingPermittedQuantity:
+          machine.financialLeasingPermittedQuantity?.toString() ?? null,
+
+        financialLeasingCompanyName: machine.financialLeasingCompanyName,
+
+        realizations: realizationsByMachine.get(machine.id) ?? [],
       })),
     };
   }

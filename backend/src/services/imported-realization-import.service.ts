@@ -83,9 +83,13 @@ export class ImportedRealizationImportService {
             seen.add(key);
 
             try {
-                const document = await this.repository.findDocument(
-                    row.externalDocumentId,
-                );
+                const document = row.closedDocumentsOnly
+                    ? await this.repository.findClosedDocument(
+                        row.externalDocumentId,
+                    )
+                    : await this.repository.findDocument(
+                        row.externalDocumentId,
+                    );
 
                 if (!document) {
                     fail("Teşvik belgesi sistemde bulunamadı.");

@@ -1,4 +1,3 @@
-
 import ExcelJS from "exceljs";
 
 export interface ParsedImportedRealizationRow {
@@ -13,6 +12,9 @@ export interface ParsedImportedRealizationRow {
     customsRealizedQuantity: string | null;
     declarationNumber: string | null;
     externalRowId: string | null;
+    // Kapalı belge script'inin Excel'inde "Belge Durumu" sütunu var.
+    // Bu sütun varsa satır yalnızca kapalı belgelerde aranır.
+    closedDocumentsOnly: boolean;
     errorMessage: string | null;
 }
 
@@ -63,6 +65,8 @@ export class ImportedRealizationExcelParserService {
         if (missing.length) {
             throw new Error(`Eksik Excel başlıkları: ${missing.join(", ")}`);
         }
+
+        const closedDocumentsOnly = headerMap.has(this.normalize("Belge Durumu"));
 
         const rows: ParsedImportedRealizationRow[] = [];
 
@@ -130,6 +134,7 @@ export class ImportedRealizationExcelParserService {
                         ? `${sourceRowId}:${declarationNumber}`
                         : null,
 
+                closedDocumentsOnly,
                 errorMessage: errors.length ? errors.join(" ") : null,
             });
         }
