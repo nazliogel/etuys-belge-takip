@@ -204,7 +204,15 @@ export function DocumentCard({
           </div>
         )}
 
-        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] min-[480px]:grid-cols-4">
+        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] min-[480px]:grid-cols-5">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Belge Tarihi
+            </p>
+            <p className="font-medium text-foreground/80">
+              {formatDate(doc.documentDate ?? null)}
+            </p>
+          </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Başlangıç
@@ -339,6 +347,10 @@ export function DocumentRow({
         </p>
       </td>
 
+      {/* Belge Tarihi */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
+        {formatDate(doc.documentDate ?? null)}
+      </td>
       <td className="whitespace-nowrap px-2 py-1.5 text-center text-xs font-medium text-muted-foreground">
         {formatDate(doc.documentStartDate)}
       </td>

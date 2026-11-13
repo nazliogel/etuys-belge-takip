@@ -317,6 +317,7 @@ model IncentiveDocument {
   companyId          Int
   externalDocumentId Int                @unique
   documentNumber     String?
+  documentDate       DateTime?          @db.Date
   documentStartDate  DateTime?          @db.Date
   documentReminders  DocumentReminder[]
   documentEndDate    DateTime?          @db.Date
@@ -347,6 +348,7 @@ model ClosedIncentiveDocument {
   companyId          Int
   externalDocumentId Int       @unique
   documentNumber     String?
+  documentDate       DateTime? @db.Date
   documentStartDate  DateTime? @db.Date
   documentEndDate    DateTime? @db.Date
 
@@ -409,6 +411,7 @@ model ImportRow {
   authorizationEndDate DateTime?       @db.Date
   externalDocumentId   Int?
   documentNumber       String?
+  documentDate         DateTime?       @db.Date
   documentStartDate    DateTime?       @db.Date
   documentEndDate      DateTime?       @db.Date
   extensionDate        DateTime?       @db.Date

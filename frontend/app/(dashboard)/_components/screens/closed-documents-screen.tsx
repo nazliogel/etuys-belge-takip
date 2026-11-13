@@ -24,6 +24,7 @@ type ApiClosedDocument = {
   id: number;
   externalDocumentId: number;
   documentNumber: string | null;
+  documentDate?: string | null;
   documentStartDate: string | null;
   documentEndDate: string | null;
   extensionDate: string | null;
@@ -79,6 +80,7 @@ type DocumentSortKey =
   | "documentNumber"
   | "companyName"
   | "consultant"
+  | "documentDate"
   | "documentStartDate"
   | "documentEndDate"
   | "extensionDate"
@@ -86,6 +88,7 @@ type DocumentSortKey =
   | "status";
 
 const DATE_SORT_KEYS: ReadonlySet<DocumentSortKey> = new Set([
+  "documentDate",
   "documentStartDate",
   "documentEndDate",
   "extensionDate",
@@ -130,7 +133,9 @@ function getDocumentSortValue(
 ): string | number {
   if (DATE_SORT_KEYS.has(key)) {
     const rawDate =
-      key === "documentStartDate"
+      key === "documentDate"
+        ? (doc.documentDate ?? null)
+        : key === "documentStartDate"
         ? doc.documentStartDate
         : key === "documentEndDate"
           ? doc.documentEndDate
@@ -630,6 +635,7 @@ export function ClosedDocumentsScreen() {
     { label: "Belge No", key: "documentNumber" },
     { label: "Firma", key: "companyName" },
     { label: "Uzman", key: "consultant", filterType: "consultant" },
+    { label: "Belge Tarihi", key: "documentDate" },
     { label: "Belge Başlangıç", key: "documentStartDate" },
     { label: "Belge Bitiş", key: "documentEndDate" },
     { label: "Süre Uzatım", key: "extensionDate" },
@@ -815,6 +821,14 @@ export function ClosedDocumentsScreen() {
                       <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
                         <div className="min-w-0">
                           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Belge Tarihi
+                          </p>
+                          <p className="font-medium text-foreground/80">
+                            {formatDate(doc.documentDate ?? null)}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Başlangıç
                           </p>
                           <p className="font-medium text-foreground/80">
@@ -884,17 +898,18 @@ export function ClosedDocumentsScreen() {
         {/* TABLET+ : TABLO GÖRÜNÜMÜ (sıralama + filtreleme dahil) */}
         <div className="hidden md:block">
           <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
-            <table className="w-full min-w-[1050px] table-fixed text-left text-sm">
+            <table className="w-full min-w-[1140px] table-fixed text-left text-sm">
               <colgroup>
-                <col className="w-[10%]" />
+                <col className="w-[9%]" />
                 <col className="w-[14%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
                 <col className="w-[10%]" />
+                <col className="w-[9%]" />
+                <col className="w-[9%]" />
+                <col className="w-[9%]" />
+                <col className="w-[9%]" />
+                <col className="w-[11%]" />
+                <col className="w-[11%]" />
+                <col className="w-[9%]" />
               </colgroup>
 
               <thead className="sticky top-0 z-10 border-b border-border bg-muted/60 text-[11px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
@@ -1030,7 +1045,7 @@ export function ClosedDocumentsScreen() {
               <tbody className="divide-y divide-border">
                 {showLoader ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center">
+                    <td colSpan={10} className="px-4 py-8 text-center">
                       <p className="text-sm font-medium text-muted-foreground">
                         Belgeler yükleniyor...
                       </p>
@@ -1038,7 +1053,7 @@ export function ClosedDocumentsScreen() {
                   </tr>
                 ) : showError ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center">
+                    <td colSpan={10} className="px-4 py-8 text-center">
                       <p className="text-sm font-semibold text-red-700 dark:text-red-400">
                         Belgeler yüklenemedi
                       </p>
@@ -1049,7 +1064,7 @@ export function ClosedDocumentsScreen() {
                   </tr>
                 ) : showEmpty ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center">
+                    <td colSpan={10} className="px-4 py-8 text-center">
                       {showAuthWarning ? (
                         <AuthorizationWarning />
                       ) : (
@@ -1116,6 +1131,10 @@ export function ClosedDocumentsScreen() {
                           >
                             {doc.company?.consultant ?? "-"}
                           </p>
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">
+                          {formatDate(doc.documentDate ?? null)}
                         </td>
 
                         <td className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">

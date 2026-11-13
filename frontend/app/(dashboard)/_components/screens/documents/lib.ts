@@ -27,6 +27,7 @@ export function useDebouncedValue<T>(value: T, delay = 300): T {
 
 // Tarih sütunları: sıralama "bugüne en yakın -> en uzak" mantığıyla çalışır.
 export const DATE_SORT_KEYS: ReadonlySet<DocumentSortKey> = new Set([
+  "documentDate",
   "documentStartDate",
   "documentEndDate",
   "extensionDate",
@@ -295,7 +296,9 @@ export function getDocumentSortValue(
 ): string | number {
   if (DATE_SORT_KEYS.has(key)) {
     const rawDate =
-      key === "documentStartDate"
+      key === "documentDate"
+        ? (doc.documentDate ?? null)
+        : key === "documentStartDate"
         ? doc.documentStartDate
         : key === "documentEndDate"
           ? doc.documentEndDate

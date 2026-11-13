@@ -38,6 +38,10 @@ export const DOCUMENT_COMPARE_FIELDS: CompareFieldDefinition[] = [
     label: "Belge No",
   },
   {
+    fieldName: "documentDate",
+    label: "Belge Tarihi",
+  },
+  {
     fieldName: "documentStartDate",
     label: "Belge Başlangıç Tarihi",
   },

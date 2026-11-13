@@ -58,6 +58,7 @@ export type ImportRowMinAggregateOutputType = {
   authorizationEndDate: Date | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -86,6 +87,7 @@ export type ImportRowMaxAggregateOutputType = {
   authorizationEndDate: Date | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -114,6 +116,7 @@ export type ImportRowCountAggregateOutputType = {
   authorizationEndDate: number
   externalDocumentId: number
   documentNumber: number
+  documentDate: number
   documentStartDate: number
   documentEndDate: number
   extensionDate: number
@@ -165,6 +168,7 @@ export type ImportRowMinAggregateInputType = {
   authorizationEndDate?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -193,6 +197,7 @@ export type ImportRowMaxAggregateInputType = {
   authorizationEndDate?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -221,6 +226,7 @@ export type ImportRowCountAggregateInputType = {
   authorizationEndDate?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -337,6 +343,7 @@ export type ImportRowGroupByOutputType = {
   authorizationEndDate: Date | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -389,6 +396,7 @@ export type ImportRowWhereInput = {
   authorizationEndDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   externalDocumentId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   documentNumber?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
@@ -422,6 +430,7 @@ export type ImportRowOrderByWithRelationInput = {
   authorizationEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -459,6 +468,7 @@ export type ImportRowWhereUniqueInput = Prisma.AtLeast<{
   authorizationEndDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   externalDocumentId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   documentNumber?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
@@ -492,6 +502,7 @@ export type ImportRowOrderByWithAggregationInput = {
   authorizationEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -529,6 +540,7 @@ export type ImportRowScalarWhereWithAggregatesInput = {
   authorizationEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportRow"> | Date | string | null
   externalDocumentId?: Prisma.IntNullableWithAggregatesFilter<"ImportRow"> | number | null
   documentNumber?: Prisma.StringNullableWithAggregatesFilter<"ImportRow"> | string | null
+  documentDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportRow"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportRow"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportRow"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ImportRow"> | Date | string | null
@@ -556,6 +568,7 @@ export type ImportRowCreateInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -587,6 +600,7 @@ export type ImportRowUncheckedCreateInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -615,6 +629,7 @@ export type ImportRowUpdateInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -646,6 +661,7 @@ export type ImportRowUncheckedUpdateInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -676,6 +692,7 @@ export type ImportRowCreateManyInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -703,6 +720,7 @@ export type ImportRowUpdateManyMutationInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -730,6 +748,7 @@ export type ImportRowUncheckedUpdateManyInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -775,6 +794,7 @@ export type ImportRowCountOrderByAggregateInput = {
   authorizationEndDate?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -814,6 +834,7 @@ export type ImportRowMaxOrderByAggregateInput = {
   authorizationEndDate?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -842,6 +863,7 @@ export type ImportRowMinOrderByAggregateInput = {
   authorizationEndDate?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -1033,6 +1055,7 @@ export type ImportRowCreateWithoutCompanyInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1063,6 +1086,7 @@ export type ImportRowUncheckedCreateWithoutCompanyInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1121,6 +1145,7 @@ export type ImportRowScalarWhereInput = {
   authorizationEndDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   externalDocumentId?: Prisma.IntNullableFilter<"ImportRow"> | number | null
   documentNumber?: Prisma.StringNullableFilter<"ImportRow"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ImportRow"> | Date | string | null
@@ -1148,6 +1173,7 @@ export type ImportRowCreateWithoutDocumentInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1178,6 +1204,7 @@ export type ImportRowUncheckedCreateWithoutDocumentInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1231,6 +1258,7 @@ export type ImportRowCreateWithoutImportBatchInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1260,6 +1288,7 @@ export type ImportRowUncheckedCreateWithoutImportBatchInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1314,6 +1343,7 @@ export type ImportRowCreateWithoutChangesInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1344,6 +1374,7 @@ export type ImportRowUncheckedCreateWithoutChangesInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1387,6 +1418,7 @@ export type ImportRowUpdateWithoutChangesInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1417,6 +1449,7 @@ export type ImportRowUncheckedUpdateWithoutChangesInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1446,6 +1479,7 @@ export type ImportRowCreateManyCompanyInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1472,6 +1506,7 @@ export type ImportRowUpdateWithoutCompanyInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1502,6 +1537,7 @@ export type ImportRowUncheckedUpdateWithoutCompanyInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1531,6 +1567,7 @@ export type ImportRowUncheckedUpdateManyWithoutCompanyInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1559,6 +1596,7 @@ export type ImportRowCreateManyDocumentInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1585,6 +1623,7 @@ export type ImportRowUpdateWithoutDocumentInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1615,6 +1654,7 @@ export type ImportRowUncheckedUpdateWithoutDocumentInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1644,6 +1684,7 @@ export type ImportRowUncheckedUpdateManyWithoutDocumentInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1671,6 +1712,7 @@ export type ImportRowCreateManyImportBatchInput = {
   authorizationEndDate?: Date | string | null
   externalDocumentId?: number | null
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1698,6 +1740,7 @@ export type ImportRowUpdateWithoutImportBatchInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1727,6 +1770,7 @@ export type ImportRowUncheckedUpdateWithoutImportBatchInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1756,6 +1800,7 @@ export type ImportRowUncheckedUpdateManyWithoutImportBatchInput = {
   authorizationEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalDocumentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1816,6 +1861,7 @@ export type ImportRowSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   authorizationEndDate?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1850,6 +1896,7 @@ export type ImportRowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   authorizationEndDate?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1882,6 +1929,7 @@ export type ImportRowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   authorizationEndDate?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1914,6 +1962,7 @@ export type ImportRowSelectScalar = {
   authorizationEndDate?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1931,7 +1980,7 @@ export type ImportRowSelectScalar = {
   createdAt?: boolean
 }
 
-export type ImportRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "sheetName" | "rowNumber" | "status" | "externalCompanyId" | "companyName" | "taxNumber" | "authorizationEndDate" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "documentStatus" | "processStatus" | "city" | "district" | "address" | "osbName" | "companyId" | "documentId" | "rawData" | "errorMessage" | "createdAt", ExtArgs["result"]["importRow"]>
+export type ImportRowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "importBatchId" | "sheetName" | "rowNumber" | "status" | "externalCompanyId" | "companyName" | "taxNumber" | "authorizationEndDate" | "externalDocumentId" | "documentNumber" | "documentDate" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "documentStatus" | "processStatus" | "city" | "district" | "address" | "osbName" | "companyId" | "documentId" | "rawData" | "errorMessage" | "createdAt", ExtArgs["result"]["importRow"]>
 export type ImportRowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   importBatch?: boolean | Prisma.ImportBatchDefaultArgs<ExtArgs>
   company?: boolean | Prisma.ImportRow$companyArgs<ExtArgs>
@@ -1970,6 +2019,7 @@ export type $ImportRowPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     authorizationEndDate: Date | null
     externalDocumentId: number | null
     documentNumber: string | null
+    documentDate: Date | null
     documentStartDate: Date | null
     documentEndDate: Date | null
     extensionDate: Date | null
@@ -2423,6 +2473,7 @@ export interface ImportRowFieldRefs {
   readonly authorizationEndDate: Prisma.FieldRef<"ImportRow", 'DateTime'>
   readonly externalDocumentId: Prisma.FieldRef<"ImportRow", 'Int'>
   readonly documentNumber: Prisma.FieldRef<"ImportRow", 'String'>
+  readonly documentDate: Prisma.FieldRef<"ImportRow", 'DateTime'>
   readonly documentStartDate: Prisma.FieldRef<"ImportRow", 'DateTime'>
   readonly documentEndDate: Prisma.FieldRef<"ImportRow", 'DateTime'>
   readonly extensionDate: Prisma.FieldRef<"ImportRow", 'DateTime'>

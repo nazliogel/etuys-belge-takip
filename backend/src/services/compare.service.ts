@@ -608,6 +608,17 @@ export class CompareService {
       newValue: row.documentNumber,
     });
 
+    // Belge Tarihi: Excel'de boş gelirse (ya da eski dosyada sütun yoksa)
+    // mevcut tarih silinmez; yalnızca dolu ve farklı gelen değer değişikliktir.
+    if (this.toComparableValue(row.documentDate) !== null) {
+      this.addChangeIfDifferent(changes, {
+        ...baseData,
+        fieldName: "documentDate",
+        oldValue: document.documentDate,
+        newValue: row.documentDate,
+      });
+    }
+
     this.addChangeIfDifferent(changes, {
       ...baseData,
       fieldName: "documentStartDate",
@@ -669,6 +680,17 @@ export class CompareService {
       oldValue: document.documentNumber,
       newValue: row.documentNumber,
     });
+
+    // Belge Tarihi: Excel'de boş gelirse (ya da eski dosyada sütun yoksa)
+    // mevcut tarih silinmez; yalnızca dolu ve farklı gelen değer değişikliktir.
+    if (this.toComparableValue(row.documentDate) !== null) {
+      this.addChangeIfDifferent(changes, {
+        ...baseData,
+        fieldName: "documentDate",
+        oldValue: document.documentDate,
+        newValue: row.documentDate,
+      });
+    }
 
     this.addChangeIfDifferent(changes, {
       ...baseData,

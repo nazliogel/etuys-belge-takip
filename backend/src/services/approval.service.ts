@@ -502,6 +502,8 @@ export class ApprovalService {
 
                     documentNumber: row.documentNumber,
 
+                    documentDate: row.documentDate,
+
                     documentStartDate: row.documentStartDate,
 
                     documentEndDate: row.documentEndDate,
@@ -549,6 +551,15 @@ export class ApprovalService {
                   },
                   data: {
                     documentNumber: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "documentDate") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentDate: parseDate(change.newValue),
                   },
                 });
               } else if (change.fieldName === "documentStartDate") {
@@ -652,6 +663,7 @@ export class ApprovalService {
                     companyId: company.id,
                     externalDocumentId: row.externalDocumentId,
                     documentNumber: row.documentNumber,
+                    documentDate: row.documentDate,
                     documentStartDate: row.documentStartDate,
                     documentEndDate: row.documentEndDate,
                     extensionDate: row.extensionDate,
@@ -690,6 +702,15 @@ export class ApprovalService {
                   },
                   data: {
                     documentNumber: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "documentDate") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentDate: parseDate(change.newValue),
                   },
                 });
               } else if (change.fieldName === "documentStartDate") {

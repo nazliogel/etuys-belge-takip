@@ -581,6 +581,7 @@ export function DocumentsScreen({
       { label: "Belge No", key: "documentNumber" },
       { label: "Firma", key: "companyName" },
       { label: "Uzman", key: "consultant", filterType: "consultant" },
+      { label: "Belge Tarihi", key: "documentDate" },
       { label: "Başlangıç", key: "documentStartDate" },
       { label: "Bitiş", key: "documentEndDate" },
       { label: "Süre Uzatım", key: "extensionDate" },
@@ -828,12 +829,12 @@ export function DocumentsScreen({
         <div>
           <div className="max-h-[480px] w-full overflow-auto overscroll-contain">
             {/*
-              Bütün sütunlar her ekranda görünür. Tablo 1180px'in altına
+              Bütün sütunlar her ekranda görünür. Tablo 1270px'in altına
               sıkışmaz; dar ekranda kendi içinde yana kayar. Belge No sütunu
               solda sabit kalır.
             */}
             <table
-              className="w-full min-w-[1180px] table-fixed text-left text-sm"
+              className="w-full min-w-[1270px] table-fixed text-left text-sm"
             >
               {isAuthorizationRequiredView ? (
                 <colgroup>
@@ -855,6 +856,7 @@ export function DocumentsScreen({
                   <col className="w-[105px]" />
                   <col />
                   <col className="w-[115px]" />
+                  <col className="w-[90px]" />
                   <col className="w-[90px]" />
                   <col className="w-[90px]" />
                   <col className="w-[90px]" />
@@ -1022,7 +1024,7 @@ export function DocumentsScreen({
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-8 text-center">
+                    <td colSpan={11} className="px-4 py-8 text-center">
                       <p className="text-sm font-medium text-muted-foreground">
                         Belgeler yükleniyor...
                       </p>
@@ -1030,7 +1032,7 @@ export function DocumentsScreen({
                   </tr>
                 ) : loadError ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-8 text-center">
+                    <td colSpan={11} className="px-4 py-8 text-center">
                       <p className="text-sm font-semibold text-red-700 dark:text-red-400">
                         Belgeler yüklenemedi
                       </p>
@@ -1060,7 +1062,7 @@ export function DocumentsScreen({
                   )
                 ) : paginatedVisibleDocuments.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-8 text-center">
+                    <td colSpan={11} className="px-4 py-8 text-center">
                       {showAuthWarning ? (
                         <AuthorizationWarning variant={variant} />
                       ) : (

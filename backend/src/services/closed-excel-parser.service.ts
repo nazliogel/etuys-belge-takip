@@ -13,6 +13,8 @@ export interface ParsedClosedImportRow {
 
   externalDocumentId: number | null;
   documentNumber: string | null;
+  // Belge Tarihi (e-TUYS künye: belgeTarihi). İsteğe bağlı sütun.
+  documentDate: Date | null;
   documentStartDate: Date | null;
   documentEndDate: Date | null;
   extensionDate: Date | null;
@@ -60,6 +62,9 @@ const OPTIONAL_HEADERS = {
   district: ["İlçe", "Yatırım Yeri İlçe", "Yatırım İlçesi"],
   address: ["Adres", "Yatırım Adresi", "Yatırım Yeri Adresi"],
   osbName: ["OSB Adı", "OSB", "Organize Sanayi Bölgesi"],
+
+  // Eski Excel dosyalarında bu sütun yok; yoksa belge tarihi boş kalır.
+  documentDate: ["Belge Tarihi"],
 } as const;
 
 const ALL_HEADERS = { ...EXPECTED_HEADERS, ...OPTIONAL_HEADERS };
@@ -215,6 +220,9 @@ export class ClosedExcelParserService {
     const district = this.getOptionalString(row, headerMap.district);
     const address = this.getOptionalString(row, headerMap.address);
     const osbName = this.getOptionalString(row, headerMap.osbName);
+    const documentDate = headerMap.documentDate
+      ? this.getDateValue(row.getCell(headerMap.documentDate).value)
+      : null;
 
     const documentStatus = this.getDocumentStatus(processStatus);
 
@@ -254,6 +262,7 @@ export class ClosedExcelParserService {
       authorizationEndDate,
       externalDocumentId,
       documentNumber,
+      documentDate,
       documentStartDate,
       documentEndDate,
       extensionDate,

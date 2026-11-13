@@ -67,6 +67,7 @@ export class ImportProcessService {
           authorizationEndDate: row.authorizationEndDate,
           externalDocumentId: row.externalDocumentId,
           documentNumber: row.documentNumber,
+          documentDate: row.documentDate,
           documentStartDate: row.documentStartDate,
           documentEndDate: row.documentEndDate,
           extensionDate: row.extensionDate,
