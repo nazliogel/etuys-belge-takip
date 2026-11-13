@@ -99,6 +99,37 @@ function formatNumber(
   }).format(num);
 }
 
+function formatDeclarationDate(rawData: unknown): string {
+  if (!rawData || typeof rawData !== "object" || !("beyannameTarihi" in rawData)) {
+    return "—";
+  }
+
+  const value = rawData.beyannameTarihi;
+  if (typeof value !== "string" || !value.trim()) return "—";
+
+  const date = value.trim();
+  const iso = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(date);
+
+  return iso ? `${iso[3]}.${iso[2]}.${iso[1]}` : date;
+}
+
+const declarationAmountFormatter = new Intl.NumberFormat("tr-TR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function formatDeclarationAmount(rawData: unknown): string {
+  if (!rawData || typeof rawData !== "object" || !("tutar" in rawData)) {
+    return "—";
+  }
+
+  const value = rawData.tutar;
+  if (typeof value !== "number" && typeof value !== "string") return "—";
+  if (typeof value === "string" && !value.trim()) return "—";
+
+  const amount = Number(value);
+  return Number.isFinite(amount) ? declarationAmountFormatter.format(amount) : "—";
+}
 function formatQuantity(
   value: string | number | null | undefined,
 ): string | null {
@@ -479,16 +510,16 @@ export function AdminDocumentImportedMachines({
                     <Fragment key={machine.id}>
                       <tr
                         className={`group transition-colors ${isExpanded
-                            ? "bg-[#eef1f8] dark:bg-[#1a2238]"
-                            : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                            }`
+                          ? "bg-[#eef1f8] dark:bg-[#1a2238]"
+                          : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
+                          }`
                           }`}
                       >
                         {/* Sıra */}
                         <td
                           className={`md:sticky md:left-0 md:z-10 w-[40px] min-w-[40px] ${CELL_BASE} text-right font-mono font-semibold tabular-nums ${isExpanded
-                              ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
-                              : "text-muted-foreground"
+                            ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
+                            : "text-muted-foreground"
                             } ${stickyBg} ${stickyHover}`}
                         >
                           {machine.sequenceNumber ?? EMPTY}
@@ -559,14 +590,14 @@ export function AdminDocumentImportedMachines({
                               }
                               aria-expanded={isExpanded}
                               className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border py-px pl-px pr-1.5 text-[10px] font-semibold transition-all ${isExpanded
-                                  ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
-                                  : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
+                                ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
+                                : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
                                 }`}
                             >
                               <span
                                 className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 font-mono text-[9px] tabular-nums ${isExpanded
-                                    ? "bg-white/20 text-white"
-                                    : "bg-[#1e2a5e] text-white dark:bg-blue-500"
+                                  ? "bg-white/20 text-white"
+                                  : "bg-[#1e2a5e] text-white dark:bg-blue-500"
                                   }`}
                               >
                                 {machine.realizations.length}
@@ -725,7 +756,7 @@ export function AdminDocumentImportedMachines({
                             data-no-tip
                             className="border-b border-border bg-[#eef1f8]/60 p-0 dark:bg-[#1a2238]/50"
                           >
-                            <div className="w-full max-w-[480px] px-2 py-1.5 md:sticky md:left-0 md:px-3">
+                            <div className="w-max max-w-full px-2 py-1.5 md:sticky md:left-0 md:px-3">
                               <RealizationPanel
                                 machine={machine}
                                 onClose={() => setExpandedMachineId(null)}
@@ -770,7 +801,7 @@ function RealizationPanel({
   onClose: () => void;
 }) {
   const TH =
-    "sticky top-0 z-10 border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300";
+    "sticky top-0 z-10 whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300";
 
   return (
     <div className="overflow-hidden rounded-md border border-[#1e2a5e]/15 bg-card shadow-[0_2px_10px_-4px_rgba(30,42,94,0.18)] dark:border-blue-400/20 dark:shadow-none">
@@ -802,12 +833,18 @@ function RealizationPanel({
         </button>
       </div>
 
-      <div className="max-h-[200px] overflow-auto">
+      <div className="max-h-[200px] overflow-y-auto overflow-x-hidden">
         <table className="w-full border-separate border-spacing-0 text-[11px]">
           <thead>
             <tr>
               <th className={`${TH} w-[48px]`}>Kayıt</th>
               <th className={TH}>Beyanname Numarası</th>
+              <th className="sticky top-0 z-10 whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
+                Beyanname Tarihi
+              </th>
+              <th className="sticky top-0 z-10 whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
+                Tutar
+              </th>
               <th className={`${TH} w-px whitespace-nowrap`}>
                 Gümrük Gerç. Miktar
               </th>
@@ -830,6 +867,12 @@ function RealizationPanel({
                     {record.externalRowId.split(":").slice(1).join(":") ||
                       record.externalRowId}
                   </span>
+                </td>
+                <td className="whitespace-nowrap border-b border-border px-2.5 py-1 text-center tabular-nums">
+                  {formatDeclarationDate(record.rawData)}
+                </td>
+                <td className="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums">
+                  {formatDeclarationAmount(record.rawData)}
                 </td>
                 <td className="whitespace-nowrap border-b border-border px-2.5 py-1 text-center font-mono font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
                   {formatQuantity(record.customsRealizedQuantity) ?? "—"}
@@ -862,8 +905,8 @@ function Money({
   return (
     <span
       className={`font-mono tabular-nums ${emphasis
-          ? "font-bold text-[#1e2a5e] dark:text-blue-300"
-          : "text-foreground/80"
+        ? "font-bold text-[#1e2a5e] dark:text-blue-300"
+        : "text-foreground/80"
         }`}
     >
       {formatted}

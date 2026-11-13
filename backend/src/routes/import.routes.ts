@@ -4,6 +4,7 @@ import { prisma } from "../config/env.js";
 import { importUpload } from "../config/upload.js";
 import { authenticate } from "../middlewares/auth.js";
 import { ImportedRealizationImportService } from "../services/imported-realization-import.service.js";
+import { ImportedDeclarationImportService } from "../services/imported-declaration-import.service.js";
 import { DomesticRealizationImportService } from "../services/domestic-realization-import.service.js";
 import { validate } from "../middlewares/validate.js";
 import {
@@ -22,6 +23,8 @@ export const importRouter = Router();
 const importedRealizationImportService =
   new ImportedRealizationImportService();
 
+const importedDeclarationImportService =
+  new ImportedDeclarationImportService();
 const domesticRealizationImportService =
   new DomesticRealizationImportService();
 
@@ -47,6 +50,108 @@ importRouter.post(
   importController.upload,
 );
 
+importRouter.post(
+  "/imported-declarations",
+  importUpload.single("file"),
+  async (req, res, next) => {
+    const file = req.file;
+
+    if (!file) {
+      res.status(400).json({
+        success: false,
+        message: "Excel dosyası yüklenmedi.",
+      });
+      return;
+    }
+
+    let batchId: number | undefined;
+
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          message: "Oturum bulunamadı.",
+        });
+        return;
+      }
+
+      if (!file.originalname.toLowerCase().endsWith(".xlsx")) {
+        res.status(400).json({
+          success: false,
+          message: "Yalnızca .xlsx dosyaları desteklenir.",
+        });
+        return;
+      }
+
+      const batch = await prisma.importBatch.create({
+        data: {
+          fileName: file.originalname,
+          uploadedById: req.user.id,
+          importType: "IMPORTED_DECLARATION",
+          isFullSnapshot: false,
+          status: "PROCESSING",
+        },
+      });
+
+      batchId = batch.id;
+
+      const result = await importedDeclarationImportService.import(file.path);
+
+      await prisma.$transaction(async (tx) => {
+        if (result.errors.length > 0) {
+          await tx.importRow.createMany({
+            data: result.errors.map((error) => ({
+              importBatchId: batch.id,
+              sheetName: "MAIN",
+              rowNumber: error.rowNumber,
+              externalCompanyId: error.externalCompanyId,
+              externalDocumentId: error.externalDocumentId,
+              status: "INVALID" as const,
+              errorMessage: error.message,
+            })),
+          });
+        }
+
+        await tx.importBatch.update({
+          where: { id: batch.id },
+          data: {
+            status: "COMPLETED",
+            completedAt: new Date(),
+            totalRowCount: result.totalRowCount,
+            validRowCount: result.totalRowCount - result.invalidRowCount,
+            invalidRowCount: result.invalidRowCount,
+            newRowCount: 0,
+            changedRowCount: result.changedRowCount,
+            unchangedRowCount: result.unchangedRowCount,
+          },
+        });
+      });
+
+      res.json({
+        success: true,
+        message: "Beyanname tarihi ve tutar aktarımı tamamlandı.",
+        data: { ...result, importBatchId: batch.id },
+      });
+    } catch (error) {
+      if (batchId !== undefined) {
+        try {
+          await prisma.importBatch.update({
+            where: { id: batchId },
+            data: { status: "FAILED", completedAt: new Date() },
+          });
+        } catch (historyError) {
+          console.error("Beyanname aktarım geçmişi güncellenemedi.", historyError);
+        }
+      }
+
+      next(error);
+    } finally {
+      await fs.rm(file.path, { force: true }).catch((error) => {
+        console.error("Geçici beyanname dosyası silinemedi.", error);
+      });
+    }
+  },
+);
 importRouter.post(
   "/imported-realizations",
   importUpload.single("file"),
@@ -103,9 +208,9 @@ importRouter.post(
               importBatchId: batch.id,
               sheetName: "MAIN",
               rowNumber: error.rowNumber,
-              status: "INVALID" as const,
               externalCompanyId: error.externalCompanyId,
               externalDocumentId: error.externalDocumentId,
+              status: "INVALID" as const,
               errorMessage: error.message,
             })),
           });

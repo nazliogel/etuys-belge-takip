@@ -1,7 +1,7 @@
 ﻿import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { DocumentPdfData, PdfRecord } from "./data";
-
+import { getImportedRealizationRows } from "./data";
 // ---------------------------------------------------------------------------
 // Sayfa ve renk sabitleri (A4 yatay, mm)
 // ---------------------------------------------------------------------------
@@ -543,7 +543,7 @@ export async function buildDocumentPdf(data: DocumentPdfData): Promise<jsPDF> {
         totalFobTl: decimal(m.totalFobTl, true),
         quantity: decimal(m.quantity),
     }));
-    y = table(pdf, [
+    const importedPdfColumns: Column[] = [
         { key: "sequenceNumber", label: "Sıra No", width: 13, align: "center" },
         { key: "name", label: "Adı ve Özelliği", width: 61 },
         { key: "usedMachine", label: "Kullanılmış Makine", width: 24, align: "center" },
@@ -555,7 +555,23 @@ export async function buildDocumentPdf(data: DocumentPdfData): Promise<jsPDF> {
         { key: "originUnitPrice", label: "Menşei Ülke Döviz Birim Fiyatı (FOB)", width: 32, align: "right" },
         { key: "totalFobUsd", label: "Toplam Tutarı (FOB $)", width: 20, align: "right" },
         { key: "totalFobTl", label: "Toplam Tutarı (FOB TL)", width: 20, align: "right" },
-    ], imported, y);
+    ];
+    y = table(pdf, importedPdfColumns, imported, y);
+
+    const declarationRows = getImportedRealizationRows(data.importedMachines);
+
+    if (declarationRows.length > 0) {
+        y = section(pdf, "6.1", "İTHAL GÜMRÜK GERÇEKLEŞMELERİ", y);
+
+        y = table(pdf, [
+            { key: "machineId", label: "Makine ID", width: 24, align: "center" },
+            { key: "name", label: "Makine Adı", width: 70 },
+            { key: "declarationNumber", label: "Beyanname Numarası", width: 53 },
+            { key: "declarationDate", label: "Beyanname Tarihi", width: 33, align: "center" },
+            { key: "declarationAmount", label: "Beyanname Tutarı", width: 43, money: true },
+            { key: "realizedQuantity", label: "Gümrük Gerç. Miktar", width: 46, quantity: true },
+        ], declarationRows, y);
+    }
 
     y = section(pdf, "7", "ÖZEL ŞARTLAR", y);
     table(pdf, [

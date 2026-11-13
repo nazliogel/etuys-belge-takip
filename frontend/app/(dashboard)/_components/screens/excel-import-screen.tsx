@@ -46,7 +46,8 @@ type ImportBatchType =
   | "COMPANY_REQUEST"
   | "DOCUMENT_DETAIL"
   | "IMPORTED_REALIZATION"
-  | "DOMESTIC_REALIZATION";
+  | "DOMESTIC_REALIZATION"
+  | "IMPORTED_DECLARATION";
 
 type ImportRecord = {
   id: number;
@@ -311,6 +312,63 @@ export function ExcelImportScreen() {
       );
     } finally {
       setInvalidRowsLoading(false);
+    }
+  }
+
+  async function handleDeclarationUpload() {
+    if (!selectedFile || isUploading) return;
+
+    setFileError("");
+    setRealizationResult(null);
+
+    if (!selectedFile.name.toLowerCase().endsWith(".xlsx")) {
+      setFileError("Beyanname aktarımı için .xlsx dosyası seç.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setIsUploading(true);
+
+    try {
+      const response = await apiFetch<{
+        success: boolean;
+        message?: string;
+        data: {
+          totalRowCount: number;
+          changedRowCount: number;
+          unchangedRowCount: number;
+          invalidRowCount: number;
+          errors: { rowNumber: number; message: string }[];
+        };
+      }>("/imports/imported-declarations", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Beyanname aktarımı başarısız.");
+      }
+
+      const result = response.data;
+      setRealizationResult({
+        ...result,
+        newRowCount: 0,
+        validRowCount: result.totalRowCount - result.invalidRowCount,
+        errors: result.errors.map((error) => ({
+          ...error,
+          externalDocumentId: null,
+        })),
+      });
+      await loadImports();
+      setSelectedFile(null);
+    } catch (error) {
+      setFileError(
+        error instanceof Error ? error.message : "Beyanname aktarımı başarısız.",
+      );
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -983,6 +1041,17 @@ export function ExcelImportScreen() {
             Temizle
           </button>
 
+          {importType === "IMPORTED_REALIZATION" && (
+            <button
+              type="button"
+              onClick={handleDeclarationUpload}
+              disabled={!selectedFile || isUploading}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Upload size={15} />
+              Beyanname Tarihi ve Tutar Yükle
+            </button>
+          )}
           <button
             type="button"
             onClick={handleUpload}
@@ -1083,19 +1152,21 @@ export function ExcelImportScreen() {
                               </p>
 
                               <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                {item.importType === "DOMESTIC_REALIZATION"
-                                  ? "Yerli Gerçekleşme"
-                                  : item.importType === "IMPORTED_REALIZATION"
-                                    ? "İthal Gerçekleşme"
-                                    : item.importType === "COMPANY_IDENTITY"
-                                      ? "Firma Künye Bilgileri"
-                                      : item.importType === "COMPANY_REQUEST"
-                                        ? "Gönderilmiş Talepler"
-                                        : item.importType === "DOCUMENT_DETAIL"
-                                          ? "Belge Detayları"
-                                          : item.importType === "CLOSED"
-                                            ? "Kapalı / İptal Belgeler"
-                                            : "Açık Belgeler"}
+                                {item.importType === "IMPORTED_DECLARATION"
+                                  ? "Beyanname Tarihi ve Tutar"
+                                  : item.importType === "DOMESTIC_REALIZATION"
+                                    ? "Yerli Gerçekleşme"
+                                    : item.importType === "IMPORTED_REALIZATION"
+                                      ? "İthal Gerçekleşme"
+                                      : item.importType === "COMPANY_IDENTITY"
+                                        ? "Firma Künye Bilgileri"
+                                        : item.importType === "COMPANY_REQUEST"
+                                          ? "Gönderilmiş Talepler"
+                                          : item.importType === "DOCUMENT_DETAIL"
+                                            ? "Belge Detayları"
+                                            : item.importType === "CLOSED"
+                                              ? "Kapalı / İptal Belgeler"
+                                              : "Açık Belgeler"}
                               </span>
 
                               <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-400">
@@ -1188,19 +1259,21 @@ export function ExcelImportScreen() {
                           </p>
 
                           <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                            {item.importType === "DOMESTIC_REALIZATION"
-                              ? "Yerli Gerçekleşme"
-                              : item.importType === "IMPORTED_REALIZATION"
-                                ? "İthal Gerçekleşme"
-                                : item.importType === "COMPANY_IDENTITY"
-                                  ? "Firma Künye Bilgileri"
-                                  : item.importType === "COMPANY_REQUEST"
-                                    ? "Gönderilmiş Talepler"
-                                    : item.importType === "DOCUMENT_DETAIL"
-                                      ? "Belge Detayları"
-                                      : item.importType === "CLOSED"
-                                        ? "Kapalı / İptal Belgeler"
-                                        : "Açık Belgeler"}
+                            {item.importType === "IMPORTED_DECLARATION"
+                              ? "Beyanname Tarihi ve Tutar"
+                              : item.importType === "DOMESTIC_REALIZATION"
+                                ? "Yerli Gerçekleşme"
+                                : item.importType === "IMPORTED_REALIZATION"
+                                  ? "İthal Gerçekleşme"
+                                  : item.importType === "COMPANY_IDENTITY"
+                                    ? "Firma Künye Bilgileri"
+                                    : item.importType === "COMPANY_REQUEST"
+                                      ? "Gönderilmiş Talepler"
+                                      : item.importType === "DOCUMENT_DETAIL"
+                                        ? "Belge Detayları"
+                                        : item.importType === "CLOSED"
+                                          ? "Kapalı / İptal Belgeler"
+                                          : "Açık Belgeler"}
                           </span>
 
                           <p className="mt-1 text-[11px] text-slate-400">
