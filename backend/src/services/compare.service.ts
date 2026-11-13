@@ -11,7 +11,7 @@ import type { ImportRowRepository } from "../repositories/import-row.repository.
 
 type ChangeInput = {
   entityType: EntityType;
-  changeType: "CREATED" | "UPDATED" | "REACTIVATED";
+  changeType: "CREATED" | "UPDATED" | "REACTIVATED" | "DEACTIVATED";
   fieldName: string;
   oldValue: string | null;
   newValue: string | null;
@@ -429,6 +429,26 @@ export class CompareService {
           });
         } else {
           this.compareDocument(row, company.id, openDocument, changes);
+        }
+
+        // Belge daha önce "Kapalı / İptal" Excel'iyle kapalı tabloya
+        // yazılmış ama artık açık listede geliyorsa, kapalı kayıt
+        // kaldırılmalı. Aksi halde belge iki tabloda birden kalır ve
+        // ekranda İPTAL/KAPALI görünmeye devam eder.
+        const staleClosedDocument = company.closedDocuments.find(
+          (item) => item.externalDocumentId === row.externalDocumentId,
+        );
+
+        if (staleClosedDocument) {
+          changes.push({
+            entityType: "CLOSED_INCENTIVE_DOCUMENT",
+            changeType: "DEACTIVATED",
+            fieldName: "__reopened__",
+            oldValue: staleClosedDocument.status,
+            newValue: "OPEN",
+            companyId: company.id,
+            documentId: null,
+          });
         }
       } else {
         if (!closedDocument) {
