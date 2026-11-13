@@ -120,3 +120,40 @@ export async function fetchDocumentPdfData(
         specialConditions: getItems(conditionsResponse.data),
     };
 }
+export function getImportedRealizationRows(machines: PdfRecord[]): PdfRecord[] {
+    return machines.flatMap((machine) => {
+        const realizations = Array.isArray(machine.realizations)
+            ? (machine.realizations as PdfRecord[])
+            : [];
+
+        return realizations.map((realization) => {
+            const rawData = realization.rawData;
+            const raw = rawData && typeof rawData === "object" && !Array.isArray(rawData)
+                ? (rawData as PdfRecord)
+                : {};
+
+            const rowId = typeof realization.externalRowId === "string"
+                ? realization.externalRowId
+                : "";
+            const number = typeof raw.beyannameNumarasi === "string"
+                ? raw.beyannameNumarasi.trim()
+                : "";
+            const date = typeof raw.beyannameTarihi === "string"
+                ? raw.beyannameTarihi.trim()
+                : "";
+            const iso = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(date);
+
+            return {
+                machineId: machine.externalMachineId,
+                name: machine.name,
+                declarationNumber: number || rowId.split(":").slice(1).join(":"),
+                declarationDate: iso ? `${iso[3]}.${iso[2]}.${iso[1]}` : date,
+                declarationAmount:
+                    raw.tutar == null || String(raw.tutar).trim() === ""
+                        ? null
+                        : raw.tutar,
+                realizedQuantity: realization.customsRealizedQuantity,
+            };
+        });
+    });
+}

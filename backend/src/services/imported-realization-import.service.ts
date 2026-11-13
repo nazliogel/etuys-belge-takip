@@ -120,6 +120,13 @@ export class ImportedRealizationImportService {
                     row.externalRowId,
                 );
 
+                const existingRawData = existing?.rawData;
+                const previousData =
+                    existingRawData &&
+                        typeof existingRawData === "object" &&
+                        !Array.isArray(existingRawData)
+                        ? existingRawData
+                        : {};
                 const record: ImportedRealizationRecord = {
                     externalCompanyId: row.externalCompanyId,
                     externalDocumentId: row.externalDocumentId,
@@ -129,6 +136,7 @@ export class ImportedRealizationImportService {
                     unit: row.unit,
                     customsRealizedQuantity: row.customsRealizedQuantity,
                     rawData: {
+                        ...previousData,
                         firmaId: row.externalCompanyId,
                         firmaAdi: row.companyName,
                         belgeId: row.externalDocumentId,

@@ -145,6 +145,25 @@ const formatNumber = (v: string | number | null | undefined) =>
 const formatQuantity = (v: string | number | null | undefined) =>
   formatWith(QTY_FMT, v);
 
+function getDeclarationField(
+  rawData: unknown,
+  field: "beyannameTarihi" | "tutar",
+): string | null {
+  if (!rawData || typeof rawData !== "object") return null;
+
+  const value = (rawData as Record<string, unknown>)[field];
+  if (typeof value === "number") return String(value);
+  return typeof value === "string" ? value.trim() || null : null;
+}
+
+function formatDeclarationDate(rawData: unknown): string {
+  const value = getDeclarationField(rawData, "beyannameTarihi");
+  if (!value) return "—";
+
+  const iso = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(value);
+  return iso ? `${iso[3]}.${iso[2]}.${iso[1]}` : value;
+}
+
 function isPositiveFlag(value: string | null | undefined): boolean {
   if (!value) return false;
   const v = value.toString().trim().toLowerCase();
@@ -599,16 +618,16 @@ export function ImportedMachinesScreen() {
                     <Fragment key={machine.id}>
                       <tr
                         className={`group transition-colors ${isExpanded
-                            ? "bg-[#eef1f8] dark:bg-[#1a2238]"
-                            : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                            }`
+                          ? "bg-[#eef1f8] dark:bg-[#1a2238]"
+                          : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
+                          }`
                           }`}
                       >
                         {/* Sıra */}
                         <td
                           className={`${STICKY_COL.seq} md:z-10 ${CELL_BASE} text-right font-mono font-semibold tabular-nums ${isExpanded
-                              ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
-                              : "text-muted-foreground"
+                            ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
+                            : "text-muted-foreground"
                             } ${stickyBg}`}
                         >
                           {machine.sequenceNumber ?? EMPTY}
@@ -687,14 +706,14 @@ export function ImportedMachinesScreen() {
                               }
                               aria-expanded={isExpanded}
                               className={`inline-flex items-center gap-1 rounded-full border py-px pl-px pr-1.5 text-[10px] font-semibold transition-all ${isExpanded
-                                  ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
-                                  : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
+                                ? "border-[#1e2a5e] bg-[#1e2a5e] text-white shadow-sm dark:border-blue-400 dark:bg-blue-500"
+                                : "border-border bg-card text-foreground hover:border-[#1e2a5e]/40 hover:bg-[#1e2a5e]/[0.04] dark:hover:border-blue-400/40"
                                 }`}
                             >
                               <span
                                 className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 font-mono text-[9px] tabular-nums ${isExpanded
-                                    ? "bg-white/20 text-white"
-                                    : "bg-[#1e2a5e] text-white dark:bg-blue-500"
+                                  ? "bg-white/20 text-white"
+                                  : "bg-[#1e2a5e] text-white dark:bg-blue-500"
                                   }`}
                               >
                                 {machine.realizations.length}
@@ -819,7 +838,7 @@ export function ImportedMachinesScreen() {
                             className="border-b border-border bg-[#eef1f8]/60 p-0 dark:bg-[#1a2238]/50"
                           >
                             {/* Yatay kaydırmada panel ekranda sabit kalsın */}
-                            <div className="w-full max-w-[560px] px-3 py-2.5 md:sticky md:left-0 md:px-4">
+                            <div className="w-max max-w-full px-3 py-2.5 md:sticky md:left-0 md:px-4">
                               <div className="overflow-hidden rounded-md border border-[#1e2a5e]/15 bg-card shadow-[0_2px_10px_-4px_rgba(30,42,94,0.18)] dark:border-blue-400/20 dark:shadow-none">
                                 {/* Başlık */}
                                 <div className="flex items-center justify-between gap-2 border-b border-border bg-gradient-to-r from-[#1e2a5e]/[0.06] to-transparent px-3 py-1.5 dark:from-blue-400/10">
@@ -853,15 +872,21 @@ export function ImportedMachinesScreen() {
                                 </div>
 
                                 {/* Kayıtlar */}
-                                <div className="max-h-[240px] overflow-auto">
+                                <div className="max-h-[240px] overflow-y-auto overflow-x-hidden">
                                   <table className="w-full border-separate border-spacing-0 text-xs">
                                     <thead>
                                       <tr>
                                         <th className="sticky top-0 z-10 w-[48px] border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
                                           Kayıt
                                         </th>
-                                        <th className="sticky top-0 z-10 border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
+                                        <th className="sticky top-0 z-10 whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
                                           Beyanname Numarası
+                                        </th>
+                                        <th className="sticky top-0 z-10 whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
+                                          Beyanname Tarihi
+                                        </th>
+                                        <th className="sticky top-0 z-10 whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
+                                          Tutar
                                         </th>
                                         <th className="sticky top-0 z-10 w-px whitespace-nowrap border-b border-border bg-slate-50 px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#1e2a5e] dark:bg-muted dark:text-blue-300">
                                           Gümrük Gerç. Miktar
@@ -874,8 +899,8 @@ export function ImportedMachinesScreen() {
                                           <tr
                                             key={record.externalRowId}
                                             className={`transition-colors hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${recordIndex % 2 === 1
-                                                ? "bg-muted/30"
-                                                : ""
+                                              ? "bg-muted/30"
+                                              : ""
                                               }`}
                                           >
                                             <td className="border-b border-border px-2.5 py-1 text-center">
@@ -891,6 +916,12 @@ export function ImportedMachinesScreen() {
                                                   .join(":") ||
                                                   record.externalRowId}
                                               </span>
+                                            </td>
+                                            <td className="whitespace-nowrap border-b border-border px-2.5 py-1 text-center tabular-nums">
+                                              {formatDeclarationDate(record.rawData)}
+                                            </td>
+                                            <td className="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums">
+                                              {formatNumber(getDeclarationField(record.rawData, "tutar")) ?? "—"}
                                             </td>
                                             <td className="whitespace-nowrap border-b border-border px-2.5 py-1 text-center font-mono font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
                                               {formatQuantity(

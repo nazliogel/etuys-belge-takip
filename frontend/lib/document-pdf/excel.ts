@@ -1,5 +1,6 @@
 
 import type { DocumentPdfData, PdfRecord } from "./data";
+import { getImportedRealizationRows } from "./data";
 
 function text(value: unknown): string {
     if (value === null || value === undefined) return "";
@@ -269,6 +270,7 @@ export async function generateDocumentExcel(
         ["sequenceNumber", "Sıra No", 12],
         ["externalMachineId", "Makine ID", 16],
         ["name", "Adı ve Özelliği", 55],
+        ["declarationDetails", "Beyanname Detayı", 24],
         ["gtipCode", "GTİP No", 20],
         ["quantity", "Miktar", 16],
         ["unit", "Birim", 15],
@@ -279,12 +281,60 @@ export async function generateDocumentExcel(
         ["totalFobTl", "Toplam FOB TL", 22],
     ]);
 
-    addSheet(
+    const importedSheet = addSheet(
         "İthal Makine Listesi",
         importedColumns,
-        mapRows(data.importedMachines, importedColumns.map((c) => c.key)),
+        mapRows(data.importedMachines, importedColumns.map((column) => column.key)),
     );
 
+    const declarationRows: Record<string, ExcelValue>[] = [];
+
+    for (const [index, machine] of data.importedMachines.entries()) {
+        const details = getImportedRealizationRows([machine]);
+        if (details.length === 0) continue;
+
+        // Detay sayfasında 1. satır başlık.
+        const firstDetailRow = declarationRows.length + 2;
+        const linkCell = importedSheet.getRow(index + 2).getCell("declarationDetails");
+
+        linkCell.value = {
+            text: `${details.length} kayıt · Aç`,
+            hyperlink: `#'İthal Gümrük Gerçekleşmeleri'!A${firstDetailRow}`,
+        };
+        linkCell.font = {
+            color: { argb: "FF1D4ED8" },
+            underline: true,
+            bold: true,
+        };
+
+        for (const detail of details) {
+            declarationRows.push({
+                machineId: text(detail.machineId),
+                name: text(detail.name),
+                declarationNumber: text(detail.declarationNumber),
+                declarationDate: text(detail.declarationDate),
+                declarationAmount: amount(detail.declarationAmount),
+                realizedQuantity: amount(detail.realizedQuantity),
+            });
+        }
+    }
+
+    if (declarationRows.length > 0) {
+        const declarationSheet = addSheet(
+            "İthal Gümrük Gerçekleşmeleri",
+            columns([
+                ["machineId", "Makine ID", 16],
+                ["name", "Makine Adı", 55],
+                ["declarationNumber", "Beyanname Numarası", 28],
+                ["declarationDate", "Beyanname Tarihi", 20],
+                ["declarationAmount", "Beyanname Tutarı", 22],
+                ["realizedQuantity", "Gümrük Gerç. Miktar", 23],
+            ]),
+            declarationRows,
+        );
+
+        declarationSheet.getColumn("E").numFmt = "#,##0.00";
+    }
     const conditionColumns = columns([
         ["conditionName", "Özel Şart", 45],
         ["description", "Açıklama", 80],
