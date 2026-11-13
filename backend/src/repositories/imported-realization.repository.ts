@@ -1,4 +1,3 @@
-
 import { prisma } from "../config/env.js";
 import type { Prisma } from "../generated/prisma/client.js";
 
@@ -98,9 +97,18 @@ export class ImportedRealizationRepository {
     async findDocument(externalDocumentId: number) {
         const select = {
             id: true,
+            documentNumber: true,
             company: {
                 select: {
+                    id: true,
                     externalCompanyId: true,
+                    name: true,
+                    taxNumber: true,
+                    authorization: {
+                        select: {
+                            authorizationEndDate: true,
+                        },
+                    },
                 },
             },
             detail: {
@@ -140,6 +148,35 @@ export class ImportedRealizationRepository {
         }
 
         return document ?? closedDocument;
+    }
+
+    // Sadece kapalı belgelerde arar; açık belge kaydına bakmaz.
+    async findClosedDocument(externalDocumentId: number) {
+        return prisma.closedIncentiveDocument.findUnique({
+            where: { externalDocumentId },
+            select: {
+                id: true,
+                documentNumber: true,
+                company: {
+                    select: {
+                        id: true,
+                        externalCompanyId: true,
+                        name: true,
+                        taxNumber: true,
+                        authorization: {
+                            select: {
+                                authorizationEndDate: true,
+                            },
+                        },
+                    },
+                },
+                detail: {
+                    select: {
+                        id: true,
+                    },
+                },
+            },
+        });
     }
 
     async findImportedMachines(

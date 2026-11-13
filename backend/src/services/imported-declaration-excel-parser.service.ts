@@ -18,6 +18,9 @@ export interface ParsedImportedDeclarationRow {
     externalRowId: string | null;
     declarationDate: string | null;
     declarationAmount: string | null;
+    // Kapalı belge script'inin Excel'inde "Belge Durumu" sütunu var.
+    // Bu sütun varsa satır yalnızca kapalı belgelerde aranır.
+    closedDocumentsOnly: boolean;
     errorMessage: string | null;
 }
 
@@ -47,6 +50,8 @@ export class ImportedDeclarationExcelParserService {
         if (missing.length) {
             throw new Error(`Eksik Excel başlıkları: ${missing.join(", ")}`);
         }
+
+        const closedDocumentsOnly = columns.has(normalizeHeader("Belge Durumu"));
 
         const rows: ParsedImportedDeclarationRow[] = [];
 
@@ -83,6 +88,7 @@ export class ImportedDeclarationExcelParserService {
                         : null,
                 declarationDate,
                 declarationAmount,
+                closedDocumentsOnly,
                 errorMessage: errors.length ? errors.join(" ") : null,
             });
         });

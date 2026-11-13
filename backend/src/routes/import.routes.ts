@@ -98,6 +98,49 @@ importRouter.post(
       const result = await importedDeclarationImportService.import(file.path);
 
       await prisma.$transaction(async (tx) => {
+        // Değişen satırları rapor ekranında eski → yeni olarak göstermek için kaydet.
+        // Veriler zaten yazıldığı için değişiklikler "APPLIED" durumunda; onay beklemez.
+        if (result.changes.length > 0) {
+          const changedRows = await tx.importRow.createManyAndReturn({
+            data: result.changes.map((change) => ({
+              importBatchId: batch.id,
+              sheetName: "MAIN",
+              rowNumber: change.rowNumber,
+              status: "CHANGED" as const,
+              externalCompanyId: change.externalCompanyId,
+              companyName: change.companyName,
+              taxNumber: change.taxNumber,
+              authorizationEndDate: change.authorizationEndDate,
+              externalDocumentId: change.externalDocumentId,
+              documentNumber: change.documentNumber,
+              companyId: change.companyId,
+            })),
+            select: { id: true, rowNumber: true },
+          });
+
+          const rowIdByNumber = new Map(
+            changedRows.map((row) => [row.rowNumber, row.id]),
+          );
+
+          await tx.importChange.createMany({
+            data: result.changes.flatMap((change) =>
+              change.fields.map((field) => ({
+                importBatchId: batch.id,
+                importRowId: rowIdByNumber.get(change.rowNumber) ?? null,
+                companyId: change.companyId,
+                entityType: change.closedDocument
+                  ? ("CLOSED_INCENTIVE_DOCUMENT" as const)
+                  : ("INCENTIVE_DOCUMENT" as const),
+                changeType: "UPDATED" as const,
+                fieldName: field.fieldName,
+                oldValue: field.oldValue,
+                newValue: field.newValue,
+                status: "APPLIED" as const,
+              })),
+            ),
+          });
+        }
+
         if (result.errors.length > 0) {
           await tx.importRow.createMany({
             data: result.errors.map((error) => ({
@@ -125,12 +168,19 @@ importRouter.post(
             unchangedRowCount: result.unchangedRowCount,
           },
         });
-      });
+      }, { timeout: 60_000 });
 
       res.json({
         success: true,
         message: "Beyanname tarihi ve tutar aktarımı tamamlandı.",
-        data: { ...result, importBatchId: batch.id },
+        data: {
+          totalRowCount: result.totalRowCount,
+          changedRowCount: result.changedRowCount,
+          unchangedRowCount: result.unchangedRowCount,
+          invalidRowCount: result.invalidRowCount,
+          errors: result.errors,
+          importBatchId: batch.id,
+        },
       });
     } catch (error) {
       if (batchId !== undefined) {
