@@ -33,6 +33,7 @@ export type CompanyDetail = CompanyListItem & {
     id: number;
     externalDocumentId: number;
     documentNumber: string | null;
+    documentDate: string | null;
     documentStartDate: string | null;
     documentEndDate: string | null;
     extensionDate: string | null;

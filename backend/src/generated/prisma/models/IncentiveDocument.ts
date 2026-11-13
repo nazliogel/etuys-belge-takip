@@ -43,6 +43,7 @@ export type IncentiveDocumentMinAggregateOutputType = {
   companyId: number | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -62,6 +63,7 @@ export type IncentiveDocumentMaxAggregateOutputType = {
   companyId: number | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -81,6 +83,7 @@ export type IncentiveDocumentCountAggregateOutputType = {
   companyId: number
   externalDocumentId: number
   documentNumber: number
+  documentDate: number
   documentStartDate: number
   documentEndDate: number
   extensionDate: number
@@ -114,6 +117,7 @@ export type IncentiveDocumentMinAggregateInputType = {
   companyId?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -133,6 +137,7 @@ export type IncentiveDocumentMaxAggregateInputType = {
   companyId?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -152,6 +157,7 @@ export type IncentiveDocumentCountAggregateInputType = {
   companyId?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -258,6 +264,7 @@ export type IncentiveDocumentGroupByOutputType = {
   companyId: number
   externalDocumentId: number
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -300,6 +307,7 @@ export type IncentiveDocumentWhereInput = {
   companyId?: Prisma.IntFilter<"IncentiveDocument"> | number
   externalDocumentId?: Prisma.IntFilter<"IncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableFilter<"IncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
@@ -325,6 +333,7 @@ export type IncentiveDocumentOrderByWithRelationInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -353,6 +362,7 @@ export type IncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.IncentiveDocumentWhereInput | Prisma.IncentiveDocumentWhereInput[]
   companyId?: Prisma.IntFilter<"IncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableFilter<"IncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
@@ -378,6 +388,7 @@ export type IncentiveDocumentOrderByWithAggregationInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -405,6 +416,7 @@ export type IncentiveDocumentScalarWhereWithAggregatesInput = {
   companyId?: Prisma.IntWithAggregatesFilter<"IncentiveDocument"> | number
   externalDocumentId?: Prisma.IntWithAggregatesFilter<"IncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableWithAggregatesFilter<"IncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableWithAggregatesFilter<"IncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableWithAggregatesFilter<"IncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableWithAggregatesFilter<"IncentiveDocument"> | Date | string | null
@@ -422,6 +434,7 @@ export type IncentiveDocumentScalarWhereWithAggregatesInput = {
 export type IncentiveDocumentCreateInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -447,6 +460,7 @@ export type IncentiveDocumentUncheckedCreateInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -469,6 +483,7 @@ export type IncentiveDocumentUncheckedCreateInput = {
 export type IncentiveDocumentUpdateInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -494,6 +509,7 @@ export type IncentiveDocumentUncheckedUpdateInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -518,6 +534,7 @@ export type IncentiveDocumentCreateManyInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -535,6 +552,7 @@ export type IncentiveDocumentCreateManyInput = {
 export type IncentiveDocumentUpdateManyMutationInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -554,6 +572,7 @@ export type IncentiveDocumentUncheckedUpdateManyInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -583,6 +602,7 @@ export type IncentiveDocumentCountOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -608,6 +628,7 @@ export type IncentiveDocumentMaxOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -627,6 +648,7 @@ export type IncentiveDocumentMinOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -784,6 +806,7 @@ export type IncentiveDocumentUpdateOneRequiredWithoutDocumentRemindersNestedInpu
 export type IncentiveDocumentCreateWithoutCompanyInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -807,6 +830,7 @@ export type IncentiveDocumentUncheckedCreateWithoutCompanyInput = {
   id?: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -860,6 +884,7 @@ export type IncentiveDocumentScalarWhereInput = {
   companyId?: Prisma.IntFilter<"IncentiveDocument"> | number
   externalDocumentId?: Prisma.IntFilter<"IncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableFilter<"IncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"IncentiveDocument"> | Date | string | null
@@ -877,6 +902,7 @@ export type IncentiveDocumentScalarWhereInput = {
 export type IncentiveDocumentCreateWithoutImportRowsInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -901,6 +927,7 @@ export type IncentiveDocumentUncheckedCreateWithoutImportRowsInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -938,6 +965,7 @@ export type IncentiveDocumentUpdateToOneWithWhereWithoutImportRowsInput = {
 export type IncentiveDocumentUpdateWithoutImportRowsInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -962,6 +990,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportRowsInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -983,6 +1012,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportRowsInput = {
 export type IncentiveDocumentCreateWithoutImportChangesInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1007,6 +1037,7 @@ export type IncentiveDocumentUncheckedCreateWithoutImportChangesInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1044,6 +1075,7 @@ export type IncentiveDocumentUpdateToOneWithWhereWithoutImportChangesInput = {
 export type IncentiveDocumentUpdateWithoutImportChangesInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1068,6 +1100,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportChangesInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1089,6 +1122,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutImportChangesInput = {
 export type IncentiveDocumentCreateWithoutChangeHistoryInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1113,6 +1147,7 @@ export type IncentiveDocumentUncheckedCreateWithoutChangeHistoryInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1150,6 +1185,7 @@ export type IncentiveDocumentUpdateToOneWithWhereWithoutChangeHistoryInput = {
 export type IncentiveDocumentUpdateWithoutChangeHistoryInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1174,6 +1210,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutChangeHistoryInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1195,6 +1232,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutChangeHistoryInput = {
 export type IncentiveDocumentCreateWithoutDetailInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1219,6 +1257,7 @@ export type IncentiveDocumentUncheckedCreateWithoutDetailInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1256,6 +1295,7 @@ export type IncentiveDocumentUpdateToOneWithWhereWithoutDetailInput = {
 export type IncentiveDocumentUpdateWithoutDetailInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1280,6 +1320,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutDetailInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1301,6 +1342,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutDetailInput = {
 export type IncentiveDocumentCreateWithoutDocumentRemindersInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1325,6 +1367,7 @@ export type IncentiveDocumentUncheckedCreateWithoutDocumentRemindersInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1362,6 +1405,7 @@ export type IncentiveDocumentUpdateToOneWithWhereWithoutDocumentRemindersInput =
 export type IncentiveDocumentUpdateWithoutDocumentRemindersInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1386,6 +1430,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutDocumentRemindersInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1408,6 +1453,7 @@ export type IncentiveDocumentCreateManyCompanyInput = {
   id?: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -1425,6 +1471,7 @@ export type IncentiveDocumentCreateManyCompanyInput = {
 export type IncentiveDocumentUpdateWithoutCompanyInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1448,6 +1495,7 @@ export type IncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1471,6 +1519,7 @@ export type IncentiveDocumentUncheckedUpdateManyWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1548,6 +1597,7 @@ export type IncentiveDocumentSelect<ExtArgs extends runtime.Types.Extensions.Int
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1574,6 +1624,7 @@ export type IncentiveDocumentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1594,6 +1645,7 @@ export type IncentiveDocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1614,6 +1666,7 @@ export type IncentiveDocumentSelectScalar = {
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -1628,7 +1681,7 @@ export type IncentiveDocumentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type IncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "city" | "district" | "address" | "osbName" | "status" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["incentiveDocument"]>
+export type IncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentDate" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "city" | "district" | "address" | "osbName" | "status" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["incentiveDocument"]>
 export type IncentiveDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentReminders?: boolean | Prisma.IncentiveDocument$documentRemindersArgs<ExtArgs>
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -1660,6 +1713,7 @@ export type $IncentiveDocumentPayload<ExtArgs extends runtime.Types.Extensions.I
     companyId: number
     externalDocumentId: number
     documentNumber: string | null
+    documentDate: Date | null
     documentStartDate: Date | null
     documentEndDate: Date | null
     extensionDate: Date | null
@@ -2105,6 +2159,7 @@ export interface IncentiveDocumentFieldRefs {
   readonly companyId: Prisma.FieldRef<"IncentiveDocument", 'Int'>
   readonly externalDocumentId: Prisma.FieldRef<"IncentiveDocument", 'Int'>
   readonly documentNumber: Prisma.FieldRef<"IncentiveDocument", 'String'>
+  readonly documentDate: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>
   readonly documentStartDate: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>
   readonly documentEndDate: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>
   readonly extensionDate: Prisma.FieldRef<"IncentiveDocument", 'DateTime'>

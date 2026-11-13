@@ -31,6 +31,10 @@ export const DOCUMENT_FIELDS: CompareField[] = [
     newField: "documentNumber",
   },
   {
+    oldField: "documentDate",
+    newField: "documentDate",
+  },
+  {
     oldField: "documentStartDate",
     newField: "documentStartDate",
   },

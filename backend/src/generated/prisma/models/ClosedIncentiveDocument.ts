@@ -43,6 +43,7 @@ export type ClosedIncentiveDocumentMinAggregateOutputType = {
   companyId: number | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -61,6 +62,7 @@ export type ClosedIncentiveDocumentMaxAggregateOutputType = {
   companyId: number | null
   externalDocumentId: number | null
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -79,6 +81,7 @@ export type ClosedIncentiveDocumentCountAggregateOutputType = {
   companyId: number
   externalDocumentId: number
   documentNumber: number
+  documentDate: number
   documentStartDate: number
   documentEndDate: number
   extensionDate: number
@@ -111,6 +114,7 @@ export type ClosedIncentiveDocumentMinAggregateInputType = {
   companyId?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -129,6 +133,7 @@ export type ClosedIncentiveDocumentMaxAggregateInputType = {
   companyId?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -147,6 +152,7 @@ export type ClosedIncentiveDocumentCountAggregateInputType = {
   companyId?: true
   externalDocumentId?: true
   documentNumber?: true
+  documentDate?: true
   documentStartDate?: true
   documentEndDate?: true
   extensionDate?: true
@@ -252,6 +258,7 @@ export type ClosedIncentiveDocumentGroupByOutputType = {
   companyId: number
   externalDocumentId: number
   documentNumber: string | null
+  documentDate: Date | null
   documentStartDate: Date | null
   documentEndDate: Date | null
   extensionDate: Date | null
@@ -293,6 +300,7 @@ export type ClosedIncentiveDocumentWhereInput = {
   companyId?: Prisma.IntFilter<"ClosedIncentiveDocument"> | number
   externalDocumentId?: Prisma.IntFilter<"ClosedIncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
@@ -313,6 +321,7 @@ export type ClosedIncentiveDocumentOrderByWithRelationInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -336,6 +345,7 @@ export type ClosedIncentiveDocumentWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ClosedIncentiveDocumentWhereInput | Prisma.ClosedIncentiveDocumentWhereInput[]
   companyId?: Prisma.IntFilter<"ClosedIncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
@@ -356,6 +366,7 @@ export type ClosedIncentiveDocumentOrderByWithAggregationInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   documentEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   extensionDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -382,6 +393,7 @@ export type ClosedIncentiveDocumentScalarWhereWithAggregatesInput = {
   companyId?: Prisma.IntWithAggregatesFilter<"ClosedIncentiveDocument"> | number
   externalDocumentId?: Prisma.IntWithAggregatesFilter<"ClosedIncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ClosedIncentiveDocument"> | Date | string | null
@@ -398,6 +410,7 @@ export type ClosedIncentiveDocumentScalarWhereWithAggregatesInput = {
 export type ClosedIncentiveDocumentCreateInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -418,6 +431,7 @@ export type ClosedIncentiveDocumentUncheckedCreateInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -435,6 +449,7 @@ export type ClosedIncentiveDocumentUncheckedCreateInput = {
 export type ClosedIncentiveDocumentUpdateInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -455,6 +470,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -474,6 +490,7 @@ export type ClosedIncentiveDocumentCreateManyInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -490,6 +507,7 @@ export type ClosedIncentiveDocumentCreateManyInput = {
 export type ClosedIncentiveDocumentUpdateManyMutationInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -508,6 +526,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateManyInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -536,6 +555,7 @@ export type ClosedIncentiveDocumentCountOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -560,6 +580,7 @@ export type ClosedIncentiveDocumentMaxOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -578,6 +599,7 @@ export type ClosedIncentiveDocumentMinOrderByAggregateInput = {
   companyId?: Prisma.SortOrder
   externalDocumentId?: Prisma.SortOrder
   documentNumber?: Prisma.SortOrder
+  documentDate?: Prisma.SortOrder
   documentStartDate?: Prisma.SortOrder
   documentEndDate?: Prisma.SortOrder
   extensionDate?: Prisma.SortOrder
@@ -663,6 +685,7 @@ export type ClosedIncentiveDocumentUpdateOneWithoutDetailNestedInput = {
 export type ClosedIncentiveDocumentCreateWithoutCompanyInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -681,6 +704,7 @@ export type ClosedIncentiveDocumentUncheckedCreateWithoutCompanyInput = {
   id?: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -729,6 +753,7 @@ export type ClosedIncentiveDocumentScalarWhereInput = {
   companyId?: Prisma.IntFilter<"ClosedIncentiveDocument"> | number
   externalDocumentId?: Prisma.IntFilter<"ClosedIncentiveDocument"> | number
   documentNumber?: Prisma.StringNullableFilter<"ClosedIncentiveDocument"> | string | null
+  documentDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentStartDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   documentEndDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
   extensionDate?: Prisma.DateTimeNullableFilter<"ClosedIncentiveDocument"> | Date | string | null
@@ -745,6 +770,7 @@ export type ClosedIncentiveDocumentScalarWhereInput = {
 export type ClosedIncentiveDocumentCreateWithoutDetailInput = {
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -764,6 +790,7 @@ export type ClosedIncentiveDocumentUncheckedCreateWithoutDetailInput = {
   companyId: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -796,6 +823,7 @@ export type ClosedIncentiveDocumentUpdateToOneWithWhereWithoutDetailInput = {
 export type ClosedIncentiveDocumentUpdateWithoutDetailInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -815,6 +843,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateWithoutDetailInput = {
   companyId?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -832,6 +861,7 @@ export type ClosedIncentiveDocumentCreateManyCompanyInput = {
   id?: number
   externalDocumentId: number
   documentNumber?: string | null
+  documentDate?: Date | string | null
   documentStartDate?: Date | string | null
   documentEndDate?: Date | string | null
   extensionDate?: Date | string | null
@@ -848,6 +878,7 @@ export type ClosedIncentiveDocumentCreateManyCompanyInput = {
 export type ClosedIncentiveDocumentUpdateWithoutCompanyInput = {
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -866,6 +897,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -884,6 +916,7 @@ export type ClosedIncentiveDocumentUncheckedUpdateManyWithoutCompanyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   externalDocumentId?: Prisma.IntFieldUpdateOperationsInput | number
   documentNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   documentEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   extensionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -904,6 +937,7 @@ export type ClosedIncentiveDocumentSelect<ExtArgs extends runtime.Types.Extensio
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -924,6 +958,7 @@ export type ClosedIncentiveDocumentSelectCreateManyAndReturn<ExtArgs extends run
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -943,6 +978,7 @@ export type ClosedIncentiveDocumentSelectUpdateManyAndReturn<ExtArgs extends run
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -962,6 +998,7 @@ export type ClosedIncentiveDocumentSelectScalar = {
   companyId?: boolean
   externalDocumentId?: boolean
   documentNumber?: boolean
+  documentDate?: boolean
   documentStartDate?: boolean
   documentEndDate?: boolean
   extensionDate?: boolean
@@ -975,7 +1012,7 @@ export type ClosedIncentiveDocumentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ClosedIncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "city" | "district" | "address" | "osbName" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["closedIncentiveDocument"]>
+export type ClosedIncentiveDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "externalDocumentId" | "documentNumber" | "documentDate" | "documentStartDate" | "documentEndDate" | "extensionDate" | "supportClass" | "city" | "district" | "address" | "osbName" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["closedIncentiveDocument"]>
 export type ClosedIncentiveDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   detail?: boolean | Prisma.ClosedIncentiveDocument$detailArgs<ExtArgs>
@@ -998,6 +1035,7 @@ export type $ClosedIncentiveDocumentPayload<ExtArgs extends runtime.Types.Extens
     companyId: number
     externalDocumentId: number
     documentNumber: string | null
+    documentDate: Date | null
     documentStartDate: Date | null
     documentEndDate: Date | null
     extensionDate: Date | null
@@ -1438,6 +1476,7 @@ export interface ClosedIncentiveDocumentFieldRefs {
   readonly companyId: Prisma.FieldRef<"ClosedIncentiveDocument", 'Int'>
   readonly externalDocumentId: Prisma.FieldRef<"ClosedIncentiveDocument", 'Int'>
   readonly documentNumber: Prisma.FieldRef<"ClosedIncentiveDocument", 'String'>
+  readonly documentDate: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>
   readonly documentStartDate: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>
   readonly documentEndDate: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>
   readonly extensionDate: Prisma.FieldRef<"ClosedIncentiveDocument", 'DateTime'>

@@ -261,11 +261,23 @@ export function AdminDocumentImportedMachines({
   // --- Hover kutusu ---
   const [cellTip, setCellTip] = useState<CellTip | null>(null);
   const hoveredCellRef = useRef<HTMLElement | null>(null);
+  const tipTimerRef = useRef<number | null>(null);
+
+  const cancelTipTimer = () => {
+    if (tipTimerRef.current !== null) {
+      window.clearTimeout(tipTimerRef.current);
+      tipTimerRef.current = null;
+    }
+  };
 
   const clearCellTip = () => {
+    cancelTipTimer();
     hoveredCellRef.current = null;
-    setCellTip(null);
+    // Zaten kapalıysa state'e dokunma; aksi halde her scroll'da tablo yeniden çizilir.
+    setCellTip((prev) => (prev === null ? prev : null));
   };
+
+  useEffect(() => cancelTipTimer, []);
 
   // --- Sütun boyutlandırma ---
   // null = otomatik düzen. İlk sürüklemede mevcut genişlikler ölçülüp sabitlenir.
@@ -331,6 +343,9 @@ export function AdminDocumentImportedMachines({
 
   // --- Veri ---
   useEffect(() => {
+    // Eski isteğin yanıtı geç gelirse yeni veriyi ezmesin (StrictMode'da efekt iki kez çalışır).
+    let cancelled = false;
+
     const loadMachines = async () => {
       try {
         setIsLoading(true);
@@ -342,9 +357,11 @@ export function AdminDocumentImportedMachines({
           : `/documents/${documentId}/imported-machines`;
 
         const response = await apiFetch<ImportedMachinesResponse>(endpoint);
+        if (cancelled) return;
 
         setMachines(response.data.items ?? []);
       } catch (error) {
+        if (cancelled) return;
         setMachines([]);
         setLoadError(
           error instanceof Error
@@ -352,11 +369,15 @@ export function AdminDocumentImportedMachines({
             : "İthal makine bilgileri alınamadı.",
         );
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     void loadMachines();
+
+    return () => {
+      cancelled = true;
+    };
   }, [documentId, isClosed]);
 
   const realizedCount = machines.filter(
@@ -456,7 +477,21 @@ export function AdminDocumentImportedMachines({
 
                 if (anchor === hoveredCellRef.current) return;
                 hoveredCellRef.current = anchor;
-                setCellTip(getCellTip(anchor));
+                cancelTipTimer();
+
+                // Kutu zaten açıksa hücreler arasında geçerken kapatıp açmadan taşı.
+                if (cellTip) {
+                  setCellTip(getCellTip(anchor));
+                  return;
+                }
+
+                // Fare satırların üzerinden geçerken kutu her hücrede yanıp sönmesin.
+                tipTimerRef.current = window.setTimeout(() => {
+                  tipTimerRef.current = null;
+                  if (hoveredCellRef.current === anchor) {
+                    setCellTip(getCellTip(anchor));
+                  }
+                }, 250);
               }}
               onMouseLeave={clearCellTip}
             >
@@ -486,14 +521,14 @@ export function AdminDocumentImportedMachines({
                 machines.map((machine, index) => {
                   const isExpanded = expandedMachineId === machine.id;
 
-                  const stickyBg = isExpanded
-                    ? "bg-[#eef1f8] dark:bg-[#1a2238]"
-                    : index % 2 === 1
-                      ? "bg-slate-50 dark:bg-muted/60"
-                      : "bg-white dark:bg-card";
-                  const stickyHover = isExpanded
-                    ? ""
-                    : "group-hover:bg-[#f8f9fb] dark:group-hover:bg-muted/40";
+                  // Arka plan satıra değil hücrelere verilir: sabit (sticky) sütunlar ile
+                  // kayan sütunlar aynı renge, aynı anda geçer. Geçiş animasyonu yok.
+                  const rowBg = isExpanded
+                    ? "[&>td]:bg-[#eef1f8] dark:[&>td]:bg-[#1a2238]"
+                    : `${index % 2 === 1
+                      ? "[&>td]:bg-slate-50 dark:[&>td]:bg-muted"
+                      : "[&>td]:bg-white dark:[&>td]:bg-card"
+                    } hover:[&>td]:bg-[#f1f3f8] dark:hover:[&>td]:bg-[#1f2537]`;
 
                   const customsQuantities = [
                     ...new Set(
@@ -508,26 +543,20 @@ export function AdminDocumentImportedMachines({
 
                   return (
                     <Fragment key={machine.id}>
-                      <tr
-                        className={`group transition-colors ${isExpanded
-                          ? "bg-[#eef1f8] dark:bg-[#1a2238]"
-                          : `hover:bg-[#1e2a5e]/[0.03] dark:hover:bg-blue-400/5 ${index % 2 === 1 ? "bg-muted/40" : "bg-card"
-                          }`
-                          }`}
-                      >
+                      <tr className={`group ${rowBg}`}>
                         {/* Sıra */}
                         <td
                           className={`md:sticky md:left-0 md:z-10 w-[40px] min-w-[40px] ${CELL_BASE} text-right font-mono font-semibold tabular-nums ${isExpanded
                             ? "text-[#1e2a5e] shadow-[inset_3px_0_0_#1e2a5e] dark:text-blue-300 dark:shadow-[inset_3px_0_0_#60a5fa]"
                             : "text-muted-foreground"
-                            } ${stickyBg} ${stickyHover}`}
+                            }`}
                         >
                           {machine.sequenceNumber ?? EMPTY}
                         </td>
 
                         {/* Makine ID */}
                         <td
-                          className={`md:sticky md:left-[var(--col1-left)] md:z-10 w-[72px] min-w-[72px] ${CELL_BASE} ${stickyBg} ${stickyHover}`}
+                          className={`md:sticky md:left-[var(--col1-left)] md:z-10 w-[72px] min-w-[72px] ${CELL_BASE}`}
                         >
                           {machine.externalMachineId ? (
                             <span className="inline-flex rounded border border-border bg-muted px-1 py-px font-mono text-[10px] font-medium text-foreground/80">
@@ -540,7 +569,7 @@ export function AdminDocumentImportedMachines({
 
                         {/* Ad */}
                         <td
-                          className={`md:sticky md:left-[var(--col2-left)] md:z-10 w-[170px] min-w-[170px] max-w-[170px] ${CELL_BASE} font-semibold leading-snug text-foreground ${STICKY_SHADOW} ${stickyBg} ${stickyHover}`}
+                          className={`md:sticky md:left-[var(--col2-left)] md:z-10 w-[170px] min-w-[170px] max-w-[170px] ${CELL_BASE} font-semibold leading-snug text-foreground ${STICKY_SHADOW}`}
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c8102e] opacity-0 transition-opacity group-hover:opacity-100" />

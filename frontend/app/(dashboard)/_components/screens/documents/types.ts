@@ -25,6 +25,7 @@ export type DocumentSortKey =
   | "documentNumber"
   | "companyName"
   | "consultant"
+  | "documentDate"
   | "documentStartDate"
   | "documentEndDate"
   | "extensionDate"
@@ -52,6 +53,7 @@ export type ApiDocument = {
   id: number;
   externalDocumentId: number;
   documentNumber: string | null;
+  documentDate?: string | null;
   documentStartDate: string | null;
   documentEndDate: string | null;
   extensionDate: string | null;

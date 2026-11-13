@@ -19,6 +19,7 @@ type ApiDocumentDetail = {
   id: number;
   externalDocumentId: number;
   documentNumber: string | null;
+  documentDate?: string | null;
   documentStartDate: string | null;
   documentEndDate: string | null;
   extensionDate: string | null;
@@ -201,6 +202,13 @@ export function AdminDocumentIdentity({
               />
 
               <OperationRow
+                label1="Belge Tarihi"
+                value1={formatDate(document.documentDate ?? null)}
+                label2="Belge Durumu"
+                value2={status}
+              />
+
+              <OperationRow
                 label1="Başlangıç Tarihi"
                 value1={formatDate(document.documentStartDate)}
                 label2="Bitiş Tarihi"
@@ -215,17 +223,17 @@ export function AdminDocumentIdentity({
               />
 
               <OperationRow
-                label1="Yetki Bitiş Tarihi"
-                value1={formatDate(document.company.authorizationEndDate)}
-                label2="Belge Durumu"
-                value2={status}
-              />
-
-              <OperationRow
                 label1="Firma Ünvanı"
                 value1={document.company.name}
                 label2="Vergi No"
                 value2={document.company.taxNumber}
+              />
+
+              <OperationRow
+                label1="Yetki Bitiş Tarihi"
+                value1={formatDate(document.company.authorizationEndDate)}
+                label2="OSB Adı"
+                value2={displayValue(document.osbName)}
               />
 
               <OperationRow
@@ -235,12 +243,8 @@ export function AdminDocumentIdentity({
                 value2={displayValue(document.district)}
               />
 
-              <OperationRow
-                label1="Adres"
-                value1={displayValue(document.address)}
-                label2="OSB Adı"
-                value2={displayValue(document.osbName)}
-              />
+              {/* Adres uzun olduğu için en altta satırın tamamını kaplar. */}
+              <FullWidthRow label="Adres" value={displayValue(document.address)} />
             </tbody>
           </table>
         </div>
@@ -276,6 +280,20 @@ function OperationRow({
 
       <td className="w-[34%] px-4 py-2 text-sm font-semibold text-slate-900">
         {value2}
+      </td>
+    </tr>
+  );
+}
+
+function FullWidthRow({ label, value }: { label: string; value: string }) {
+  return (
+    <tr>
+      <th className="w-[16%] bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </th>
+
+      <td colSpan={3} className="px-4 py-2 text-sm font-semibold text-slate-900">
+        {value}
       </td>
     </tr>
   );

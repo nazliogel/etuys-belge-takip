@@ -32,6 +32,7 @@ type ApiDocumentDetail = {
   id: number;
   externalDocumentId: number;
   documentNumber: string | null;
+  documentDate?: string | null;
   documentStartDate: string | null;
   documentEndDate: string | null;
   extensionDate: string | null;
@@ -424,6 +425,11 @@ export function DocumentDetailScreen({
             shade={0}
             label="Belge Numarası"
             value={document.documentNumber ?? "-"}
+            note={
+              document.documentDate
+                ? `Belge Tarihi: ${formatDate(document.documentDate)}`
+                : undefined
+            }
             icon={<Hash size={16} className="sm:h-[18px] sm:w-[18px]" />}
           />
           <InfoCard
@@ -551,6 +557,11 @@ export function DocumentDetailScreen({
                   />
 
                   <FormRow
+                    label="Belge Tarihi"
+                    value={formatDate(document.documentDate ?? null)}
+                  />
+
+                  <FormRow
                     label="Belge Başlangıç Tarihi"
                     value={formatDate(document.documentStartDate)}
                   />
@@ -639,9 +650,11 @@ interface InfoCardProps {
   icon: ReactNode;
   // 0 = en koyu, 5 = en açık
   shade: number;
+  // Değerin altında küçük yazılan ek bilgi (ör. Belge Tarihi)
+  note?: string;
 }
 
-function InfoCard({ label, value, icon, shade }: InfoCardProps) {
+function InfoCard({ label, value, icon, shade, note }: InfoCardProps) {
   const shadeClass =
     INFO_CARD_SHADES[Math.min(Math.max(shade, 0), INFO_CARD_SHADES.length - 1)];
 
@@ -669,6 +682,11 @@ function InfoCard({ label, value, icon, shade }: InfoCardProps) {
         <p className="mt-1 break-words text-sm font-bold leading-snug text-white sm:text-xl">
           {value}
         </p>
+        {note && (
+          <p className="mt-0.5 text-[11px] font-medium text-white/80 sm:text-xs">
+            {note}
+          </p>
+        )}
       </div>
     </article>
   );

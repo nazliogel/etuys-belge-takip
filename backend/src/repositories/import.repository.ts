@@ -245,6 +245,7 @@ export class ImportRepository {
         authorizationEndDate: true,
         externalDocumentId: true,
         documentNumber: true,
+        documentDate: true,
         documentStartDate: true,
         documentEndDate: true,
         extensionDate: true,
