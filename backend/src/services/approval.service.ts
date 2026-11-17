@@ -501,6 +501,7 @@ export class ApprovalService {
                     externalDocumentId: row.externalDocumentId,
 
                     documentNumber: row.documentNumber,
+                    documentDate: row.documentDate,
 
                     documentStartDate: row.documentStartDate,
 
@@ -549,6 +550,15 @@ export class ApprovalService {
                   },
                   data: {
                     documentNumber: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "documentDate") {
+                await tx.incentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentDate: parseDate(change.newValue),
                   },
                 });
               } else if (change.fieldName === "documentStartDate") {
@@ -615,8 +625,8 @@ export class ApprovalService {
             }
           } else if (change.entityType === "CLOSED_INCENTIVE_DOCUMENT") {
             /* ===============================================
-     CLOSED INCENTIVE DOCUMENT
-  =============================================== */
+          CLOSED INCENTIVE DOCUMENT
+          =============================================== */
 
             if (
               change.changeType === "CREATED" ||
@@ -652,6 +662,7 @@ export class ApprovalService {
                     companyId: company.id,
                     externalDocumentId: row.externalDocumentId,
                     documentNumber: row.documentNumber,
+                    documentDate: row.documentDate,
                     documentStartDate: row.documentStartDate,
                     documentEndDate: row.documentEndDate,
                     extensionDate: row.extensionDate,
@@ -742,6 +753,15 @@ export class ApprovalService {
                   },
                   data: {
                     documentNumber: change.newValue,
+                  },
+                });
+              } else if (change.fieldName === "documentDate") {
+                await tx.closedIncentiveDocument.update({
+                  where: {
+                    id: document.id,
+                  },
+                  data: {
+                    documentDate: parseDate(change.newValue),
                   },
                 });
               } else if (change.fieldName === "documentStartDate") {
