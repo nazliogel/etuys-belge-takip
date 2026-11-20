@@ -7,6 +7,9 @@
  *   - INCENTIVE_DOCUMENT / isActive=false onayı: açık kayıt pasife alınırken.
  * Neden: Kapalı liste onaylanınca açık kayıt aktif kalıyor ve verisi taşınmıyordu.
  * Mevcut onay akışı aynı; ek olarak taşıma yapılıyor.
+ * applyAllPendingChanges: Hata veren değişiklik atlanıp PENDING bırakılıyor,
+ *   diğerleri uygulanmaya devam ediyor. Hata, ilgili ImportRow'a
+ *   (status=INVALID, errorMessage) yazılıyor ve sonuçta failedChanges dönüyor.
  * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
  * ==================================================================
  */
@@ -1018,8 +1021,55 @@ export class ApprovalService {
       },
     });
 
+    /*
+     * Her değişiklik kendi transaction'ında uygulanır. Biri hata verirse
+     * sadece o değişiklik geri alınır ve PENDING kalır; diğerleri uygulanmaya
+     * devam eder. Böylece tek bir sorunlu belge, listenin geri kalanının
+     * güncellenmesini engellemez.
+     */
+    const failedChanges: {
+      changeId: number;
+      importRowId: number | null;
+      entityType: string;
+      fieldName: string;
+      message: string;
+    }[] = [];
+
+    let appliedChangeCount = 0;
+
     for (const change of pendingChanges) {
-      await this.applyChange(importBatchId, change.id, changedById);
+      try {
+        await this.applyChange(importBatchId, change.id, changedById);
+        appliedChangeCount += 1;
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+
+        failedChanges.push({
+          changeId: change.id,
+          importRowId: change.importRowId,
+          entityType: change.entityType,
+          fieldName: change.fieldName,
+          message,
+        });
+
+        console.error(
+          `[import ${importBatchId}] Değişiklik ${change.id} uygulanamadı (${change.entityType}.${change.fieldName}): ${message}`,
+        );
+
+        // Hatayı ilgili Excel satırına yaz; yükleme ekranında görünsün.
+        if (change.importRowId !== null) {
+          await prisma.importRow
+            .update({
+              where: { id: change.importRowId },
+              data: {
+                status: "INVALID",
+                errorMessage: `Uygulanamadı: ${message}`,
+              },
+            })
+            .catch(() => undefined);
+        }
+      }
     }
 
     const now = new Date();
@@ -1036,7 +1086,9 @@ export class ApprovalService {
 
     return {
       batch: updatedBatch,
-      appliedChangeCount: pendingChanges.length,
+      appliedChangeCount,
+      failedChangeCount: failedChanges.length,
+      failedChanges,
     };
   }
 }
