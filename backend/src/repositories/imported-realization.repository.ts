@@ -1,3 +1,13 @@
+/*
+ * ==================================================================
+ * [20.11.2026] İthal gerçekleşme repository: makine ID ile arama eklendi
+ * ------------------------------------------------------------------
+ * Eklenen: findImportedMachinesByExternalId(detailId, externalMachineId).
+ * imported-realization-import.service.ts içindeki findMachine() tarafından kullanılıyor.
+ * findDocument() değişmedi: açık kayıt detaysız kalınca otomatik kapalı kayda düşüyor.
+ * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
+ * ==================================================================
+ */
 
 import { prisma } from "../config/env.js";
 import type { Prisma } from "../generated/prisma/client.js";
@@ -161,6 +171,29 @@ export class ImportedRealizationRepository {
                 name: true,
                 unit: true,
             },
+        });
+    }
+
+    async findImportedMachinesByExternalId(
+        detailId: number,
+        externalMachineId: number | null,
+    ) {
+        if (externalMachineId === null) {
+            return [];
+        }
+
+        return prisma.documentImportedMachine.findMany({
+            where: {
+                detailId,
+                externalMachineId,
+            },
+            select: {
+                id: true,
+                externalMachineId: true,
+                name: true,
+                unit: true,
+            },
+            take: 2,
         });
     }
 

@@ -1,3 +1,17 @@
+/*
+ * ==================================================================
+ * [20.11.2026] İthal gerçekleşme Excel’i: makine ID, tarih ve tutar okunuyor
+ * ------------------------------------------------------------------
+ * Önceden "İthal Makine ID" sütunu hiç okunmuyordu; eşleşme sadece Sıra No ile yapılıyordu
+ * ve veritabanında externalMachineId hep boş kalıyordu.
+ * Şimdi okunan ek sütunlar (zorunlu değil, eski Excel’ler de yüklenir):
+ *   "İthal Makine ID", "Beyanname Tarihi", "Tutar", "Belge Durumu".
+ * Tarih hücreleri YYYY-MM-DD olarak okunuyor.
+ * Not: Satır ID beyanname başına değil makine satırı başına; anahtar zaten
+ * "SatırID:BeyannameNo" olduğu için aynı Satır ID’li beyannameler ayrı kayıt oluyor.
+ * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
+ * ==================================================================
+ */
 
 import ExcelJS from "exceljs";
 
@@ -12,6 +26,10 @@ export interface ParsedImportedRealizationRow {
     unit: string | null;
     customsRealizedQuantity: string | null;
     declarationNumber: string | null;
+    declarationDate: string | null;
+    amount: string | null;
+    documentStatus: string | null;
+    externalMachineId: number | null;
     externalRowId: string | null;
     errorMessage: string | null;
 }
@@ -36,7 +54,16 @@ const HEADERS = [
     "Satır ID",
 ] as const;
 
+// Eski dosyalarda olmayabilir; varsa okunur.
+const OPTIONAL_HEADERS = [
+    "İthal Makine ID",
+    "Beyanname Tarihi",
+    "Tutar",
+    "Belge Durumu",
+] as const;
+
 type Header = (typeof HEADERS)[number];
+type OptionalHeader = (typeof OPTIONAL_HEADERS)[number];
 
 export class ImportedRealizationExcelParserService {
     async parse(filePath: string): Promise<ImportedRealizationParseResult> {
@@ -76,6 +103,11 @@ export class ImportedRealizationExcelParserService {
                 return this.text(row.getCell(column).value);
             };
 
+            const optionalValue = (header: OptionalHeader) => {
+                const column = headerMap.get(this.normalize(header));
+                return column ? this.text(row.getCell(column).value) : "";
+            };
+
             const integer = (text: string): number | null => {
                 if (!/^\d+$/.test(text)) return null;
                 const number = Number(text);
@@ -88,8 +120,14 @@ export class ImportedRealizationExcelParserService {
             const sourceRowId = value("Satır ID");
             const declarationNumber = value("Beyanname Numarası");
             const quantity = value("Gümrük Gerç. Miktarı");
+            const machineIdText = optionalValue("İthal Makine ID");
+            const externalMachineId = integer(machineIdText);
 
             const errors: string[] = [];
+
+            if (machineIdText && !externalMachineId) {
+                errors.push("İthal Makine ID geçersiz.");
+            }
 
             if (!externalCompanyId) errors.push("Firma ID geçersiz.");
             if (!externalDocumentId) errors.push("Belge ID geçersiz.");
@@ -123,6 +161,10 @@ export class ImportedRealizationExcelParserService {
                     e.includes("miktarı")
                 ) ? null : normalizedQuantity,
                 declarationNumber: declarationNumber || null,
+                declarationDate: optionalValue("Beyanname Tarihi") || null,
+                amount: optionalValue("Tutar") || null,
+                documentStatus: optionalValue("Belge Durumu") || null,
+                externalMachineId,
 
                 // Aynı Satır ID farklı beyannamelerde bulunabilir.
                 externalRowId:
@@ -148,6 +190,10 @@ export class ImportedRealizationExcelParserService {
 
     private text(value: ExcelJS.CellValue): string {
         if (value === null || value === undefined) return "";
+
+        if (value instanceof Date) {
+            return value.toISOString().slice(0, 10);
+        }
 
         if (typeof value === "object") {
             if ("result" in value) return this.text(value.result);

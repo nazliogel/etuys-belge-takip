@@ -1,6 +1,20 @@
+/*
+ * ==================================================================
+ * [20.11.2026] Kapalı belge onayında detay otomatik taşınıyor
+ * ------------------------------------------------------------------
+ * Değişen yerler (moveOpenDetailToClosedDocument çağrısı):
+ *   - CLOSED_INCENTIVE_DOCUMENT / CREATED onayı: kapalı belge oluşturulduktan sonra.
+ *   - INCENTIVE_DOCUMENT / isActive=false onayı: açık kayıt pasife alınırken.
+ * Neden: Kapalı liste onaylanınca açık kayıt aktif kalıyor ve verisi taşınmıyordu.
+ * Mevcut onay akışı aynı; ek olarak taşıma yapılıyor.
+ * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
+ * ==================================================================
+ */
+
 import { prisma } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
 import { HTTP_STATUS } from "../utils/http-status.js";
+import { moveOpenDetailToClosedDocument } from "./closed-document-transition.service.js";
 
 // Belge künye bilgisi (yatırım yeri) alanları: city, district, address, osbName.
 const LOCATION_FIELDS = new Set(["city", "district", "address", "osbName"]);
@@ -595,14 +609,31 @@ export class ApprovalService {
                   data: toLocationData(change.fieldName, change.newValue),
                 });
               } else if (change.fieldName === "isActive") {
+                const isActive = parseBoolean(change.newValue);
+
                 await tx.incentiveDocument.update({
                   where: {
                     id: document.id,
                   },
                   data: {
-                    isActive: parseBoolean(change.newValue),
+                    isActive,
                   },
                 });
+
+                /*
+                 * Belge kapandığı için pasife alınıyorsa ve kapalı kaydı
+                 * varsa detayını kapalı kayda taşı.
+                 */
+                if (!isActive) {
+                  await moveOpenDetailToClosedDocument(
+                    tx,
+                    document.externalDocumentId,
+                    {
+                      changedById,
+                      importBatchId,
+                    },
+                  );
+                }
               } else {
                 throw new AppError(
                   `Unsupported incentive document field: ${change.fieldName}`,
@@ -675,6 +706,16 @@ export class ApprovalService {
                   companyId: company.id,
                   documentId: null,
                 },
+              });
+
+              /*
+               * Belge daha önce açık olarak sisteme girdiyse detayını
+               * (makineler, gerçekleşmeler...) kapalı kayda taşı ve
+               * açık kaydı pasife al.
+               */
+              await moveOpenDetailToClosedDocument(tx, row.externalDocumentId, {
+                changedById,
+                importBatchId,
               });
             } else {
               const document = await findClosedDocument();
