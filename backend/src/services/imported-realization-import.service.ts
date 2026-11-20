@@ -1,3 +1,15 @@
+/*
+ * ==================================================================
+ * [20.11.2026] İthal gerçekleşme: beyanname makineye makine ID ile bağlanıyor
+ * ------------------------------------------------------------------
+ * findMachine(): Önce e-TUYS makine ID ile (kesin), yoksa tekil Sıra No ile eşleştirir.
+ * Sıra No ile bulunan makinenin ID’si Excel’deki ID ile çelişirse bağlamaz.
+ * Makine henüz yüklenmemiş olsa bile externalMachineId kaydediliyor (sonra bağlanabilir).
+ * rawData’ya beyanname tarihi, tutar, belge durumu ve makine ID ekleniyor.
+ * Kontrol (20.11.2026): Excel’deki 1.387 beyannamenin hepsi makine ID ile doğru eşleşiyor.
+ * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
+ * ==================================================================
+ */
 
 import {
     ImportedRealizationExcelParserService,
@@ -111,13 +123,16 @@ export class ImportedRealizationImportService {
 
                 const detailId = document.detail.id;
 
-                const machines = await this.repository.findImportedMachines(
+                const machine = await this.findMachine(
                     detailId,
+                    row.externalMachineId,
                     row.sequenceNumber,
                 );
 
-                // Birden fazla eşleşme varsa yanlış makineye bağlama.
-                const machine = machines.length === 1 ? machines[0] : null;
+                // Makine henüz yüklenmemişse bile e-TUYS makine ID'si saklanır;
+                // makine listesi gelince bu ID ile bağlanabilir.
+                const externalMachineId =
+                    row.externalMachineId ?? machine?.externalMachineId ?? null;
 
                 const existing = await this.repository.findExisting(
                     detailId,
@@ -151,6 +166,10 @@ export class ImportedRealizationImportService {
                         gumrukGerceklesenMiktar:
                             row.customsRealizedQuantity,
                         beyannameNumarasi: row.declarationNumber,
+                        beyannameTarihi: row.declarationDate,
+                        tutar: row.amount,
+                        belgeDurumu: row.documentStatus,
+                        ithalMakineId: row.externalMachineId,
                         satirId: row.externalRowId.split(":")[0],
                     },
                 };
@@ -170,8 +189,7 @@ export class ImportedRealizationImportService {
                         ) &&
                         existing.machineId ===
                         (machine?.id ?? null) &&
-                        existing.externalMachineId ===
-                        (machine?.externalMachineId ?? null);
+                        existing.externalMachineId === externalMachineId;
 
                     if (unchanged) {
                         result.unchangedRowCount += 1;
@@ -183,7 +201,7 @@ export class ImportedRealizationImportService {
                     detailId,
                     record,
                     machine?.id ?? null,
-                    machine?.externalMachineId ?? null,
+                    externalMachineId,
                 );
 
                 if (existing) {
@@ -201,5 +219,51 @@ export class ImportedRealizationImportService {
         }
 
         return result;
+    }
+
+    /*
+     * Önce e-TUYS makine ID'si ile eşleştirir (kesin eşleşme).
+     * ID yoksa veya eski kayıtlarda makinenin ID'si boşsa Sıra No kullanılır.
+     * Birden fazla aday varsa yanlış makineye bağlamamak için bağlamaz.
+     */
+    private async findMachine(
+        detailId: number,
+        externalMachineId: number | null,
+        sequenceNumber: number | null,
+    ) {
+        if (externalMachineId !== null) {
+            const byId =
+                await this.repository.findImportedMachinesByExternalId(
+                    detailId,
+                    externalMachineId,
+                );
+
+            if (byId.length === 1) {
+                return byId[0];
+            }
+
+            if (byId.length > 1) {
+                return null;
+            }
+        }
+
+        const bySequence = await this.repository.findImportedMachines(
+            detailId,
+            sequenceNumber,
+        );
+
+        const candidate = bySequence.length === 1 ? bySequence[0] : null;
+
+        // Sıra No ile bulunan makinenin ID'si Excel'deki ID ile çelişiyorsa bağlama.
+        if (
+            candidate &&
+            externalMachineId !== null &&
+            candidate.externalMachineId !== null &&
+            candidate.externalMachineId !== externalMachineId
+        ) {
+            return null;
+        }
+
+        return candidate;
     }
 }

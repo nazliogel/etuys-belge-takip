@@ -1,3 +1,15 @@
+/*
+ * ==================================================================
+ * [20.11.2026] Firma talepleri: pasif açık kayıt yerine kapalı kayıt tercih ediliyor
+ * ------------------------------------------------------------------
+ * findDocumentForCompanyRequest():
+ *   - Belge ID ile: aktif açık kayıt → kapalı kayıt → (son çare) pasif açık kayıt.
+ *   - Belge No ile: sadece aktif açık kayıtlar aranıyor, sonra kapalı kayıtlar.
+ * Neden: Kapanan belgelerin açık kaydı pasife alındı; talepler kapalı belgeye bağlanmalı.
+ * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
+ * ==================================================================
+ */
+
 import { prisma } from "../config/env.js";
 import type { Prisma } from "../generated/prisma/client.js";
 
@@ -73,12 +85,16 @@ export class CompanyRequestRepository {
           companyId: true,
           externalDocumentId: true,
           documentNumber: true,
+          isActive: true,
         },
       });
 
-      if (openDocument) {
+      // Pasif açık kayıt = belge kapanmış. Önce kapalı kayda bak.
+      if (openDocument?.isActive) {
+        const { isActive: _isActive, ...document } = openDocument;
+
         return {
-          ...openDocument,
+          ...document,
           source: "OPEN" as const,
         };
       }
@@ -101,6 +117,15 @@ export class CompanyRequestRepository {
           source: "CLOSED" as const,
         };
       }
+
+      if (openDocument) {
+        const { isActive: _isActive, ...document } = openDocument;
+
+        return {
+          ...document,
+          source: "OPEN" as const,
+        };
+      }
     }
 
     const documentNumber = params.documentNumber?.trim();
@@ -112,6 +137,7 @@ export class CompanyRequestRepository {
     const openDocument = await prisma.incentiveDocument.findFirst({
       where: {
         companyId: params.companyId,
+        isActive: true,
         documentNumber: {
           equals: documentNumber,
           mode: "insensitive",

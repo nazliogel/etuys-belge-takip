@@ -10,6 +10,7 @@ export type ParsedDocumentRow = {
   externalDocumentId: number;
   documentNumber: string | null;
   investmentType: string | null;
+  documentStatus: string | null;
   rawData: RawExcelData;
 };
 
@@ -733,6 +734,13 @@ export class DocumentDetailExcelParserService {
 
         investmentType: normalizeValue(
           getCellByAliases(row, headerMap, ["Yatırım Cinsi", "Yatirim Cinsi"]),
+        ),
+
+        documentStatus: normalizeValue(
+          getCellByAliases(row, headerMap, [
+            "belgeDurumu",
+            "Belge Durumu",
+          ]),
         ),
       });
     }

@@ -1,3 +1,15 @@
+/*
+ * ==================================================================
+ * [20.11.2026] Yerli gerçekleşme: detayı olan belge kaydı seçiliyor
+ * ------------------------------------------------------------------
+ * Önceden: Belge açık tabloda varsa her zaman açık kayıt seçiliyordu.
+ * Sorun: Kapanan belgelerde detay kapalı kayda taşındığı için açık kayıt detaysız kalıyor,
+ * "Belge detay kaydı bulunamadı" hatası alınıyordu.
+ * Şimdi: Önce detayı olan kayıt seçiliyor (açık → kapalı → hiçbiri).
+ * Ayrıntı: DEGISIKLIKLER-2026-11-20.md
+ * ==================================================================
+ */
+
 import { prisma } from "../config/env.js";
 import {
     DomesticRealizationExcelParserService,
@@ -68,14 +80,18 @@ export class DomesticRealizationImportService {
                     include: { company: true, detail: true },
                 });
 
-                const closedDocument = document
-                    ? null
-                    : await prisma.closedIncentiveDocument.findUnique({
-                        where: { externalDocumentId: row.externalDocumentId },
-                        include: { company: true, detail: true },
-                    });
+                const closedDocument = await prisma.closedIncentiveDocument.findUnique({
+                    where: { externalDocumentId: row.externalDocumentId },
+                    include: { company: true, detail: true },
+                });
 
-                const matchedDocument = document ?? closedDocument;
+                // Belge kapanınca detay kapalı kayda taşınır ve açık kayıt
+                // detaysız kalır. Bu yüzden önce detayı olan kaydı seç.
+                const matchedDocument = document?.detail
+                    ? document
+                    : closedDocument?.detail
+                        ? closedDocument
+                        : (document ?? closedDocument);
                 if (!matchedDocument) {
                     invalid(row, "Belge ID sistemde bulunamadı.");
                     continue;
