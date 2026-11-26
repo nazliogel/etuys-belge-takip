@@ -430,7 +430,8 @@ export const ModelName = {
   CompanyNotificationRead: 'CompanyNotificationRead',
   PushDevice: 'PushDevice',
   DocumentRealizationInfo: 'DocumentRealizationInfo',
-  DocumentDomesticRealization: 'DocumentDomesticRealization'
+  DocumentDomesticRealization: 'DocumentDomesticRealization',
+  KokpitReportOutbox: 'KokpitReportOutbox'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -446,7 +447,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentImportedRealization" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo" | "documentDomesticRealization"
+    modelProps: "user" | "company" | "companyIdentity" | "companyRequest" | "companyContact" | "companyNote" | "companyAuthorization" | "incentiveDocument" | "closedIncentiveDocument" | "importBatch" | "importRow" | "importChange" | "changeHistory" | "notification" | "systemSetting" | "documentDetail" | "documentProduct" | "documentSupport" | "documentFinancialInfo" | "documentDomesticMachine" | "documentImportedMachine" | "documentImportedRealization" | "documentSpecialCondition" | "incentiveDocumentCondition" | "documentReminder" | "companyAuthorizationReminder" | "supportRequest" | "supportRequestAttachment" | "authSession" | "companyNotification" | "companyNotificationRead" | "pushDevice" | "documentRealizationInfo" | "documentDomesticRealization" | "kokpitReportOutbox"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2966,6 +2967,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    KokpitReportOutbox: {
+      payload: Prisma.$KokpitReportOutboxPayload<ExtArgs>
+      fields: Prisma.KokpitReportOutboxFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KokpitReportOutboxFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KokpitReportOutboxFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>
+        }
+        findFirst: {
+          args: Prisma.KokpitReportOutboxFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KokpitReportOutboxFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>
+        }
+        findMany: {
+          args: Prisma.KokpitReportOutboxFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>[]
+        }
+        create: {
+          args: Prisma.KokpitReportOutboxCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>
+        }
+        createMany: {
+          args: Prisma.KokpitReportOutboxCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KokpitReportOutboxCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>[]
+        }
+        delete: {
+          args: Prisma.KokpitReportOutboxDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>
+        }
+        update: {
+          args: Prisma.KokpitReportOutboxUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>
+        }
+        deleteMany: {
+          args: Prisma.KokpitReportOutboxDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KokpitReportOutboxUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KokpitReportOutboxUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>[]
+        }
+        upsert: {
+          args: Prisma.KokpitReportOutboxUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KokpitReportOutboxPayload>
+        }
+        aggregate: {
+          args: Prisma.KokpitReportOutboxAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKokpitReportOutbox>
+        }
+        groupBy: {
+          args: Prisma.KokpitReportOutboxGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KokpitReportOutboxGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KokpitReportOutboxCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KokpitReportOutboxCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3735,6 +3810,25 @@ export const DocumentDomesticRealizationScalarFieldEnum = {
 export type DocumentDomesticRealizationScalarFieldEnum = (typeof DocumentDomesticRealizationScalarFieldEnum)[keyof typeof DocumentDomesticRealizationScalarFieldEnum]
 
 
+export const KokpitReportOutboxScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  authorEmail: 'authorEmail',
+  companyName: 'companyName',
+  note: 'note',
+  activityAt: 'activityAt',
+  sourceUpdatedAt: 'sourceUpdatedAt',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  sentAt: 'sentAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KokpitReportOutboxScalarFieldEnum = (typeof KokpitReportOutboxScalarFieldEnum)[keyof typeof KokpitReportOutboxScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4330,6 +4424,7 @@ export type GlobalOmitConfig = {
   pushDevice?: Prisma.PushDeviceOmit
   documentRealizationInfo?: Prisma.DocumentRealizationInfoOmit
   documentDomesticRealization?: Prisma.DocumentDomesticRealizationOmit
+  kokpitReportOutbox?: Prisma.KokpitReportOutboxOmit
 }
 
 /* Types for Logging */

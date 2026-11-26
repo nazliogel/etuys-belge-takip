@@ -2,6 +2,7 @@ import app from "./app.js";
 import { env, prisma } from "./config/env.js";
 import { reminderSchedulerService } from "./services/reminder-scheduler.service.js";
 import { companyNotificationSchedulerService } from "./services/company-notification-scheduler.service.js";
+import { kokpitReportIntegrationService } from "./services/kokpit-report-integration.service.js";
 
 const server = app.listen(env.port, () => {
   console.log(`🚀 E-TUYS Backend running on http://localhost:${env.port}`);
@@ -14,7 +15,9 @@ const server = app.listen(env.port, () => {
   } else {
     console.log("Firma bildirim scheduler'ı devre dışı.");
   }
+  kokpitReportIntegrationService.start();
 });
+
 
 async function shutdown(signal: string) {
   console.log(`\n${signal} received. Server is shutting down.`);
@@ -22,6 +25,7 @@ async function shutdown(signal: string) {
   await Promise.all([
     reminderSchedulerService.stop(),
     companyNotificationSchedulerService.stop(),
+    kokpitReportIntegrationService.stop(),
   ]);
 
   server.close(async () => {

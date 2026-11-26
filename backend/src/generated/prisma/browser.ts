@@ -187,3 +187,8 @@ export type DocumentRealizationInfo = Prisma.DocumentRealizationInfoModel
  * 
  */
 export type DocumentDomesticRealization = Prisma.DocumentDomesticRealizationModel
+/**
+ * Model KokpitReportOutbox
+ * 
+ */
+export type KokpitReportOutbox = Prisma.KokpitReportOutboxModel

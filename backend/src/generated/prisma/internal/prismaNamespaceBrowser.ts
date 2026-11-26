@@ -84,7 +84,8 @@ export const ModelName = {
   CompanyNotificationRead: 'CompanyNotificationRead',
   PushDevice: 'PushDevice',
   DocumentRealizationInfo: 'DocumentRealizationInfo',
-  DocumentDomesticRealization: 'DocumentDomesticRealization'
+  DocumentDomesticRealization: 'DocumentDomesticRealization',
+  KokpitReportOutbox: 'KokpitReportOutbox'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -831,6 +832,25 @@ export const DocumentDomesticRealizationScalarFieldEnum = {
 } as const
 
 export type DocumentDomesticRealizationScalarFieldEnum = (typeof DocumentDomesticRealizationScalarFieldEnum)[keyof typeof DocumentDomesticRealizationScalarFieldEnum]
+
+
+export const KokpitReportOutboxScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  authorEmail: 'authorEmail',
+  companyName: 'companyName',
+  note: 'note',
+  activityAt: 'activityAt',
+  sourceUpdatedAt: 'sourceUpdatedAt',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  sentAt: 'sentAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KokpitReportOutboxScalarFieldEnum = (typeof KokpitReportOutboxScalarFieldEnum)[keyof typeof KokpitReportOutboxScalarFieldEnum]
 
 
 export const SortOrder = {
