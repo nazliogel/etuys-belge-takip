@@ -60,7 +60,7 @@ class KokpitReportIntegrationService {
 
         this.timer = setInterval(() => {
             this.tick();
-        }, 10000);
+        }, 3000);
 
         this.tick();
     }
