@@ -192,6 +192,7 @@ export class DocumentDetailImportService {
             id: true,
             companyId: true,
             externalDocumentId: true,
+            isActive: true,
             detail: {
               select: {
                 id: true,
@@ -285,6 +286,22 @@ export class DocumentDetailImportService {
           documentErrors.set(
             id,
             "Belge e-TUYS'ta kapalı/iptal ama sistemde kapalı kaydı yok. Önce kapalı belge listesini yükleyip onaylayın.",
+          );
+          continue;
+        }
+
+        // [27.11.2026] Belge kapalıya taşınmış (açık kayıt pasif) ama Excel'de
+        // "Açık" görünüyor. Pasif açık kayda yeni detay açılırsa veri ikiye
+        // bölünür ve sonraki kapalı detay yüklemesi CLOSED_DETAIL_CONFLICT verir
+        // (örnek 1030876). Tahmin yürütme, manuel kontrole bırak.
+        if (
+          resolvedTarget === "OPEN" &&
+          closedExists &&
+          openDocumentMap.get(id)?.isActive === false
+        ) {
+          documentErrors.set(
+            id,
+            "Belge sistemde kapalıya taşınmış (açık kaydı pasif), ama Excel'de Açık görünüyor. Veri yazılmadı, e-TUYS'taki durumu kontrol edin.",
           );
           continue;
         }

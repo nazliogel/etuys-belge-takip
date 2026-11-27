@@ -86,12 +86,20 @@ export class DomesticRealizationImportService {
                 });
 
                 // Belge kapanınca detay kapalı kayda taşınır ve açık kayıt
-                // detaysız kalır. Bu yüzden önce detayı olan kaydı seç.
-                const matchedDocument = document?.detail
-                    ? document
+                // pasife alınır. [27.11.2026] Pasif açık kayıt, kapalı kaydı
+                // varsa hiç kullanılmaz; yoksa veri yanlış detaya yazılır
+                // (örnek 1030876: faturalar pasif açık kayda yazılmıştı).
+                const usableOpen =
+                    document && (document.isActive || !closedDocument)
+                        ? document
+                        : null;
+
+                // Önce detayı olan kaydı seç.
+                const matchedDocument = usableOpen?.detail
+                    ? usableOpen
                     : closedDocument?.detail
                         ? closedDocument
-                        : (document ?? closedDocument);
+                        : (usableOpen ?? closedDocument);
                 if (!matchedDocument) {
                     invalid(row, "Belge ID sistemde bulunamadı.");
                     continue;
