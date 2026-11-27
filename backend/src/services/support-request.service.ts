@@ -257,9 +257,12 @@ export class SupportRequestService {
       );
     }
 
-    const count = await this.supportRequestRepository.countUnreadByAssignedTo(
-      user.id,
-    );
+    // Admin tüm okunmamış talepleri sayar; uzman (OPERATION) yalnızca
+    // kendisine atanmış olanları.
+    const count =
+      user.role === "ADMIN"
+        ? await this.supportRequestRepository.countAllUnread()
+        : await this.supportRequestRepository.countUnreadByAssignedTo(user.id);
 
     return {
       count,

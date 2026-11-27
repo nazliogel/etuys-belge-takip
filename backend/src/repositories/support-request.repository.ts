@@ -174,6 +174,15 @@ export class SupportRequestRepository {
     });
   }
 
+  // Admin sayacı: atanan uzmanın henüz açmadığı tüm talepler.
+  async countAllUnread() {
+    return prisma.supportRequest.count({
+      where: {
+        viewedAt: null,
+      },
+    });
+  }
+
   async markInProgress(id: number) {
     return prisma.supportRequest.update({
       where: { id },
